@@ -1,42 +1,69 @@
 # pyGene Fusion local testing
 import json
 from pydantic import BaseModel, validator, ValidationError, StrictStr, StrictInt, StrictBool
+from typing import Optional, List, Union
 
 class Gene(BaseModel):
-    id: str
-    symbol : StrictStr
+    type = 'GeneDescriptor'
+    value_id: str
+    label: StrictStr
 
-    @validator('id')
+    @validator('value_id')
     def is_valid(cls,v):
         assert v.find(':') != -1 and v.find(' ') == -1, 'id must be a CURIE'
         return v
 
-class Exon_loc(BaseModel):
-    chr : str
-    position: StrictInt
+class SequenceRegion(BaseModel):
+    type = 'SequenceLocation'
+    seq_id: str
+    start: StrictInt
+    end: StrictInt
 
-    @validator('chr')
-    def is_valid_chr(cls, v):
-        assert v[0:3] == 'NC_', 'chr must start with NC_'
+    @validator('seq_id')
+    def is_curie(cls, v):
+        assert v.find(':') != -1 and v.find(' ') == -1, 'chr must be a CURIE'
         return v
 
-class Transcript_region(BaseModel):
-    transcript : str
-    gene : Gene
-    exon_start : StrictInt
-    exon_start_genomic : Exon_loc
-    exon_end : StrictInt
-    exon_end_genomic: Exon_loc
+class ChromosomeRegion(BaseModel):
+    type = 'ChromosomeLocation'
+    chr: str
+    start: str
+    end: str
+
+    @validator('chr')
+    def valid_chr(cls, v):
+        assert v.isalnum(), 'chr must have only alphanumeric characters'
+        return v
+
+    @validator('start', 'end')
+    def valid_loc(cls, v):
+        assert v[0] == 'p' or v[0] == 'q', 'start/end must start with p or q'
+        return v
+
+class GenomicRegion(BaseModel):
+    type = 'computed'
+    description: Optional[str] = None
+    value: Union[SequenceRegion, ChromosomeRegion]
+
+class TranscriptRegion(BaseModel):
+    component_type = 'transcript_segment'
+    transcript: str
+    exon_start: StrictInt
+    exon_start_offset : StrictInt
+    exon_end: StrictInt
+    exon_end_offset : StrictInt
+    gene: Gene
+    component_genomic_region: GenomicRegion
 
     @validator('transcript')
     def correct_form(cls, v):
-        assert v[0:3] == 'NM_', 'transcript must start with NM_'
+        assert v.find(':') != -1 and v.find(' ') == -1, 'id must be a CURIE'
         return v
 
-class Domains(BaseModel):
-    status : StrictStr
+class CriticalDomain(BaseModel):
+    status: StrictStr
     name: str
-    id : str
+    id: str
     gene: Gene
 
     @validator('status')
@@ -59,17 +86,38 @@ class Event(BaseModel):
         return v
 
 class Linker(BaseModel):
-    linker_sequence : str
+    linker_sequence: str
 
     @validator('linker_sequence')
     def valid_input(cls, v):
         assert set(v) <= set('ACGT'), 'Linker sequence must only contain A,C,G,T'
         return v
 
+
+class UnknownComponent(BaseModel):
+    component_type = 'unknown_gene'
+    region: Optional[Union[SequenceRegion, ChromosomeRegion]]
+
+class RegulatoryElement(BaseModel):
+    type: str
+    value_id: str
+    label: StrictStr
+
+    @validator('type')
+    def valid_reg_type(cls, v):
+        assert v == 'promoter' or v == 'enhancer', 'type must be either promoter or enhancer'
+        return v
+
+    @validator('value_id')
+    def valid_id(cls, v):
+        assert v.find(':') != -1 and v.find(' ') == -1, 'id must be a CURIE'
+        return v
+
 class Fusion(BaseModel):
     r_frame_preserved: StrictBool
-    domains : Domains
-    components = []
+    regulatory_elements: List[RegulatoryElement]
+    protein_domains: List[CriticalDomain]
+    transcript_components = []
     causative_event: Event
 
     def make_json(self):
@@ -78,21 +126,27 @@ class Fusion(BaseModel):
 def main():
 
     try:
-        gen1 = Gene(id = 'hgnc:12012', symbol = 'TPM3')
-        gen2 = Gene(id = 'hgnc:8031', symbol = 'NTRK1')
-        ex1 = Exon_loc(chr = 'NC_000001.11', position =  154170399)
-        ex2 = Exon_loc(chr = 'NC_000001.11', position = 158843425)
-        ex3 = Exon_loc(chr = 'NC_0000011.1', position = 154545)
-        ex4 = Exon_loc(chr = 'NC_45634534', position = 68686868)
+        gen1 = Gene(value_id = 'hgnc:12012', label = 'TPM3')
+        gen2 = Gene(value_id = 'hgnc:8031', label = 'NTRK1')
+        ex1 = GenomicRegion(value = SequenceRegion(type = 'SequenceLocation', seq_id = 'ncbi:NC_000001.11',  start =  154170399, end = 1556346346))
+        ex2 = GenomicRegion(value = SequenceRegion(type = 'SequenceLocation', seq_id = 'ncbi:NC_000001.13',  start =  154170401, end = 1556346348))
         linker_seq = Linker(linker_sequence = 'ATTATTA')
         cause_eve = Event(event_type = 'rearrangement')
-        domain = Domains(status = 'preserved', name = 'tyrosine kinase catalytic domain', id = 'interpro:IPR020635',
+        domain = CriticalDomain(status = 'preserved', name = 'tyrosine kinase catalytic domain', id = 'interpro:IPR020635',
                          gene = gen2)
-        tr1 = Transcript_region(transcript = 'NM_152263.3', gene = gen1, exon_start = 1, exon_start_genomic = ex1,
-                                  exon_end = 8, exon_end_genomic = ex2)
-        tr2 = Transcript_region(transcript = 'NM_002529.3', gene = gen2, exon_start = 10, exon_start_genomic= ex3,
-                                  exon_end = 17, exon_end_genomic = ex4)
-        molecular_fusion = Fusion(r_frame_preserved = True, domains = domain, components = [tr1, linker_seq, tr2], causative_event = cause_eve)
+        reg1 = RegulatoryElement(type = 'promoter', value_id = 'hgnc:100', label = 'ASIC1')
+        reg2 = RegulatoryElement(type = 'enhancer', value_id = 'hgnc:200', label = 'G1')
+        ur1 = SequenceRegion(type = 'SequenceLocation', seq_id = 'ncbi:NC_000001.11', start = 1000, end = 5000)
+        c1 = UnknownComponent(region = ur1)
+        c2 = UnknownComponent()
+        ur2 = ChromosomeRegion(type = 'ChromosomeLocation', chr = '12', start = 'p12.1', end = 'p12.16')
+        c3 = UnknownComponent(region = ur2)
+        tr1 = TranscriptRegion(transcript = 'NM:152263.3', exon_start = 1, exon_start_offset = -9,
+                                  exon_end = 8, exon_end_offset = 7, gene = gen1, component_genomic_region = ex1)
+        tr2 = TranscriptRegion(transcript = 'NM:002529.3', exon_start = 10, exon_start_offset = -8,
+                                  exon_end = 17, exon_end_offset = 8, gene = gen2, component_genomic_region = ex2)
+        molecular_fusion = Fusion(r_frame_preserved = True, regulatory_elements = [reg1, reg2], protein_domains = [domain],
+                                  transcript_components = [c1, c2, c3, tr1, linker_seq, tr2], causative_event = cause_eve,)
         print(molecular_fusion.json())
     except ValidationError as f:
         print(f)
