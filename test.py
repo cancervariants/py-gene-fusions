@@ -10,9 +10,6 @@ class GeneDescriptor(BaseModel):
     value_id: str
     label: StrictStr
 
-    def __subscr__(self, attribute):
-        return getattr(self, attribute)
-
     @validator('value_id')
     def is_valid(cls,v):
         assert v.count(':') == 1 and v.find(' ') == -1, 'id must be a CURIE'
@@ -50,8 +47,8 @@ class ChromosomeLocation(BaseModel):
 
     @validator('start', 'end')
     def valid_loc(cls, v):
-        assert bool(re.match('^cen|[pq](ter|([1-9][0-9]*(\.[1-9][0-9]*)?))$', v)) == True, \
-            'start/end positions must match the regular expression ^cen|[pq](ter|([1-9][0-9]*(\.[1-9][0-9]*)?))$'
+        assert bool(re.match(r"^cen|[pq](ter|([1-9][0-9]*(\.[1-9][0-9]*)?))$", v)) == True, \
+            r'start/end positions must match the regular expression ^cen|[pq](ter|([1-9][0-9]*(\.[1-9][0-9]*)?))$'
         return v
 
 class GenomicRegion(BaseModel):
@@ -65,9 +62,9 @@ class TranscriptComponent(BaseModel):
     component_type = 'transcript_segment'
     transcript: str
     exon_start: StrictInt
-    exon_start_offset : StrictInt = 0
+    exon_start_offset: StrictInt = 0
     exon_end: StrictInt
-    exon_end_offset : StrictInt = 0
+    exon_end_offset: StrictInt = 0
     gene: GeneDescriptor
     component_genomic_region: GenomicRegion
 
