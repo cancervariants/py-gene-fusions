@@ -1,0 +1,7 @@
+[run]
+source =
+    fusion/
+    unit_tests/
+omit =
+    setup.py
+    docs/*
