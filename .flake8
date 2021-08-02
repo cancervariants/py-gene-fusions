@@ -1,0 +1,10 @@
+[flake8]
+ignore = D205, D400, F401, D100
+exclude =
+  .git
+  venv
+  __pycache__
+  source
+  outputs
+  docs/*
+  fusion/version.py

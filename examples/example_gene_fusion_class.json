@@ -1,0 +1,103 @@
+{
+    "r_frame_preserved": true,
+    "regulatory_elements": [
+        {
+            "type": "promoter",
+            "value_id": "hgnc:100",
+            "label": "ASIC1"
+        },
+        {
+            "type": "enhancer",
+            "value_id": "hgnc:200",
+            "label": "G1"
+        }
+    ],
+    "protein_domains": [
+        {
+            "status": "preserved",
+            "name": "tyrosine kinase catalytic domain",
+            "id": "interpro:IPR020635",
+            "gene": {
+                "value_id": "hgnc:8031",
+                "label": "NTRK1",
+                "type": "GeneDescriptor"
+            }
+        }
+    ],
+    "causative_event": {
+        "event_type": "rearrangement"
+    },
+    "transcript_components": [
+        {
+            "region": {
+                "seq_id": "ncbi:NC_000001.11",
+                "start": 1000,
+                "end": 5000,
+                "type": "SequenceLocation"
+            },
+            "component_type": "unknown_gene"
+        },
+        {
+            "region": null,
+            "component_type": "unknown_gene"
+        },
+        {
+            "region": {
+                "chr": "12",
+                "start": "p12.1",
+                "end": "p12.16",
+                "type": "ChromosomeLocation"
+            },
+            "component_type": "unknown_gene"
+        },
+        {
+            "transcript": "NM:152263.3",
+            "exon_start": 1,
+            "exon_start_offset": -9,
+            "exon_end": 8,
+            "exon_end_offset": 7,
+            "gene": {
+                "value_id": "hgnc:12012",
+                "label": "TPM3",
+                "type": "GeneDescriptor"
+            },
+            "component_genomic_region": {
+                "description": null,
+                "value": {
+                    "seq_id": "ncbi:NC_000001.11",
+                    "start": 154170399,
+                    "end": 1556346346,
+                    "type": "SequenceLocation"
+                },
+                "type": "computed"
+            },
+            "component_type": "transcript_segment"
+        },
+        {
+            "linker_sequence": "ATTATTA"
+        },
+        {
+            "transcript": "NM:002529.3",
+            "exon_start": 10,
+            "exon_start_offset": -8,
+            "exon_end": 17,
+            "exon_end_offset": 8,
+            "gene": {
+                "value_id": "hgnc:8031",
+                "label": "NTRK1",
+                "type": "GeneDescriptor"
+            },
+            "component_genomic_region": {
+                "description": null,
+                "value": {
+                    "seq_id": "ncbi:NC_000001.13",
+                    "start": 154170401,
+                    "end": 1556346348,
+                    "type": "SequenceLocation"
+                },
+                "type": "computed"
+            },
+            "component_type": "transcript_segment"
+        }
+    ]
+}
