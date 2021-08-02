@@ -19,13 +19,15 @@ def test_gene_descriptor():
 
 def test_sequence_location():
     """Test SequenceLocation object initializes correctly"""
-    s1 = SequenceLocation(seq_id='ncbi:NC_000001.11', start=1000, end=5000)
-    assert s1.__dict__['seq_id'] == 'ncbi:NC_000001.11'
+    s1 = SequenceLocation(sequence_id='ncbi:NC_000001.11', start=1000,
+                          end=5000)
+    assert s1.__dict__['sequence_id'] == 'ncbi:NC_000001.11'
     assert s1.__dict__['start'] == 1000
     assert s1.__dict__['end'] == 5000
 
     with pytest.raises(AssertionError):
-        SequenceLocation(seq_id='ncbiNC_000001.11', start=1000.3, end='5000')
+        SequenceLocation(sequence_id='ncbiNC_000001.11', start=1000.3,
+                         end='5000')
 
 
 def test_chromosome_location():
@@ -80,17 +82,17 @@ def test_regulatory():
 def test_genomic_region_seq():
     """Test GenomicRegion object with SequenceLocation"""
     g1 = GenomicRegion(value=SequenceLocation(type='SequenceLocation',
-                                              seq_id='ncbi:NC_000001.11',
+                                              sequence_id='ncbi:NC_000001.11',
                                               start=154170399, end=1556346346))
     vals = g1.__dict__['value']
     assert vals.__dict__['type'] == 'SequenceLocation'
-    assert vals.__dict__['seq_id'] == 'ncbi:NC_000001.11'
+    assert vals.__dict__['sequence_id'] == 'ncbi:NC_000001.11'
     assert vals.__dict__['start'] == 154170399
     assert vals.__dict__['end'] == 1556346346
 
     with pytest.raises(AssertionError):
         GenomicRegion(value=SequenceLocation(type='GeneLocation',
-                                             seq_id='ncbiNC_000001.11',
+                                             sequence_id='ncbiNC_000001.11',
                                              start='154170399',
                                              end='1556346346'))
 
@@ -183,7 +185,8 @@ def test_fusion():
                             id='interpro:IPR020635',
                             gene=gen2)
 
-    ur1 = SequenceLocation(type='SequenceLocation', seq_id='ncbi:NC_000001.11',
+    ur1 = SequenceLocation(type='SequenceLocation',
+                           sequence_id='ncbi:NC_000001.11',
                            start=1000, end=5000)
     c1 = UnknownGene(region=ur1)
     ur2 = ChromosomeLocation(type='ChromosomeLocation',
@@ -192,11 +195,11 @@ def test_fusion():
     c2 = UnknownGene(region=ur2)
 
     ex1 = GenomicRegion(value=SequenceLocation(type='SequenceLocation',
-                                               seq_id='ncbi:NC_000001.11',
+                                               sequence_id='ncbi:NC_000001.11',
                                                start=154170399,
                                                end=1556346346))
     ex2 = GenomicRegion(value=SequenceLocation(type='SequenceLocation',
-                                               seq_id='ncbi:NC_000001.13',
+                                               sequence_id='ncbi:NC_000001.13',
                                                start=154170401,
                                                end=1556346348))
 

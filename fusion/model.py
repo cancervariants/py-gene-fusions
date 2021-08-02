@@ -12,6 +12,7 @@ class GeneDescriptor(BaseModel):
     type = 'GeneDescriptor'
     value_id: str
     label: StrictStr
+    alternate_labels: Optional[List[StrictStr]]
 
     @validator('value_id')
     def is_valid(cls, v):
@@ -24,13 +25,13 @@ class SequenceLocation(BaseModel):
     """Define SequenceLocation class"""
 
     type = 'SequenceLocation'
-    seq_id: str
+    sequence_id: str
     start: StrictInt
     end: StrictInt
 
-    @validator('seq_id')
+    @validator('sequence_id')
     def is_curie(cls, v):
-        """Validate seq_id"""
+        """Validate sequence_id"""
         assert v.count(':') == 1 and v.find(' ') == -1, 'chr must be a CURIE'
         return v
 

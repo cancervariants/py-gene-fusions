@@ -5,12 +5,9 @@ name = "pypi"
 
 [packages]
 pydantic = "*"
-json = "*"
-re = "*"
-typing = "*"
 
 [dev-packages]
 pytest = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.7"
