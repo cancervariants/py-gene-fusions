@@ -1,9 +1,8 @@
 """Unit testing for fusion class"""
 import pytest
-from fusion.model import GeneDescriptor, SequenceLocation, ChromsomeLocation
+from fusion.model import GeneDescriptor, SequenceLocation, ChromosomeLocation
 from fusion.model import GenomicRegion, TranscriptComponent, CriticalDomain
 from fusion.model import Event, Linker, UnknownGene, RegulatoryElement, Fusion
-from fusion.model import ChromosomeLocation
 
 
 def test_gene_descriptor():
