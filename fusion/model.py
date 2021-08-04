@@ -12,7 +12,6 @@ class GeneDescriptor(BaseModel):
     type = 'GeneDescriptor'
     value_id: str
     label: StrictStr
-    alternate_labels: Optional[List[StrictStr]]
 
     @validator('value_id')
     def is_valid(cls, v):
