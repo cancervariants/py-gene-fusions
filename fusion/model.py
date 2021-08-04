@@ -69,7 +69,7 @@ class ChromosomeLocation(BaseModel):
 class GenomicRegion(BaseModel):
     """Define GenomicRegion class"""
 
-    type: str
+    type = 'LocationDescription'
     description: Optional[str] = None
     value: Union[SequenceLocation, ChromosomeLocation]
 
