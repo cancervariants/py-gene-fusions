@@ -1,4 +1,5 @@
 """Unit testing for fusion class"""
+import pydantic.error_wrappers
 import pytest
 from fusion.model import GeneDescriptor, SequenceLocation, ChromosomeLocation
 from fusion.model import GenomicRegion, TranscriptComponent, CriticalDomain
@@ -12,7 +13,7 @@ def test_gene_descriptor():
     assert gen1.__dict__['value_id'] == 'hgnc:1'
     assert gen1.__dict__['label'] == 'G1'
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         GeneDescriptor(value_id='hgnc2', label=5.3)
 
 
@@ -24,7 +25,7 @@ def test_sequence_location():
     assert s1.__dict__['start'] == 1000
     assert s1.__dict__['end'] == 5000
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         SequenceLocation(sequence_id='ncbiNC_000001.11', start=1000.3,
                          end='5000')
 
@@ -38,7 +39,7 @@ def test_chromosome_location():
     assert c1.__dict__['start'] == 'p13.2'
     assert c1.__dict__['end'] == 'p13.5'
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         ChromosomeLocation(species='taxonomy4232', chr=5, start='s13.2',
                            end=14)
 
@@ -48,7 +49,7 @@ def test_event():
     event1 = Event(event_type='rearrangement')
     assert event1.__dict__['event_type'] == 'rearrangement'
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         Event(event_type='combination')
 
 
@@ -58,7 +59,7 @@ def test_linker():
     assert linker1.__dict__['linker_sequence'] == 'ATATGCA'
     assert linker1.__dict__['linker_sequence'].lower() == 'atatgca'
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         Linker(linker_sequence='ATDCHDGH')
 
 
@@ -74,7 +75,7 @@ def test_regulatory():
     assert r2.__dict__['value_id'] == 'hgnc:435'
     assert r2.__dict__['label'] == 'G1'
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         RegulatoryElement(type='notpromoter', value_id='hgnc435', label=5)
 
 
@@ -89,7 +90,7 @@ def test_genomic_region_seq():
     assert vals.__dict__['start'] == 154170399
     assert vals.__dict__['end'] == 1556346346
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         GenomicRegion(value=SequenceLocation(type='GeneLocation',
                                              sequence_id='ncbiNC_000001.11',
                                              start='154170399',
@@ -109,7 +110,7 @@ def test_genomic_region_chr():
     assert vals.__dict__['start'] == 'p12.1'
     assert vals.__dict__['end'] == 'p12.2'
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         GenomicRegion(value=ChromosomeLocation(type='GeneLocation',
                                                species='taxonomy9606',
                                                chr=2, start='s12.1',
@@ -142,7 +143,7 @@ def test_transcript_component():
     assert gr.__dict__['start'] == 'p12.1'
     assert gr.__dict__['end'] == 'p12.2'
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         TranscriptComponent(transcript='nm152263.3', exon_start='1',
                             exon_start_offset='-9',
                             exon_end='8', exon_end_offset='7', gene=4,
@@ -164,7 +165,7 @@ def test_critical_domain():
     assert gen.__dict__['value_id'] == 'hgnc:1'
     assert gen.__dict__['label'] == 'G1'
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         CriticalDomain(status='gained',
                        name='tyrosine kinase catalytic domain',
                        id='interproIPR020635',
@@ -220,7 +221,7 @@ def test_fusion():
            transcript_components=[c1, c2, tr1, linker_seq, tr2],
            causative_event=cause_eve)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
         Fusion(r_frame_preserved='T', regulatory_elements=[5, 5],
                protein_domains=[7, 7],
                transcript_components=[8], causative_event='Event')
