@@ -4,17 +4,44 @@ import pytest
 from fusion.model import GeneDescriptor, SequenceLocation, ChromosomeLocation
 from fusion.model import GenomicRegion, TranscriptComponent, CriticalDomain
 from fusion.model import Event, Linker, UnknownGene, RegulatoryElement, Fusion
+from fusion.model import Extension, GeneValueObject
+
+
+def test_genevalueobject():
+    """Test GeneValueObject"""
+    gen1 = GeneValueObject(id='hgnc:1')
+    assert gen1.__dict__['id'] == 'hgnc:1'
+
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
+        GeneValueObject(id='hgnc1')
+
+
+def test_extension():
+    """Test Extension"""
+    ex1 = Extension(name='strand', value='-')
+    assert ex1.__dict__['name'] == 'strand'
+    assert ex1.__dict__['value'] == '-'
+
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
+        Extension(name=3, value='-')
 
 
 def test_gene_descriptor():
     """Test GeneDescriptor object initializes correctly"""
-    gen1 = GeneDescriptor(value_id='hgnc:1', label='G1')
-    # value_id and label
-    assert gen1.__dict__['value_id'] == 'hgnc:1'
+    gen1 = GeneDescriptor(id='test:g1', value=GeneValueObject(id='hgnc:1497',
+                          type='Gene'), label='G1', xrefs=['ncbi:g1'],
+                          alternate_labels=['gen1'])
+
+    assert gen1.__dict__['id'] == 'test:1'
+    vals = gen1.__dict__['value']
+    assert vals.__dict__['id'] == 'hgnc:1497'
+    assert vals.__dict__['type'] == 'Gene'
     assert gen1.__dict__['label'] == 'G1'
 
     with pytest.raises(pydantic.error_wrappers.ValidationError):
-        GeneDescriptor(value_id='hgnc2', label=5.3)
+        GeneDescriptor(id=1, value=GeneValueObject(id='hgnc1497',
+                       type='Gene'), label='G1', xrefs=['ncbi:g1'],
+                       alternate_labels=['gen1'])
 
 
 def test_sequence_location():
@@ -119,7 +146,8 @@ def test_genomic_region_chr():
 
 def test_transcript_component():
     """Test TranscriptComponent object initializes correctly"""
-    gen1 = GeneDescriptor(value_id='hgnc:1', label='G1')
+    gen1 = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
+                          label='G1')
     g1 = GenomicRegion(value=ChromosomeLocation(type='ChromosomeLocation',
                                                 species='taxonomy:9606',
                                                 chr='12',
@@ -134,8 +162,10 @@ def test_transcript_component():
     assert tr1.__dict__['exon_end'] == 8
     assert tr1.__dict__['exon_end_offset'] == 7
     gen = tr1.__dict__['gene']
-    assert gen.__dict__['value_id'] == 'hgnc:1'
+    assert gen.__dict__['id'] == 'test:1'
     assert gen.__dict__['label'] == 'G1'
+    gv = gen.__dict__['value']
+    assert gv.__dict__['id'] == 'hgnc:1'
     gr = tr1.__dict__['component_genomic_region'].__dict__['value']
     assert gr.__dict__['type'] == 'ChromosomeLocation'
     assert gr.__dict__['species'] == 'taxonomy:9606'
@@ -152,7 +182,8 @@ def test_transcript_component():
 
 def test_critical_domain():
     """Test CriticalDomain object initializes correctly"""
-    gen1 = GeneDescriptor(value_id='hgnc:1', label='G1')
+    gen1 = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
+                          label='G1')
     domain = CriticalDomain(status='preserved',
                             name='tyrosine kinase catalytic domain',
                             id='interpro:IPR020635',
@@ -162,8 +193,10 @@ def test_critical_domain():
     assert domain.__dict__['name'] == 'tyrosine kinase catalytic domain'
     assert domain.__dict__['id'] == 'interpro:IPR020635'
     gen = domain.__dict__['gene']
-    assert gen.__dict__['value_id'] == 'hgnc:1'
+    assert gen.__dict__['id'] == 'test:1'
     assert gen.__dict__['label'] == 'G1'
+    gv = gen.__dict__['value']
+    assert gv.__dict__['id'] == 'hgnc:1'
 
     with pytest.raises(pydantic.error_wrappers.ValidationError):
         CriticalDomain(status='gained',
@@ -174,8 +207,10 @@ def test_critical_domain():
 
 def test_fusion():
     """Test Fusion Object initializes correctly"""
-    gen1 = GeneDescriptor(value_id='hgnc:12012', label='TPM3')
-    gen2 = GeneDescriptor(value_id='hgnc:8031', label='NTRK1')
+    gen1 = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
+                          label='G1')
+    gen2 = GeneDescriptor(id='test:2', value=GeneValueObject(id='hgnc:2'),
+                          label='G2', xrefs=['ncbigene:6', 'ensembl:7'])
     reg1 = RegulatoryElement(type='promoter', value_id='hgnc:100',
                              label='ASIC1')
     reg2 = RegulatoryElement(type='enhancer', value_id='hgnc:200', label='G1')
