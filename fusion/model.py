@@ -7,6 +7,7 @@ from typing import Optional, List, Union
 from gene.schemas import Extension, GeneValueObject, GeneDescriptor
 from gene.schemas import SimpleInterval, CytobandInterval
 from gene.schemas import SequenceLocation, ChromosomeLocation
+from gene.schemas import Location, LocationType
 
 
 class GenomicRegion(BaseModel):
