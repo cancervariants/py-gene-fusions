@@ -3,6 +3,12 @@
 Base Package for Fusion Curation
 
 ### Installation
+
+To install py-gene-fusions:
+```commandline
+pip install py-gene-fusions
+```
+
 For a development install, we recommend using Pipenv. See the 
 [pipenv docs](https://pipenv-fork.readthedocs.io/en/latest/#install-pipenv-today) 
 for direction on installing pipenv in your compute environment.
@@ -12,11 +18,6 @@ Once installed, from the project root dir, just run:
 ```commandline
 pipenv lock
 pipenv sync
-```
-
-To download py-gene-fusions, enter:
-```commandline
-python3 -m pip install -i https://test.pypi.org/simple/ py-gene-fusions
 ```
 
 ### Init coding style tests
