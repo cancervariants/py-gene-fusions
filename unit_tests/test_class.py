@@ -156,7 +156,7 @@ def test_genomic_region_seq():
 def test_genomic_region_chr():
     """Test GenomicRegion object with ChromosomeLocation,"""
     ci = CytobandInterval(start='p12.1', end='p12.2')
-    g1 = GenomicRegion(value=ChromosomeLocation(species='taxonomy:9606',
+    g1 = GenomicRegion(value=ChromosomeLocation(species_id='taxonomy:9606',
                                                 chr='12',
                                                 interval=ci,
                                                 type='ChromosomeLocation'))
@@ -180,7 +180,7 @@ def test_transcript_component():
     gen1 = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
                           label='G1')
     ci = CytobandInterval(start='p12.1', end='p12.2')
-    g1 = GenomicRegion(value=ChromosomeLocation(species='taxonomy:9606',
+    g1 = GenomicRegion(value=ChromosomeLocation(species_id='taxonomy:9606',
                                                 chr='12',
                                                 interval=ci,
                                                 type='ChromosomeLocation'))
