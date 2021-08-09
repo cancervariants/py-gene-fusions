@@ -198,8 +198,9 @@ def test_transcript_component():
     assert gen.__dict__['label'] == 'G1'
     gv = gen.__dict__['value']
     assert gv.__dict__['id'] == 'hgnc:1'
-    gr = tr1.__dict__['component_genomic_region']
+    gr = tr1.__dict__['component_genomic_region'].__dict__['value']
     assert gr.__dict__['species_id'] == 'taxonomy:9606'
+    assert gr.__dict__['type'] == 'ChromosomeLocation'
     assert gr.__dict__['chr'] == '12'
     grc = gr.__dict__['interval']
     assert grc.__dict__['start'] == 'p12.1'
@@ -266,10 +267,10 @@ def test_fusion():
     ex1 = GenomicRegion(value=SequenceLocation(type='SequenceLocation',
                                                sequence_id='ncbi:NC_000001.11',
                                                interval=si))
-    ci = CytobandInterval(start='p12.1', end='p12.2')
+    si2 = SimpleInterval(start=256235, end=296969)
     ex2 = GenomicRegion(value=SequenceLocation(type='SequenceLocation',
                                                sequence_id='ncbi:NC_000001.13',
-                                               interval=ci))
+                                               interval=si2))
 
     tr1 = TranscriptComponent(transcript='nm:152263.3', exon_start=1,
                               exon_start_offset=-9,
