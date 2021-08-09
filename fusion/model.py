@@ -4,66 +4,10 @@ import re
 from pydantic import BaseModel, validator, ValidationError, StrictStr, \
     StrictInt, StrictBool
 from typing import Optional, List, Union
-
-
-class GeneDescriptor(BaseModel):
-    """Define a Gene, denoted by GeneDescriptor"""
-
-    type = 'GeneDescriptor'
-    value_id: str
-    label: StrictStr
-
-    @validator('value_id')
-    def is_valid(cls, v):
-        """Validate value_id"""
-        assert v.count(':') == 1 and v.find(' ') == -1, 'id must be a CURIE'
-        return v
-
-
-class SequenceLocation(BaseModel):
-    """Define SequenceLocation class"""
-
-    type = 'SequenceLocation'
-    sequence_id: str
-    start: StrictInt
-    end: StrictInt
-
-    @validator('sequence_id')
-    def is_curie(cls, v):
-        """Validate sequence_id"""
-        assert v.count(':') == 1 and v.find(' ') == -1, 'chr must be a CURIE'
-        return v
-
-
-class ChromosomeLocation(BaseModel):
-    """Define ChromosomeLocation class"""
-
-    type = 'ChromosomeLocation'
-    species: str
-    chr: str
-    start: str
-    end: str
-
-    @validator('species')
-    def is_curie(cls, v):
-        """Validate species"""
-        assert v.count(':') == 1 and v.find(' ') == -1, 'chr must be a CURIE'
-        return v
-
-    @validator('chr')
-    def valid_chr(cls, v):
-        """Validate chr"""
-        assert v.isalnum(), 'chr must have only alphanumeric characters'
-        return v
-
-    @validator('start', 'end')
-    def valid_loc(cls, v):
-        """Validate start, end"""
-        assert bool(re.match(r"^cen|[pq](ter|([1-9][0-9]*(\.[1-9][0-9]*)?))$",
-                             v)), r'start/end positions must match the ' \
-                                  r'regular expression ^cen|[pq](ter|([1-9]' \
-                                  r'[0-9]*(\.[1-9][0-9]*)?))$'
-        return v
+from gene.schemas import Extension, GeneValueObject, GeneDescriptor
+from gene.schemas import SimpleInterval, CytobandInterval
+from gene.schemas import SequenceLocation, ChromosomeLocation
+from gene.schemas import Location, LocationType
 
 
 class GenomicRegion(BaseModel):
