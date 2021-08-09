@@ -32,7 +32,7 @@ def test_gene_descriptor():
                           type='Gene'), label='G1', xrefs=['ncbi:g1'],
                           alternate_labels=['gen1'])
 
-    assert gen1.__dict__['id'] == 'test:1'
+    assert gen1.__dict__['id'] == 'test:g1'
     vals = gen1.__dict__['value']
     assert vals.__dict__['id'] == 'hgnc:1497'
     assert vals.__dict__['type'] == 'Gene'

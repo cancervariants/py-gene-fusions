@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 pydantic = "*"
-gene-normalizer = ">=0.1.12"
+gene-normalizer = ">=0.1.13"
 
 [dev-packages]
 fusion = {editable = true, path = "."}
