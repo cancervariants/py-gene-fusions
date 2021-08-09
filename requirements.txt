@@ -7,4 +7,5 @@
 
 -i https://pypi.org/simple
 pydantic==1.8.2
+gene-normalizer >= '0.1.13'
 typing-extensions==3.10.0.0

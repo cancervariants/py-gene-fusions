@@ -5,6 +5,27 @@ from fusion.model import GeneDescriptor, SequenceLocation, ChromosomeLocation
 from fusion.model import GenomicRegion, TranscriptComponent, CriticalDomain
 from fusion.model import Event, Linker, UnknownGene, RegulatoryElement, Fusion
 from fusion.model import Extension, GeneValueObject
+from fusion.model import SimpleInterval, CytobandInterval
+
+
+def test_simpleinterval():
+    """Test SimpleInterval object"""
+    s1 = SimpleInterval(start=2, end=5)
+    assert s1.__dict__['start'] == 2
+    assert s1.__dict__['end'] == 5
+
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
+        SimpleInterval(start='s', end='q')
+
+
+def test_cytobandinterval():
+    """Test CytobandInterval object"""
+    c1 = CytobandInterval(start='q17.1', end='q17.2')
+    assert c1.__dict__['start'] == 'q17.1'
+    assert c1.__dict__['end'] == 'q17.2'
+
+    with pytest.raises(pydantic.error_wrappers.ValidationError):
+        SimpleInterval(start=2, end=5)
 
 
 def test_genevalueobject():
@@ -46,29 +67,33 @@ def test_gene_descriptor():
 
 def test_sequence_location():
     """Test SequenceLocation object initializes correctly"""
-    s1 = SequenceLocation(sequence_id='ncbi:NC_000001.11', start=1000,
-                          end=5000)
+    s1 = SequenceLocation(sequence_id='ncbi:NC_000001.11',
+                          interval=SimpleInterval(start=22525, end=252525))
     assert s1.__dict__['sequence_id'] == 'ncbi:NC_000001.11'
-    assert s1.__dict__['start'] == 1000
-    assert s1.__dict__['end'] == 5000
+    si = s1.__dict__['interval']
+    assert si.__dict__['start'] == 22525
+    assert si.__dict__['end'] == 252525
 
     with pytest.raises(pydantic.error_wrappers.ValidationError):
-        SequenceLocation(sequence_id='ncbiNC_000001.11', start=1000.3,
-                         end='5000')
+        SequenceLocation(sequence_id='ncbiNC_000001.11',
+                         interval=SimpleInterval(start='s', end='p'))
 
 
 def test_chromosome_location():
     """Test ChromosomeLocation object initializes correctly"""
-    c1 = ChromosomeLocation(species='taxonomy:4232', chr='5', start='p13.2',
-                            end='p13.5')
+    c1 = ChromosomeLocation(species_ud='taxonomy:4232', chr='5',
+                            interval=CytobandInterval(start='p5.2',
+                                                      end='p5.3'))
     assert c1.__dict__['species'] == 'taxonomy:4232'
     assert c1.__dict__['chr'] == '5'
-    assert c1.__dict__['start'] == 'p13.2'
-    assert c1.__dict__['end'] == 'p13.5'
+    ci = c1.__dict__['interval']
+    assert ci.__dict__['start'] == 'p5.2'
+    assert ci.__dict__['end'] == 'p5.3'
 
     with pytest.raises(pydantic.error_wrappers.ValidationError):
-        ChromosomeLocation(species='taxonomy4232', chr=5, start='s13.2',
-                           end=14)
+        ChromosomeLocation(species_ud='taxonomy:4232', chr='5',
+                           interval=CytobandInterval(start=17,
+                                                     end=18))
 
 
 def test_event():
@@ -108,50 +133,49 @@ def test_regulatory():
 
 def test_genomic_region_seq():
     """Test GenomicRegion object with SequenceLocation"""
-    g1 = GenomicRegion(value=SequenceLocation(type='SequenceLocation',
-                                              sequence_id='ncbi:NC_000001.11',
-                                              start=154170399, end=1556346346))
+    si = SimpleInterval(start=15455, end=15566)
+    g1 = GenomicRegion(value=SequenceLocation(sequence_id='ncbi:NC_000001.11',
+                                              interval=si))
+
     vals = g1.__dict__['value']
-    assert vals.__dict__['type'] == 'SequenceLocation'
     assert vals.__dict__['sequence_id'] == 'ncbi:NC_000001.11'
-    assert vals.__dict__['start'] == 154170399
-    assert vals.__dict__['end'] == 1556346346
+    si = vals.__dict__['interval']
+    assert si.__dict__['start'] == 15455
+    assert si.__dict__['end'] == 15566
 
     with pytest.raises(pydantic.error_wrappers.ValidationError):
-        GenomicRegion(value=SequenceLocation(type='GeneLocation',
-                                             sequence_id='ncbiNC_000001.11',
-                                             start='154170399',
-                                             end='1556346346'))
+        GenomicRegion(value=SequenceLocation(sequence_id='ncbiNC_000001.11',
+                                             interval=si))
 
 
 def test_genomic_region_chr():
     """Test GenomicRegion object with ChromosomeLocation,"""
-    g1 = GenomicRegion(value=ChromosomeLocation(type='ChromosomeLocation',
-                                                species='taxonomy:9606',
+    ci = CytobandInterval(start='p12.1', end='p12.2')
+    g1 = GenomicRegion(value=ChromosomeLocation(species='taxonomy:9606',
                                                 chr='12',
-                                                start='p12.1', end='p12.2'))
+                                                interval=ci))
+
     vals = g1.__dict__['value']
-    assert vals.__dict__['type'] == 'ChromosomeLocation'
     assert vals.__dict__['species'] == 'taxonomy:9606'
     assert vals.__dict__['chr'] == '12'
-    assert vals.__dict__['start'] == 'p12.1'
-    assert vals.__dict__['end'] == 'p12.2'
+    ci = vals.__dict__['interval']
+    assert ci.__dict__['start'] == 'p12.1'
+    assert ci.__dict__['end'] == 'p12.2'
 
     with pytest.raises(pydantic.error_wrappers.ValidationError):
-        GenomicRegion(value=ChromosomeLocation(type='GeneLocation',
-                                               species='taxonomy9606',
-                                               chr=2, start='s12.1',
-                                               end='s12.2'))
+        GenomicRegion(value=ChromosomeLocation(species='taxonomy9606',
+                                               chr=12,
+                                               interval=ci))
 
 
 def test_transcript_component():
     """Test TranscriptComponent object initializes correctly"""
     gen1 = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
                           label='G1')
-    g1 = GenomicRegion(value=ChromosomeLocation(type='ChromosomeLocation',
-                                                species='taxonomy:9606',
+    ci = CytobandInterval(start='p12.1', end='p12.2')
+    g1 = GenomicRegion(value=ChromosomeLocation(species='taxonomy:9606',
                                                 chr='12',
-                                                start='p12.1', end='p12.2'))
+                                                interval=ci))
     tr1 = TranscriptComponent(transcript='nm:152263.3', exon_start=1,
                               exon_start_offset=-9,
                               exon_end=8, exon_end_offset=7, gene=gen1,
@@ -166,12 +190,12 @@ def test_transcript_component():
     assert gen.__dict__['label'] == 'G1'
     gv = gen.__dict__['value']
     assert gv.__dict__['id'] == 'hgnc:1'
-    gr = tr1.__dict__['component_genomic_region'].__dict__['value']
-    assert gr.__dict__['type'] == 'ChromosomeLocation'
+    gr = tr1.__dict__['component_genomic_region']
     assert gr.__dict__['species'] == 'taxonomy:9606'
     assert gr.__dict__['chr'] == '12'
-    assert gr.__dict__['start'] == 'p12.1'
-    assert gr.__dict__['end'] == 'p12.2'
+    grc = gr.__dict__['interval']
+    assert grc.__dict__['start'] == 'p12.1'
+    assert grc.__dict__['end'] == 'p12.2'
 
     with pytest.raises(pydantic.error_wrappers.ValidationError):
         TranscriptComponent(transcript='nm152263.3', exon_start='1',
@@ -222,21 +246,22 @@ def test_fusion():
 
     ur1 = SequenceLocation(type='SequenceLocation',
                            sequence_id='ncbi:NC_000001.11',
-                           start=1000, end=5000)
+                           interval=SimpleInterval(start=1000, end=5000))
     c1 = UnknownGene(region=ur1)
+    cex = CytobandInterval(start='p12.1', end='p12.16')
     ur2 = ChromosomeLocation(type='ChromosomeLocation',
                              species='taxonomy:9606',
-                             chr='12', start='p12.1', end='p12.16')
+                             chr='12',
+                             interval=cex)
     c2 = UnknownGene(region=ur2)
-
+    si = SimpleInterval(start=15455, end=15566)
     ex1 = GenomicRegion(value=SequenceLocation(type='SequenceLocation',
                                                sequence_id='ncbi:NC_000001.11',
-                                               start=154170399,
-                                               end=1556346346))
+                                               interval=si))
+    ci = CytobandInterval(start='p12.1', end='p12.2')
     ex2 = GenomicRegion(value=SequenceLocation(type='SequenceLocation',
                                                sequence_id='ncbi:NC_000001.13',
-                                               start=154170401,
-                                               end=1556346348))
+                                               interval=ci))
 
     tr1 = TranscriptComponent(transcript='nm:152263.3', exon_start=1,
                               exon_start_offset=-9,
