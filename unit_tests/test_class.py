@@ -87,7 +87,7 @@ def test_chromosome_location():
                             interval=CytobandInterval(start='p5.2',
                                                       end='p5.3'),
                             type='ChromosomeLocation')
-    assert c1.__dict__['species'] == 'taxonomy:4232'
+    assert c1.__dict__['species_id'] == 'taxonomy:4232'
     assert c1.__dict__['chr'] == '5'
     ci = c1.__dict__['interval']
     assert ci.__dict__['start'] == 'p5.2'
@@ -162,7 +162,7 @@ def test_genomic_region_chr():
                                                 type='ChromosomeLocation'))
 
     vals = g1.__dict__['value']
-    assert vals.__dict__['species'] == 'taxonomy:9606'
+    assert vals.__dict__['species_id'] == 'taxonomy:9606'
     assert vals.__dict__['chr'] == '12'
     ci = vals.__dict__['interval']
     assert ci.__dict__['start'] == 'p12.1'
@@ -199,7 +199,7 @@ def test_transcript_component():
     gv = gen.__dict__['value']
     assert gv.__dict__['id'] == 'hgnc:1'
     gr = tr1.__dict__['component_genomic_region']
-    assert gr.__dict__['species'] == 'taxonomy:9606'
+    assert gr.__dict__['species_id'] == 'taxonomy:9606'
     assert gr.__dict__['chr'] == '12'
     grc = gr.__dict__['interval']
     assert grc.__dict__['start'] == 'p12.1'
@@ -258,7 +258,7 @@ def test_fusion():
     c1 = UnknownGene(region=ur1)
     cex = CytobandInterval(start='p12.1', end='p12.16')
     ur2 = ChromosomeLocation(type='ChromosomeLocation',
-                             species='taxonomy:9606',
+                             species_id='taxonomy:9606',
                              chr='12',
                              interval=cex)
     c2 = UnknownGene(region=ur2)
