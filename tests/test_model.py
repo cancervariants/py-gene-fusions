@@ -1,5 +1,5 @@
 """Unit testing for fusion class"""
-import pydantic.error_wrappers
+import pydantic
 import pytest
 from fusion.model import GeneDescriptor, SequenceLocation, ChromosomeLocation
 from fusion.model import GenomicRegion, TranscriptComponent, CriticalDomain
