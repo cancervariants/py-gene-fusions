@@ -1,5 +1,5 @@
 [flake8]
-ignore = D205, D400, F401, D100
+ignore = D205, D400
 exclude =
   .git
   venv
