@@ -1,13 +1,35 @@
 """Model for fusion class"""
 import json
-import re
 from pydantic import BaseModel, validator, ValidationError, StrictStr, \
     StrictInt, StrictBool
 from typing import Optional, List, Union
-from gene.schemas import Extension, GeneValueObject, GeneDescriptor
-from gene.schemas import SimpleInterval, CytobandInterval
-from gene.schemas import SequenceLocation, ChromosomeLocation
-from gene.schemas import Location, LocationType
+from gene.schemas import Extension, GeneValueObject, GeneDescriptor, \
+    SimpleInterval, CytobandInterval, SequenceLocation, ChromosomeLocation,\
+    Location, LocationType
+
+
+def check_curie(cls, v):
+    """Validate curies."""
+    if v is not None:
+        def _is_curie(value):
+            """Check that value is a curie
+
+            :param str value: Value to validate
+            """
+            assert all(
+                [
+                    value.count(':') == 1,
+                    value.find(' ') == -1,
+                    value[-1] != ':'
+                ]
+            ), 'must be a CURIE'
+
+        if isinstance(v, str):
+            _is_curie(v)
+        elif isinstance(v, list):
+            for item in v:
+                _is_curie(item)
+    return v
 
 
 class GenomicRegion(BaseModel):
@@ -30,11 +52,8 @@ class TranscriptComponent(BaseModel):
     gene: GeneDescriptor
     component_genomic_region: GenomicRegion
 
-    @validator('transcript')
-    def correct_form(cls, v):
-        """Validate transcript"""
-        assert v.count(':') == 1 and v.find(' ') == -1, 'id must be a CURIE'
-        return v
+    _validate_transcript = \
+        validator('transcript', allow_reuse=True)(check_curie)
 
 
 class CriticalDomain(BaseModel):
@@ -45,18 +64,14 @@ class CriticalDomain(BaseModel):
     id: str
     gene: GeneDescriptor
 
+    _validate_id = validator('id', allow_reuse=True)(check_curie)
+
     @validator('status')
     def correct_status(cls, v):
         """Validate status"""
         assert v.lower() == 'lost' or v == 'preserved', 'status must ' \
                                                         'be either lost ' \
                                                         'or preserved'
-        return v
-
-    @validator('id')
-    def is_valid(cls, v):
-        """Validate id"""
-        assert v.count(':') == 1 and v.find(' ') == -1, 'id must be a CURIE'
         return v
 
 
@@ -103,18 +118,14 @@ class RegulatoryElement(BaseModel):
     value_id: str
     label: StrictStr
 
+    _validate_value_id = validator('value_id', allow_reuse=True)(check_curie)
+
     @validator('type')
     def valid_reg_type(cls, v):
         """Validate type"""
         assert v.lower() == 'promoter' or v == 'enhancer', 'type must be ' \
                                                            'either promoter ' \
                                                            'or enhancer'
-        return v
-
-    @validator('value_id')
-    def valid_id(cls, v):
-        """Validate value_id"""
-        assert v.count(':') == 1 and v.find(' ') == -1, 'id must be a CURIE'
         return v
 
 
