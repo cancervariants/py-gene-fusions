@@ -1,11 +1,9 @@
 """Model for fusion class"""
 import json
-from pydantic import BaseModel, validator, ValidationError, StrictStr, \
-    StrictInt, StrictBool
+from pydantic import BaseModel, validator, StrictStr, StrictInt, StrictBool
 from typing import Optional, List, Union
-from gene.schemas import Extension, GeneValueObject, GeneDescriptor, \
-    SimpleInterval, CytobandInterval, SequenceLocation, ChromosomeLocation,\
-    Location, LocationType
+from gene.schemas import GeneDescriptor, SequenceLocation, ChromosomeLocation,\
+    Extension, GeneValueObject, SimpleInterval, CytobandInterval, Location, LocationType  # noqa: E501, F401
 
 
 def check_curie(cls, v):
