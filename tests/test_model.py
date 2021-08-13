@@ -1,4 +1,4 @@
-"""Unit testing for fusion class"""
+"""Module for testing the fusion model."""
 import pydantic
 import pytest
 from fusion.model import GeneDescriptor, SequenceLocation, ChromosomeLocation
