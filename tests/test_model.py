@@ -1,12 +1,10 @@
-"""Unit testing for fusion class"""
-import pydantic.error_wrappers
+"""Module for testing the fusion model."""
+import pydantic
 import pytest
-from fusion.model import GeneDescriptor, SequenceLocation, ChromosomeLocation
-from fusion.model import GenomicRegion, TranscriptComponent, CriticalDomain
-from fusion.model import Event, Linker, UnknownGene, RegulatoryElement, Fusion
-from fusion.model import Extension, GeneValueObject
-from fusion.model import SimpleInterval, CytobandInterval
-from fusion.model import Location, LocationType
+from fusion.model import GeneDescriptor, SequenceLocation, ChromosomeLocation,\
+    GenomicRegion, TranscriptComponent, CriticalDomain, Event, Linker, \
+    UnknownGene, RegulatoryElement, Fusion, Extension, GeneValueObject,\
+    SimpleInterval, CytobandInterval
 
 
 def test_simpleinterval():

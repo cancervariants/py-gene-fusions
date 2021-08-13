@@ -16,6 +16,3 @@ flake8-docstrings = "*"
 coverage = "*"
 coveralls = "*"
 pytest-cov = "*"
-
-[requires]
-python_version = "3.7"
