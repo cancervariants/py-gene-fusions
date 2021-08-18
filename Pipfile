@@ -8,7 +8,7 @@ pydantic = "*"
 gene-normalizer = ">=0.1.14"
 
 [dev-packages]
-fusion = {editable = true, path = "."}
+fusor = {editable = true, path = "."}
 pytest = "*"
 pre-commit = "*"
 flake8 = "*"

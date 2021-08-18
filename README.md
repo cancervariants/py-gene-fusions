@@ -1,18 +1,18 @@
-# py-gene-fusions
+# FUSOR
 
-Base Package for Fusion Curation
+FUSOR (*FUS*ion *O*bject *R*epresentation) provides modeling and validation tools for representing gene fusions in a flexible, computable structure.
 
 ### Installation
 
-To install py-gene-fusions:
+To install FUSOR:
 ```commandline
-pip install py-gene-fusions
+pip install fusor
 ```
 
-For a development install, we recommend using Pipenv. See the 
-[pipenv docs](https://pipenv-fork.readthedocs.io/en/latest/#install-pipenv-today) 
+For a development install, we recommend using Pipenv. See the
+[pipenv docs](https://pipenv-fork.readthedocs.io/en/latest/#install-pipenv-today)
 for direction on installing pipenv in your compute environment.
- 
+
 Once installed, from the project root dir, just run:
 
 ```commandline
