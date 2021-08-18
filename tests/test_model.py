@@ -1,7 +1,7 @@
 """Module for testing the fusion model."""
 import pydantic
 import pytest
-from fusion.model import GeneDescriptor, SequenceLocation, ChromosomeLocation,\
+from fusor.model import GeneDescriptor, SequenceLocation, ChromosomeLocation,\
     GenomicRegion, TranscriptComponent, CriticalDomain, Event, Linker, \
     UnknownGene, RegulatoryElement, Fusion, Extension, GeneValueObject,\
     SimpleInterval, CytobandInterval
