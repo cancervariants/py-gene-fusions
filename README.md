@@ -1,6 +1,6 @@
 # FUSOR
 
-FUSOR (*FUS*ion *O*bject *R*epresentation) provides modeling and validation tools for representing gene fusions in a flexible, computable structure.
+FUSOR (**FUS**ion **O**bject **R**epresentation) provides modeling and validation tools for representing gene fusions in a flexible, computable structure.
 
 ### Installation
 
