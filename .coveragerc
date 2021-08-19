@@ -1,6 +1,6 @@
 [run]
 source =
-    fusion/
+    fusor/
     unit_tests/
 omit =
     setup.py
