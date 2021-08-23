@@ -1,100 +1,10 @@
 """Module for testing the fusion model."""
 import pydantic
 import pytest
-from fusor.model import GeneDescriptor, SequenceLocation, ChromosomeLocation,\
-    GenomicRegion, TranscriptComponent, CriticalDomain, Event, Linker, \
-    UnknownGene, RegulatoryElement, Fusion, Extension, GeneValueObject,\
-    SimpleInterval, CytobandInterval
-
-
-def test_simpleinterval():
-    """Test SimpleInterval object"""
-    s1 = SimpleInterval(start=2, end=5)
-    assert s1.__dict__['start'] == 2
-    assert s1.__dict__['end'] == 5
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        SimpleInterval(start='s', end='q')
-
-
-def test_cytobandinterval():
-    """Test CytobandInterval object"""
-    c1 = CytobandInterval(start='q17.1', end='q17.2')
-    assert c1.__dict__['start'] == 'q17.1'
-    assert c1.__dict__['end'] == 'q17.2'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        CytobandInterval(start=2, end=5)
-
-
-def test_genevalueobject():
-    """Test GeneValueObject"""
-    gen1 = GeneValueObject(id='hgnc:1')
-    assert gen1.__dict__['id'] == 'hgnc:1'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        GeneValueObject(id='hgnc1')
-
-
-def test_extension():
-    """Test Extension"""
-    ex1 = Extension(name='strand', value='-')
-    assert ex1.__dict__['name'] == 'strand'
-    assert ex1.__dict__['value'] == '-'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        Extension(name=3, value='-')
-
-
-def test_gene_descriptor():
-    """Test GeneDescriptor object initializes correctly"""
-    gen1 = GeneDescriptor(id='test:g1', value=GeneValueObject(id='hgnc:1497',
-                          type='Gene'), label='G1', xrefs=['ncbi:g1'],
-                          alternate_labels=['gen1'])
-
-    assert gen1.__dict__['id'] == 'test:g1'
-    vals = gen1.__dict__['value']
-    assert vals.__dict__['id'] == 'hgnc:1497'
-    assert vals.__dict__['type'] == 'Gene'
-    assert gen1.__dict__['label'] == 'G1'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        GeneDescriptor(id=1, value=GeneValueObject(id='hgnc1497',
-                       type='Gene'), label='G1', xrefs=['ncbi:g1'],
-                       alternate_labels=['gen1'])
-
-
-def test_sequence_location():
-    """Test SequenceLocation object initializes correctly"""
-    s1 = SequenceLocation(sequence_id='ncbi:NC_000001.11',
-                          interval=SimpleInterval(start=22525, end=252525),
-                          type='SequenceLocation')
-    assert s1.__dict__['sequence_id'] == 'ncbi:NC_000001.11'
-    si = s1.__dict__['interval']
-    assert si.__dict__['start'] == 22525
-    assert si.__dict__['end'] == 252525
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        SequenceLocation(sequence_id='ncbiNC_000001.11',
-                         interval=SimpleInterval(start='s', end='p'))
-
-
-def test_chromosome_location():
-    """Test ChromosomeLocation object initializes correctly"""
-    c1 = ChromosomeLocation(species_id='taxonomy:4232', chr='5',
-                            interval=CytobandInterval(start='p5.2',
-                                                      end='p5.3'),
-                            type='ChromosomeLocation')
-    assert c1.__dict__['species_id'] == 'taxonomy:4232'
-    assert c1.__dict__['chr'] == '5'
-    ci = c1.__dict__['interval']
-    assert ci.__dict__['start'] == 'p5.2'
-    assert ci.__dict__['end'] == 'p5.3'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        ChromosomeLocation(species_ud='taxonomy:4232', chr='5',
-                           interval=CytobandInterval(start=17,
-                                                     end=18))
+from gene.schemas import SimpleInterval, SequenceLocation, CytobandInterval, \
+    ChromosomeLocation, GeneDescriptor, GeneValueObject
+from fusor.model import GenomicRegion, TranscriptComponent, CriticalDomain, \
+    Event, Linker, UnknownGene, RegulatoryElement, Fusion
 
 
 def test_event():
