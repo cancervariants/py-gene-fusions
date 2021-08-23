@@ -9,11 +9,12 @@ from fusor.model import GenomicRegion, TranscriptComponent, CriticalDomain, \
 
 def test_event():
     """Test Event object initializes correctly"""
-    event1 = Event(event_type='rearrangement')
-    assert event1.__dict__['event_type'] == 'rearrangement'
+    rearrangement = 'rearrangement'
+    test_event = Event(rearrangement)
+    assert test_event.value == rearrangement
 
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        Event(event_type='combination')
+    with pytest.raises(ValueError):
+        Event('combination')
 
 
 def test_linker():
@@ -124,12 +125,11 @@ def test_transcript_component():
 def test_critical_domain():
     """Test CriticalDomain object initializes correctly"""
     test_gene = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
-                          label='G1')
+                               label='G1')
     test_domain = CriticalDomain(status='preserved',
-                            name='tyrosine kinase catalytic domain',
-                            id='interpro:IPR020635',
-                            gene=test_gene)
-
+                                 name='tyrosine kinase catalytic domain',
+                                 id='interpro:IPR020635',
+                                 gene=test_gene)
 
     assert test_domain.status == 'preserved'
     assert test_domain.name == 'tyrosine kinase catalytic domain'

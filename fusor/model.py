@@ -68,13 +68,11 @@ class Linker(BaseModel):
         return v
 
 
-
 class UnknownGene(BaseModel):
     """Define UnknownGene class"""
 
     component_type = 'unknown_gene'
     region: Optional[Union[SequenceLocation, ChromosomeLocation]]
-
 
 
 class DomainStatus(str, Enum):
@@ -95,19 +93,12 @@ class CriticalDomain(BaseModel):
     _validate_id = validator('id', allow_reuse=True)(check_curie)
 
 
-class Event(BaseModel):
+class Event(Enum):
     """Define Event class (causative event)"""
 
-    event_type: str
-
-    @validator('event_type')
-    def event_validate(cls, v):
-        """Validate event_type"""
-        assert v.lower() == 'rearrangement' or v == 'read-through' or \
-               v == 'trans-splicing', 'event entry must be one of ' \
-                                      'rearrangement, read-through, ' \
-                                      'or trans-splicing'
-        return v
+    REARRANGEMENT = 'rearrangement'
+    READTHROUGH = 'read-through'
+    TRANSSPLICING = 'trans-splicing'
 
 
 class RegulatoryElement(BaseModel):
