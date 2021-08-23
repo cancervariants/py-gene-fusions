@@ -101,22 +101,21 @@ class Event(Enum):
     TRANSSPLICING = 'trans-splicing'
 
 
+class RegulatoryElementType(Enum):
+    """Define possible types of Regulatory Elements."""
+
+    PROMOTER = 'promoter'
+    ENHANCER = 'enhancer'
+
+
 class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class"""
 
-    type: str
+    type: RegulatoryElementType
     value_id: str
     label: StrictStr
 
     _validate_value_id = validator('value_id', allow_reuse=True)(check_curie)
-
-    @validator('type')
-    def valid_reg_type(cls, v):
-        """Validate type"""
-        assert v.lower() == 'promoter' or v == 'enhancer', 'type must be ' \
-                                                           'either promoter ' \
-                                                           'or enhancer'
-        return v
 
 
 class Fusion(BaseModel):

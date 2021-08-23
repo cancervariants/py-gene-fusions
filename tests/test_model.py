@@ -29,15 +29,17 @@ def test_linker():
 
 def test_regulatory():
     """Test RegulatoryElement object initializes correctly"""
-    r1 = RegulatoryElement(type='promoter', value_id='hgnc:435', label='G1')
-    r2 = RegulatoryElement(type='enhancer', value_id='hgnc:435', label='G1')
+    test_reg_elmt = RegulatoryElement(type='promoter', value_id='hgnc:435',
+                                      label='G1')
+    assert test_reg_elmt.type.value == 'promoter'
+    assert test_reg_elmt.value_id == 'hgnc:435'
+    assert test_reg_elmt.label == 'G1'
 
-    assert r1.__dict__['type'] == 'promoter'
-    assert r1.__dict__['value_id'] == 'hgnc:435'
-    assert r1.__dict__['label'] == 'G1'
-    assert r2.__dict__['type'] == 'enhancer'
-    assert r2.__dict__['value_id'] == 'hgnc:435'
-    assert r2.__dict__['label'] == 'G1'
+    test_reg_elmt = RegulatoryElement(type='enhancer', value_id='hgnc:435',
+                                      label='G1')
+    assert test_reg_elmt.type.value == 'enhancer'
+    assert test_reg_elmt.value_id == 'hgnc:435'
+    assert test_reg_elmt.label == 'G1'
 
     with pytest.raises(pydantic.error_wrappers.ValidationError):
         RegulatoryElement(type='notpromoter', value_id='hgnc435', label=5)
