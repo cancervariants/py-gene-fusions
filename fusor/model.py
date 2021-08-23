@@ -2,8 +2,8 @@
 import json
 from pydantic import BaseModel, validator, StrictStr, StrictInt, StrictBool
 from typing import Optional, List, Union
-from gene.schemas import GeneDescriptor, SequenceLocation, ChromosomeLocation,\
-    Extension, GeneValueObject, SimpleInterval, CytobandInterval, Location, LocationType  # noqa: E501, F401
+from gene.schemas import GeneDescriptor, SequenceLocation, ChromosomeLocation
+from enum import Enum
 
 
 def check_curie(cls, v):
@@ -54,23 +54,45 @@ class TranscriptComponent(BaseModel):
         validator('transcript', allow_reuse=True)(check_curie)
 
 
+class Linker(BaseModel):
+    """Define Linker class (linker sequence)"""
+
+    linker_sequence: str
+    component_type = 'linker_sequence'
+
+    @validator('linker_sequence')
+    def valid_input(cls, v):
+        """Validate linker_sequence"""
+        assert set(v.upper()) <= set('ACGT'), 'Linker sequence must ' \
+                                              'only contain A,C,G,T'
+        return v
+
+
+
+class UnknownGene(BaseModel):
+    """Define UnknownGene class"""
+
+    component_type = 'unknown_gene'
+    region: Optional[Union[SequenceLocation, ChromosomeLocation]]
+
+
+
+class DomainStatus(str, Enum):
+    """Define possible statuses of critical domains."""
+
+    LOST = "lost"
+    PRESERVED = "preserved"
+
+
 class CriticalDomain(BaseModel):
     """Define CriticalDomain class"""
 
-    status: StrictStr
+    status: DomainStatus
     name: str
     id: str
     gene: GeneDescriptor
 
     _validate_id = validator('id', allow_reuse=True)(check_curie)
-
-    @validator('status')
-    def correct_status(cls, v):
-        """Validate status"""
-        assert v.lower() == 'lost' or v == 'preserved', 'status must ' \
-                                                        'be either lost ' \
-                                                        'or preserved'
-        return v
 
 
 class Event(BaseModel):
@@ -86,27 +108,6 @@ class Event(BaseModel):
                                       'rearrangement, read-through, ' \
                                       'or trans-splicing'
         return v
-
-
-class Linker(BaseModel):
-    """Define Linker class (linker sequence)"""
-
-    linker_sequence: str
-    component_type = 'linker_sequence'
-
-    @validator('linker_sequence')
-    def valid_input(cls, v):
-        """Validate linker_sequence"""
-        assert set(v.upper()) <= set('ACGT'), 'Linker sequence must ' \
-                                              'only contain A,C,G,T'
-        return v
-
-
-class UnknownGene(BaseModel):
-    """Define UnknownGene class"""
-
-    component_type = 'unknown_gene'
-    region: Optional[Union[SequenceLocation, ChromosomeLocation]]
 
 
 class RegulatoryElement(BaseModel):

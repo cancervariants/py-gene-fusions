@@ -123,21 +123,20 @@ def test_transcript_component():
 
 def test_critical_domain():
     """Test CriticalDomain object initializes correctly"""
-    gen1 = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
+    test_gene = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
                           label='G1')
-    domain = CriticalDomain(status='preserved',
+    test_domain = CriticalDomain(status='preserved',
                             name='tyrosine kinase catalytic domain',
                             id='interpro:IPR020635',
-                            gene=gen1)
+                            gene=test_gene)
 
-    assert domain.__dict__['status'] == 'preserved'
-    assert domain.__dict__['name'] == 'tyrosine kinase catalytic domain'
-    assert domain.__dict__['id'] == 'interpro:IPR020635'
-    gen = domain.__dict__['gene']
-    assert gen.__dict__['id'] == 'test:1'
-    assert gen.__dict__['label'] == 'G1'
-    gv = gen.__dict__['value']
-    assert gv.__dict__['id'] == 'hgnc:1'
+
+    assert test_domain.status == 'preserved'
+    assert test_domain.name == 'tyrosine kinase catalytic domain'
+    assert test_domain.id == 'interpro:IPR020635'
+    assert test_domain.gene.id == 'test:1'
+    assert test_domain.gene.label == 'G1'
+    assert test_domain.gene.value.id == 'hgnc:1'
 
     with pytest.raises(pydantic.error_wrappers.ValidationError):
         CriticalDomain(status='gained',
