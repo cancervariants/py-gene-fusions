@@ -291,6 +291,15 @@ class Fusion(BaseModel):
     causative_event: Optional[Event]
     regulatory_elements: Optional[List[RegulatoryElement]]
 
+    @validator('transcript_components')
+    def transcript_components_length(cls, v):
+        """Ensure >=2 transcript components"""
+        if len(v) < 2:
+            raise ValueError('Fusion must contain at least 2 transcript '
+                             'components.')
+        else:
+            return v
+
     def make_json(self):
         """JSON helper function"""
         return json.dumps(self, default=lambda o: o.__dict__, indent=4)

@@ -431,3 +431,9 @@ def test_fusion(critical_domains, transcript_segments,
             'causative_event': 'rearrangement',
             'regulatory_elements': [regulatory_elements[0]]
         })
+
+    # must have >= 2 components
+    with pytest.raises(ValidationError):
+        assert Fusion(**{
+            'transcript_components': [unknown_component]
+        })
