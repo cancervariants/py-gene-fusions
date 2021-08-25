@@ -11,7 +11,7 @@ from variation.schemas.ga4gh_vrs import SequenceState
 def check_curie(cls, v):
     """Validate curies."""
     if v is not None:
-        def _is_curie(value):
+        def _is_curie(value: str):
             """Check that value is a curie
 
             :param str value: Value to validate
@@ -118,7 +118,12 @@ class TranscriptSegmentComponent(TranscriptComponent):
                 'exon_start_offset': 0,
                 'exon_end': 8,
                 'exon_end_offset': 0,
-                'gene': 'TPM3',
+                'gene': {
+                    'id': 'gene:TPM3',
+                    'value_id': 'hgnc:12012',
+                    'type': 'GeneDescriptor',
+                    'label': 'TPM3',
+                },
                 'component_genomic_region': {
                     'type': 'LocationDescription',
                     'value': {
@@ -371,7 +376,12 @@ class Fusion(BaseModel):
                         'exon_start_offset': 0,
                         'exon_end': 8,
                         'exon_end_offset': 0,
-                        'gene': 'TPM3',
+                        'gene': {
+                            'id': 'gene:TPM3',
+                            'value_id': 'hgnc:12012',
+                            'type': 'GeneDescriptor',
+                            'label': 'TPM3',
+                        },
                         'component_genomic_region': {
                             'type': 'LocationDescription',
                             'value': {

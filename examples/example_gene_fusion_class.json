@@ -21,7 +21,12 @@
             "exon_start_offset": 0,
             "exon_end": 8,
             "exon_end_offset": 0,
-            "gene": "TPM3",
+            "gene": {
+                "id": "gene:TPM3",
+                "value_id": "hgnc:12012",
+                "type": "GeneDescriptor",
+                "label": "TPM3",
+            },
             "component_genomic_region": {
                 "type": "LocationDescription",
                "value": {
