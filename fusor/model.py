@@ -1,9 +1,11 @@
 """Model for fusion class"""
 import json
-from pydantic import BaseModel, validator, StrictInt, StrictBool
+from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
+    root_validator
 from typing import Optional, List, Union
 from gene.schemas import GeneDescriptor, SequenceLocation, ChromosomeLocation
 from enum import Enum
+from variation.schemas.ga4gh_vrs import SequenceState
 
 
 def check_curie(cls, v):
@@ -131,18 +133,39 @@ class TranscriptSegmentComponent(TranscriptComponent):
             }
 
 
+class SequenceDescriptor(BaseModel):
+    """Define Sequence Descriptor class per VRSATILE specification."""
+
+    id: StrictStr
+    type = 'SequenceDescriptor'
+    value: Optional[SequenceState]
+    value_id: Optional[StrictStr]
+    residue_type = 'SO:0000348'
+
+    _validate_id = validator('id', allow_reuse=True)(check_curie)
+    _validate_value_id = validator('value_id', allow_reuse=True)(check_curie)
+
+    @root_validator(pre=True)
+    def check_value_or_value_id_present(cls, values):
+        """Check that at least one of {`value`, `value_id`} is provided."""
+        msg = 'Must give values for either `value`, `value_id`, or both'
+        value, value_id = values.get('value'), values.get('value_id')
+        assert value or value_id, msg
+        return values
+
+    @validator('value')
+    def check_dna_nucleobases(cls, v):
+        """Check that sequence consists of DNA nucleobases only"""
+        msg = 'Linker sequence must consist only of {A,C,G,T}'
+        assert set(v.sequence.upper()) <= set('ACGT'), msg
+        return v
+
+
 class LinkerComponent(TranscriptComponent):
     """Define Linker class (linker sequence)"""
 
     component_type = 'linker_sequence'
-    sequence: str
-
-    @validator('sequence')
-    def valid_input(cls, v):
-        """Validate linker_sequence"""
-        assert set(v.upper()) <= set('ACGT'), 'Linker sequence must ' \
-                                              'only contain A,C,G,T'
-        return v
+    linker_sequence: SequenceDescriptor
 
     class Config:
         """Configure class."""
@@ -156,7 +179,15 @@ class LinkerComponent(TranscriptComponent):
                 prop.pop('title', None)
             schema['example'] = {
                 'component_type': 'linker_sequence',
-                'sequence': 'AGCTC'
+                'linker_sequence': {
+                    'id': 'sequence:ACGT',
+                    'type': 'SequenceDescriptor',
+                    'value': {
+                        'sequence': 'ACGT',
+                        'type': 'SequenceState',
+                    },
+                    'residue_type': 'SO:0000348'
+                }
             }
 
 

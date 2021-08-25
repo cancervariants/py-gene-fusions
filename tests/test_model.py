@@ -3,7 +3,8 @@ from pydantic import ValidationError
 import pytest
 from fusor.model import GenomicRegion, TranscriptSegmentComponent, \
     GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
-    LinkerComponent, CriticalDomain, Event, RegulatoryElement, Fusion
+    LinkerComponent, SequenceDescriptor, CriticalDomain, Event, \
+    RegulatoryElement, Fusion
 
 
 @pytest.fixture(scope='module')
@@ -170,16 +171,41 @@ def genomic_region_components():
 
 
 @pytest.fixture(scope='module')
-def linkers():
+def sequence_descriptors():
+    """Provide possible SequenceDescriptor input data"""
+    return [
+        {
+            'id': 'sequence:ACGT',
+            'type': 'SequenceDescriptor',
+            'value': {
+                'sequence': 'ACGT',
+                'type': 'SequenceState',
+            },
+            'residue_type': 'SO:0000348'
+        },
+        {
+            'id': 'sequence:ATGTA',
+            'type': 'SequenceDescriptor',
+            'value': {
+                'sequence': 'ATGTA',
+                'type': 'SequenceState',
+            },
+            'residue_type': 'SO:0000348'
+        }
+    ]
+
+
+@pytest.fixture(scope='module')
+def linkers(sequence_descriptors):
     """Provide possible linker component input data."""
     return [
         {
             'component_type': 'linker_sequence',
-            'sequence': 'ATCTGT',
+            'linker_sequence': sequence_descriptors[0]
         },
         {
             'component_type': 'linker_sequence',
-            'sequence': 'ATGTGA'
+            'linker_sequence': sequence_descriptors[1]
         }
     ]
 
@@ -305,15 +331,37 @@ def test_transcript_segment_component(transcript_segments):
         })
 
 
+def test_sequence_descriptor(sequence_descriptors):
+    """Test that SequenceDescriptor objects initialize correctly"""
+    test_descriptor = SequenceDescriptor(**sequence_descriptors[0])
+    assert test_descriptor.id == 'sequence:ACGT'
+    assert test_descriptor.type == 'SequenceDescriptor'
+    assert test_descriptor.value.sequence == 'ACGT'
+    assert test_descriptor.value.type == 'SequenceState'
+    assert test_descriptor.residue_type == 'SO:0000348'
+
+
 def test_linker_component(linkers):
     """Test Linker object initializes correctly"""
-    test_component = LinkerComponent(**linkers[1])
-    assert test_component.sequence == 'ATGTGA'
-    assert test_component.component_type == 'linker_sequence'
+    test_linker = LinkerComponent(**linkers[0])
+    assert test_linker.component_type == 'linker_sequence'
+    assert test_linker.linker_sequence.id == 'sequence:ACGT'
+    assert test_linker.linker_sequence.type == 'SequenceDescriptor'
+    assert test_linker.linker_sequence.value.sequence == 'ACGT'
+    assert test_linker.linker_sequence.value.type == 'SequenceState'
+    assert test_linker.linker_sequence.residue_type == 'SO:0000348'
 
     # check base validation
     with pytest.raises(ValidationError):
-        LinkerComponent(**{'sequence': 'ATDCHDGH'})
+        LinkerComponent(**{
+            'linker_sequence':
+                {
+                    'id': 'sequence:ABGT',
+                    'value': {
+                        'sequence': 'ABGT'
+                    }
+                }
+        })
 
 
 def test_genomic_region_component(genomic_region_components):
