@@ -155,17 +155,27 @@ def genomic_region_components():
     """Provide possible genomic_region component input data."""
     return [
         {
-            'chr': '12',
-            'strand': '+',
-            'start': 39408,
-            'end': 388888
+            'component_type': 'genomic_region',
+            'region': {
+                'type': 'SequenceLocation',
+                'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',
+                'interval': {
+                    'start': 39408,
+                    'end': 39414,
+                    'type': 'SimpleInterval'
+                }
+            }
         },
         {
             'component_type': 'genomic_region',
-            'chr': '20',
-            'strand': '+',
-            'start': 399,
-            'end': 582
+            'region': {
+                'type': 'SequenceLocation',
+                'sequence_id': 'ga4gh:SQ.ss8r_wB0-b9r44TQTMmVTI92884QvBiB',
+                'interval': {
+                    'start': 399,
+                    'end': 410,
+                }
+            }
         }
     ]
 
@@ -368,18 +378,14 @@ def test_genomic_region_component(genomic_region_components):
     """Test that GenomicRegionComponent initializes correctly."""
     test_component = GenomicRegionComponent(**genomic_region_components[0])
     assert test_component.component_type == 'genomic_region'
-    assert test_component.chr == '12'
-    assert test_component.strand.value == '+'
-    assert test_component.start == 39408
-    assert test_component.end == 388888
+    assert test_component.region.type == 'SequenceLocation'
+    assert test_component.region.sequence_id == 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl'  # noqa: E501
+    assert test_component.region.interval.start == 39408
+    assert test_component.region.interval.end == 39414
+    assert test_component.region.interval.type == 'SimpleInterval'
 
-    # test strand constraint
     with pytest.raises(ValidationError):
         GenomicRegionComponent(**{
-            'chr': '12',
-            'strand': 'positive',
-            'start': 38,
-            'end': 40,
         })
 
 

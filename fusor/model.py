@@ -197,21 +197,11 @@ class LinkerComponent(TranscriptComponent):
             }
 
 
-class Strand(Enum):
-    """Define valid Strand values."""
-
-    POSITIVE = '+'
-    NEGATIVE = '-'
-
-
 class GenomicRegionComponent(TranscriptComponent):
     """Define GenomicRegion component class."""
 
     component_type = 'genomic_region'
-    chr: StrictStr
-    strand: Strand
-    start: StrictInt
-    end: StrictInt
+    region: SequenceLocation
 
     class Config:
         """Configure class."""
@@ -225,10 +215,15 @@ class GenomicRegionComponent(TranscriptComponent):
                 prop.pop('title', None)
             schema['example'] = {
                 'component_type': 'genomic_region',
-                'chr': '12',
-                'strand': '+',
-                'start': 3498,
-                'end': 3500
+                'region': {
+                    'type': 'SequenceLocation',
+                    'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',
+                    'interval': {
+                        'type': 'SimpleInterval',
+                        'start': 44908821,
+                        'end': 44908822,
+                    },
+                }
             }
 
 
