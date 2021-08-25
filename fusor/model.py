@@ -81,8 +81,7 @@ class TranscriptComponent(BaseModel):
 class GenomicRegion(BaseModel):
     """Define GenomicRegion class"""
 
-    type = 'LocationDescription'
-    description: Optional[StrictStr] = None
+    type = 'LocationDescriptor'
     value: Union[SequenceLocation, ChromosomeLocation]
 
 
@@ -125,7 +124,7 @@ class TranscriptSegmentComponent(TranscriptComponent):
                     'label': 'TPM3',
                 },
                 'component_genomic_region': {
-                    'type': 'LocationDescription',
+                    'type': 'LocationDescriptor',
                     'value': {
                         'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                         'type': 'SequenceLocation',
@@ -378,7 +377,7 @@ class Fusion(BaseModel):
                             'label': 'TPM3',
                         },
                         'component_genomic_region': {
-                            'type': 'LocationDescription',
+                            'type': 'LocationDescriptor',
                             'value': {
                                 'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                                 'type': 'SequenceLocation',

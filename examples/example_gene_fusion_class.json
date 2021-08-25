@@ -28,7 +28,7 @@
                 "label": "TPM3",
             },
             "component_genomic_region": {
-                "type": "LocationDescription",
+                "type": "LocationDescriptor",
                "value": {
                     "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
                     "type": "SequenceLocation",

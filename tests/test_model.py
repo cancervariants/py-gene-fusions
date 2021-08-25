@@ -264,7 +264,7 @@ def test_genomic_region(genomic_regions):
     """Test GenomicRegion class."""
     # check with SequenceLocation
     test_region = GenomicRegion(**genomic_regions[0])
-    assert test_region.type == 'LocationDescription'
+    assert test_region.type == 'LocationDescriptor'
     assert test_region.value.sequence_id == 'ncbi:NC_000001.11'
     assert test_region.value.interval.start == 15455
     assert test_region.value.interval.end == 15566
@@ -285,7 +285,7 @@ def test_genomic_region(genomic_regions):
     # check with ChromosomeLocation
     test_region = GenomicRegion(**genomic_regions[1])
     assert test_region.description is None
-    assert test_region.type == 'LocationDescription'
+    assert test_region.type == 'LocationDescriptor'
     assert test_region.value.species_id == 'taxonomy:9606'
     assert test_region.value.chr == '12'
     assert test_region.value.interval.start == 'p12.1'
