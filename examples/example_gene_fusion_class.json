@@ -8,7 +8,8 @@
             "gene": {
                 "id": "gene:CST1",
                 "value_id": "hgnc:2743",
-                "label": "CST1"
+                "label": "CST1",
+                "type": "GeneDescriptor",
             }
         }
     ],
@@ -38,6 +39,7 @@
             "component_type": "gene",
             "gene": {
                 "id": "gene:ALK",
+                "type": "GeneDescriptor",
                 "value_id": "hgnc:427",
                 "label": "ALK"
             }
@@ -65,6 +67,7 @@
             "component_type": "gene",
             "gene": {
                 "id": "gene:BRAF",
+                "type": "GeneDescriptor",
                 "value_id": "hgnc:1097",
                 "label": "BRAF"
             }
@@ -76,6 +79,7 @@
             "type": "promoter",
             "gene": {
                 "id": "gene:BRAF",
+                "type": "GeneDescriptor",
                 "value_id": "hgnc:1097",
                 "label": "BRAF"
             }

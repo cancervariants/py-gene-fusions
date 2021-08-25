@@ -43,8 +43,8 @@ class CriticalDomain(BaseModel):
     """Define CriticalDomain class"""
 
     status: DomainStatus
-    name: str
-    id: str
+    name: StrictStr
+    id: StrictStr
     gene: GeneDescriptor
 
     _validate_id = validator('id', allow_reuse=True)(check_curie)
@@ -66,7 +66,8 @@ class CriticalDomain(BaseModel):
                 'gene': {
                     'id': 'gene:CST1',
                     'value_id': 'hgnc:2743',
-                    'label': 'CST1'
+                    'label': 'CST1',
+                    'type': 'GeneDescriptor',
                 }
             }
 
@@ -81,7 +82,7 @@ class GenomicRegion(BaseModel):
     """Define GenomicRegion class"""
 
     type = 'LocationDescription'
-    description: Optional[str] = None
+    description: Optional[StrictStr] = None
     value: Union[SequenceLocation, ChromosomeLocation]
 
 
@@ -89,7 +90,7 @@ class TranscriptSegmentComponent(TranscriptComponent):
     """Define TranscriptSegment class"""
 
     component_type = 'transcript_segment'
-    transcript: str
+    transcript: StrictStr
     exon_start: StrictInt
     exon_start_offset: StrictInt = 0
     exon_end: StrictInt
@@ -202,7 +203,7 @@ class GenomicRegionComponent(TranscriptComponent):
     """Define GenomicRegion component class."""
 
     component_type = 'genomic_region'
-    chr: str
+    chr: StrictStr
     strand: Strand
     start: StrictInt
     end: StrictInt
@@ -247,7 +248,8 @@ class GeneComponent(TranscriptComponent):
                 'gene': {
                     'id': 'gene:BRAF',
                     'value_id': 'hgnc:1097',
-                    'label': 'BRAF'
+                    'label': 'BRAF',
+                    'type': 'GeneDescriptor',
                 }
             }
 
@@ -308,7 +310,8 @@ class RegulatoryElement(BaseModel):
                 'gene': {
                     'id': 'gene:BRAF',
                     'value_id': 'hgnc:1097',
-                    'label': 'BRAF'
+                    'label': 'BRAF',
+                    'type': 'GeneDescriptor',
                 }
             }
 
@@ -355,7 +358,8 @@ class Fusion(BaseModel):
                         'gene': {
                             'id': 'gene:CST1',
                             'value_id': 'hgnc:2743',
-                            'label': 'CST1'
+                            'label': 'CST1',
+                            'type': 'GeneDescriptor',
                         }
                     }
                 ],
@@ -385,6 +389,7 @@ class Fusion(BaseModel):
                         'component_type': 'gene',
                         'gene': {
                             'id': 'gene:ALK',
+                            'type': 'GeneDescriptor',
                             'value_id': 'hgnc:427',
                             'label': 'ALK'
                         }
@@ -396,6 +401,7 @@ class Fusion(BaseModel):
                         'type': 'promoter',
                         'gene': {
                             'id': 'gene:BRAF',
+                            'type': 'GeneDescriptor',
                             'value_id': 'hgnc:1097',
                             'label': 'BRAF'
                         }
