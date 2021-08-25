@@ -127,7 +127,7 @@ class TranscriptSegmentComponent(TranscriptComponent):
                 'component_genomic_region': {
                     'type': 'LocationDescription',
                     'value': {
-                        'sequence_id': '',
+                        'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                         'type': 'SequenceLocation',
                         'interval': {
                             'start': 154192135,
@@ -385,7 +385,7 @@ class Fusion(BaseModel):
                         'component_genomic_region': {
                             'type': 'LocationDescription',
                             'value': {
-                                'sequence_id': '',
+                                'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                                 'type': 'SequenceLocation',
                                 'interval': {
                                     'start': 154192135,
