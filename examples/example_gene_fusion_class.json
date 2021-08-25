@@ -63,10 +63,15 @@
         },
         {
             "component_type": "genomic_region",
-            "chr": "12",
-            "strand": "+",
-            "start": 3498,
-            "end": 3500
+            "region": {
+                "type": "SequenceLocation",
+                "sequence_id": "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+                "interval": {
+                    "type": "SimpleInterval",
+                    "start": 44908821,
+                    "end": 44908822,
+                },
+            }
         },
         {
             "component_type": "gene",
