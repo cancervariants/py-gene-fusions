@@ -386,6 +386,13 @@ def test_genomic_region_component(genomic_region_components):
 
     with pytest.raises(ValidationError):
         GenomicRegionComponent(**{
+            'region': {
+                'interval': {
+                    'start': 39408,
+                    'stop': 39414
+                }
+            },
+            'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl'
         })
 
 
