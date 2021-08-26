@@ -1,294 +1,485 @@
 """Module for testing the fusion model."""
-import pydantic
+from pydantic import ValidationError
 import pytest
-from fusor.model import GeneDescriptor, SequenceLocation, ChromosomeLocation,\
-    GenomicRegion, TranscriptComponent, CriticalDomain, Event, Linker, \
-    UnknownGene, RegulatoryElement, Fusion, Extension, GeneValueObject,\
-    SimpleInterval, CytobandInterval
+from fusor.model import LocationDescriptor, TranscriptSegmentComponent, \
+    GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
+    LinkerComponent, SequenceDescriptor, CriticalDomain, Event, \
+    RegulatoryElement, Fusion
 
 
-def test_simpleinterval():
-    """Test SimpleInterval object"""
-    s1 = SimpleInterval(start=2, end=5)
-    assert s1.__dict__['start'] == 2
-    assert s1.__dict__['end'] == 5
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        SimpleInterval(start='s', end='q')
-
-
-def test_cytobandinterval():
-    """Test CytobandInterval object"""
-    c1 = CytobandInterval(start='q17.1', end='q17.2')
-    assert c1.__dict__['start'] == 'q17.1'
-    assert c1.__dict__['end'] == 'q17.2'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        CytobandInterval(start=2, end=5)
-
-
-def test_genevalueobject():
-    """Test GeneValueObject"""
-    gen1 = GeneValueObject(id='hgnc:1')
-    assert gen1.__dict__['id'] == 'hgnc:1'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        GeneValueObject(id='hgnc1')
+@pytest.fixture(scope='module')
+def gene_descriptors():
+    """Provide possible gene_descriptor input."""
+    return [
+        {
+            'id': 'gene:G1',
+            'value': {'id': 'hgnc:9339'},
+            'label': 'G1'
+        },
+        {
+            'id': 'gene:ABL',
+            'value': {'id': 'hgnc:76'},
+            'label': 'ABL'
+        },
+        {
+            'id': 'gene:BCR1',
+            'value': {'id': 'hgnc:1014'},
+            'label': 'BCR1'
+        },
+        {
+            'id': 'gene:NTRK1',
+            'value_id': 'hgnc:8031',
+            'label': 'NTRK1'
+        }
+    ]
 
 
-def test_extension():
-    """Test Extension"""
-    ex1 = Extension(name='strand', value='-')
-    assert ex1.__dict__['name'] == 'strand'
-    assert ex1.__dict__['value'] == '-'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        Extension(name=3, value='-')
-
-
-def test_gene_descriptor():
-    """Test GeneDescriptor object initializes correctly"""
-    gen1 = GeneDescriptor(id='test:g1', value=GeneValueObject(id='hgnc:1497',
-                          type='Gene'), label='G1', xrefs=['ncbi:g1'],
-                          alternate_labels=['gen1'])
-
-    assert gen1.__dict__['id'] == 'test:g1'
-    vals = gen1.__dict__['value']
-    assert vals.__dict__['id'] == 'hgnc:1497'
-    assert vals.__dict__['type'] == 'Gene'
-    assert gen1.__dict__['label'] == 'G1'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        GeneDescriptor(id=1, value=GeneValueObject(id='hgnc1497',
-                       type='Gene'), label='G1', xrefs=['ncbi:g1'],
-                       alternate_labels=['gen1'])
+@pytest.fixture(scope='module')
+def critical_domains(gene_descriptors):
+    """Provide possible critical_domains input."""
+    return [
+        {
+            'status': 'preserved',
+            'name': 'phlebovirus glycoprotein g1',
+            'id': 'interpro:IPR010826',
+            'gene': gene_descriptors[0]
+        },
+        {
+            'status': 'lost',
+            'name': 'tyrosine kinase catalytic domain',
+            'id': 'interpro:IPR020635',
+            'gene': gene_descriptors[3]
+        }
+    ]
 
 
-def test_sequence_location():
-    """Test SequenceLocation object initializes correctly"""
-    s1 = SequenceLocation(sequence_id='ncbi:NC_000001.11',
-                          interval=SimpleInterval(start=22525, end=252525),
-                          type='SequenceLocation')
-    assert s1.__dict__['sequence_id'] == 'ncbi:NC_000001.11'
-    si = s1.__dict__['interval']
-    assert si.__dict__['start'] == 22525
-    assert si.__dict__['end'] == 252525
+@pytest.fixture(scope='module')
+def location_descriptors():
+    """Provide possible genomic_region input."""
+    return [
+        {
+            'id': 'NC_000001.11:15455-15566',
+            'type': 'LocationDescriptor',
+            'value': {
+                'sequence_id': 'ncbi:NC_000001.11',
+                'interval': {'start': 15455, 'end': 15566},
+                'type': 'SequenceLocation'
+            },
+            'label': 'NC_000001.11:15455-15566',
+        },
+        {
+            'id': 'chr12:p12.1-p12.2',
+            'type': 'LocationDescriptor',
+            'value': {
+                'species_id': 'taxonomy:9606',
+                'chr': '12',
+                'interval': {'start': 'p12.1', 'end': 'p12.2'}
+            },
+            'label': 'chr12:p12.1-p12.2',
+        },
+    ]
 
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        SequenceLocation(sequence_id='ncbiNC_000001.11',
-                         interval=SimpleInterval(start='s', end='p'))
+
+@pytest.fixture(scope='module')
+def transcript_segments(location_descriptors):
+    """Provide possible transcript_segment input."""
+    return [
+        {
+            'transcript': 'refseq:NM_152263.3',
+            'exon_start': 1,
+            'exon_start_offset': -9,
+            'exon_end': 8,
+            'exon_end_offset': 7,
+            'gene': {'id': 'test:1', 'value': {'id': 'hgnc:1'}, 'label': 'G1'},
+            'component_genomic_region': location_descriptors[1]
+        },
+        {
+            'component_type': 'transcript_segment',
+            'transcript': 'refseq:NM_034348.3',
+            'exon_start': 1,
+            'exon_end': 8,
+            'gene': {
+                'id': 'gene:NTRK1',
+                'value_id': 'hgnc:8031',
+                'label': 'NTRK1',
+            },
+            'component_genomic_region': location_descriptors[0]
+        },
+        {
+            'component_type': 'transcript_segment',
+            'transcript': 'refseq:NM_938439.4',
+            'exon_start': 7,
+            'exon_end': 14,
+            'exon_end_offset': -5,
+            'gene': {
+                'id': 'gene:ALK',
+                'value_id': 'hgnc:1837',
+                'label': 'ALK',
+            },
+            'component_genomic_region': location_descriptors[0]
+        }
+    ]
 
 
-def test_chromosome_location():
-    """Test ChromosomeLocation object initializes correctly"""
-    c1 = ChromosomeLocation(species_id='taxonomy:4232', chr='5',
-                            interval=CytobandInterval(start='p5.2',
-                                                      end='p5.3'),
-                            type='ChromosomeLocation')
-    assert c1.__dict__['species_id'] == 'taxonomy:4232'
-    assert c1.__dict__['chr'] == '5'
-    ci = c1.__dict__['interval']
-    assert ci.__dict__['start'] == 'p5.2'
-    assert ci.__dict__['end'] == 'p5.3'
+@pytest.fixture(scope='module')
+def gene_components():
+    """Provide possible gene component input data."""
+    return [
+        {
+            'component_type': 'gene',
+            'gene': {
+                'id': 'gene:ABL1',
+                'value_id': 'hgnc:2000',
+            }
+        }
+    ]
 
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        ChromosomeLocation(species_ud='taxonomy:4232', chr='5',
-                           interval=CytobandInterval(start=17,
-                                                     end=18))
+
+@pytest.fixture(scope='module')
+def genomic_region_components(location_descriptors):
+    """Provide possible genomic_region component input data."""
+    return [
+        {
+            'component_type': 'genomic_region',
+            'strand': '+',
+            'region': location_descriptors[1]
+        },
+        {
+            'component_type': 'genomic_region',
+            'strand': '-',
+            'region': location_descriptors[0]
+        }
+    ]
+
+
+@pytest.fixture(scope='module')
+def sequence_descriptors():
+    """Provide possible SequenceDescriptor input data"""
+    return [
+        {
+            'id': 'sequence:ACGT',
+            'type': 'SequenceDescriptor',
+            'value': {
+                'sequence': 'ACGT',
+                'type': 'SequenceState',
+            },
+            'residue_type': 'SO:0000348'
+        },
+        {
+            'id': 'sequence:ATGTA',
+            'type': 'SequenceDescriptor',
+            'value': {
+                'sequence': 'ATGTA',
+                'type': 'SequenceState',
+            },
+            'residue_type': 'SO:0000348'
+        }
+    ]
+
+
+@pytest.fixture(scope='module')
+def linkers(sequence_descriptors):
+    """Provide possible linker component input data."""
+    return [
+        {
+            'component_type': 'linker_sequence',
+            'linker_sequence': sequence_descriptors[0]
+        },
+        {
+            'component_type': 'linker_sequence',
+            'linker_sequence': sequence_descriptors[1]
+        }
+    ]
+
+
+@pytest.fixture(scope='module')
+def regulatory_elements(gene_descriptors):
+    """Provide possible regulatory_element input data."""
+    return [
+        {
+            'type': 'promoter',
+            'gene': gene_descriptors[0]
+        }
+    ]
+
+
+def test_critical_domain(critical_domains, gene_descriptors):
+    """Test CriticalDomain object initializes correctly"""
+    test_domain = CriticalDomain(**critical_domains[0])
+    assert test_domain.status == 'preserved'
+    assert test_domain.name == 'phlebovirus glycoprotein g1'
+    assert test_domain.id == 'interpro:IPR010826'
+    assert test_domain.gene.id == 'gene:G1'
+    assert test_domain.gene.label == 'G1'
+    assert test_domain.gene.value.id == 'hgnc:9339'
+
+    # test status string
+    with pytest.raises(ValidationError):
+        CriticalDomain(**{
+            'status': 'gained',
+            'name': 'tyrosine kinase catalytic domain',
+            'id': 'interpro:IPR020635',
+            'gene': gene_descriptors[0]
+        })
+
+    # test domain ID CURIE requirement
+    with pytest.raises(ValidationError):
+        CriticalDomain(**{
+            'status': 'lost',
+            'name': 'tyrosine kinase catalytic domain',
+            'id': 'interpro_IPR020635',
+            'gene': gene_descriptors[0]
+        })
+
+
+def test_location_descriptors(location_descriptors):
+    """Test GenomicRegion class."""
+    # check with SequenceLocation
+    test_loc_descr = LocationDescriptor(**location_descriptors[0])
+    assert test_loc_descr.id == 'NC_000001.11:15455-15566'
+    assert test_loc_descr.type == 'LocationDescriptor'
+    assert test_loc_descr.value.sequence_id == 'ncbi:NC_000001.11'
+    assert test_loc_descr.value.interval.start == 15455
+    assert test_loc_descr.value.interval.end == 15566
+    assert test_loc_descr.value.type == 'SequenceLocation'
+    assert test_loc_descr.label == 'NC_000001.11:15455-15566'
+
+    # ID required
+    with pytest.raises(ValidationError):
+        LocationDescriptor(**{
+            'value': {
+                'sequence_id': 'ncbi:NC_000001.11',
+                'interval': {
+                    'type': 'SimpleInterval',
+                    'end': 23490823409,
+                    'start': 23940834,
+                },
+                'type': 'SequenceLocation'
+            },
+            'type': 'LocationDescriptor'
+        })
+
+    # check with ChromosomeLocation
+    test_loc_descr = LocationDescriptor(**location_descriptors[1])
+    assert test_loc_descr.id == 'chr12:p12.1-p12.2'
+    assert test_loc_descr.type == 'LocationDescriptor'
+    assert test_loc_descr.value.species_id == 'taxonomy:9606'
+    assert test_loc_descr.value.chr == '12'
+    assert test_loc_descr.value.interval.start == 'p12.1'
+    assert test_loc_descr.value.interval.end == 'p12.2'
+    assert test_loc_descr.label == 'chr12:p12.1-p12.2'
+
+    # ID must be CURIE
+    with pytest.raises(ValidationError):
+        LocationDescriptor(**{
+            'id': 'chr12-p12.1-p12.2',
+            'value': {
+                'species_id': 'taxonomy:9606',
+                'chr': '12',
+                'interval': {
+                    'start': 'p12.1', 'end': 'p12.2',
+                    'type': 'CytobandInterval'
+                },
+                'type': 'ChromosomeLocation'
+            },
+        })
+
+
+def test_transcript_segment_component(transcript_segments):
+    """Test TranscriptSegmentComponent object initializes correctly"""
+    test_component = TranscriptSegmentComponent(**transcript_segments[0])
+    assert test_component.transcript == 'refseq:NM_152263.3'
+    assert test_component.exon_start == 1
+    assert test_component.exon_start_offset == -9
+    assert test_component.exon_end == 8
+    assert test_component.exon_end_offset == 7
+    assert test_component.gene.id == 'test:1'
+    assert test_component.gene.label == 'G1'
+    assert test_component.gene.value.id == 'hgnc:1'
+    test_region = test_component.component_genomic_region
+    assert test_region.value.species_id == 'taxonomy:9606'
+    assert test_region.value.type == 'ChromosomeLocation'
+    assert test_region.value.chr == '12'
+    assert test_region.value.interval.start == 'p12.1'
+    assert test_region.value.interval.end == 'p12.2'
+
+    # check CURIE requirement
+    with pytest.raises(ValidationError):
+        TranscriptSegmentComponent(**{
+            'transcript': 'NM_152263.3',
+            'exon_start': '1',
+            'exon_start_offset': '-9',
+            'exon_end': '8',
+            'exon_end_offset': '7',
+            'gene': {'id': 'test:1', 'value': {'id': 'hgnc:1'}, 'label': 'G1'},
+            'component_genomic_region': {
+                'value': {
+                    'species_id': 'taxonomy:9606', 'chr': '12',
+                    'interval': {'start': 'p12.1', 'end': 'p12.2'},
+                }
+            }
+        })
+
+
+def test_sequence_descriptor(sequence_descriptors):
+    """Test that SequenceDescriptor objects initialize correctly"""
+    test_descriptor = SequenceDescriptor(**sequence_descriptors[0])
+    assert test_descriptor.id == 'sequence:ACGT'
+    assert test_descriptor.type == 'SequenceDescriptor'
+    assert test_descriptor.value.sequence == 'ACGT'
+    assert test_descriptor.value.type == 'SequenceState'
+    assert test_descriptor.residue_type == 'SO:0000348'
+
+
+def test_linker_component(linkers):
+    """Test Linker object initializes correctly"""
+    test_linker = LinkerComponent(**linkers[0])
+    assert test_linker.component_type == 'linker_sequence'
+    assert test_linker.linker_sequence.id == 'sequence:ACGT'
+    assert test_linker.linker_sequence.type == 'SequenceDescriptor'
+    assert test_linker.linker_sequence.value.sequence == 'ACGT'
+    assert test_linker.linker_sequence.value.type == 'SequenceState'
+    assert test_linker.linker_sequence.residue_type == 'SO:0000348'
+
+    # check base validation
+    with pytest.raises(ValidationError):
+        LinkerComponent(**{
+            'linker_sequence':
+                {
+                    'id': 'sequence:ABGT',
+                    'value': {
+                        'sequence': 'ABGT'
+                    }
+                }
+        })
+
+
+def test_genomic_region_component(genomic_region_components):
+    """Test that GenomicRegionComponent initializes correctly."""
+    test_component = GenomicRegionComponent(**genomic_region_components[0])
+    assert test_component.component_type == 'genomic_region'
+    assert test_component.strand.value == '+'
+    assert test_component.region.id == 'chr12:p12.1-p12.2'
+    assert test_component.region.type == 'LocationDescriptor'
+    assert test_component.region.value.species_id == 'taxonomy:9606'
+    assert test_component.region.value.chr == '12'
+    assert test_component.region.value.interval.start == 'p12.1'
+    assert test_component.region.value.interval.end == 'p12.2'
+    assert test_component.region.label == 'chr12:p12.1-p12.2'
+
+    with pytest.raises(ValidationError):
+        GenomicRegionComponent(**{
+            'region': {
+                'interval': {
+                    'start': 39408,
+                    'stop': 39414
+                }
+            },
+            'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl'
+        })
+
+
+def test_gene_component(gene_descriptors):
+    """Test that Gene component initializes correctly."""
+    test_component = GeneComponent(**{'gene': gene_descriptors[0]})
+    assert test_component.component_type == 'gene'
+    assert test_component.gene.id == 'gene:G1'
+    assert test_component.gene.label == 'G1'
+    assert test_component.gene.value.id == 'hgnc:9339'
+
+    # test CURIE requirement
+    with pytest.raises(ValidationError):
+        GenomicRegionComponent(**{
+            'gene': {
+                'id': 'G1',
+                'value': {'id': 'hgnc:9339'},
+                'label': 'G1'
+            }
+        })
+
+
+def test_unknown_gene_component():
+    """Test that unknown_gene component initializes correctly."""
+    test_component = UnknownGeneComponent()
+    assert test_component.component_type == 'unknown_gene'
 
 
 def test_event():
     """Test Event object initializes correctly"""
-    event1 = Event(event_type='rearrangement')
-    assert event1.__dict__['event_type'] == 'rearrangement'
+    rearrangement = 'rearrangement'
+    test_event = Event(rearrangement)
+    assert test_event.value == rearrangement
 
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        Event(event_type='combination')
-
-
-def test_linker():
-    """Test Linker object initializes correctly"""
-    linker1 = Linker(linker_sequence='ATATGCA')
-    assert linker1.__dict__['linker_sequence'] == 'ATATGCA'
-    assert linker1.__dict__['linker_sequence'].lower() == 'atatgca'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        Linker(linker_sequence='ATDCHDGH')
+    with pytest.raises(ValueError):
+        Event('combination')
 
 
-def test_regulatory():
+def test_regulatory(regulatory_elements, gene_descriptors):
     """Test RegulatoryElement object initializes correctly"""
-    r1 = RegulatoryElement(type='promoter', value_id='hgnc:435', label='G1')
-    r2 = RegulatoryElement(type='enhancer', value_id='hgnc:435', label='G1')
+    test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
+    assert test_reg_elmt.type.value == 'promoter'
+    assert test_reg_elmt.gene.id == 'gene:G1'
+    assert test_reg_elmt.gene.value.id == 'hgnc:9339'
+    assert test_reg_elmt.gene.label == 'G1'
 
-    assert r1.__dict__['type'] == 'promoter'
-    assert r1.__dict__['value_id'] == 'hgnc:435'
-    assert r1.__dict__['label'] == 'G1'
-    assert r2.__dict__['type'] == 'enhancer'
-    assert r2.__dict__['value_id'] == 'hgnc:435'
-    assert r2.__dict__['label'] == 'G1'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        RegulatoryElement(type='notpromoter', value_id='hgnc435', label=5)
-
-
-def test_genomic_region_seq():
-    """Test GenomicRegion object with SequenceLocation"""
-    si = SimpleInterval(start=15455, end=15566)
-    g1 = GenomicRegion(value=SequenceLocation(sequence_id='ncbi:NC_000001.11',
-                                              interval=si,
-                                              type='SequenceLocation'))
-
-    vals = g1.__dict__['value']
-    assert vals.__dict__['sequence_id'] == 'ncbi:NC_000001.11'
-    si = vals.__dict__['interval']
-    assert si.__dict__['start'] == 15455
-    assert si.__dict__['end'] == 15566
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        GenomicRegion(value=SequenceLocation(sequence_id='ncbiNC_000001.11',
-                                             interval=si,
-                                             type='SeqLocation'))
+    # check type constraint
+    with pytest.raises(ValidationError):
+        RegulatoryElement(**{
+            'type': 'notpromoter',
+            'gene': gene_descriptors[0]
+        })
 
 
-def test_genomic_region_chr():
-    """Test GenomicRegion object with ChromosomeLocation,"""
-    ci = CytobandInterval(start='p12.1', end='p12.2')
-    g1 = GenomicRegion(value=ChromosomeLocation(species_id='taxonomy:9606',
-                                                chr='12',
-                                                interval=ci,
-                                                type='ChromosomeLocation'))
+def test_fusion(critical_domains, transcript_segments,
+                genomic_region_components, linkers, gene_components,
+                regulatory_elements):
+    """Test that Fusion object initializes correctly"""
+    unknown_component = {
+        'component_type': 'unknown_gene',
+    }
 
-    vals = g1.__dict__['value']
-    assert vals.__dict__['species_id'] == 'taxonomy:9606'
-    assert vals.__dict__['chr'] == '12'
-    ci = vals.__dict__['interval']
-    assert ci.__dict__['start'] == 'p12.1'
-    assert ci.__dict__['end'] == 'p12.2'
+    # test valid object
+    fusion = Fusion(**{
+        'r_frame_preserved': True,
+        'protein_domains': [critical_domains[0]],
+        'transcript_components': [
+            transcript_segments[1], transcript_segments[2]
+        ],
+        'causative_event': 'rearrangement',
+        'regulatory_elements': [regulatory_elements[0]]
+    })
 
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        GenomicRegion(value=ChromosomeLocation(species='taxonomy9606',
-                                               chr=12,
-                                               interval=ci,
-                                               type='SequenceLocation'))
+    assert fusion.transcript_components[0].transcript == 'refseq:NM_034348.3'
 
+    # test that non-component properties are optional
+    assert Fusion(**{
+        'transcript_components': [
+            transcript_segments[1], transcript_segments[2]
+        ]
+    })
 
-def test_transcript_component():
-    """Test TranscriptComponent object initializes correctly"""
-    gen1 = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
-                          label='G1')
-    ci = CytobandInterval(start='p12.1', end='p12.2')
-    g1 = GenomicRegion(value=ChromosomeLocation(species_id='taxonomy:9606',
-                                                chr='12',
-                                                interval=ci,
-                                                type='ChromosomeLocation'))
-    tr1 = TranscriptComponent(transcript='nm:152263.3', exon_start=1,
-                              exon_start_offset=-9,
-                              exon_end=8, exon_end_offset=7, gene=gen1,
-                              component_genomic_region=g1)
-    assert tr1.__dict__['transcript'] == 'nm:152263.3'
-    assert tr1.__dict__['exon_start'] == 1
-    assert tr1.__dict__['exon_start_offset'] == -9
-    assert tr1.__dict__['exon_end'] == 8
-    assert tr1.__dict__['exon_end_offset'] == 7
-    gen = tr1.__dict__['gene']
-    assert gen.__dict__['id'] == 'test:1'
-    assert gen.__dict__['label'] == 'G1'
-    gv = gen.__dict__['value']
-    assert gv.__dict__['id'] == 'hgnc:1'
-    gr = tr1.__dict__['component_genomic_region'].__dict__['value']
-    assert gr.__dict__['species_id'] == 'taxonomy:9606'
-    assert gr.__dict__['type'] == 'ChromosomeLocation'
-    assert gr.__dict__['chr'] == '12'
-    grc = gr.__dict__['interval']
-    assert grc.__dict__['start'] == 'p12.1'
-    assert grc.__dict__['end'] == 'p12.2'
+    # test variety of component types
+    assert Fusion(**{
+        'transcript_components': [
+            unknown_component,
+            gene_components[0],
+            transcript_segments[2],
+            linkers[1],
+            genomic_region_components[1]
+        ]
+    })
 
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        TranscriptComponent(transcript='nm152263.3', exon_start='1',
-                            exon_start_offset='-9',
-                            exon_end='8', exon_end_offset='7', gene=4,
-                            component_genomic_region=5)
+    # components are mandatory
+    with pytest.raises(ValidationError):
+        assert Fusion(**{
+            'r_frame_preserved': True,
+            'protein_domains': [critical_domains[1]],
+            'causative_event': 'rearrangement',
+            'regulatory_elements': [regulatory_elements[0]]
+        })
 
-
-def test_critical_domain():
-    """Test CriticalDomain object initializes correctly"""
-    gen1 = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
-                          label='G1')
-    domain = CriticalDomain(status='preserved',
-                            name='tyrosine kinase catalytic domain',
-                            id='interpro:IPR020635',
-                            gene=gen1)
-
-    assert domain.__dict__['status'] == 'preserved'
-    assert domain.__dict__['name'] == 'tyrosine kinase catalytic domain'
-    assert domain.__dict__['id'] == 'interpro:IPR020635'
-    gen = domain.__dict__['gene']
-    assert gen.__dict__['id'] == 'test:1'
-    assert gen.__dict__['label'] == 'G1'
-    gv = gen.__dict__['value']
-    assert gv.__dict__['id'] == 'hgnc:1'
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        CriticalDomain(status='gained',
-                       name='tyrosine kinase catalytic domain',
-                       id='interproIPR020635',
-                       gene=7)
-
-
-def test_fusion():
-    """Test Fusion Object initializes correctly"""
-    gen1 = GeneDescriptor(id='test:1', value=GeneValueObject(id='hgnc:1'),
-                          label='G1')
-    gen2 = GeneDescriptor(id='test:2', value=GeneValueObject(id='hgnc:2'),
-                          label='G2', xrefs=['ncbigene:6', 'ensembl:7'])
-    reg1 = RegulatoryElement(type='promoter', value_id='hgnc:100',
-                             label='ASIC1')
-    reg2 = RegulatoryElement(type='enhancer', value_id='hgnc:200', label='G1')
-
-    domain = CriticalDomain(status='preserved',
-                            name='tyrosine kinase catalytic domain',
-                            id='interpro:IPR020635',
-                            gene=gen2)
-
-    ur1 = SequenceLocation(type='SequenceLocation',
-                           sequence_id='ncbi:NC_000001.11',
-                           interval=SimpleInterval(start=1000, end=5000))
-    c1 = UnknownGene(region=ur1)
-    cex = CytobandInterval(start='p12.1', end='p12.16')
-    ur2 = ChromosomeLocation(type='ChromosomeLocation',
-                             species_id='taxonomy:9606',
-                             chr='12',
-                             interval=cex)
-    c2 = UnknownGene(region=ur2)
-    si = SimpleInterval(start=15455, end=15566)
-    ex1 = GenomicRegion(value=SequenceLocation(type='SequenceLocation',
-                                               sequence_id='ncbi:NC_000001.11',
-                                               interval=si))
-    si2 = SimpleInterval(start=256235, end=296969)
-    ex2 = GenomicRegion(value=SequenceLocation(type='SequenceLocation',
-                                               sequence_id='ncbi:NC_000001.13',
-                                               interval=si2))
-
-    tr1 = TranscriptComponent(transcript='nm:152263.3', exon_start=1,
-                              exon_start_offset=-9,
-                              exon_end=8, exon_end_offset=7, gene=gen1,
-                              component_genomic_region=ex1)
-    tr2 = TranscriptComponent(transcript='nm:002529.3', exon_start=10,
-                              exon_start_offset=-8,
-                              exon_end=17, exon_end_offset=8, gene=gen2,
-                              component_genomic_region=ex2)
-    linker_seq = Linker(linker_sequence='ATTATTA')
-
-    cause_eve = Event(event_type='rearrangement')
-
-    # Validate correct input for Fusion object
-    Fusion(r_frame_preserved=True, regulatory_elements=[reg1, reg2],
-           protein_domains=[domain],
-           transcript_components=[c1, c2, tr1, linker_seq, tr2],
-           causative_event=cause_eve)
-
-    with pytest.raises(pydantic.error_wrappers.ValidationError):
-        Fusion(r_frame_preserved='T', regulatory_elements=[5, 5],
-               protein_domains=[7, 7],
-               transcript_components=[8], causative_event='Event')
+    # must have >= 2 components
+    with pytest.raises(ValidationError):
+        assert Fusion(**{
+            'transcript_components': [unknown_component]
+        })

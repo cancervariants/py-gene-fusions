@@ -1,103 +1,105 @@
 {
     "r_frame_preserved": true,
-    "regulatory_elements": [
-        {
-            "type": "promoter",
-            "value_id": "hgnc:100",
-            "label": "ASIC1"
-        },
-        {
-            "type": "enhancer",
-            "value_id": "hgnc:200",
-            "label": "G1"
-        }
-    ],
     "protein_domains": [
         {
-            "status": "preserved",
-            "name": "tyrosine kinase catalytic domain",
-            "id": "interpro:IPR020635",
+            "status": "lost",
+            "name": "cystatin domain",
+            "id": "interpro:IPR000010",
             "gene": {
-                "value_id": "hgnc:8031",
-                "label": "NTRK1",
-                "type": "GeneDescriptor"
+                "id": "gene:CST1",
+                "value_id": "hgnc:2743",
+                "label": "CST1",
+                "type": "GeneDescriptor",
             }
         }
     ],
-    "causative_event": {
-        "event_type": "rearrangement"
-    },
     "transcript_components": [
         {
-            "region": {
-                "seq_id": "ncbi:NC_000001.11",
-                "start": 1000,
-                "end": 5000,
-                "type": "SequenceLocation"
-            },
-            "component_type": "unknown_gene"
-        },
-        {
-            "region": null,
-            "component_type": "unknown_gene"
-        },
-        {
-            "region": {
-                "chr": "12",
-                "start": "p12.1",
-                "end": "p12.16",
-                "type": "ChromosomeLocation"
-            },
-            "component_type": "unknown_gene"
-        },
-        {
-            "transcript": "NM:152263.3",
+            "component_type": "transcript_segment",
+            "transcript": "refseq:NM_152263.3",
             "exon_start": 1,
-            "exon_start_offset": -9,
+            "exon_start_offset": 0,
             "exon_end": 8,
-            "exon_end_offset": 7,
+            "exon_end_offset": 0,
             "gene": {
+                "id": "gene:TPM3",
                 "value_id": "hgnc:12012",
+                "type": "GeneDescriptor",
                 "label": "TPM3",
-                "type": "GeneDescriptor"
             },
             "component_genomic_region": {
-                "description": null,
+                "id": "refseq:NM_152263.3_exon1-exon8",
+                "type": "LocationDescriptor",
                 "value": {
-                    "seq_id": "ncbi:NC_000001.11",
-                    "start": 154170399,
-                    "end": 1556346346,
-                    "type": "SequenceLocation"
-                },
-                "type": "computed"
+                    "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
+                    "type": "SequenceLocation",
+                    "interval": {
+                        "start": 154192135,
+                        "end": 154170399,
+                        "type": "SimpleInterval"
+                    }
+                }
             },
-            "component_type": "transcript_segment"
         },
         {
-            "linker_sequence": "ATTATTA"
-        },
-        {
-            "transcript": "NM:002529.3",
-            "exon_start": 10,
-            "exon_start_offset": -8,
-            "exon_end": 17,
-            "exon_end_offset": 8,
+            "component_type": "gene",
             "gene": {
-                "value_id": "hgnc:8031",
-                "label": "NTRK1",
-                "type": "GeneDescriptor"
-            },
-            "component_genomic_region": {
-                "description": null,
+                "id": "gene:ALK",
+                "type": "GeneDescriptor",
+                "value_id": "hgnc:427",
+                "label": "ALK"
+            }
+        },
+        {
+            "component_type": "linker_sequence",
+            "linker_sequence": {
+                "id": "sequence:ACGT",
+                "type": "SequenceDescriptor",
                 "value": {
-                    "seq_id": "ncbi:NC_000001.13",
-                    "start": 154170401,
-                    "end": 1556346348,
-                    "type": "SequenceLocation"
+                    "sequence": "ACGT",
+                    "type": "SequenceState",
                 },
-                "type": "computed"
+                "residue_type": "SO:0000348"
+            }
+        },
+        {
+            "component_type": "genomic_region",
+            "region": {
+                "id": "chr12:44908821-44908822(+)",
+                "type": "LocationDescriptor",
+                "value": {
+                    "type": "SequenceLocation",
+                    "sequence_id": "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+                    "interval": {
+                        "type": "SimpleInterval",
+                        "start": 44908821,
+                        "end": 44908822,
+                    },
+                },
+                "label": "chr12:44908821-44908822(+)"
             },
-            "component_type": "transcript_segment"
+            "strand": "+"
+        },
+        {
+            "component_type": "gene",
+            "gene": {
+                "id": "gene:BRAF",
+                "type": "GeneDescriptor",
+                "value_id": "hgnc:1097",
+                "label": "BRAF"
+            }
+        }
+    ],
+    "causative_event": "rearrangement",
+    "regulatory_elements": [
+        {
+            "type": "promoter",
+            "gene": {
+                "id": "gene:BRAF",
+                "type": "GeneDescriptor",
+                "value_id": "hgnc:1097",
+                "label": "BRAF"
+            }
         }
     ]
 }

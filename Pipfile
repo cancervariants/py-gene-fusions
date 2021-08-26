@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pydantic = "*"
 gene-normalizer = ">=0.1.14"
+variation-normalizer = "*"
 
 [dev-packages]
 fusor = {editable = true, path = "."}
