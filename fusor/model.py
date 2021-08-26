@@ -72,12 +72,6 @@ class CriticalDomain(BaseModel):
             }
 
 
-class TranscriptComponent(BaseModel):
-    """Define abstract TranscriptComponentClass."""
-
-    component_type: str
-
-
 class LocationDescriptor(BaseModel):
     """Define VRSATILE LocationDescriptor class."""
 
@@ -99,7 +93,7 @@ class LocationDescriptor(BaseModel):
         return values
 
 
-class TranscriptSegmentComponent(TranscriptComponent):
+class TranscriptSegmentComponent(BaseModel):
     """Define TranscriptSegment class"""
 
     component_type = 'transcript_segment'
@@ -181,7 +175,7 @@ class SequenceDescriptor(BaseModel):
         return v
 
 
-class LinkerComponent(TranscriptComponent):
+class LinkerComponent(BaseModel):
     """Define Linker class (linker sequence)"""
 
     component_type = 'linker_sequence'
@@ -218,7 +212,7 @@ class Strand(Enum):
     NEGATIVE = "-"
 
 
-class GenomicRegionComponent(TranscriptComponent):
+class GenomicRegionComponent(BaseModel):
     """Define GenomicRegion component class."""
 
     component_type = 'genomic_region'
@@ -257,7 +251,7 @@ class GenomicRegionComponent(TranscriptComponent):
             }
 
 
-class GeneComponent(TranscriptComponent):
+class GeneComponent(BaseModel):
     """Define Gene component class."""
 
     component_type = 'gene'
@@ -284,7 +278,7 @@ class GeneComponent(TranscriptComponent):
             }
 
 
-class UnknownGeneComponent(TranscriptComponent):
+class UnknownGeneComponent(BaseModel):
     """Define UnknownGene class"""
 
     component_type = 'unknown_gene'
