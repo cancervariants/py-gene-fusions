@@ -78,11 +78,25 @@ class TranscriptComponent(BaseModel):
     component_type: str
 
 
-class GenomicRegion(BaseModel):
-    """Define GenomicRegion class"""
+class LocationDescriptor(BaseModel):
+    """Define LocationDescriptor class."""
 
+    id: StrictStr
     type = 'LocationDescriptor'
-    value: Union[SequenceLocation, ChromosomeLocation]
+    value: Optional[Union[SequenceLocation, ChromosomeLocation]]
+    value_id: Optional[StrictStr]
+    label: Optional[StrictStr]
+
+    _validate_id = validator('id', allow_reuse=True)(check_curie)
+    _validate_value_id = validator('value_id', allow_reuse=True)(check_curie)
+
+    @root_validator(pre=True)
+    def check_value_or_value_id_present(cls, values):
+        """Check that at least one of {`value`, `value_id`} is provided."""
+        msg = 'Must give values for either `value`, `value_id`, or both'
+        value, value_id = values.get('value'), values.get('value_id')
+        assert value or value_id, msg
+        return values
 
 
 class TranscriptSegmentComponent(TranscriptComponent):
@@ -95,7 +109,7 @@ class TranscriptSegmentComponent(TranscriptComponent):
     exon_end: StrictInt
     exon_end_offset: StrictInt = 0
     gene: GeneDescriptor
-    component_genomic_region: GenomicRegion
+    component_genomic_region: LocationDescriptor
 
     _validate_transcript = \
         validator('transcript', allow_reuse=True)(check_curie)
@@ -112,7 +126,7 @@ class TranscriptSegmentComponent(TranscriptComponent):
                 prop.pop('title', None)
             schema['example'] = {
                 'component_type': 'transcript_segment',
-                'transcript': 'NM_152263.3',
+                'transcript': 'refseq:NM_152263.3',
                 'exon_start': 1,
                 'exon_start_offset': 0,
                 'exon_end': 8,
@@ -124,6 +138,7 @@ class TranscriptSegmentComponent(TranscriptComponent):
                     'label': 'TPM3',
                 },
                 'component_genomic_region': {
+                    'id': 'TPM3:exon1-exon8',
                     'type': 'LocationDescriptor',
                     'value': {
                         'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
@@ -196,11 +211,21 @@ class LinkerComponent(TranscriptComponent):
             }
 
 
+class Strand(Enum):
+    """Define possible values for strand"""
+
+    POSITIVE = "+"
+    NEGATIVE = "-"
+
+
 class GenomicRegionComponent(TranscriptComponent):
     """Define GenomicRegion component class."""
 
     component_type = 'genomic_region'
-    region: SequenceLocation
+    region: LocationDescriptor
+    strand: Strand
+
+    # add strand to sequencelocation, add chr property
 
     class Config:
         """Configure class."""
@@ -215,14 +240,20 @@ class GenomicRegionComponent(TranscriptComponent):
             schema['example'] = {
                 'component_type': 'genomic_region',
                 'region': {
-                    'type': 'SequenceLocation',
-                    'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',
-                    'interval': {
-                        'type': 'SimpleInterval',
-                        'start': 44908821,
-                        'end': 44908822,
+                    'id': 'chr12:44908821-44908822(+)',
+                    'type': 'LocationDescriptor',
+                    'value': {
+                        'type': 'SequenceLocation',
+                        'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',  # noqa: E501
+                        'interval': {
+                            'type': 'SimpleInterval',
+                            'start': 44908821,
+                            'end': 44908822,
+                        },
                     },
-                }
+                    'label': 'chr12:44908821-44908822(+)'
+                },
+                'strand': '+'
             }
 
 
@@ -320,7 +351,10 @@ class Fusion(BaseModel):
 
     r_frame_preserved: Optional[StrictBool]
     protein_domains: Optional[List[CriticalDomain]]
-    transcript_components: List[TranscriptComponent]
+    transcript_components: List[Union[TranscriptSegmentComponent,
+                                      GeneComponent, LinkerComponent,
+                                      UnknownGeneComponent,
+                                      GenomicRegionComponent]]
     causative_event: Optional[Event]
     regulatory_elements: Optional[List[RegulatoryElement]]
 
@@ -365,7 +399,7 @@ class Fusion(BaseModel):
                 'transcript_components': [
                     {
                         'component_type': 'transcript_segment',
-                        'transcript': 'NM_152263.3',
+                        'transcript': 'refseq:NM_152263.3',
                         'exon_start': 1,
                         'exon_start_offset': 0,
                         'exon_end': 8,
@@ -377,6 +411,7 @@ class Fusion(BaseModel):
                             'label': 'TPM3',
                         },
                         'component_genomic_region': {
+                            'id': 'TPM3:exon1-exon8',
                             'type': 'LocationDescriptor',
                             'value': {
                                 'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501

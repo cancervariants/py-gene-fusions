@@ -1,7 +1,7 @@
 """Module for testing the fusion model."""
 from pydantic import ValidationError
 import pytest
-from fusor.model import GenomicRegion, TranscriptSegmentComponent, \
+from fusor.model import LocationDescriptor, TranscriptSegmentComponent, \
     GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
     LinkerComponent, SequenceDescriptor, CriticalDomain, Event, \
     RegulatoryElement, Fusion
@@ -54,28 +54,34 @@ def critical_domains(gene_descriptors):
 
 
 @pytest.fixture(scope='module')
-def genomic_regions():
+def location_descriptors():
     """Provide possible genomic_region input."""
     return [
         {
+            'id': 'NC_000001.11:15455-15566',
+            'type': 'LocationDescriptor',
             'value': {
                 'sequence_id': 'ncbi:NC_000001.11',
                 'interval': {'start': 15455, 'end': 15566},
                 'type': 'SequenceLocation'
-            }
+            },
+            'label': 'NC_000001.11:15455-15566',
         },
         {
+            'id': 'chr12:p12.1-p12.2',
+            'type': 'LocationDescriptor',
             'value': {
                 'species_id': 'taxonomy:9606',
                 'chr': '12',
                 'interval': {'start': 'p12.1', 'end': 'p12.2'}
-            }
-        }
+            },
+            'label': 'chr12:p12.1-p12.2',
+        },
     ]
 
 
 @pytest.fixture(scope='module')
-def transcript_segments():
+def transcript_segments(location_descriptors):
     """Provide possible transcript_segment input."""
     return [
         {
@@ -85,12 +91,7 @@ def transcript_segments():
             'exon_end': 8,
             'exon_end_offset': 7,
             'gene': {'id': 'test:1', 'value': {'id': 'hgnc:1'}, 'label': 'G1'},
-            'component_genomic_region': {
-                'value': {
-                    'species_id': 'taxonomy:9606', 'chr': '12',
-                    'interval': {'start': 'p12.1', 'end': 'p12.2'},
-                }
-            }
+            'component_genomic_region': location_descriptors[1]
         },
         {
             'component_type': 'transcript_segment',
@@ -102,15 +103,7 @@ def transcript_segments():
                 'value_id': 'hgnc:8031',
                 'label': 'NTRK1',
             },
-            'component_genomic_region': {
-                'value': {
-                    'sequence_id': 'NC_000001.11',
-                    'interval': {
-                        'start': 44908821,
-                        'end': 44908822,
-                    }
-                }
-            }
+            'component_genomic_region': location_descriptors[0]
         },
         {
             'component_type': 'transcript_segment',
@@ -123,15 +116,7 @@ def transcript_segments():
                 'value_id': 'hgnc:1837',
                 'label': 'ALK',
             },
-            'component_genomic_region': {
-                'value': {
-                    'sequence_id': 'NC_000003.13',
-                    'interval': {
-                        'start': 39834,
-                        'end': 3347789
-                    }
-                }
-            }
+            'component_genomic_region': location_descriptors[0]
         }
     ]
 
@@ -151,31 +136,18 @@ def gene_components():
 
 
 @pytest.fixture(scope='module')
-def genomic_region_components():
+def genomic_region_components(location_descriptors):
     """Provide possible genomic_region component input data."""
     return [
         {
             'component_type': 'genomic_region',
-            'region': {
-                'type': 'SequenceLocation',
-                'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',
-                'interval': {
-                    'start': 39408,
-                    'end': 39414,
-                    'type': 'SimpleInterval'
-                }
-            }
+            'strand': '+',
+            'region': location_descriptors[1]
         },
         {
             'component_type': 'genomic_region',
-            'region': {
-                'type': 'SequenceLocation',
-                'sequence_id': 'ga4gh:SQ.ss8r_wB0-b9r44TQTMmVTI92884QvBiB',
-                'interval': {
-                    'start': 399,
-                    'end': 410,
-                }
-            }
+            'strand': '-',
+            'region': location_descriptors[0]
         }
     ]
 
@@ -260,40 +232,48 @@ def test_critical_domain(critical_domains, gene_descriptors):
         })
 
 
-def test_genomic_region(genomic_regions):
+def test_location_descriptors(location_descriptors):
     """Test GenomicRegion class."""
     # check with SequenceLocation
-    test_region = GenomicRegion(**genomic_regions[0])
-    assert test_region.type == 'LocationDescriptor'
-    assert test_region.value.sequence_id == 'ncbi:NC_000001.11'
-    assert test_region.value.interval.start == 15455
-    assert test_region.value.interval.end == 15566
+    test_loc_descr = LocationDescriptor(**location_descriptors[0])
+    assert test_loc_descr.id == 'NC_000001.11:15455-15566'
+    assert test_loc_descr.type == 'LocationDescriptor'
+    assert test_loc_descr.value.sequence_id == 'ncbi:NC_000001.11'
+    assert test_loc_descr.value.interval.start == 15455
+    assert test_loc_descr.value.interval.end == 15566
+    assert test_loc_descr.value.type == 'SequenceLocation'
+    assert test_loc_descr.label == 'NC_000001.11:15455-15566'
 
+    # ID required
     with pytest.raises(ValidationError):
-        GenomicRegion(**{
+        LocationDescriptor(**{
             'value': {
-                'sequence_id': 'ncbiNC_000001.11',
+                'sequence_id': 'ncbi:NC_000001.11',
                 'interval': {
                     'type': 'SimpleInterval',
                     'end': 23490823409,
                     'start': 23940834,
                 },
                 'type': 'SequenceLocation'
-            }
+            },
+            'type': 'LocationDescriptor'
         })
 
     # check with ChromosomeLocation
-    test_region = GenomicRegion(**genomic_regions[1])
-    assert test_region.description is None
-    assert test_region.type == 'LocationDescriptor'
-    assert test_region.value.species_id == 'taxonomy:9606'
-    assert test_region.value.chr == '12'
-    assert test_region.value.interval.start == 'p12.1'
-    assert test_region.value.interval.end == 'p12.2'
+    test_loc_descr = LocationDescriptor(**location_descriptors[1])
+    assert test_loc_descr.id == 'chr12:p12.1-p12.2'
+    assert test_loc_descr.type == 'LocationDescriptor'
+    assert test_loc_descr.value.species_id == 'taxonomy:9606'
+    assert test_loc_descr.value.chr == '12'
+    assert test_loc_descr.value.interval.start == 'p12.1'
+    assert test_loc_descr.value.interval.end == 'p12.2'
+    assert test_loc_descr.label == 'chr12:p12.1-p12.2'
 
+    # ID must be CURIE
     with pytest.raises(ValidationError):
-        GenomicRegion(**{
-            'location': {
+        LocationDescriptor(**{
+            'id': 'chr12-p12.1-p12.2',
+            'value': {
                 'species_id': 'taxonomy:9606',
                 'chr': '12',
                 'interval': {
@@ -378,11 +358,14 @@ def test_genomic_region_component(genomic_region_components):
     """Test that GenomicRegionComponent initializes correctly."""
     test_component = GenomicRegionComponent(**genomic_region_components[0])
     assert test_component.component_type == 'genomic_region'
-    assert test_component.region.type == 'SequenceLocation'
-    assert test_component.region.sequence_id == 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl'  # noqa: E501
-    assert test_component.region.interval.start == 39408
-    assert test_component.region.interval.end == 39414
-    assert test_component.region.interval.type == 'SimpleInterval'
+    assert test_component.strand.value == '+'
+    assert test_component.region.id == 'chr12:p12.1-p12.2'
+    assert test_component.region.type == 'LocationDescriptor'
+    assert test_component.region.value.species_id == 'taxonomy:9606'
+    assert test_component.region.value.chr == '12'
+    assert test_component.region.value.interval.start == 'p12.1'
+    assert test_component.region.value.interval.end == 'p12.2'
+    assert test_component.region.label == 'chr12:p12.1-p12.2'
 
     with pytest.raises(ValidationError):
         GenomicRegionComponent(**{
@@ -456,7 +439,7 @@ def test_fusion(critical_domains, transcript_segments,
     }
 
     # test valid object
-    assert Fusion(**{
+    fusion = Fusion(**{
         'r_frame_preserved': True,
         'protein_domains': [critical_domains[0]],
         'transcript_components': [
@@ -465,6 +448,8 @@ def test_fusion(critical_domains, transcript_segments,
         'causative_event': 'rearrangement',
         'regulatory_elements': [regulatory_elements[0]]
     })
+
+    assert fusion.transcript_components[0].transcript == 'refseq:NM_034348.3'
 
     # test that non-component properties are optional
     assert Fusion(**{

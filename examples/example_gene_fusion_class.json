@@ -16,7 +16,7 @@
     "transcript_components": [
         {
             "component_type": "transcript_segment",
-            "transcript": "NM_152263.3",
+            "transcript": "refseq:NM_152263.3",
             "exon_start": 1,
             "exon_start_offset": 0,
             "exon_end": 8,
@@ -28,8 +28,9 @@
                 "label": "TPM3",
             },
             "component_genomic_region": {
+                "id": "refseq:NM_152263.3_exon1-exon8",
                 "type": "LocationDescriptor",
-               "value": {
+                "value": {
                     "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
                     "type": "SequenceLocation",
                     "interval": {
@@ -38,7 +39,7 @@
                         "type": "SimpleInterval"
                     }
                 }
-            }
+            },
         },
         {
             "component_type": "gene",
@@ -64,14 +65,20 @@
         {
             "component_type": "genomic_region",
             "region": {
-                "type": "SequenceLocation",
-                "sequence_id": "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
-                "interval": {
-                    "type": "SimpleInterval",
-                    "start": 44908821,
-                    "end": 44908822,
+                "id": "chr12:44908821-44908822(+)",
+                "type": "LocationDescriptor",
+                "value": {
+                    "type": "SequenceLocation",
+                    "sequence_id": "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+                    "interval": {
+                        "type": "SimpleInterval",
+                        "start": 44908821,
+                        "end": 44908822,
+                    },
                 },
-            }
+                "label": "chr12:44908821-44908822(+)"
+            },
+            "strand": "+"
         },
         {
             "component_type": "gene",
