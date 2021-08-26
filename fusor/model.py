@@ -79,7 +79,7 @@ class TranscriptComponent(BaseModel):
 
 
 class LocationDescriptor(BaseModel):
-    """Define LocationDescriptor class."""
+    """Define VRSATILE LocationDescriptor class."""
 
     id: StrictStr
     type = 'LocationDescriptor'
@@ -154,7 +154,7 @@ class TranscriptSegmentComponent(TranscriptComponent):
 
 
 class SequenceDescriptor(BaseModel):
-    """Define Sequence Descriptor class per VRSATILE specification."""
+    """Define VRSATILE Sequence Descriptor class."""
 
     id: StrictStr
     type = 'SequenceDescriptor'
