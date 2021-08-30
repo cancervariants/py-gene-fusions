@@ -66,7 +66,16 @@ def location_descriptors():
             'type': 'LocationDescriptor',
             'location': {
                 'sequence_id': 'ncbi:NC_000001.11',
-                'interval': {'start': 15455, 'end': 15566},
+                'interval': {
+                    'start': {
+                        'type': 'Number',
+                        'value': 15455
+                    },
+                    'end': {
+                        'type': 'Number',
+                        'value': 15566
+                    }
+                },
                 'type': 'SequenceLocation'
             },
             'label': 'NC_000001.11:15455-15566',

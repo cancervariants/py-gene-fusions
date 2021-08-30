@@ -116,9 +116,15 @@ class TranscriptSegmentComponent(BaseModel):
                         'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                         'type': 'SequenceLocation',
                         'interval': {
-                            'start': 154192135,
-                            'end': 154170399,
-                            'type': 'SimpleInterval'
+                            'start': {
+                                'type': 'Number',
+                                'value': 154192135,
+                            },
+                            'end': {
+                                'type': 'Number',
+                                'value': 154170399,
+                            },
+                            'type': 'SequenceInterval',
                         }
                     }
                 }
