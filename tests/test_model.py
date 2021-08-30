@@ -240,7 +240,7 @@ def test_critical_domain(critical_domains, gene_descriptors):
             'id': 'interpro_IPR020635',
             'gene_descriptor': gene_descriptors[0]
         })
-    msg = 'must be a CURIE'
+    msg = 'string does not match regex "^\w[^:]*:.+$"'  # noqa: W605
     check_validation_error(exc_info, msg)
 
 
@@ -282,7 +282,8 @@ def test_transcript_segment_component(transcript_segments):
                 }
             }
         })
-    check_validation_error(exc_info, 'must be a CURIE')
+    msg = 'string does not match regex "^\w[^:]*:.+$"'  # noqa: W605
+    check_validation_error(exc_info, msg)
 
 
 def test_linker_component(linkers):
@@ -303,7 +304,7 @@ def test_linker_component(linkers):
                     'sequence': 'ABGT'
                 }
         })
-    msg = "Must give values for either `sequence`, `sequence_id`, or both"
+    msg = 'Linker sequence must consist only of {A,C,G,T}'
     check_validation_error(exc_info, msg)
 
 

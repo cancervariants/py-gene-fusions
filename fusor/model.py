@@ -3,32 +3,9 @@ import json
 from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr
 from typing import Optional, List, Union
 from enum import Enum
+from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
-    LocationDescriptor, SequenceDescriptor
-
-
-def check_curie(cls, v):
-    """Validate curies."""
-    if v is not None:
-        def _is_curie(value: str):
-            """Check that value is a curie
-
-            :param str value: Value to validate
-            """
-            assert all(
-                [
-                    value.count(':') == 1,
-                    value.find(' ') == -1,
-                    value[-1] != ':'
-                ]
-            ), 'must be a CURIE'
-
-        if isinstance(v, str):
-            _is_curie(v)
-        elif isinstance(v, list):
-            for item in v:
-                _is_curie(item)
-    return v
+    LocationDescriptor, SequenceDescriptor, CURIE
 
 
 class DomainStatus(str, Enum):
@@ -43,10 +20,10 @@ class CriticalDomain(BaseModel):
 
     status: DomainStatus
     name: StrictStr
-    id: StrictStr
+    id: CURIE
     gene_descriptor: GeneDescriptor
 
-    _validate_id = validator('id', allow_reuse=True)(check_curie)
+    _get_id_val = validator('id', allow_reuse=True)(return_value)
 
     class Config:
         """Configure class."""
@@ -75,7 +52,7 @@ class TranscriptSegmentComponent(BaseModel):
     """Define TranscriptSegment class"""
 
     component_type = 'transcript_segment'
-    transcript: StrictStr
+    transcript: CURIE
     exon_start: StrictInt
     exon_start_offset: StrictInt = 0
     exon_end: StrictInt
@@ -83,8 +60,7 @@ class TranscriptSegmentComponent(BaseModel):
     gene_descriptor: GeneDescriptor
     component_genomic_region: LocationDescriptor
 
-    _validate_transcript = \
-        validator('transcript', allow_reuse=True)(check_curie)
+    _get_transcript_val = validator('transcript', allow_reuse=True)(return_value)  # noqa: E501
 
     class Config:
         """Configure class."""
@@ -136,6 +112,22 @@ class LinkerComponent(BaseModel):
 
     component_type = 'linker_sequence'
     linker_sequence: SequenceDescriptor
+
+    @validator('linker_sequence')
+    def validate(cls, v):
+        """Enforce nucleotide base code requirements on sequence literals."""
+        if isinstance(v, dict):
+            try:
+                sequence = v['sequence']
+            except KeyError:
+                raise TypeError
+        elif isinstance(v, SequenceDescriptor):
+            sequence = v.sequence
+        else:
+            raise TypeError
+        msg = 'Linker sequence must consist only of {A,C,G,T}'
+        assert set('ACGT') <= set(sequence), msg
+        return v
 
     class Config:
         """Configure class."""
