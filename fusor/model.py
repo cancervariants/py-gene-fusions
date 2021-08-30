@@ -194,8 +194,8 @@ class GenomicRegionComponent(BaseModel):
                         'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',  # noqa: E501
                         'interval': {
                             'type': 'SequenceInterval',
-                            'start': {'type': 'number', 'value': 44908821},
-                            'end': {'type': 'number', 'value': 44908822},
+                            'start': {'type': 'Number', 'value': 44908821},
+                            'end': {'type': 'Number', 'value': 44908822},
                         },
                     },
                     'label': 'chr12:44908821-44908822(+)'
@@ -365,11 +365,11 @@ class Fusion(BaseModel):
                                 'type': 'SequenceLocation',
                                 'interval': {
                                     'start': {
-                                        'type': 'number',
+                                        'type': 'Number',
                                         'value': 154192135
                                     },
                                     'end': {
-                                        'type': 'number',
+                                        'type': 'Number',
                                         'value': 154170399
                                     },
                                     'type': 'SequenceInterval'
