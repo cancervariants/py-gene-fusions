@@ -189,7 +189,7 @@ class GenomicRegionComponent(BaseModel):
                 'region': {
                     'id': 'chr12:44908821-44908822(+)',
                     'type': 'LocationDescriptor',
-                    'value': {
+                    'location': {
                         'type': 'SequenceLocation',
                         'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',  # noqa: E501
                         'interval': {
@@ -360,7 +360,7 @@ class Fusion(BaseModel):
                         'component_genomic_region': {
                             'id': 'TPM3:exon1-exon8',
                             'type': 'LocationDescriptor',
-                            'value': {
+                            'location': {
                                 'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                                 'type': 'SequenceLocation',
                                 'interval': {

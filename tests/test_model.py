@@ -270,9 +270,13 @@ def test_transcript_segment_component(transcript_segments):
             'exon_start_offset': '-9',
             'exon_end': '8',
             'exon_end_offset': '7',
-            'gene': {'id': 'test:1', 'value': {'id': 'hgnc:1'}, 'label': 'G1'},
+            'gene_descriptor': {
+                'id': 'test:1',
+                'gene': {'id': 'hgnc:1'},
+                'label': 'G1'
+            },
             'component_genomic_region': {
-                'value': {
+                'location': {
                     'species_id': 'taxonomy:9606', 'chr': '12',
                     'interval': {'start': 'p12.1', 'end': 'p12.2'},
                 }
@@ -296,9 +300,7 @@ def test_linker_component(linkers):
             'linker_sequence':
                 {
                     'id': 'sequence:ABGT',
-                    'value': {
-                        'sequence': 'ABGT'
-                    }
+                    'sequence': 'ABGT'
                 }
         })
     msg = "Must give values for either `sequence`, `sequence_id`, or both"
