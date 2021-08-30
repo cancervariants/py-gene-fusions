@@ -1,11 +1,10 @@
 """Model for fusion class"""
 import json
-from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
-    root_validator
+from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr
 from typing import Optional, List, Union
-from gene.schemas import GeneDescriptor, SequenceLocation, ChromosomeLocation
 from enum import Enum
-from variation.schemas.ga4gh_vrs import SequenceState
+from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
+    LocationDescriptor, SequenceDescriptor
 
 
 def check_curie(cls, v):
@@ -65,32 +64,11 @@ class CriticalDomain(BaseModel):
                 'id': 'interpro:IPR000010',
                 'gene': {
                     'id': 'gene:CST1',
-                    'value_id': 'hgnc:2743',
+                    'gene_id': 'hgnc:2743',
                     'label': 'CST1',
                     'type': 'GeneDescriptor',
                 }
             }
-
-
-class LocationDescriptor(BaseModel):
-    """Define VRSATILE LocationDescriptor class."""
-
-    id: StrictStr
-    type = 'LocationDescriptor'
-    value: Optional[Union[SequenceLocation, ChromosomeLocation]]
-    value_id: Optional[StrictStr]
-    label: Optional[StrictStr]
-
-    _validate_id = validator('id', allow_reuse=True)(check_curie)
-    _validate_value_id = validator('value_id', allow_reuse=True)(check_curie)
-
-    @root_validator(pre=True)
-    def check_value_or_value_id_present(cls, values):
-        """Check that at least one of {`value`, `value_id`} is provided."""
-        msg = 'Must give values for either `value`, `value_id`, or both'
-        value, value_id = values.get('value'), values.get('value_id')
-        assert value or value_id, msg
-        return values
 
 
 class TranscriptSegmentComponent(BaseModel):
@@ -127,14 +105,14 @@ class TranscriptSegmentComponent(BaseModel):
                 'exon_end_offset': 0,
                 'gene': {
                     'id': 'gene:TPM3',
-                    'value_id': 'hgnc:12012',
+                    'gene_id': 'hgnc:12012',
                     'type': 'GeneDescriptor',
                     'label': 'TPM3',
                 },
                 'component_genomic_region': {
                     'id': 'TPM3:exon1-exon8',
                     'type': 'LocationDescriptor',
-                    'value': {
+                    'location': {
                         'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                         'type': 'SequenceLocation',
                         'interval': {
@@ -145,34 +123,6 @@ class TranscriptSegmentComponent(BaseModel):
                     }
                 }
             }
-
-
-class SequenceDescriptor(BaseModel):
-    """Define VRSATILE Sequence Descriptor class."""
-
-    id: StrictStr
-    type = 'SequenceDescriptor'
-    value: Optional[SequenceState]
-    value_id: Optional[StrictStr]
-    residue_type = 'SO:0000348'
-
-    _validate_id = validator('id', allow_reuse=True)(check_curie)
-    _validate_value_id = validator('value_id', allow_reuse=True)(check_curie)
-
-    @root_validator(pre=True)
-    def check_value_or_value_id_present(cls, values):
-        """Check that at least one of {`value`, `value_id`} is provided."""
-        msg = 'Must give values for either `value`, `value_id`, or both'
-        value, value_id = values.get('value'), values.get('value_id')
-        assert value or value_id, msg
-        return values
-
-    @validator('value')
-    def check_dna_nucleobases(cls, v):
-        """Check that sequence consists of DNA nucleobases only"""
-        msg = 'Linker sequence must consist only of {A,C,G,T}'
-        assert set(v.sequence.upper()) <= set('ACGT'), msg
-        return v
 
 
 class LinkerComponent(BaseModel):
@@ -196,10 +146,7 @@ class LinkerComponent(BaseModel):
                 'linker_sequence': {
                     'id': 'sequence:ACGT',
                     'type': 'SequenceDescriptor',
-                    'value': {
-                        'sequence': 'ACGT',
-                        'type': 'SequenceState',
-                    },
+                    'sequence': 'ACGT',
                     'residue_type': 'SO:0000348'
                 }
             }
@@ -240,9 +187,9 @@ class GenomicRegionComponent(BaseModel):
                         'type': 'SequenceLocation',
                         'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',  # noqa: E501
                         'interval': {
-                            'type': 'SimpleInterval',
-                            'start': 44908821,
-                            'end': 44908822,
+                            'type': 'SequenceInterval',
+                            'start': {'type': 'number', 'value': 44908821},
+                            'end': {'type': 'number', 'value': 44908822},
                         },
                     },
                     'label': 'chr12:44908821-44908822(+)'
@@ -271,7 +218,7 @@ class GeneComponent(BaseModel):
                 'component_type': 'gene',
                 'gene': {
                     'id': 'gene:BRAF',
-                    'value_id': 'hgnc:1097',
+                    'gene_id': 'hgnc:1097',
                     'label': 'BRAF',
                     'type': 'GeneDescriptor',
                 }
@@ -333,7 +280,7 @@ class RegulatoryElement(BaseModel):
                 'type': 'promoter',
                 'gene': {
                     'id': 'gene:BRAF',
-                    'value_id': 'hgnc:1097',
+                    'gene_id': 'hgnc:1097',
                     'label': 'BRAF',
                     'type': 'GeneDescriptor',
                 }
@@ -384,7 +331,7 @@ class Fusion(BaseModel):
                         'id': 'interpro:IPR000010',
                         'gene': {
                             'id': 'gene:CST1',
-                            'value_id': 'hgnc:2743',
+                            'gene_id': 'hgnc:2743',
                             'label': 'CST1',
                             'type': 'GeneDescriptor',
                         }
@@ -400,7 +347,7 @@ class Fusion(BaseModel):
                         'exon_end_offset': 0,
                         'gene': {
                             'id': 'gene:TPM3',
-                            'value_id': 'hgnc:12012',
+                            'gene_id': 'hgnc:12012',
                             'type': 'GeneDescriptor',
                             'label': 'TPM3',
                         },
@@ -411,9 +358,15 @@ class Fusion(BaseModel):
                                 'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                                 'type': 'SequenceLocation',
                                 'interval': {
-                                    'start': 154192135,
-                                    'end': 154170399,
-                                    'type': 'SimpleInterval'
+                                    'start': {
+                                        'type': 'number',
+                                        'value': 154192135
+                                    },
+                                    'end': {
+                                        'type': 'number',
+                                        'value': 154170399
+                                    },
+                                    'type': 'SequenceInterval'
                                 }
                             }
                         }
@@ -423,7 +376,7 @@ class Fusion(BaseModel):
                         'gene': {
                             'id': 'gene:ALK',
                             'type': 'GeneDescriptor',
-                            'value_id': 'hgnc:427',
+                            'gene_id': 'hgnc:427',
                             'label': 'ALK'
                         }
                     }
@@ -435,7 +388,7 @@ class Fusion(BaseModel):
                         'gene': {
                             'id': 'gene:BRAF',
                             'type': 'GeneDescriptor',
-                            'value_id': 'hgnc:1097',
+                            'gene_id': 'hgnc:1097',
                             'label': 'BRAF'
                         }
                     }
