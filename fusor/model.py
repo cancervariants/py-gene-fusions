@@ -44,7 +44,7 @@ class CriticalDomain(BaseModel):
     status: DomainStatus
     name: StrictStr
     id: StrictStr
-    gene: GeneDescriptor
+    gene_descriptor: GeneDescriptor
 
     _validate_id = validator('id', allow_reuse=True)(check_curie)
 
@@ -62,7 +62,7 @@ class CriticalDomain(BaseModel):
                 'status': 'lost',
                 'name': 'cystatin domain',
                 'id': 'interpro:IPR000010',
-                'gene': {
+                'gene_descriptor': {
                     'id': 'gene:CST1',
                     'gene_id': 'hgnc:2743',
                     'label': 'CST1',
@@ -80,7 +80,7 @@ class TranscriptSegmentComponent(BaseModel):
     exon_start_offset: StrictInt = 0
     exon_end: StrictInt
     exon_end_offset: StrictInt = 0
-    gene: GeneDescriptor
+    gene_descriptor: GeneDescriptor
     component_genomic_region: LocationDescriptor
 
     _validate_transcript = \
@@ -103,7 +103,7 @@ class TranscriptSegmentComponent(BaseModel):
                 'exon_start_offset': 0,
                 'exon_end': 8,
                 'exon_end_offset': 0,
-                'gene': {
+                'gene_descriptor': {
                     'id': 'gene:TPM3',
                     'gene_id': 'hgnc:12012',
                     'type': 'GeneDescriptor',
@@ -202,7 +202,7 @@ class GeneComponent(BaseModel):
     """Define Gene component class."""
 
     component_type = 'gene'
-    gene: GeneDescriptor
+    gene_descriptor: GeneDescriptor
 
     class Config:
         """Configure class."""
@@ -216,7 +216,7 @@ class GeneComponent(BaseModel):
                 prop.pop('title', None)
             schema['example'] = {
                 'component_type': 'gene',
-                'gene': {
+                'gene_descriptor': {
                     'id': 'gene:BRAF',
                     'gene_id': 'hgnc:1097',
                     'label': 'BRAF',
@@ -264,7 +264,7 @@ class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class"""
 
     type: RegulatoryElementType
-    gene: GeneDescriptor
+    gene_descriptor: GeneDescriptor
 
     class Config:
         """Configure class."""
@@ -278,7 +278,7 @@ class RegulatoryElement(BaseModel):
                 prop.pop('title', None)
             schema['example'] = {
                 'type': 'promoter',
-                'gene': {
+                'gene_descriptor': {
                     'id': 'gene:BRAF',
                     'gene_id': 'hgnc:1097',
                     'label': 'BRAF',

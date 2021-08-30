@@ -46,13 +46,13 @@ def critical_domains(gene_descriptors):
             'status': 'preserved',
             'name': 'phlebovirus glycoprotein g1',
             'id': 'interpro:IPR010826',
-            'gene': gene_descriptors[0]
+            'gene_descriptor': gene_descriptors[0]
         },
         {
             'status': 'lost',
             'name': 'tyrosine kinase catalytic domain',
             'id': 'interpro:IPR020635',
-            'gene': gene_descriptors[3]
+            'gene_descriptor': gene_descriptors[3]
         }
     ]
 
@@ -94,7 +94,7 @@ def transcript_segments(location_descriptors, gene_descriptors):
             'exon_start_offset': -9,
             'exon_end': 8,
             'exon_end_offset': 7,
-            'gene': gene_descriptors[0],
+            'gene_descriptor': gene_descriptors[0],
             'component_genomic_region': location_descriptors[1]
         },
         {
@@ -102,7 +102,7 @@ def transcript_segments(location_descriptors, gene_descriptors):
             'transcript': 'refseq:NM_034348.3',
             'exon_start': 1,
             'exon_end': 8,
-            'gene': gene_descriptors[3],
+            'gene_descriptor': gene_descriptors[3],
             'component_genomic_region': location_descriptors[0]
         },
         {
@@ -111,7 +111,7 @@ def transcript_segments(location_descriptors, gene_descriptors):
             'exon_start': 7,
             'exon_end': 14,
             'exon_end_offset': -5,
-            'gene': gene_descriptors[4],
+            'gene_descriptor': gene_descriptors[4],
             'component_genomic_region': location_descriptors[0]
         }
     ]
@@ -123,7 +123,7 @@ def gene_components(gene_descriptors):
     return [
         {
             'component_type': 'gene',
-            'gene': gene_descriptors[1],
+            'gene_descriptor': gene_descriptors[1],
         }
     ]
 
@@ -185,7 +185,7 @@ def regulatory_elements(gene_descriptors):
     return [
         {
             'type': 'promoter',
-            'gene': gene_descriptors[0]
+            'gene_descriptor': gene_descriptors[0]
         }
     ]
 
@@ -208,9 +208,9 @@ def test_critical_domain(critical_domains, gene_descriptors):
     assert test_domain.status == 'preserved'
     assert test_domain.name == 'phlebovirus glycoprotein g1'
     assert test_domain.id == 'interpro:IPR010826'
-    assert test_domain.gene.id == 'gene:G1'
-    assert test_domain.gene.label == 'G1'
-    assert test_domain.gene.gene.gene_id == 'hgnc:9339'
+    assert test_domain.gene_descriptor.id == 'gene:G1'
+    assert test_domain.gene_descriptor.label == 'G1'
+    assert test_domain.gene_descriptor.gene.gene_id == 'hgnc:9339'
 
     # test status string
     with pytest.raises(ValidationError) as exc_info:
@@ -218,7 +218,7 @@ def test_critical_domain(critical_domains, gene_descriptors):
             'status': 'gained',
             'name': 'tyrosine kinase catalytic domain',
             'id': 'interpro:IPR020635',
-            'gene': gene_descriptors[0]
+            'gene_descriptor': gene_descriptors[0]
         })
     msg = "value is not a valid enumeration member; permitted: 'lost', 'preserved'"  # noqa: E501
     check_validation_error(exc_info, msg)
@@ -229,7 +229,7 @@ def test_critical_domain(critical_domains, gene_descriptors):
             'status': 'lost',
             'name': 'tyrosine kinase catalytic domain',
             'id': 'interpro_IPR020635',
-            'gene': gene_descriptors[0]
+            'gene_descriptor': gene_descriptors[0]
         })
     msg = 'must be a CURIE'
     check_validation_error(exc_info, msg)
@@ -243,9 +243,9 @@ def test_transcript_segment_component(transcript_segments):
     assert test_component.exon_start_offset == -9
     assert test_component.exon_end == 8
     assert test_component.exon_end_offset == 7
-    assert test_component.gene.id == 'gene:G1'
-    assert test_component.gene.label == 'G1'
-    assert test_component.gene.gene.gene_id == 'hgnc:9339'
+    assert test_component.gene_descriptor.id == 'gene:G1'
+    assert test_component.gene_descriptor.label == 'G1'
+    assert test_component.gene_descriptor.gene.gene_id == 'hgnc:9339'
     test_region = test_component.component_genomic_region
     assert test_region.location.species_id == 'taxonomy:9606'
     assert test_region.location.type == 'ChromosomeLocation'
@@ -325,16 +325,16 @@ def test_genomic_region_component(genomic_region_components):
 
 def test_gene_component(gene_descriptors):
     """Test that Gene component initializes correctly."""
-    test_component = GeneComponent(**{'gene': gene_descriptors[0]})
+    test_component = GeneComponent(**{'gene_descriptor': gene_descriptors[0]})
     assert test_component.component_type == 'gene'
-    assert test_component.gene.id == 'gene:G1'
-    assert test_component.gene.label == 'G1'
-    assert test_component.gene.gene.gene_id == 'hgnc:9339'
+    assert test_component.gene_descriptor.id == 'gene:G1'
+    assert test_component.gene_descriptor.label == 'G1'
+    assert test_component.gene_descriptor.gene.gene_id == 'hgnc:9339'
 
     # test CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
         GeneComponent(**{
-            'gene': {
+            'gene_descriptor': {
                 'id': 'G1',
                 'gene': {'gene_id': 'hgnc:9339'},
                 'label': 'G1'
@@ -364,9 +364,9 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
     assert test_reg_elmt.type.value == 'promoter'
-    assert test_reg_elmt.gene.id == 'gene:G1'
-    assert test_reg_elmt.gene.gene.gene_id == 'hgnc:9339'
-    assert test_reg_elmt.gene.label == 'G1'
+    assert test_reg_elmt.gene_descriptor.id == 'gene:G1'
+    assert test_reg_elmt.gene_descriptor.gene.gene_id == 'hgnc:9339'
+    assert test_reg_elmt.gene_descriptor.label == 'G1'
 
     # check type constraint
     with pytest.raises(ValidationError) as exc_info:
