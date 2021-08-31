@@ -124,16 +124,13 @@ class LinkerComponent(BaseModel):
     linker_sequence: SequenceDescriptor
 
     @validator('linker_sequence')
-    def validate(cls, v):
+    def validate_sequence(cls, v):
         """Enforce nucleotide base code requirements on sequence literals."""
         if isinstance(v, dict):
             try:
                 sequence = v['sequence']
             except KeyError:
-                if 'linker_sequence' in v:
-                    sequence = v['linker_sequence']['sequence']
-                else:
-                    raise TypeError
+                raise TypeError
         elif isinstance(v, SequenceDescriptor):
             sequence = v.sequence
         else:
