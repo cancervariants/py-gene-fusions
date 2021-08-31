@@ -489,6 +489,35 @@ def test_fusion(critical_domains, transcript_segments,
 
     assert fusion.transcript_components[0].transcript == 'refseq:NM_034348.3'
 
+    # check correct parsing of nested items
+    fusion = Fusion(**{
+        'transcript_components': [
+            {
+                'component_type': 'gene',
+                'gene_descriptor': {
+                    'type': 'GeneDescriptor',
+                    'id': 'gene:NTRK1',
+                    'label': 'NTRK1',
+                    'gene_id': 'hgnc:8031'
+                }
+            },
+            {
+                'component_type': 'gene',
+                'gene_descriptor': {
+                    'type': 'GeneDescriptor',
+                    'id': 'gene:ABL1',
+                    'label': 'ABL1',
+                    'gene_id': 'hgnc:76'
+                }
+            }
+        ],
+        'regulatory_elements': []
+    })
+    assert fusion.transcript_components[0].component_type == 'gene'
+    assert fusion.transcript_components[0].gene_descriptor.id == 'gene:NTRK1'
+    assert fusion.transcript_components[1].component_type == 'gene'
+    assert fusion.transcript_components[1].gene_descriptor.type == 'GeneDescriptor'  # noqa: E501
+
     # test that non-component properties are optional
     assert Fusion(**{
         'transcript_components': [
