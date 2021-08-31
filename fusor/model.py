@@ -164,7 +164,7 @@ class LinkerComponent(BaseModel):
             }
 
 
-class Strand(Enum):
+class Strand(str, Enum):
     """Define possible values for strand"""
 
     POSITIVE = "+"
@@ -257,7 +257,7 @@ class UnknownGeneComponent(BaseModel):
             }
 
 
-class Event(Enum):
+class Event(str, Enum):
     """Define Event class (causative event)"""
 
     REARRANGEMENT = 'rearrangement'
@@ -265,7 +265,7 @@ class Event(Enum):
     TRANSSPLICING = 'trans-splicing'
 
 
-class RegulatoryElementType(Enum):
+class RegulatoryElementType(str, Enum):
     """Define possible types of Regulatory Elements."""
 
     PROMOTER = 'promoter'
