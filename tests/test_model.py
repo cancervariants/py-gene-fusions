@@ -295,6 +295,30 @@ def test_transcript_segment_component(transcript_segments):
     msg = 'string does not match regex "^\w[^:]*:.+$"'  # noqa: W605
     check_validation_error(exc_info, msg)
 
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert TranscriptSegmentComponent(**{
+            'component_type': 'genomic_region',
+            'transcript': 'NM_152263.3',
+            'exon_start': '1',
+            'exon_start_offset': '-9',
+            'exon_end': '8',
+            'exon_end_offset': '7',
+            'gene_descriptor': {
+                'id': 'test:1',
+                'gene': {'id': 'hgnc:1'},
+                'label': 'G1'
+            },
+            'component_genomic_region': {
+                'location': {
+                    'species_id': 'taxonomy:9606', 'chr': '12',
+                    'interval': {'start': 'p12.1', 'end': 'p12.2'},
+                }
+            }
+        })
+    msg = "unexpected value; permitted: <ComponentType.TRANSCRIPT_SEGMENT: 'transcript_segment'>"  # noqa: E501
+    check_validation_error(exc_info, msg)
+
 
 def test_linker_component(linkers):
     """Test Linker object initializes correctly"""
@@ -322,8 +346,35 @@ def test_linker_component(linkers):
     msg = 'Linker sequence must consist only of {A,C,G,T}'
     check_validation_error(exc_info, msg)
 
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert LinkerComponent(**{
+            'component_type': 'genomic_region',
+            'linker_sequence':
+                {
+                    'id': 'sequence:ATG',
+                    'sequence': 'ATG'
+                }
+        })
+    msg = "unexpected value; permitted: <ComponentType.LINKER_SEQUENCE: 'linker_sequence'>"  # noqa: E501
+    check_validation_error(exc_info, msg)
 
-def test_genomic_region_component(genomic_region_components):
+    # test no extras
+    with pytest.raises(ValidationError) as exc_info:
+        assert LinkerComponent(**{
+            'component_type': 'linker_sequence',
+            'linker_sequence': {
+                'id': 'sequence:G',
+                'sequence': 'G'
+            },
+            'bonus_value': 'bonus',
+        })
+    msg = 'extra fields not permitted'
+    check_validation_error(exc_info, msg)
+
+
+def test_genomic_region_component(genomic_region_components,
+                                  location_descriptors):
     """Test that GenomicRegionComponent initializes correctly."""
     test_component = GenomicRegionComponent(**genomic_region_components[0])
     assert test_component.component_type == 'genomic_region'
@@ -349,6 +400,16 @@ def test_genomic_region_component(genomic_region_components):
     msg = 'Must give values for either `location`, `location_id`, or both'
     check_validation_error(exc_info, msg)
 
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert GenomicRegionComponent(**{
+            'component_type': 'gene',
+            'region': location_descriptors[0],
+            'strand': '+'
+        })
+    msg = "unexpected value; permitted: <ComponentType.GENOMIC_REGION: 'genomic_region'>"  # noqa: E501
+    check_validation_error(exc_info, msg)
+
 
 def test_gene_component(gene_descriptors):
     """Test that Gene component initializes correctly."""
@@ -370,11 +431,26 @@ def test_gene_component(gene_descriptors):
     msg = 'string does not match regex "^\\w[^:]*:.+$"'
     check_validation_error(exc_info, msg)
 
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert GeneComponent(**{
+            'component_type': 'unknown_gene',
+            'gene_descriptor': gene_descriptors[0]
+        })
+    msg = "unexpected value; permitted: <ComponentType.GENE: 'gene'>"  # noqa: E501
+    check_validation_error(exc_info, msg)
+
 
 def test_unknown_gene_component():
     """Test that unknown_gene component initializes correctly."""
     test_component = UnknownGeneComponent()
     assert test_component.component_type == 'unknown_gene'
+
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert UnknownGeneComponent(component_type='gene')
+    msg = "unexpected value; permitted: <ComponentType.UNKNOWN_GENE: 'unknown_gene'>"  # noqa: E501
+    check_validation_error(exc_info, msg)
 
 
 def test_event():
@@ -426,6 +502,35 @@ def test_fusion(critical_domains, transcript_segments,
 
     assert fusion.transcript_components[0].transcript == 'refseq:NM_034348.3'
 
+    # check correct parsing of nested items
+    fusion = Fusion(**{
+        'transcript_components': [
+            {
+                'component_type': 'gene',
+                'gene_descriptor': {
+                    'type': 'GeneDescriptor',
+                    'id': 'gene:NTRK1',
+                    'label': 'NTRK1',
+                    'gene_id': 'hgnc:8031'
+                }
+            },
+            {
+                'component_type': 'gene',
+                'gene_descriptor': {
+                    'type': 'GeneDescriptor',
+                    'id': 'gene:ABL1',
+                    'label': 'ABL1',
+                    'gene_id': 'hgnc:76'
+                }
+            }
+        ],
+        'regulatory_elements': []
+    })
+    assert fusion.transcript_components[0].component_type == 'gene'
+    assert fusion.transcript_components[0].gene_descriptor.id == 'gene:NTRK1'
+    assert fusion.transcript_components[1].component_type == 'gene'
+    assert fusion.transcript_components[1].gene_descriptor.type == 'GeneDescriptor'  # noqa: E501
+
     # test that non-component properties are optional
     assert Fusion(**{
         'transcript_components': [
@@ -439,8 +544,30 @@ def test_fusion(critical_domains, transcript_segments,
             unknown_component,
             gene_components[0],
             transcript_segments[2],
-            linkers[1],
-            genomic_region_components[1]
+            genomic_region_components[1],
+            linkers[0],
+        ]
+    })
+    assert Fusion(**{
+        'transcript_components': [
+            {
+                'component_type': 'linker_sequence',
+                'linker_sequence': {
+                    'id': 'a:b',
+                    'type': 'SequenceDescriptor',
+                    'sequence': 'AC',
+                    'residue_type': 'SO:0000348'
+                }
+            },
+            {
+                'component_type': 'linker_sequence',
+                'linker_sequence': {
+                    'id': 'a:b',
+                    'type': 'SequenceDescriptor',
+                    'sequence': 'AC',
+                    'residue_type': 'SO:0000348'
+                }
+            }
         ]
     })
 

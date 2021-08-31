@@ -1,7 +1,8 @@
 """Model for fusion class"""
 import json
-from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr
-from typing import Optional, List, Union
+from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
+    Extra
+from typing import Optional, List, Union, Literal
 from enum import Enum
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
@@ -28,6 +29,8 @@ class CriticalDomain(BaseModel):
     class Config:
         """Configure class."""
 
+        extra = Extra.forbid
+
         @staticmethod
         def schema_extra(schema, _):
             """Provide example"""
@@ -48,10 +51,20 @@ class CriticalDomain(BaseModel):
             }
 
 
+class ComponentType(str, Enum):
+    """Define possible transcript components."""
+
+    TRANSCRIPT_SEGMENT = 'transcript_segment'
+    GENOMIC_REGION = 'genomic_region'
+    LINKER_SEQUENCE = 'linker_sequence'
+    GENE = 'gene'
+    UNKNOWN_GENE = 'unknown_gene'
+
+
 class TranscriptSegmentComponent(BaseModel):
     """Define TranscriptSegment class"""
 
-    component_type = 'transcript_segment'
+    component_type: Literal[ComponentType.TRANSCRIPT_SEGMENT] = ComponentType.TRANSCRIPT_SEGMENT  # noqa: E501
     transcript: CURIE
     exon_start: StrictInt
     exon_start_offset: StrictInt = 0
@@ -64,6 +77,8 @@ class TranscriptSegmentComponent(BaseModel):
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -110,11 +125,11 @@ class TranscriptSegmentComponent(BaseModel):
 class LinkerComponent(BaseModel):
     """Define Linker class (linker sequence)"""
 
-    component_type = 'linker_sequence'
+    component_type: Literal[ComponentType.LINKER_SEQUENCE] = ComponentType.LINKER_SEQUENCE  # noqa: E501
     linker_sequence: SequenceDescriptor
 
     @validator('linker_sequence')
-    def validate(cls, v):
+    def validate_sequence(cls, v):
         """Enforce nucleotide base code requirements on sequence literals."""
         if isinstance(v, dict):
             try:
@@ -131,6 +146,8 @@ class LinkerComponent(BaseModel):
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -150,7 +167,7 @@ class LinkerComponent(BaseModel):
             }
 
 
-class Strand(Enum):
+class Strand(str, Enum):
     """Define possible values for strand"""
 
     POSITIVE = "+"
@@ -160,7 +177,7 @@ class Strand(Enum):
 class GenomicRegionComponent(BaseModel):
     """Define GenomicRegion component class."""
 
-    component_type = 'genomic_region'
+    component_type: Literal[ComponentType.GENOMIC_REGION] = ComponentType.GENOMIC_REGION  # noqa: E501
     region: LocationDescriptor
     strand: Strand
 
@@ -168,6 +185,8 @@ class GenomicRegionComponent(BaseModel):
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -199,11 +218,13 @@ class GenomicRegionComponent(BaseModel):
 class GeneComponent(BaseModel):
     """Define Gene component class."""
 
-    component_type = 'gene'
+    component_type: Literal[ComponentType.GENE] = ComponentType.GENE
     gene_descriptor: GeneDescriptor
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -226,10 +247,12 @@ class GeneComponent(BaseModel):
 class UnknownGeneComponent(BaseModel):
     """Define UnknownGene class"""
 
-    component_type = 'unknown_gene'
+    component_type: Literal[ComponentType.UNKNOWN_GENE] = ComponentType.UNKNOWN_GENE  # noqa: E501
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -243,7 +266,7 @@ class UnknownGeneComponent(BaseModel):
             }
 
 
-class Event(Enum):
+class Event(str, Enum):
     """Define Event class (causative event)"""
 
     REARRANGEMENT = 'rearrangement'
@@ -251,7 +274,7 @@ class Event(Enum):
     TRANSSPLICING = 'trans-splicing'
 
 
-class RegulatoryElementType(Enum):
+class RegulatoryElementType(str, Enum):
     """Define possible types of Regulatory Elements."""
 
     PROMOTER = 'promoter'
@@ -266,6 +289,8 @@ class RegulatoryElement(BaseModel):
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -291,9 +316,10 @@ class Fusion(BaseModel):
     r_frame_preserved: Optional[StrictBool]
     protein_domains: Optional[List[CriticalDomain]]
     transcript_components: List[Union[TranscriptSegmentComponent,
-                                      GeneComponent, LinkerComponent,
-                                      UnknownGeneComponent,
-                                      GenomicRegionComponent]]
+                                      GeneComponent,
+                                      GenomicRegionComponent,
+                                      LinkerComponent,
+                                      UnknownGeneComponent]]
     causative_event: Optional[Event]
     regulatory_elements: Optional[List[RegulatoryElement]]
 
@@ -312,6 +338,8 @@ class Fusion(BaseModel):
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
