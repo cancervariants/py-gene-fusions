@@ -1,35 +1,11 @@
 """Model for fusion class"""
 import json
-from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
-    root_validator
+from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr
 from typing import Optional, List, Union
-from gene.schemas import GeneDescriptor, SequenceLocation, ChromosomeLocation
 from enum import Enum
-from variation.schemas.ga4gh_vrs import SequenceState
-
-
-def check_curie(cls, v):
-    """Validate curies."""
-    if v is not None:
-        def _is_curie(value: str):
-            """Check that value is a curie
-
-            :param str value: Value to validate
-            """
-            assert all(
-                [
-                    value.count(':') == 1,
-                    value.find(' ') == -1,
-                    value[-1] != ':'
-                ]
-            ), 'must be a CURIE'
-
-        if isinstance(v, str):
-            _is_curie(v)
-        elif isinstance(v, list):
-            for item in v:
-                _is_curie(item)
-    return v
+from ga4gh.vrsatile.pydantic import return_value
+from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
+    LocationDescriptor, SequenceDescriptor, CURIE
 
 
 class DomainStatus(str, Enum):
@@ -44,10 +20,10 @@ class CriticalDomain(BaseModel):
 
     status: DomainStatus
     name: StrictStr
-    id: StrictStr
-    gene: GeneDescriptor
+    id: CURIE
+    gene_descriptor: GeneDescriptor
 
-    _validate_id = validator('id', allow_reuse=True)(check_curie)
+    _get_id_val = validator('id', allow_reuse=True)(return_value)
 
     class Config:
         """Configure class."""
@@ -63,50 +39,28 @@ class CriticalDomain(BaseModel):
                 'status': 'lost',
                 'name': 'cystatin domain',
                 'id': 'interpro:IPR000010',
-                'gene': {
+                'gene_descriptor': {
                     'id': 'gene:CST1',
-                    'value_id': 'hgnc:2743',
+                    'gene_id': 'hgnc:2743',
                     'label': 'CST1',
                     'type': 'GeneDescriptor',
                 }
             }
 
 
-class LocationDescriptor(BaseModel):
-    """Define VRSATILE LocationDescriptor class."""
-
-    id: StrictStr
-    type = 'LocationDescriptor'
-    value: Optional[Union[SequenceLocation, ChromosomeLocation]]
-    value_id: Optional[StrictStr]
-    label: Optional[StrictStr]
-
-    _validate_id = validator('id', allow_reuse=True)(check_curie)
-    _validate_value_id = validator('value_id', allow_reuse=True)(check_curie)
-
-    @root_validator(pre=True)
-    def check_value_or_value_id_present(cls, values):
-        """Check that at least one of {`value`, `value_id`} is provided."""
-        msg = 'Must give values for either `value`, `value_id`, or both'
-        value, value_id = values.get('value'), values.get('value_id')
-        assert value or value_id, msg
-        return values
-
-
 class TranscriptSegmentComponent(BaseModel):
     """Define TranscriptSegment class"""
 
     component_type = 'transcript_segment'
-    transcript: StrictStr
+    transcript: CURIE
     exon_start: StrictInt
     exon_start_offset: StrictInt = 0
     exon_end: StrictInt
     exon_end_offset: StrictInt = 0
-    gene: GeneDescriptor
+    gene_descriptor: GeneDescriptor
     component_genomic_region: LocationDescriptor
 
-    _validate_transcript = \
-        validator('transcript', allow_reuse=True)(check_curie)
+    _get_transcript_val = validator('transcript', allow_reuse=True)(return_value)  # noqa: E501
 
     class Config:
         """Configure class."""
@@ -125,54 +79,32 @@ class TranscriptSegmentComponent(BaseModel):
                 'exon_start_offset': 0,
                 'exon_end': 8,
                 'exon_end_offset': 0,
-                'gene': {
+                'gene_descriptor': {
                     'id': 'gene:TPM3',
-                    'value_id': 'hgnc:12012',
+                    'gene_id': 'hgnc:12012',
                     'type': 'GeneDescriptor',
                     'label': 'TPM3',
                 },
                 'component_genomic_region': {
                     'id': 'TPM3:exon1-exon8',
                     'type': 'LocationDescriptor',
-                    'value': {
+                    'location': {
                         'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                         'type': 'SequenceLocation',
                         'interval': {
-                            'start': 154192135,
-                            'end': 154170399,
-                            'type': 'SimpleInterval'
+                            'start': {
+                                'type': 'Number',
+                                'value': 154192135,
+                            },
+                            'end': {
+                                'type': 'Number',
+                                'value': 154170399,
+                            },
+                            'type': 'SequenceInterval',
                         }
                     }
                 }
             }
-
-
-class SequenceDescriptor(BaseModel):
-    """Define VRSATILE Sequence Descriptor class."""
-
-    id: StrictStr
-    type = 'SequenceDescriptor'
-    value: Optional[SequenceState]
-    value_id: Optional[StrictStr]
-    residue_type = 'SO:0000348'
-
-    _validate_id = validator('id', allow_reuse=True)(check_curie)
-    _validate_value_id = validator('value_id', allow_reuse=True)(check_curie)
-
-    @root_validator(pre=True)
-    def check_value_or_value_id_present(cls, values):
-        """Check that at least one of {`value`, `value_id`} is provided."""
-        msg = 'Must give values for either `value`, `value_id`, or both'
-        value, value_id = values.get('value'), values.get('value_id')
-        assert value or value_id, msg
-        return values
-
-    @validator('value')
-    def check_dna_nucleobases(cls, v):
-        """Check that sequence consists of DNA nucleobases only"""
-        msg = 'Linker sequence must consist only of {A,C,G,T}'
-        assert set(v.sequence.upper()) <= set('ACGT'), msg
-        return v
 
 
 class LinkerComponent(BaseModel):
@@ -180,6 +112,22 @@ class LinkerComponent(BaseModel):
 
     component_type = 'linker_sequence'
     linker_sequence: SequenceDescriptor
+
+    @validator('linker_sequence')
+    def validate(cls, v):
+        """Enforce nucleotide base code requirements on sequence literals."""
+        if isinstance(v, dict):
+            try:
+                sequence = v['sequence']
+            except KeyError:
+                raise TypeError
+        elif isinstance(v, SequenceDescriptor):
+            sequence = v.sequence
+        else:
+            raise TypeError
+        msg = 'Linker sequence must consist only of {A,C,G,T}'
+        assert set('ACGT') >= set(sequence), msg
+        return v
 
     class Config:
         """Configure class."""
@@ -196,10 +144,7 @@ class LinkerComponent(BaseModel):
                 'linker_sequence': {
                     'id': 'sequence:ACGT',
                     'type': 'SequenceDescriptor',
-                    'value': {
-                        'sequence': 'ACGT',
-                        'type': 'SequenceState',
-                    },
+                    'sequence': 'ACGT',
                     'residue_type': 'SO:0000348'
                 }
             }
@@ -236,13 +181,13 @@ class GenomicRegionComponent(BaseModel):
                 'region': {
                     'id': 'chr12:44908821-44908822(+)',
                     'type': 'LocationDescriptor',
-                    'value': {
+                    'location': {
                         'type': 'SequenceLocation',
                         'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',  # noqa: E501
                         'interval': {
-                            'type': 'SimpleInterval',
-                            'start': 44908821,
-                            'end': 44908822,
+                            'type': 'SequenceInterval',
+                            'start': {'type': 'Number', 'value': 44908821},
+                            'end': {'type': 'Number', 'value': 44908822},
                         },
                     },
                     'label': 'chr12:44908821-44908822(+)'
@@ -255,7 +200,7 @@ class GeneComponent(BaseModel):
     """Define Gene component class."""
 
     component_type = 'gene'
-    gene: GeneDescriptor
+    gene_descriptor: GeneDescriptor
 
     class Config:
         """Configure class."""
@@ -269,9 +214,9 @@ class GeneComponent(BaseModel):
                 prop.pop('title', None)
             schema['example'] = {
                 'component_type': 'gene',
-                'gene': {
+                'gene_descriptor': {
                     'id': 'gene:BRAF',
-                    'value_id': 'hgnc:1097',
+                    'gene_id': 'hgnc:1097',
                     'label': 'BRAF',
                     'type': 'GeneDescriptor',
                 }
@@ -317,7 +262,7 @@ class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class"""
 
     type: RegulatoryElementType
-    gene: GeneDescriptor
+    gene_descriptor: GeneDescriptor
 
     class Config:
         """Configure class."""
@@ -331,9 +276,9 @@ class RegulatoryElement(BaseModel):
                 prop.pop('title', None)
             schema['example'] = {
                 'type': 'promoter',
-                'gene': {
+                'gene_descriptor': {
                     'id': 'gene:BRAF',
-                    'value_id': 'hgnc:1097',
+                    'gene_id': 'hgnc:1097',
                     'label': 'BRAF',
                     'type': 'GeneDescriptor',
                 }
@@ -384,7 +329,7 @@ class Fusion(BaseModel):
                         'id': 'interpro:IPR000010',
                         'gene': {
                             'id': 'gene:CST1',
-                            'value_id': 'hgnc:2743',
+                            'gene_id': 'hgnc:2743',
                             'label': 'CST1',
                             'type': 'GeneDescriptor',
                         }
@@ -400,20 +345,26 @@ class Fusion(BaseModel):
                         'exon_end_offset': 0,
                         'gene': {
                             'id': 'gene:TPM3',
-                            'value_id': 'hgnc:12012',
+                            'gene_id': 'hgnc:12012',
                             'type': 'GeneDescriptor',
                             'label': 'TPM3',
                         },
                         'component_genomic_region': {
                             'id': 'TPM3:exon1-exon8',
                             'type': 'LocationDescriptor',
-                            'value': {
+                            'location': {
                                 'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                                 'type': 'SequenceLocation',
                                 'interval': {
-                                    'start': 154192135,
-                                    'end': 154170399,
-                                    'type': 'SimpleInterval'
+                                    'start': {
+                                        'type': 'Number',
+                                        'value': 154192135
+                                    },
+                                    'end': {
+                                        'type': 'Number',
+                                        'value': 154170399
+                                    },
+                                    'type': 'SequenceInterval'
                                 }
                             }
                         }
@@ -423,7 +374,7 @@ class Fusion(BaseModel):
                         'gene': {
                             'id': 'gene:ALK',
                             'type': 'GeneDescriptor',
-                            'value_id': 'hgnc:427',
+                            'gene_id': 'hgnc:427',
                             'label': 'ALK'
                         }
                     }
@@ -435,7 +386,7 @@ class Fusion(BaseModel):
                         'gene': {
                             'id': 'gene:BRAF',
                             'type': 'GeneDescriptor',
-                            'value_id': 'hgnc:1097',
+                            'gene_id': 'hgnc:1097',
                             'label': 'BRAF'
                         }
                     }

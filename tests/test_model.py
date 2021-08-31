@@ -1,10 +1,9 @@
 """Module for testing the fusion model."""
 from pydantic import ValidationError
 import pytest
-from fusor.model import LocationDescriptor, TranscriptSegmentComponent, \
+from fusor.model import TranscriptSegmentComponent, \
     GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
-    LinkerComponent, SequenceDescriptor, CriticalDomain, Event, \
-    RegulatoryElement, Fusion
+    LinkerComponent, CriticalDomain, Event, RegulatoryElement, Fusion
 
 
 @pytest.fixture(scope='module')
@@ -13,23 +12,28 @@ def gene_descriptors():
     return [
         {
             'id': 'gene:G1',
-            'value': {'id': 'hgnc:9339'},
+            'gene': {'gene_id': 'hgnc:9339'},
             'label': 'G1'
         },
         {
             'id': 'gene:ABL',
-            'value': {'id': 'hgnc:76'},
+            'gene': {'gene_id': 'hgnc:76'},
             'label': 'ABL'
         },
         {
             'id': 'gene:BCR1',
-            'value': {'id': 'hgnc:1014'},
+            'gene': {'gene_id': 'hgnc:1014'},
             'label': 'BCR1'
         },
         {
             'id': 'gene:NTRK1',
-            'value_id': 'hgnc:8031',
+            'gene_id': 'hgnc:8031',
             'label': 'NTRK1'
+        },
+        {
+            'id': 'gene:ALK',
+            'gene_id': 'hgnc:1837',
+            'label': 'ALK',
         }
     ]
 
@@ -42,13 +46,13 @@ def critical_domains(gene_descriptors):
             'status': 'preserved',
             'name': 'phlebovirus glycoprotein g1',
             'id': 'interpro:IPR010826',
-            'gene': gene_descriptors[0]
+            'gene_descriptor': gene_descriptors[0]
         },
         {
             'status': 'lost',
             'name': 'tyrosine kinase catalytic domain',
             'id': 'interpro:IPR020635',
-            'gene': gene_descriptors[3]
+            'gene_descriptor': gene_descriptors[3]
         }
     ]
 
@@ -60,9 +64,18 @@ def location_descriptors():
         {
             'id': 'NC_000001.11:15455-15566',
             'type': 'LocationDescriptor',
-            'value': {
+            'location': {
                 'sequence_id': 'ncbi:NC_000001.11',
-                'interval': {'start': 15455, 'end': 15566},
+                'interval': {
+                    'start': {
+                        'type': 'Number',
+                        'value': 15455
+                    },
+                    'end': {
+                        'type': 'Number',
+                        'value': 15566
+                    }
+                },
                 'type': 'SequenceLocation'
             },
             'label': 'NC_000001.11:15455-15566',
@@ -70,7 +83,7 @@ def location_descriptors():
         {
             'id': 'chr12:p12.1-p12.2',
             'type': 'LocationDescriptor',
-            'value': {
+            'location': {
                 'species_id': 'taxonomy:9606',
                 'chr': '12',
                 'interval': {'start': 'p12.1', 'end': 'p12.2'}
@@ -81,7 +94,7 @@ def location_descriptors():
 
 
 @pytest.fixture(scope='module')
-def transcript_segments(location_descriptors):
+def transcript_segments(location_descriptors, gene_descriptors):
     """Provide possible transcript_segment input."""
     return [
         {
@@ -90,7 +103,7 @@ def transcript_segments(location_descriptors):
             'exon_start_offset': -9,
             'exon_end': 8,
             'exon_end_offset': 7,
-            'gene': {'id': 'test:1', 'value': {'id': 'hgnc:1'}, 'label': 'G1'},
+            'gene_descriptor': gene_descriptors[0],
             'component_genomic_region': location_descriptors[1]
         },
         {
@@ -98,11 +111,7 @@ def transcript_segments(location_descriptors):
             'transcript': 'refseq:NM_034348.3',
             'exon_start': 1,
             'exon_end': 8,
-            'gene': {
-                'id': 'gene:NTRK1',
-                'value_id': 'hgnc:8031',
-                'label': 'NTRK1',
-            },
+            'gene_descriptor': gene_descriptors[3],
             'component_genomic_region': location_descriptors[0]
         },
         {
@@ -111,26 +120,19 @@ def transcript_segments(location_descriptors):
             'exon_start': 7,
             'exon_end': 14,
             'exon_end_offset': -5,
-            'gene': {
-                'id': 'gene:ALK',
-                'value_id': 'hgnc:1837',
-                'label': 'ALK',
-            },
+            'gene_descriptor': gene_descriptors[4],
             'component_genomic_region': location_descriptors[0]
         }
     ]
 
 
 @pytest.fixture(scope='module')
-def gene_components():
+def gene_components(gene_descriptors):
     """Provide possible gene component input data."""
     return [
         {
             'component_type': 'gene',
-            'gene': {
-                'id': 'gene:ABL1',
-                'value_id': 'hgnc:2000',
-            }
+            'gene_descriptor': gene_descriptors[1],
         }
     ]
 
@@ -159,19 +161,19 @@ def sequence_descriptors():
         {
             'id': 'sequence:ACGT',
             'type': 'SequenceDescriptor',
-            'value': {
-                'sequence': 'ACGT',
-                'type': 'SequenceState',
-            },
+            'sequence': 'ACGT',
             'residue_type': 'SO:0000348'
         },
         {
-            'id': 'sequence:ATGTA',
+            'id': 'sequence:T',
             'type': 'SequenceDescriptor',
-            'value': {
-                'sequence': 'ATGTA',
-                'type': 'SequenceState',
-            },
+            'sequence': 'T',
+            'residue_type': 'SO:0000348'
+        },
+        {
+            'id': 'sequence:AAAAA',
+            'type': 'SequenceDescriptor',
+            'sequence': 'AAAAA',
             'residue_type': 'SO:0000348'
         }
     ]
@@ -188,6 +190,10 @@ def linkers(sequence_descriptors):
         {
             'component_type': 'linker_sequence',
             'linker_sequence': sequence_descriptors[1]
+        },
+        {
+            'component_type': 'linker_sequence',
+            'linker_sequence': sequence_descriptors[2]
         }
     ]
 
@@ -198,9 +204,21 @@ def regulatory_elements(gene_descriptors):
     return [
         {
             'type': 'promoter',
-            'gene': gene_descriptors[0]
+            'gene_descriptor': gene_descriptors[0]
         }
     ]
+
+
+def check_validation_error(exc_info, expected_msg: str,
+                           index: int = 0):
+    """Check ValidationError instance for expected message.
+    :param ExceptionInfo exc_info: ValidationError instance raised and captured
+        by pytest.
+    :param str expected_msg: message expected to be provided by error
+    :param int index: optional index (if multiple errors are raised)
+    :return: None, but may raise AssertionError if incorrect behavior found.
+    """
+    assert exc_info.value.errors()[index]['msg'] == expected_msg
 
 
 def test_critical_domain(critical_domains, gene_descriptors):
@@ -209,80 +227,31 @@ def test_critical_domain(critical_domains, gene_descriptors):
     assert test_domain.status == 'preserved'
     assert test_domain.name == 'phlebovirus glycoprotein g1'
     assert test_domain.id == 'interpro:IPR010826'
-    assert test_domain.gene.id == 'gene:G1'
-    assert test_domain.gene.label == 'G1'
-    assert test_domain.gene.value.id == 'hgnc:9339'
+    assert test_domain.gene_descriptor.id == 'gene:G1'
+    assert test_domain.gene_descriptor.label == 'G1'
+    assert test_domain.gene_descriptor.gene.gene_id == 'hgnc:9339'
 
     # test status string
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         CriticalDomain(**{
             'status': 'gained',
             'name': 'tyrosine kinase catalytic domain',
             'id': 'interpro:IPR020635',
-            'gene': gene_descriptors[0]
+            'gene_descriptor': gene_descriptors[0]
         })
+    msg = "value is not a valid enumeration member; permitted: 'lost', 'preserved'"  # noqa: E501
+    check_validation_error(exc_info, msg)
 
     # test domain ID CURIE requirement
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         CriticalDomain(**{
             'status': 'lost',
             'name': 'tyrosine kinase catalytic domain',
             'id': 'interpro_IPR020635',
-            'gene': gene_descriptors[0]
+            'gene_descriptor': gene_descriptors[0]
         })
-
-
-def test_location_descriptors(location_descriptors):
-    """Test GenomicRegion class."""
-    # check with SequenceLocation
-    test_loc_descr = LocationDescriptor(**location_descriptors[0])
-    assert test_loc_descr.id == 'NC_000001.11:15455-15566'
-    assert test_loc_descr.type == 'LocationDescriptor'
-    assert test_loc_descr.value.sequence_id == 'ncbi:NC_000001.11'
-    assert test_loc_descr.value.interval.start == 15455
-    assert test_loc_descr.value.interval.end == 15566
-    assert test_loc_descr.value.type == 'SequenceLocation'
-    assert test_loc_descr.label == 'NC_000001.11:15455-15566'
-
-    # ID required
-    with pytest.raises(ValidationError):
-        LocationDescriptor(**{
-            'value': {
-                'sequence_id': 'ncbi:NC_000001.11',
-                'interval': {
-                    'type': 'SimpleInterval',
-                    'end': 23490823409,
-                    'start': 23940834,
-                },
-                'type': 'SequenceLocation'
-            },
-            'type': 'LocationDescriptor'
-        })
-
-    # check with ChromosomeLocation
-    test_loc_descr = LocationDescriptor(**location_descriptors[1])
-    assert test_loc_descr.id == 'chr12:p12.1-p12.2'
-    assert test_loc_descr.type == 'LocationDescriptor'
-    assert test_loc_descr.value.species_id == 'taxonomy:9606'
-    assert test_loc_descr.value.chr == '12'
-    assert test_loc_descr.value.interval.start == 'p12.1'
-    assert test_loc_descr.value.interval.end == 'p12.2'
-    assert test_loc_descr.label == 'chr12:p12.1-p12.2'
-
-    # ID must be CURIE
-    with pytest.raises(ValidationError):
-        LocationDescriptor(**{
-            'id': 'chr12-p12.1-p12.2',
-            'value': {
-                'species_id': 'taxonomy:9606',
-                'chr': '12',
-                'interval': {
-                    'start': 'p12.1', 'end': 'p12.2',
-                    'type': 'CytobandInterval'
-                },
-                'type': 'ChromosomeLocation'
-            },
-        })
+    msg = 'string does not match regex "^\w[^:]*:.+$"'  # noqa: W605
+    check_validation_error(exc_info, msg)
 
 
 def test_transcript_segment_component(transcript_segments):
@@ -293,65 +262,65 @@ def test_transcript_segment_component(transcript_segments):
     assert test_component.exon_start_offset == -9
     assert test_component.exon_end == 8
     assert test_component.exon_end_offset == 7
-    assert test_component.gene.id == 'test:1'
-    assert test_component.gene.label == 'G1'
-    assert test_component.gene.value.id == 'hgnc:1'
+    assert test_component.gene_descriptor.id == 'gene:G1'
+    assert test_component.gene_descriptor.label == 'G1'
+    assert test_component.gene_descriptor.gene.gene_id == 'hgnc:9339'
     test_region = test_component.component_genomic_region
-    assert test_region.value.species_id == 'taxonomy:9606'
-    assert test_region.value.type == 'ChromosomeLocation'
-    assert test_region.value.chr == '12'
-    assert test_region.value.interval.start == 'p12.1'
-    assert test_region.value.interval.end == 'p12.2'
+    assert test_region.location.species_id == 'taxonomy:9606'
+    assert test_region.location.type == 'ChromosomeLocation'
+    assert test_region.location.chr == '12'
+    assert test_region.location.interval.start == 'p12.1'
+    assert test_region.location.interval.end == 'p12.2'
 
     # check CURIE requirement
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         TranscriptSegmentComponent(**{
             'transcript': 'NM_152263.3',
             'exon_start': '1',
             'exon_start_offset': '-9',
             'exon_end': '8',
             'exon_end_offset': '7',
-            'gene': {'id': 'test:1', 'value': {'id': 'hgnc:1'}, 'label': 'G1'},
+            'gene_descriptor': {
+                'id': 'test:1',
+                'gene': {'id': 'hgnc:1'},
+                'label': 'G1'
+            },
             'component_genomic_region': {
-                'value': {
+                'location': {
                     'species_id': 'taxonomy:9606', 'chr': '12',
                     'interval': {'start': 'p12.1', 'end': 'p12.2'},
                 }
             }
         })
-
-
-def test_sequence_descriptor(sequence_descriptors):
-    """Test that SequenceDescriptor objects initialize correctly"""
-    test_descriptor = SequenceDescriptor(**sequence_descriptors[0])
-    assert test_descriptor.id == 'sequence:ACGT'
-    assert test_descriptor.type == 'SequenceDescriptor'
-    assert test_descriptor.value.sequence == 'ACGT'
-    assert test_descriptor.value.type == 'SequenceState'
-    assert test_descriptor.residue_type == 'SO:0000348'
+    msg = 'string does not match regex "^\w[^:]*:.+$"'  # noqa: W605
+    check_validation_error(exc_info, msg)
 
 
 def test_linker_component(linkers):
     """Test Linker object initializes correctly"""
-    test_linker = LinkerComponent(**linkers[0])
-    assert test_linker.component_type == 'linker_sequence'
-    assert test_linker.linker_sequence.id == 'sequence:ACGT'
-    assert test_linker.linker_sequence.type == 'SequenceDescriptor'
-    assert test_linker.linker_sequence.value.sequence == 'ACGT'
-    assert test_linker.linker_sequence.value.type == 'SequenceState'
-    assert test_linker.linker_sequence.residue_type == 'SO:0000348'
+    def check_linker(actual, expected_id, expected_sequence):
+        assert actual.component_type == 'linker_sequence'
+        assert actual.linker_sequence.id == expected_id
+        assert actual.linker_sequence.sequence == expected_sequence
+        assert actual.linker_sequence.type == 'SequenceDescriptor'
+        assert actual.linker_sequence.residue_type == 'SO:0000348'
+
+    for args in ((LinkerComponent(**linkers[0]), 'sequence:ACGT', 'ACGT'),
+                 (LinkerComponent(**linkers[1]), 'sequence:T', 'T'),
+                 (LinkerComponent(**linkers[2]), 'sequence:AAAAA', 'AAAAA')):
+        check_linker(*args)
 
     # check base validation
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         LinkerComponent(**{
             'linker_sequence':
                 {
                     'id': 'sequence:ABGT',
-                    'value': {
-                        'sequence': 'ABGT'
-                    }
+                    'sequence': 'ABGT'
                 }
         })
+    msg = 'Linker sequence must consist only of {A,C,G,T}'
+    check_validation_error(exc_info, msg)
 
 
 def test_genomic_region_component(genomic_region_components):
@@ -361,13 +330,13 @@ def test_genomic_region_component(genomic_region_components):
     assert test_component.strand.value == '+'
     assert test_component.region.id == 'chr12:p12.1-p12.2'
     assert test_component.region.type == 'LocationDescriptor'
-    assert test_component.region.value.species_id == 'taxonomy:9606'
-    assert test_component.region.value.chr == '12'
-    assert test_component.region.value.interval.start == 'p12.1'
-    assert test_component.region.value.interval.end == 'p12.2'
+    assert test_component.region.location.species_id == 'taxonomy:9606'
+    assert test_component.region.location.chr == '12'
+    assert test_component.region.location.interval.start == 'p12.1'
+    assert test_component.region.location.interval.end == 'p12.2'
     assert test_component.region.label == 'chr12:p12.1-p12.2'
 
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         GenomicRegionComponent(**{
             'region': {
                 'interval': {
@@ -377,25 +346,29 @@ def test_genomic_region_component(genomic_region_components):
             },
             'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl'
         })
+    msg = 'Must give values for either `location`, `location_id`, or both'
+    check_validation_error(exc_info, msg)
 
 
 def test_gene_component(gene_descriptors):
     """Test that Gene component initializes correctly."""
-    test_component = GeneComponent(**{'gene': gene_descriptors[0]})
+    test_component = GeneComponent(**{'gene_descriptor': gene_descriptors[0]})
     assert test_component.component_type == 'gene'
-    assert test_component.gene.id == 'gene:G1'
-    assert test_component.gene.label == 'G1'
-    assert test_component.gene.value.id == 'hgnc:9339'
+    assert test_component.gene_descriptor.id == 'gene:G1'
+    assert test_component.gene_descriptor.label == 'G1'
+    assert test_component.gene_descriptor.gene.gene_id == 'hgnc:9339'
 
     # test CURIE requirement
-    with pytest.raises(ValidationError):
-        GenomicRegionComponent(**{
-            'gene': {
+    with pytest.raises(ValidationError) as exc_info:
+        GeneComponent(**{
+            'gene_descriptor': {
                 'id': 'G1',
-                'value': {'id': 'hgnc:9339'},
+                'gene': {'gene_id': 'hgnc:9339'},
                 'label': 'G1'
             }
         })
+    msg = 'string does not match regex "^\\w[^:]*:.+$"'
+    check_validation_error(exc_info, msg)
 
 
 def test_unknown_gene_component():
@@ -414,20 +387,22 @@ def test_event():
         Event('combination')
 
 
-def test_regulatory(regulatory_elements, gene_descriptors):
+def test_regulatory_element(regulatory_elements, gene_descriptors):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
     assert test_reg_elmt.type.value == 'promoter'
-    assert test_reg_elmt.gene.id == 'gene:G1'
-    assert test_reg_elmt.gene.value.id == 'hgnc:9339'
-    assert test_reg_elmt.gene.label == 'G1'
+    assert test_reg_elmt.gene_descriptor.id == 'gene:G1'
+    assert test_reg_elmt.gene_descriptor.gene.gene_id == 'hgnc:9339'
+    assert test_reg_elmt.gene_descriptor.label == 'G1'
 
     # check type constraint
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         RegulatoryElement(**{
             'type': 'notpromoter',
             'gene': gene_descriptors[0]
         })
+    msg = "value is not a valid enumeration member; permitted: 'promoter', 'enhancer'"  # noqa: E501
+    check_validation_error(exc_info, msg)
 
 
 def test_fusion(critical_domains, transcript_segments,
@@ -470,16 +445,19 @@ def test_fusion(critical_domains, transcript_segments,
     })
 
     # components are mandatory
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         assert Fusion(**{
             'r_frame_preserved': True,
             'protein_domains': [critical_domains[1]],
             'causative_event': 'rearrangement',
             'regulatory_elements': [regulatory_elements[0]]
         })
+    check_validation_error(exc_info, 'field required')
 
     # must have >= 2 components
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError) as exc_info:
         assert Fusion(**{
             'transcript_components': [unknown_component]
         })
+    msg = 'Fusion must contain at least 2 transcript components.'
+    check_validation_error(exc_info, msg)
