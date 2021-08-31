@@ -127,7 +127,6 @@ class LinkerComponent(BaseModel):
     def validate(cls, v):
         """Enforce nucleotide base code requirements on sequence literals."""
         if isinstance(v, dict):
-            print(v)
             try:
                 sequence = v['sequence']
             except KeyError:
