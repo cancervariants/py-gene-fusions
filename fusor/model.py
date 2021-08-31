@@ -126,7 +126,7 @@ class LinkerComponent(BaseModel):
         else:
             raise TypeError
         msg = 'Linker sequence must consist only of {A,C,G,T}'
-        assert set('ACGT') <= set(sequence), msg
+        assert set('ACGT') >= set(sequence), msg
         return v
 
     class Config:

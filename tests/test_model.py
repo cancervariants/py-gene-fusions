@@ -165,9 +165,15 @@ def sequence_descriptors():
             'residue_type': 'SO:0000348'
         },
         {
-            'id': 'sequence:ATGTA',
+            'id': 'sequence:T',
             'type': 'SequenceDescriptor',
-            'sequence': 'ATGTA',
+            'sequence': 'T',
+            'residue_type': 'SO:0000348'
+        },
+        {
+            'id': 'sequence:AAAAA',
+            'type': 'SequenceDescriptor',
+            'sequence': 'AAAAA',
             'residue_type': 'SO:0000348'
         }
     ]
@@ -184,6 +190,10 @@ def linkers(sequence_descriptors):
         {
             'component_type': 'linker_sequence',
             'linker_sequence': sequence_descriptors[1]
+        },
+        {
+            'component_type': 'linker_sequence',
+            'linker_sequence': sequence_descriptors[2]
         }
     ]
 
@@ -288,12 +298,17 @@ def test_transcript_segment_component(transcript_segments):
 
 def test_linker_component(linkers):
     """Test Linker object initializes correctly"""
-    test_linker = LinkerComponent(**linkers[0])
-    assert test_linker.component_type == 'linker_sequence'
-    assert test_linker.linker_sequence.id == 'sequence:ACGT'
-    assert test_linker.linker_sequence.sequence == 'ACGT'
-    assert test_linker.linker_sequence.type == 'SequenceDescriptor'
-    assert test_linker.linker_sequence.residue_type == 'SO:0000348'
+    def check_linker(actual, expected_id, expected_sequence):
+        assert actual.component_type == 'linker_sequence'
+        assert actual.linker_sequence.id == expected_id
+        assert actual.linker_sequence.sequence == expected_sequence
+        assert actual.linker_sequence.type == 'SequenceDescriptor'
+        assert actual.linker_sequence.residue_type == 'SO:0000348'
+
+    for args in ((LinkerComponent(**linkers[0]), 'sequence:ACGT', 'ACGT'),
+                 (LinkerComponent(**linkers[1]), 'sequence:T', 'T'),
+                 (LinkerComponent(**linkers[2]), 'sequence:AAAAA', 'AAAAA')):
+        check_linker(*args)
 
     # check base validation
     with pytest.raises(ValidationError) as exc_info:
