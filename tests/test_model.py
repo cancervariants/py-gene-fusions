@@ -359,6 +359,19 @@ def test_linker_component(linkers):
     msg = "unexpected value; permitted: <ComponentType.LINKER_SEQUENCE: 'linker_sequence'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
+    # test no extras
+    with pytest.raises(ValidationError) as exc_info:
+        assert LinkerComponent(**{
+            'component_type': 'linker_sequence',
+            'linker_sequence': {
+                'id': 'sequence:G',
+                'sequence': 'G'
+            },
+            'bonus_value': 'bonus',
+        })
+    msg = 'extra fields not permitted'
+    check_validation_error(exc_info, msg)
+
 
 def test_genomic_region_component(genomic_region_components,
                                   location_descriptors):

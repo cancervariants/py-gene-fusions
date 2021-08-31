@@ -1,6 +1,7 @@
 """Model for fusion class"""
 import json
-from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr
+from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
+    Extra
 from typing import Optional, List, Union, Literal
 from enum import Enum
 from ga4gh.vrsatile.pydantic import return_value
@@ -27,6 +28,8 @@ class CriticalDomain(BaseModel):
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -74,6 +77,8 @@ class TranscriptSegmentComponent(BaseModel):
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -142,6 +147,8 @@ class LinkerComponent(BaseModel):
     class Config:
         """Configure class."""
 
+        extra = Extra.forbid
+
         @staticmethod
         def schema_extra(schema, _):
             """Provide example"""
@@ -179,6 +186,8 @@ class GenomicRegionComponent(BaseModel):
     class Config:
         """Configure class."""
 
+        extra = Extra.forbid
+
         @staticmethod
         def schema_extra(schema, _):
             """Provide example"""
@@ -215,6 +224,8 @@ class GeneComponent(BaseModel):
     class Config:
         """Configure class."""
 
+        extra = Extra.forbid
+
         @staticmethod
         def schema_extra(schema, _):
             """Provide example"""
@@ -240,6 +251,8 @@ class UnknownGeneComponent(BaseModel):
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -276,6 +289,8 @@ class RegulatoryElement(BaseModel):
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -323,6 +338,8 @@ class Fusion(BaseModel):
 
     class Config:
         """Configure class."""
+
+        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
