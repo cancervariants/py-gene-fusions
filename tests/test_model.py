@@ -1,6 +1,8 @@
 """Module for testing the fusion model."""
 from pydantic import ValidationError
 import pytest
+import json
+from fusor import PROJECT_ROOT
 from fusor.model import TranscriptSegmentComponent, \
     GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
     LinkerComponent, CriticalDomain, Event, RegulatoryElement, Fusion
@@ -588,3 +590,13 @@ def test_fusion(critical_domains, transcript_segments,
         })
     msg = 'Fusion must contain at least 2 transcript components.'
     check_validation_error(exc_info, msg)
+
+
+def test_examples():
+    """Test example JSON files."""
+    examples_dir = PROJECT_ROOT / '..' / 'examples'
+    example_big = json.load(open(examples_dir / 'exhaustive_example.json', 'r'))
+    assert Fusion(**example_big)
+
+    example_1 = json.load(open(examples_dir / 'example_1.json', 'r'))
+    assert Fusion(**example_1)
