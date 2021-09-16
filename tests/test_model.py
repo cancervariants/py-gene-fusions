@@ -173,7 +173,7 @@ def sequence_descriptors():
         {
             'id': 'sequence:actgu',
             'type': 'SequenceDescriptor',
-            'sequence': 'ACTGU',
+            'sequence': 'actgu',
             'residue_type': 'SO:0000348'
         }
     ]
