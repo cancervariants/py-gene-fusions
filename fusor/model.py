@@ -7,7 +7,8 @@ from enum import Enum
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
-
+from ga4gh.vrsatile.pydantic.vrs_model import Sequence
+from pydantic import ValidationError
 
 class DomainStatus(str, Enum):
     """Define possible statuses of critical domains."""
@@ -134,12 +135,20 @@ class LinkerComponent(BaseModel):
         if isinstance(v, dict):
             try:
                 v['sequence'] = v['sequence'].upper()
+                seq = v['sequence']
             except KeyError:
                 raise TypeError
         elif isinstance(v, SequenceDescriptor):
             v.sequence = v.sequence.upper()
+            seq = v.sequence
         else:
             raise TypeError
+
+        try:
+            Sequence(__root__=seq)
+        except ValidationError:
+            raise AssertionError('sequence does not match regex "^[A-Za-z*\\-]*$"')
+
         return v
 
     class Config:
