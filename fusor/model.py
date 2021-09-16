@@ -128,20 +128,18 @@ class LinkerComponent(BaseModel):
     component_type: Literal[ComponentType.LINKER_SEQUENCE] = ComponentType.LINKER_SEQUENCE  # noqa: E501
     linker_sequence: SequenceDescriptor
 
-    @validator('linker_sequence')
+    @validator('linker_sequence', pre=True)
     def validate_sequence(cls, v):
         """Enforce nucleotide base code requirements on sequence literals."""
         if isinstance(v, dict):
             try:
-                sequence = v['sequence']
+                v['sequence'] = v['sequence'].upper()
             except KeyError:
                 raise TypeError
         elif isinstance(v, SequenceDescriptor):
-            sequence = v.sequence
+            v.sequence = v.sequence.upper()
         else:
             raise TypeError
-        msg = 'Linker sequence must consist only of {A,C,G,T}'
-        assert set('ACGT') >= set(sequence), msg
         return v
 
     class Config:
