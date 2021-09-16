@@ -343,7 +343,7 @@ def test_linker_component(linkers):
                     'sequence': 'ACT1'
                 }
         })
-    msg = 'sequence does not match regex "^[A-Za-z*\-]*$"'
+    msg = 'sequence does not match regex "^[A-Za-z*\\-]*$"'
     check_validation_error(exc_info, msg)
 
     # test enum validation
