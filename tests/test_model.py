@@ -3,7 +3,8 @@ from pydantic import ValidationError
 import pytest
 from fusor.model import TranscriptSegmentComponent, \
     GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
-    LinkerComponent, CriticalDomain, Event, RegulatoryElement, Fusion
+    AnyGeneComponent, LinkerComponent, CriticalDomain, Event, \
+    RegulatoryElement, Fusion
 
 
 @pytest.fixture(scope='module')
@@ -450,6 +451,18 @@ def test_unknown_gene_component():
     with pytest.raises(ValidationError) as exc_info:
         assert UnknownGeneComponent(component_type='gene')
     msg = "unexpected value; permitted: <ComponentType.UNKNOWN_GENE: 'unknown_gene'>"  # noqa: E501
+    check_validation_error(exc_info, msg)
+
+
+def test_any_gene_component():
+    """Test that any_gene component initializes correctly."""
+    test_component = AnyGeneComponent()
+    assert test_component.component_type == 'any_gene'
+
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert AnyGeneComponent(component_type='unknown_gene')
+    msg = "unexpected value; permitted: <ComponentType.ANY_GENE: 'any_gene'>"
     check_validation_error(exc_info, msg)
 
 

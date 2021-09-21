@@ -59,6 +59,7 @@ class ComponentType(str, Enum):
     LINKER_SEQUENCE = 'linker_sequence'
     GENE = 'gene'
     UNKNOWN_GENE = 'unknown_gene'
+    ANY_GENE = 'any_gene'
 
 
 class TranscriptSegmentComponent(BaseModel):
@@ -263,6 +264,28 @@ class UnknownGeneComponent(BaseModel):
                 prop.pop('title', None)
             schema['example'] = {
                 'component_type': 'unknown_gene'
+            }
+
+
+class AnyGeneComponent(BaseModel):
+    """Define UnknownGene class"""
+
+    component_type: Literal[ComponentType.ANY_GENE] = ComponentType.ANY_GENE  # noqa: E501
+
+    class Config:
+        """Configure class."""
+
+        extra = Extra.forbid
+
+        @staticmethod
+        def schema_extra(schema, _):
+            """Provide example"""
+            if 'title' in schema.keys():
+                schema.pop('title', None)
+            for prop in schema.get('properties', {}).values():
+                prop.pop('title', None)
+            schema['example'] = {
+                'component_type': 'any_gene'
             }
 
 
