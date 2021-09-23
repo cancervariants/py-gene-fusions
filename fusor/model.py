@@ -268,7 +268,7 @@ class UnknownGeneComponent(BaseModel):
 
 
 class AnyGeneComponent(BaseModel):
-    """Define UnknownGene class"""
+    """Define AnyGene class"""
 
     component_type: Literal[ComponentType.ANY_GENE] = ComponentType.ANY_GENE  # noqa: E501
 
