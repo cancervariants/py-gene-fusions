@@ -59,6 +59,7 @@ class ComponentType(str, Enum):
     LINKER_SEQUENCE = 'linker_sequence'
     GENE = 'gene'
     UNKNOWN_GENE = 'unknown_gene'
+    ANY_GENE = 'any_gene'
 
 
 class TranscriptSegmentComponent(BaseModel):
@@ -245,7 +246,12 @@ class GeneComponent(BaseModel):
 
 
 class UnknownGeneComponent(BaseModel):
-    """Define UnknownGene class"""
+    """Define UnknownGene class. This is primarily intended to represent a partner in the result of
+    a fusion partner-agnostic assay, which identifies the absence of an expected gene. For
+    example, a FISH break-apart probe may indicate rearrangement of an MLL gene, but by design,
+    the test cannot provide the identity of the new partner. In this case, we would associate any
+    clinical observations from this patient with the fusion of MLL with an UnknownGene component.
+    """
 
     component_type: Literal[ComponentType.UNKNOWN_GENE] = ComponentType.UNKNOWN_GENE  # noqa: E501
 
@@ -263,6 +269,34 @@ class UnknownGeneComponent(BaseModel):
                 prop.pop('title', None)
             schema['example'] = {
                 'component_type': 'unknown_gene'
+            }
+
+
+class AnyGeneComponent(BaseModel):
+    """Define AnyGene class. This is primarily intended to represent a partner in a categorical
+    fusion, typifying generalizable characteristics of a class of fusions such as retained or
+    lost regulatory elements and/or functional domains, often curated from biomedical literature
+    for use in genomic knowledgebases. For example, EWSR1 rearrangements are often found in
+    Ewing and Ewing-like small round cell sarcomas, regardless of the partner gene. We would
+    associate this assertion with the fusion of EWSR1 with an AnyGene component.
+    """
+
+    component_type: Literal[ComponentType.ANY_GENE] = ComponentType.ANY_GENE  # noqa: E501
+
+    class Config:
+        """Configure class."""
+
+        extra = Extra.forbid
+
+        @staticmethod
+        def schema_extra(schema, _):
+            """Provide example"""
+            if 'title' in schema.keys():
+                schema.pop('title', None)
+            for prop in schema.get('properties', {}).values():
+                prop.pop('title', None)
+            schema['example'] = {
+                'component_type': 'any_gene'
             }
 
 
