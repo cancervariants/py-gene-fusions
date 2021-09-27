@@ -384,6 +384,7 @@ def test_genomic_region_component(genomic_region_components,
     assert test_component.strand.value == '+'
     assert test_component.region.id == 'chr12:p12.1-p12.2'
     assert test_component.region.type == 'LocationDescriptor'
+    assert test_component.region.location_id == 'ga4gh:VCL.2hJZEkKkPALtmc-eK5MPpc84tL7MypUh'
     assert test_component.region.location.species_id == 'taxonomy:9606'
     assert test_component.region.location.chr == '12'
     assert test_component.region.location.interval.start == 'p12.1'

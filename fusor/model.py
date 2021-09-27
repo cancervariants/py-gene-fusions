@@ -7,6 +7,8 @@ from enum import Enum
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
+from ga4gh.core import ga4gh_identify
+from ga4gh.vrs import models
 
 
 class DomainStatus(str, Enum):
@@ -214,6 +216,23 @@ class GenomicRegionComponent(BaseModel):
                 },
                 'strand': '+'
             }
+
+    @validator('region')
+    def set_location_id(cls, v):
+        """Set ga4gh_digest as location_id."""
+        is_dict = isinstance(v, dict)
+        if is_dict:
+            params = v['location']
+        else:
+            params = v.location
+
+        location_id = ga4gh_identify(models.Location(**params.dict()))
+
+        if is_dict:
+            v['location_id'] = location_id
+        else:
+            v.location_id = location_id
+        return v
 
 
 class GeneComponent(BaseModel):
