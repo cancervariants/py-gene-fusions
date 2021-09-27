@@ -220,18 +220,21 @@ class GenomicRegionComponent(BaseModel):
     @validator('region')
     def set_location_id(cls, v):
         """Set ga4gh_digest as location_id."""
-        is_dict = isinstance(v, dict)
-        if is_dict:
+        if isinstance(v, dict):
             params = v['location']
-        else:
+        elif isinstance(v, LocationDescriptor):
             params = v.location
+        else:
+            raise TypeError
 
         location_id = ga4gh_identify(models.Location(**params.dict()))
 
-        if is_dict:
+        if isinstance(v, dict):
             v['location_id'] = location_id
-        else:
+        elif isinstance(v, LocationDescriptor):
             v.location_id = location_id
+        else:
+            raise TypeError
         return v
 
 
