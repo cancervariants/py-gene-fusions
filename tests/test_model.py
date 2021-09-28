@@ -7,6 +7,7 @@ from fusor.model import TranscriptSegmentComponent, \
     GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
     AnyGeneComponent, LinkerComponent, CriticalDomain, Event, \
     RegulatoryElement, Fusion
+import copy
 
 
 @pytest.fixture(scope='module')
@@ -379,17 +380,36 @@ def test_linker_component(linkers):
 def test_genomic_region_component(genomic_region_components,
                                   location_descriptors):
     """Test that GenomicRegionComponent initializes correctly."""
+    def assert_genomic_region_test_component(test):
+        """Assert that test genomic_region_components[0] data matches expected values."""
+        assert test.component_type == 'genomic_region'
+        assert test.strand.value == '+'
+        assert test.region.id == 'chr12:p12.1-p12.2'
+        assert test.region.type == 'LocationDescriptor'
+        assert test.region.location.species_id == 'taxonomy:9606'
+        assert test.region.location.chr == '12'
+        assert test.region.location.interval.start == 'p12.1'
+        assert test.region.location.interval.end == 'p12.2'
+        assert test.region.label == 'chr12:p12.1-p12.2'
+
     test_component = GenomicRegionComponent(**genomic_region_components[0])
-    assert test_component.component_type == 'genomic_region'
-    assert test_component.strand.value == '+'
-    assert test_component.region.id == 'chr12:p12.1-p12.2'
-    assert test_component.region.type == 'LocationDescriptor'
+    assert_genomic_region_test_component(test_component)
     assert test_component.region.location_id == 'ga4gh:VCL.2hJZEkKkPALtmc-eK5MPpc84tL7MypUh'
-    assert test_component.region.location.species_id == 'taxonomy:9606'
-    assert test_component.region.location.chr == '12'
-    assert test_component.region.location.interval.start == 'p12.1'
-    assert test_component.region.location.interval.end == 'p12.2'
-    assert test_component.region.label == 'chr12:p12.1-p12.2'
+    assert test_component.region.location.id is None
+
+    genomic_region_components_cpy = copy.deepcopy(genomic_region_components[0])
+    genomic_region_components_cpy['region']['location']['_id'] = 'location:1'
+    test_component = GenomicRegionComponent(**genomic_region_components_cpy)
+    assert_genomic_region_test_component(test_component)
+    assert test_component.region.location_id is None
+    assert test_component.region.location.id == 'location:1'
+
+    genomic_region_components_cpy = copy.deepcopy(genomic_region_components[0])
+    genomic_region_components_cpy['region']['location_id'] = 'location:1'
+    test_component = GenomicRegionComponent(**genomic_region_components_cpy)
+    assert_genomic_region_test_component(test_component)
+    assert test_component.region.location.id is None
+    assert test_component.region.location_id == 'location:1'
 
     with pytest.raises(ValidationError) as exc_info:
         GenomicRegionComponent(**{

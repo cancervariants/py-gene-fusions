@@ -219,22 +219,26 @@ class GenomicRegionComponent(BaseModel):
 
     @validator('region')
     def set_location_id(cls, v):
-        """Set ga4gh_digest as location_id."""
+        """Set ga4gh_digest as `region.location_id` if `region.location.id`
+        and `region.location_id` are not initialized.
+        """
+        params = None
         if isinstance(v, dict):
-            params = v['location']
+            if v['location_id'] is None and v['location']['_id'] is None:
+                params = v['location']
         elif isinstance(v, LocationDescriptor):
-            params = v.location
+            if v.location_id is None and v.location.id is None:
+                params = v.location
         else:
             raise TypeError
 
-        location_id = ga4gh_identify(models.Location(**params.dict()))
+        if params:
+            location_id = ga4gh_identify(models.Location(**params.dict()))
 
-        if isinstance(v, dict):
-            v['location_id'] = location_id
-        elif isinstance(v, LocationDescriptor):
-            v.location_id = location_id
-        else:
-            raise TypeError
+            if isinstance(v, dict):
+                v['location_id'] = location_id
+            elif isinstance(v, LocationDescriptor):
+                v.location_id = location_id
         return v
 
 
