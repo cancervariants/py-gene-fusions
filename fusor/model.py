@@ -106,6 +106,7 @@ class TranscriptSegmentComponent(BaseModel):
                 'component_genomic_region': {
                     'id': 'TPM3:exon1-exon8',
                     'type': 'LocationDescriptor',
+                    'location_id': 'ga4gh:VSL.jSo1NpOTpoJtHnXuVxQNz_dxk770pB5z',
                     'location': {
                         'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                         'type': 'SequenceLocation',
@@ -203,6 +204,7 @@ class GenomicRegionComponent(BaseModel):
                 'region': {
                     'id': 'chr12:44908821-44908822(+)',
                     'type': 'LocationDescriptor',
+                    'location_id': 'ga4gh:VSL.AG54ZRBhg6pwpPLafF4KgaAHpdFio6l5',
                     'location': {
                         'type': 'SequenceLocation',
                         'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',  # noqa: E501
@@ -440,6 +442,7 @@ class Fusion(BaseModel):
                         'component_genomic_region': {
                             'id': 'TPM3:exon1-exon8',
                             'type': 'LocationDescriptor',
+                            'location_id': 'ga4gh:VSL.jSo1NpOTpoJtHnXuVxQNz_dxk770pB5z',
                             'location': {
                                 'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                                 'type': 'SequenceLocation',
