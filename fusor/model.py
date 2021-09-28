@@ -7,6 +7,8 @@ from enum import Enum
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
+from ga4gh.core import ga4gh_identify
+from ga4gh.vrs import models
 
 
 class DomainStatus(str, Enum):
@@ -104,6 +106,7 @@ class TranscriptSegmentComponent(BaseModel):
                 'component_genomic_region': {
                     'id': 'TPM3:exon1-exon8',
                     'type': 'LocationDescriptor',
+                    'location_id': 'ga4gh:VSL.jSo1NpOTpoJtHnXuVxQNz_dxk770pB5z',
                     'location': {
                         'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                         'type': 'SequenceLocation',
@@ -201,6 +204,7 @@ class GenomicRegionComponent(BaseModel):
                 'region': {
                     'id': 'chr12:44908821-44908822(+)',
                     'type': 'LocationDescriptor',
+                    'location_id': 'ga4gh:VSL.AG54ZRBhg6pwpPLafF4KgaAHpdFio6l5',
                     'location': {
                         'type': 'SequenceLocation',
                         'sequence_id': 'ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl',  # noqa: E501
@@ -214,6 +218,30 @@ class GenomicRegionComponent(BaseModel):
                 },
                 'strand': '+'
             }
+
+    @validator('region')
+    def set_location_id(cls, v):
+        """Set ga4gh_digest as `region.location_id` if `region.location.id`
+        and `region.location_id` are not initialized.
+        """
+        params = None
+        if isinstance(v, dict):
+            if v['location_id'] is None and v['location']['_id'] is None:
+                params = v['location']
+        elif isinstance(v, LocationDescriptor):
+            if v.location_id is None and v.location.id is None:
+                params = v.location
+        else:
+            raise TypeError
+
+        if params:
+            location_id = ga4gh_identify(models.Location(**params.dict()))
+
+            if isinstance(v, dict):
+                v['location_id'] = location_id
+            elif isinstance(v, LocationDescriptor):
+                v.location_id = location_id
+        return v
 
 
 class GeneComponent(BaseModel):
@@ -414,6 +442,7 @@ class Fusion(BaseModel):
                         'component_genomic_region': {
                             'id': 'TPM3:exon1-exon8',
                             'type': 'LocationDescriptor',
+                            'location_id': 'ga4gh:VSL.jSo1NpOTpoJtHnXuVxQNz_dxk770pB5z',
                             'location': {
                                 'sequence_id': 'ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT',  # noqa: E501
                                 'type': 'SequenceLocation',

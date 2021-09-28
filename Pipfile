@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pydantic = "*"
 "ga4gh.vrsatile.pydantic" = "*"
+"ga4gh.vrs" = "==0.7.0rc3"
 
 [dev-packages]
 fusor = {editable = true, path = "."}
@@ -16,3 +17,4 @@ flake8-docstrings = "*"
 coverage = "*"
 coveralls = "*"
 pytest-cov = "*"
+"ga4gh.vrs" = {version = "==0.7.0rc3", extras = ["extras"]}
