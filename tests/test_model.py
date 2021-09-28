@@ -628,7 +628,7 @@ def test_fusion(critical_domains, transcript_segments,
 
 def test_examples():
     """Test example JSON files."""
-    examples_dir = PROJECT_ROOT / '..' / 'examples'
+    examples_dir = PROJECT_ROOT.resolve().parents[0] / 'examples'
     example_big = json.load(open(examples_dir / 'exhaustive_example.json', 'r'))
     assert Fusion(**example_big)
 
