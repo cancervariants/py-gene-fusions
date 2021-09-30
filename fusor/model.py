@@ -9,6 +9,8 @@ from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models
+from ga4gh.vrsatile.pydantic.vrs_model import Sequence
+from pydantic import ValidationError
 
 
 class DomainStatus(str, Enum):
@@ -132,20 +134,26 @@ class LinkerComponent(BaseModel):
     component_type: Literal[ComponentType.LINKER_SEQUENCE] = ComponentType.LINKER_SEQUENCE  # noqa: E501
     linker_sequence: SequenceDescriptor
 
-    @validator('linker_sequence')
+    @validator('linker_sequence', pre=True)
     def validate_sequence(cls, v):
         """Enforce nucleotide base code requirements on sequence literals."""
         if isinstance(v, dict):
             try:
-                sequence = v['sequence']
+                v['sequence'] = v['sequence'].upper()
+                seq = v['sequence']
             except KeyError:
                 raise TypeError
         elif isinstance(v, SequenceDescriptor):
-            sequence = v.sequence
+            v.sequence = v.sequence.upper()
+            seq = v.sequence
         else:
             raise TypeError
-        msg = 'Linker sequence must consist only of {A,C,G,T}'
-        assert set('ACGT') >= set(sequence), msg
+
+        try:
+            Sequence(__root__=seq)
+        except ValidationError:
+            raise AssertionError('sequence does not match regex "^[A-Za-z*\\-]*$"')  # noqa: E501
+
         return v
 
     class Config:

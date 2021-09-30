@@ -175,9 +175,9 @@ def sequence_descriptors():
             'residue_type': 'SO:0000348'
         },
         {
-            'id': 'sequence:AAAAA',
+            'id': 'sequence:actgu',
             'type': 'SequenceDescriptor',
-            'sequence': 'AAAAA',
+            'sequence': 'actgu',
             'residue_type': 'SO:0000348'
         }
     ]
@@ -335,7 +335,7 @@ def test_linker_component(linkers):
 
     for args in ((LinkerComponent(**linkers[0]), 'sequence:ACGT', 'ACGT'),
                  (LinkerComponent(**linkers[1]), 'sequence:T', 'T'),
-                 (LinkerComponent(**linkers[2]), 'sequence:AAAAA', 'AAAAA')):
+                 (LinkerComponent(**linkers[2]), 'sequence:actgu', 'ACTGU')):
         check_linker(*args)
 
     # check base validation
@@ -343,11 +343,11 @@ def test_linker_component(linkers):
         LinkerComponent(**{
             'linker_sequence':
                 {
-                    'id': 'sequence:ABGT',
-                    'sequence': 'ABGT'
+                    'id': 'sequence:ACT1',
+                    'sequence': 'ACT1'
                 }
         })
-    msg = 'Linker sequence must consist only of {A,C,G,T}'
+    msg = 'sequence does not match regex "^[A-Za-z*\\-]*$"'
     check_validation_error(exc_info, msg)
 
     # test enum validation
