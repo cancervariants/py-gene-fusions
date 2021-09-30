@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 pydantic = "*"
+jsonschema = ">=2.3, <4.0"
 "ga4gh.vrsatile.pydantic" = "*"
 "ga4gh.vrs" = "==0.7.0rc3"
 
