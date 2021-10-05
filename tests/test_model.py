@@ -3,7 +3,7 @@ from pydantic import ValidationError
 import pytest
 import json
 from fusor import PROJECT_ROOT
-from fusor.model import TranscriptSegmentComponent, \
+from fusor.models import TranscriptSegmentComponent, \
     GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
     AnyGeneComponent, LinkerComponent, CriticalDomain, Event, \
     RegulatoryElement, Fusion
