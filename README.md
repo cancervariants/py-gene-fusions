@@ -33,6 +33,10 @@ sudo chown $USER /usr/local/share/seqrepo
 seqrepo pull -i 2021-01-29
 ```
 
+#### Gene Normalizer
+
+`FUSOR` also relies on data from [gene-normalizer's](https://github.com/cancervariants/gene-normalization) DynamoDB tables, which you must download yourself. See the [README](https://github.com/cancervariants/gene-normalization#readme) for deploying the database.
+
 ### Init coding style tests
 
 Code style is managed by [flake8](https://github.com/PyCQA/flake8) and checked prior to commit.
