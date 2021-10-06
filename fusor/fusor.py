@@ -98,8 +98,13 @@ class FUSOR:
             Default is `ga4gh`
         :return: Identifier for `target_namespace`
         """
-        ga4gh_identifiers = self.seqrepo.translate_identifier(
-            ac, target_namespaces=target_namespace)
+        try:
+            ga4gh_identifiers = self.seqrepo.translate_identifier(
+                ac, target_namespaces=target_namespace)
+        except KeyError as e:
+            logger.warning(f"Unable to get translated identifier: {e}")
+            return None
+
         if ga4gh_identifiers:
             return ga4gh_identifiers[0]
         return None

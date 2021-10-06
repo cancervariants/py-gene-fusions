@@ -152,3 +152,16 @@ def test_add_location_id(fusor, fusion_example, fusion):
     fusor.add_sequence_id(test_fusion)
     fusor.add_location_id(test_fusion)
     assert test_fusion.dict() == expected_fusion.dict()
+
+
+def test_translate_identifier(fusor):
+    """Test that translate_identifier method works correctly."""
+    expected = "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT"
+    identifier = fusor.translate_identifier("NM_152263.3")
+    assert identifier == expected
+
+    identifier = fusor.translate_identifier("NM_152263.3")
+    assert identifier == expected
+
+    identifier = fusor.translate_identifier("refseq_152263.3")
+    assert identifier is None
