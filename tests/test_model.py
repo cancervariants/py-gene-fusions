@@ -409,22 +409,16 @@ def test_genomic_region_component(genomic_region_components,
 
     test_component = GenomicRegionComponent(**genomic_region_components[0])
     assert_genomic_region_test_component(test_component)
-    assert test_component.region.location_id == 'ga4gh:VCL.2hJZEkKkPALtmc-eK5MPpc84tL7MypUh'
-    assert test_component.region.location.id is None
 
     genomic_region_components_cpy = copy.deepcopy(genomic_region_components[0])
     genomic_region_components_cpy['region']['location']['_id'] = 'location:1'
     test_component = GenomicRegionComponent(**genomic_region_components_cpy)
     assert_genomic_region_test_component(test_component)
-    assert test_component.region.location_id is None
-    assert test_component.region.location.id == 'location:1'
 
     genomic_region_components_cpy = copy.deepcopy(genomic_region_components[0])
     genomic_region_components_cpy['region']['location_id'] = 'location:1'
     test_component = GenomicRegionComponent(**genomic_region_components_cpy)
     assert_genomic_region_test_component(test_component)
-    assert test_component.region.location.id is None
-    assert test_component.region.location_id == 'location:1'
 
     with pytest.raises(ValidationError) as exc_info:
         GenomicRegionComponent(**{
@@ -544,18 +538,18 @@ def test_fusion(critical_domains, transcript_segments,
     fusion = Fusion(**{
         'r_frame_preserved': True,
         'protein_domains': [critical_domains[0]],
-        'transcript_components': [
+        'structural_components': [
             transcript_segments[1], transcript_segments[2]
         ],
         'causative_event': 'rearrangement',
         'regulatory_elements': [regulatory_elements[0]]
     })
 
-    assert fusion.transcript_components[0].transcript == 'refseq:NM_034348.3'
+    assert fusion.structural_components[0].transcript == 'refseq:NM_034348.3'
 
     # check correct parsing of nested items
     fusion = Fusion(**{
-        'transcript_components': [
+        'structural_components': [
             {
                 'component_type': 'gene',
                 'gene_descriptor': {
@@ -577,21 +571,21 @@ def test_fusion(critical_domains, transcript_segments,
         ],
         'regulatory_elements': []
     })
-    assert fusion.transcript_components[0].component_type == 'gene'
-    assert fusion.transcript_components[0].gene_descriptor.id == 'gene:NTRK1'
-    assert fusion.transcript_components[1].component_type == 'gene'
-    assert fusion.transcript_components[1].gene_descriptor.type == 'GeneDescriptor'  # noqa: E501
+    assert fusion.structural_components[0].component_type == 'gene'
+    assert fusion.structural_components[0].gene_descriptor.id == 'gene:NTRK1'
+    assert fusion.structural_components[1].component_type == 'gene'
+    assert fusion.structural_components[1].gene_descriptor.type == 'GeneDescriptor'  # noqa: E501
 
     # test that non-component properties are optional
     assert Fusion(**{
-        'transcript_components': [
+        'structural_components': [
             transcript_segments[1], transcript_segments[2]
         ]
     })
 
     # test variety of component types
     assert Fusion(**{
-        'transcript_components': [
+        'structural_components': [
             unknown_component,
             gene_components[0],
             transcript_segments[2],
@@ -600,7 +594,7 @@ def test_fusion(critical_domains, transcript_segments,
         ]
     })
     assert Fusion(**{
-        'transcript_components': [
+        'structural_components': [
             {
                 'component_type': 'linker_sequence',
                 'linker_sequence': {

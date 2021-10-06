@@ -359,7 +359,7 @@ class Fusion(BaseModel):
 
     r_frame_preserved: Optional[StrictBool]
     protein_domains: Optional[List[CriticalDomain]]
-    transcript_components: List[Union[TranscriptSegmentComponent,
+    structural_components: List[Union[TranscriptSegmentComponent,
                                       GeneComponent,
                                       GenomicRegionComponent,
                                       LinkerComponent,
@@ -367,8 +367,8 @@ class Fusion(BaseModel):
     causative_event: Optional[Event]
     regulatory_elements: Optional[List[RegulatoryElement]]
 
-    @validator('transcript_components')
-    def transcript_components_length(cls, v):
+    @validator('structural_components')
+    def structural_components_length(cls, v):
         """Ensure >=2 transcript components"""
         if len(v) < 2:
             raise ValueError('Fusion must contain at least 2 transcript '
@@ -407,7 +407,7 @@ class Fusion(BaseModel):
                         }
                     }
                 ],
-                'transcript_components': [
+                'structural_components': [
                     {
                         'component_type': 'transcript_segment',
                         'transcript': 'refseq:NM_152263.3',
