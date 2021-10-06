@@ -2,27 +2,12 @@
 from pydantic import ValidationError
 import pytest
 import json
-from fusor import APP_ROOT
 from fusor.models import TranscriptSegmentComponent, \
     GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
     AnyGeneComponent, LinkerComponent, CriticalDomain, Event, \
     RegulatoryElement, Fusion
-from fusor import FUSOR
 import copy
-
-EXAMPLES_DIR = APP_ROOT.resolve().parents[0] / 'examples'
-
-
-@pytest.fixture(scope='module')
-def fusor():
-    """Create test fixture for fusor object"""
-    return FUSOR()
-
-
-@pytest.fixture(scope='module')
-def fusion_example():
-    """Create test fixture for example of fusion"""
-    return json.load(open(EXAMPLES_DIR / 'exhaustive_example.json', 'r'))
+from tests.conftest import EXAMPLES_DIR
 
 
 @pytest.fixture(scope='module')
@@ -629,35 +614,10 @@ def test_fusion(critical_domains, transcript_segments,
     # must have >= 2 components
     with pytest.raises(ValidationError) as exc_info:
         assert Fusion(**{
-            'transcript_components': [unknown_component]
+            'structural_components': [unknown_component]
         })
     msg = 'Fusion must contain at least 2 transcript components.'
     check_validation_error(exc_info, msg)
-
-
-def test_fusor(fusor, fusion_example):
-    """Test fusor methods."""
-    # TODO: Temporary tests for quickness
-    og_fusion = Fusion(**fusion_example)
-    copy_fusion = Fusion(**fusion_example)
-
-    # Change sequence id
-    for transcript_component in og_fusion.transcript_components:
-        if isinstance(transcript_component, GenomicRegionComponent):
-            location = transcript_component.region.location
-            if location.type == "SequenceLocation":
-                transcript_component.region.location.sequence_id = "refseq:NC_000012.12"
-                fusor.set_sequence_id(og_fusion)
-                break
-    assert og_fusion == copy_fusion
-
-    # Change location id
-    for transcript_component in og_fusion.transcript_components:
-        if isinstance(transcript_component, GenomicRegionComponent):
-            transcript_component.region.location_id = None
-    fusor.set_location_id(og_fusion)
-
-    assert og_fusion == copy_fusion
 
 
 def test_examples(fusion_example):
