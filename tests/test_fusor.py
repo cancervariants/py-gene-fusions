@@ -160,7 +160,7 @@ def test_translate_identifier(fusor):
     identifier = fusor.translate_identifier("NM_152263.3")
     assert identifier == expected
 
-    identifier = fusor.translate_identifier("NM_152263.3")
+    identifier = fusor.translate_identifier("refseq:NM_152263.3")
     assert identifier == expected
 
     identifier = fusor.translate_identifier("refseq_152263.3")
