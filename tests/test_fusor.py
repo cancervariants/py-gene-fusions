@@ -1,6 +1,5 @@
 """Module for testing the FUSOR class."""
 import pytest
-from mock import patch
 from fusor import FUSOR
 from fusor.models import Fusion, GenomicRegionComponent, \
     TranscriptSegmentComponent
@@ -125,14 +124,7 @@ def fusion():
     }
 
 
-SEQUENCE_IDS = ["ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
-                "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl"]
-
-
-@patch.object(FUSOR, "translate_identifier",
-              side_effect=SEQUENCE_IDS)
-def test_add_additional_fields(test_translate_identifier, fusor,
-                               fusion_example, fusion):
+def test_add_additional_fields(fusor, fusion_example, fusion):
     """Test that add_additional_fields method works correctly."""
     expected_fusion = Fusion(**fusion_example)
     fusion = Fusion(**fusion)
@@ -140,10 +132,7 @@ def test_add_additional_fields(test_translate_identifier, fusor,
     assert fusion.dict() == expected_fusion.dict()
 
 
-@patch.object(FUSOR, "translate_identifier",
-              side_effect=SEQUENCE_IDS)
-def test_add_sequence_id(test_translate_identifier, fusor, fusion_example,
-                         fusion):
+def test_add_sequence_id(fusor, fusion_example, fusion):
     """Test that add_sequence_id method works correctly."""
     expected_fusion = Fusion(**fusion_example)
     test_fusion = Fusion(**fusion)
