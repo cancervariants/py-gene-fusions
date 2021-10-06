@@ -616,7 +616,7 @@ def test_fusion(critical_domains, transcript_segments,
         assert Fusion(**{
             "structural_components": [unknown_component]
         })
-    msg = "Fusion must contain at least 2 transcript components."
+    msg = "Fusion must contain at least 2 structural components."
     check_validation_error(exc_info, msg)
 
 

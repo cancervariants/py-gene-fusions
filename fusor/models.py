@@ -1,5 +1,4 @@
 """Model for fusion class"""
-import json
 from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
     Extra
 from typing import Optional, List, Union, Literal
@@ -61,7 +60,7 @@ class CriticalDomain(BaseModel):
 
 
 class ComponentType(str, Enum):
-    """Define possible transcript components."""
+    """Define possible structural components."""
 
     TRANSCRIPT_SEGMENT = "transcript_segment"
     GENOMIC_REGION = "genomic_region"
@@ -376,16 +375,12 @@ class Fusion(BaseModel):
 
     @validator("structural_components")
     def structural_components_length(cls, v):
-        """Ensure >=2 transcript components"""
+        """Ensure >=2 structural components"""
         if len(v) < 2:
-            raise ValueError("Fusion must contain at least 2 transcript "
+            raise ValueError("Fusion must contain at least 2 structural "
                              "components.")
         else:
             return v
-
-    def make_json(self):
-        """JSON helper function"""
-        return json.dumps(self, default=lambda o: o.__dict__, indent=4)
 
     class Config:
         """Configure class."""
