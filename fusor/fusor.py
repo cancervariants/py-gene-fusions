@@ -30,6 +30,7 @@ class FUSOR:
         :param Fusion fusion: A valid Fusion object
         :param bool add_all: `True` if all additional fields  will be added
             in fusion object. `False` if only select fields will be provided.
+            If set to `True`, will always take precedence over `fields`.
         :param list fields: Select fields that will be set. Must be a subset of
             `AdditionalFields`
         :param str target_namespace: The namespace of identifiers to return
