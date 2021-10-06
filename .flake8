@@ -1,4 +1,5 @@
 [flake8]
+select = Q0
 ignore = D205, D400
 max-line-length=100
 exclude =
