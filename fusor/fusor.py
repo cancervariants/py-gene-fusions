@@ -7,17 +7,26 @@ from ga4gh.vrsatile.pydantic.vrs_model import CURIE, VRSTypes
 from fusor import SEQREPO_DATA_PATH
 from fusor.models import Fusion, GenomicRegionComponent, AdditionalFields, \
     TranscriptSegmentComponent
+from gene.query import QueryHandler
 
 
 class FUSOR:
     """Class for modifying fusion objects."""
 
-    def __init__(self, seqrepo_data_path: str = SEQREPO_DATA_PATH) -> None:
+    def __init__(self,
+                 seqrepo_data_path: str = SEQREPO_DATA_PATH,
+                 dynamodb_url: str = '',
+                 dynamodb_region: str = 'us-east-2') -> None:
         """Initialize FUSOR class.
 
         :param str seqrepo_data_path: Path to SeqRepo data directory
+        :param str dynamodb_url: URL to gene-normalizer database source.
+            Can also set environment variable `GENE_NORM_DB_URL`.
+        :param str dynamodb_region: AWS default region for gene-normalizer.
         """
         self.seqrepo = SeqRepo(seqrepo_data_path)
+        self.gene_normalizer = QueryHandler(
+            db_url=dynamodb_url, db_region=dynamodb_region)
 
     def add_additional_fields(self, fusion: Fusion,
                               add_all: bool = True,
