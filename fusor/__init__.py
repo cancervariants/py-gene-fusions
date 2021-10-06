@@ -9,6 +9,6 @@ __version__ = '0.0.9'
 if "SEQREPO_DATA_PATH" in environ:
     SEQREPO_DATA_PATH = environ["SEQREPO_DATA_PATH"]
 else:
-    SEQREPO_DATA_PATH = f"{APP_ROOT}/data/seqrepo/latest"
+    SEQREPO_DATA_PATH = "/usr/local/share/seqrepo/latest"
 
 from fusor.fusor import FUSOR  # noqa: E402, F401
