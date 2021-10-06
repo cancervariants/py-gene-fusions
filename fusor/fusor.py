@@ -8,7 +8,7 @@ from fusor import SEQREPO_DATA_PATH
 from fusor.models import Fusion, GenomicRegionComponent
 
 
-EXTRA_DATA = [
+ADDITIONAL_FIELDS = [
     "sequence_id",
     "location_id"
 ]
@@ -21,22 +21,22 @@ class FUSOR:
         """Initialize FUSOR class."""
         self.seqrepo = SeqRepo(seqrepo_data_path)
 
-    def set_fusion_extras(self, fusion: Fusion,
-                          set_all: bool = True,
-                          fields: Optional[list[str]] = None,
-                          target_namespace: str = "ga4gh") -> Fusion:
-        """Set extra data to Fusion object.
+    def add_additional_fields(self, fusion: Fusion,
+                              add_all: bool = True,
+                              fields: Optional[list[str]] = None,
+                              target_namespace: str = "ga4gh") -> Fusion:
+        """Add additional fields to Fusion object.
+        Possible fields are shown in `ADDITIONAL_FIELDS`
 
         :param Fusion fusion: A valid Fusion object
-        :param bool set_all: `True` if all extra data fields (see `EXTRA_DATA`)
-            will be set in fusion object. `False` if only select fields will
-            be provided.
+        :param bool add_all: `True` if all additional fields  will be added
+            in fusion object. `False` if only select fields will be provided.
         :param list fields: Select fields that will be set. Must be a subset of
-            `EXTRA_DATA`
+            `ADDITIONAL_FIELDS`
         :param str target_namespace: The namespace of identifiers to return
             for `sequence_id`. Default is `ga4gh`
         """
-        if set_all:
+        if add_all:
             self.set_sequence_id(fusion, target_namespace)
         else:
             for field in fields:
@@ -48,8 +48,8 @@ class FUSOR:
 
         return fusion
 
-    def set_location_id(self, fusion: Fusion) -> None:
-        """Set location_id in fusion object.
+    def add_location_id(self, fusion: Fusion) -> None:
+        """Add `location_id` in fusion object.
 
         :param Fusion fusion: A valid Fusion object
         """
@@ -60,9 +60,9 @@ class FUSOR:
                     ga4gh_identify(models.Location(**location.dict()))
                 transcript_component.region.location_id = location_id
 
-    def set_sequence_id(self, fusion: Fusion,
+    def add_sequence_id(self, fusion: Fusion,
                         target_namespace: str = "ga4gh") -> None:
-        """Set sequence_id in fusion object.
+        """Add sequence_id in fusion object.
 
         :param Fusion fusion: A valid Fusion object
         :param str target_namespace: The namespace of identifiers to return

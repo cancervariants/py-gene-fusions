@@ -20,6 +20,19 @@ pipenv lock
 pipenv sync
 ```
 
+### Data Downloads
+
+#### SeqRepo
+`FUSOR` relies on [seqrepo](https://github.com/biocommons/biocommons.seqrepo), which you must download yourself.
+
+From the _root_ directory:
+```
+pip install seqrepo
+sudo mkdir /usr/local/share/seqrepo
+sudo chown $USER /usr/local/share/seqrepo
+seqrepo pull -i 2021-01-29
+```
+
 ### Init coding style tests
 
 Code style is managed by [flake8](https://github.com/PyCQA/flake8) and checked prior to commit.
