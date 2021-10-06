@@ -7,8 +7,6 @@ from enum import Enum
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
-from ga4gh.core import ga4gh_identify
-from ga4gh.vrs import models
 from ga4gh.vrsatile.pydantic.vrs_model import Sequence
 from pydantic import ValidationError
 
@@ -226,30 +224,6 @@ class GenomicRegionComponent(BaseModel):
                 },
                 'strand': '+'
             }
-
-    @validator('region')
-    def set_location_id(cls, v):
-        """Set ga4gh_digest as `region.location_id` if `region.location.id`
-        and `region.location_id` are not initialized.
-        """
-        params = None
-        if isinstance(v, dict):
-            if v['location_id'] is None and v['location']['_id'] is None:
-                params = v['location']
-        elif isinstance(v, LocationDescriptor):
-            if v.location_id is None and v.location.id is None:
-                params = v.location
-        else:
-            raise TypeError
-
-        if params:
-            location_id = ga4gh_identify(models.Location(**params.dict()))
-
-            if isinstance(v, dict):
-                v['location_id'] = location_id
-            elif isinstance(v, LocationDescriptor):
-                v.location_id = location_id
-        return v
 
 
 class GeneComponent(BaseModel):
