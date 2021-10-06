@@ -254,7 +254,7 @@ def test_critical_domain(critical_domains, gene_descriptors):
             "id": "interpro_IPR020635",
             "gene_descriptor": gene_descriptors[0]
         })
-    msg = "string does not match regex \"^\w[^:]*:.+$\""  # noqa: W605
+    msg = "string does not match regex \"^\w[^:]*:.+$\""  # noqa: W605, Q003
     check_validation_error(exc_info, msg)
 
 
@@ -296,7 +296,7 @@ def test_transcript_segment_component(transcript_segments):
                 }
             }
         })
-    msg = "string does not match regex \"^\\w[^:]*:.+$\""  # noqa: W605
+    msg = "string does not match regex \"^\\w[^:]*:.+$\""  # noqa: W605, Q003
     check_validation_error(exc_info, msg)
 
     # test enum validation
@@ -446,7 +446,7 @@ def test_gene_component(gene_descriptors):
                 "label": "G1"
             }
         })
-    msg = "string does not match regex \"^\w[^:]*:.+$\""  # noqa: W605
+    msg = "string does not match regex \"^\w[^:]*:.+$\""  # noqa: W605, Q003
     check_validation_error(exc_info, msg)
 
     # test enum validation
