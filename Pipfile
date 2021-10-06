@@ -7,7 +7,8 @@ name = "pypi"
 pydantic = "*"
 jsonschema = ">=2.3, <4.0"
 "ga4gh.vrsatile.pydantic" = "*"
-"ga4gh.vrs" = "==0.7.0rc3"
+"ga4gh.vrs" = {version = "==0.7.0rc3", extras = ["extras"]}
+"biocommons.seqrepo" = "*"
 
 [dev-packages]
 fusor = {editable = true, path = "."}
@@ -18,4 +19,5 @@ flake8-docstrings = "*"
 coverage = "*"
 coveralls = "*"
 pytest-cov = "*"
-"ga4gh.vrs" = {version = "==0.7.0rc3", extras = ["extras"]}
+ipykernel = "*"
+flake8-quotes = "*"

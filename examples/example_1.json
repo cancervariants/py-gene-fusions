@@ -1,5 +1,5 @@
 {
-    "transcript_components": [
+    "structural_components": [
         {
             "component_type": "transcript_segment",
             "transcript": "refseq:NM_152263.2",
