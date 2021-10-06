@@ -2,8 +2,6 @@
 from pathlib import Path
 from os import environ
 
-__version__ = "0.0.9"
-
 if "SEQREPO_DATA_PATH" in environ:
     SEQREPO_DATA_PATH = environ["SEQREPO_DATA_PATH"]
 else:
