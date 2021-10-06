@@ -11,6 +11,13 @@ from ga4gh.vrsatile.pydantic.vrs_model import Sequence
 from pydantic import ValidationError
 
 
+class AdditionalFields(str, Enum):
+    """Define possible fields that can be added to Fusion object."""
+
+    SEQUENCE_ID = "sequence_id"
+    LOCATION_ID = "location_id"
+
+
 class DomainStatus(str, Enum):
     """Define possible statuses of critical domains."""
 
