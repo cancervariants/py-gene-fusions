@@ -6,7 +6,7 @@ from fusor.models import Fusion, GenomicRegionComponent, \
     TranscriptSegmentComponent
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def fusor():
     """Create test fixture for fusor object"""
     return FUSOR()
