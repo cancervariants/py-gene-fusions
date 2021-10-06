@@ -7,6 +7,7 @@ from ga4gh.vrsatile.pydantic.vrs_model import CURIE, VRSTypes
 from fusor import SEQREPO_DATA_PATH
 from fusor.models import Fusion, GenomicRegionComponent, AdditionalFields, \
     TranscriptSegmentComponent
+from fusor import logger
 
 
 class FUSOR:
@@ -21,7 +22,7 @@ class FUSOR:
 
     def add_additional_fields(self, fusion: Fusion,
                               add_all: bool = True,
-                              fields: Optional[List[str]] = None,
+                              fields: Optional[List[AdditionalFields]] = None,
                               target_namespace: str = "ga4gh") -> Fusion:
         """Add additional fields to Fusion object.
         Possible fields are shown in `AdditionalFields`
@@ -44,6 +45,8 @@ class FUSOR:
                         fusion, target_namespace=target_namespace)
                 elif field == AdditionalFields.LOCATION_ID.value:
                     self.add_location_id(fusion)
+                else:
+                    logger.warning(f"Invalid field: {field}")
 
         return fusion
 
