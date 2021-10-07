@@ -3,7 +3,7 @@ from pydantic import ValidationError
 import pytest
 import json
 from fusor.models import TranscriptSegmentComponent, \
-    GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
+    TemplatedSequenceComponent, UnknownGeneComponent, GeneComponent, \
     AnyGeneComponent, LinkerComponent, CriticalDomain, Event, \
     RegulatoryElement, Fusion
 import copy
@@ -63,7 +63,7 @@ def critical_domains(gene_descriptors):
 
 @pytest.fixture(scope="module")
 def location_descriptors():
-    """Provide possible genomic_region input."""
+    """Provide possible templated_sequence input."""
     return [
         {
             "id": "NC_000001.11:15455-15566",
@@ -142,16 +142,16 @@ def gene_components(gene_descriptors):
 
 
 @pytest.fixture(scope="module")
-def genomic_region_components(location_descriptors):
-    """Provide possible genomic_region component input data."""
+def templated_sequence_components(location_descriptors):
+    """Provide possible templated sequence component input data."""
     return [
         {
-            "component_type": "genomic_region",
+            "component_type": "templated_sequence",
             "strand": "+",
             "region": location_descriptors[1]
         },
         {
-            "component_type": "genomic_region",
+            "component_type": "templated_sequence",
             "strand": "-",
             "region": location_descriptors[0]
         }
@@ -302,7 +302,7 @@ def test_transcript_segment_component(transcript_segments):
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert TranscriptSegmentComponent(**{
-            "component_type": "genomic_region",
+            "component_type": "templated_sequence",
             "transcript": "NM_152263.3",
             "exon_start": "1",
             "exon_start_offset": "-9",
@@ -353,7 +353,7 @@ def test_linker_component(linkers):
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert LinkerComponent(**{
-            "component_type": "genomic_region",
+            "component_type": "templated_sequence",
             "linker_sequence":
                 {
                     "id": "sequence:ATG",
@@ -377,12 +377,12 @@ def test_linker_component(linkers):
     check_validation_error(exc_info, msg)
 
 
-def test_genomic_region_component(genomic_region_components,
+def test_genomic_region_component(templated_sequence_components,
                                   location_descriptors):
-    """Test that GenomicRegionComponent initializes correctly."""
+    """Test that TemplatedSequenceComponent initializes correctly."""
     def assert_genomic_region_test_component(test):
-        """Assert that test genomic_region_components[0] data matches expected values."""
-        assert test.component_type == "genomic_region"
+        """Assert that test templated_sequence_components[0] data matches expected values."""
+        assert test.component_type == "templated_sequence"
         assert test.strand.value == "+"
         assert test.region.id == "chr12:p12.1-p12.2"
         assert test.region.type == "LocationDescriptor"
@@ -392,21 +392,21 @@ def test_genomic_region_component(genomic_region_components,
         assert test.region.location.interval.end == "p12.2"
         assert test.region.label == "chr12:p12.1-p12.2"
 
-    test_component = GenomicRegionComponent(**genomic_region_components[0])
+    test_component = TemplatedSequenceComponent(**templated_sequence_components[0])
     assert_genomic_region_test_component(test_component)
 
-    genomic_region_components_cpy = copy.deepcopy(genomic_region_components[0])
+    genomic_region_components_cpy = copy.deepcopy(templated_sequence_components[0])
     genomic_region_components_cpy["region"]["location"]["_id"] = "location:1"
-    test_component = GenomicRegionComponent(**genomic_region_components_cpy)
+    test_component = TemplatedSequenceComponent(**genomic_region_components_cpy)
     assert_genomic_region_test_component(test_component)
 
-    genomic_region_components_cpy = copy.deepcopy(genomic_region_components[0])
+    genomic_region_components_cpy = copy.deepcopy(templated_sequence_components[0])
     genomic_region_components_cpy["region"]["location_id"] = "location:1"
-    test_component = GenomicRegionComponent(**genomic_region_components_cpy)
+    test_component = TemplatedSequenceComponent(**genomic_region_components_cpy)
     assert_genomic_region_test_component(test_component)
 
     with pytest.raises(ValidationError) as exc_info:
-        GenomicRegionComponent(**{
+        TemplatedSequenceComponent(**{
             "region": {
                 "interval": {
                     "start": 39408,
@@ -420,12 +420,12 @@ def test_genomic_region_component(genomic_region_components,
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert GenomicRegionComponent(**{
+        assert TemplatedSequenceComponent(**{
             "component_type": "gene",
             "region": location_descriptors[0],
             "strand": "+"
         })
-    msg = "unexpected value; permitted: <ComponentType.GENOMIC_REGION: 'genomic_region'>"  # noqa: E501
+    msg = "unexpected value; permitted: <ComponentType.TEMPLATED_SEQUENCE: 'templated_sequence'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
@@ -512,7 +512,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
 
 
 def test_fusion(critical_domains, transcript_segments,
-                genomic_region_components, linkers, gene_components,
+                templated_sequence_components, linkers, gene_components,
                 regulatory_elements):
     """Test that Fusion object initializes correctly"""
     unknown_component = {
@@ -574,7 +574,7 @@ def test_fusion(critical_domains, transcript_segments,
             unknown_component,
             gene_components[0],
             transcript_segments[2],
-            genomic_region_components[1],
+            templated_sequence_components[1],
             linkers[0],
         ]
     })

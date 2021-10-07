@@ -67,7 +67,7 @@
             }
         },
         {
-            "component_type": "genomic_region",
+            "component_type": "templated_sequence",
             "region": {
                 "id": "chr12:44908821-44908822(+)",
                 "type": "LocationDescriptor",

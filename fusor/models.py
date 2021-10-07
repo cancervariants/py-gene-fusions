@@ -63,7 +63,7 @@ class ComponentType(str, Enum):
     """Define possible structural components."""
 
     TRANSCRIPT_SEGMENT = "transcript_segment"
-    GENOMIC_REGION = "genomic_region"
+    TEMPLATED_SEQUENCE = "templated_sequence"
     LINKER_SEQUENCE = "linker_sequence"
     GENE = "gene"
     UNKNOWN_GENE = "unknown_gene"
@@ -190,10 +190,13 @@ class Strand(str, Enum):
     NEGATIVE = "-"
 
 
-class GenomicRegionComponent(BaseModel):
-    """Define GenomicRegion component class."""
+class TemplatedSequenceComponent(BaseModel):
+    """Define Templated Sequence Component class.
+    A templated sequence is contiguous genomic sequence found in the
+    gene product
+    """
 
-    component_type: Literal[ComponentType.GENOMIC_REGION] = ComponentType.GENOMIC_REGION  # noqa: E501
+    component_type: Literal[ComponentType.TEMPLATED_SEQUENCE] = ComponentType.TEMPLATED_SEQUENCE  # noqa: E501
     region: LocationDescriptor
     strand: Strand
 
@@ -212,7 +215,7 @@ class GenomicRegionComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "genomic_region",
+                "component_type": "templated_sequence",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
                     "type": "LocationDescriptor",
@@ -367,7 +370,7 @@ class Fusion(BaseModel):
     protein_domains: Optional[List[CriticalDomain]]
     structural_components: List[Union[TranscriptSegmentComponent,
                                       GeneComponent,
-                                      GenomicRegionComponent,
+                                      TemplatedSequenceComponent,
                                       LinkerComponent,
                                       UnknownGeneComponent]]
     causative_event: Optional[Event]

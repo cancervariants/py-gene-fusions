@@ -1,7 +1,7 @@
 """Module for testing the FUSOR class."""
 import pytest
 from fusor import FUSOR
-from fusor.models import Fusion, GenomicRegionComponent, \
+from fusor.models import Fusion, TemplatedSequenceComponent, \
     TranscriptSegmentComponent
 
 
@@ -82,7 +82,7 @@ def fusion():
                 }
             },
             {
-                "component_type": "genomic_region",
+                "component_type": "templated_sequence",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
                     "type": "LocationDescriptor",
@@ -137,7 +137,7 @@ def test_add_sequence_id(fusor, fusion_example, fusion):
     expected_fusion = Fusion(**fusion_example)
     test_fusion = Fusion(**fusion)
     for structural_component in expected_fusion.structural_components:
-        if isinstance(structural_component, GenomicRegionComponent):
+        if isinstance(structural_component, TemplatedSequenceComponent):
             structural_component.region.location_id = None
         elif isinstance(structural_component, TranscriptSegmentComponent):
             structural_component.component_genomic_region.location_id = None

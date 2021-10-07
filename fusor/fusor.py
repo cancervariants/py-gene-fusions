@@ -5,8 +5,8 @@ from ga4gh.vrs import models
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrsatile.pydantic.vrs_model import CURIE, VRSTypes
 from fusor import SEQREPO_DATA_PATH
-from fusor.models import Fusion, GenomicRegionComponent, AdditionalFields, \
-    TranscriptSegmentComponent
+from fusor.models import Fusion, TemplatedSequenceComponent,\
+    AdditionalFields, TranscriptSegmentComponent
 from fusor import logger
 
 
@@ -57,7 +57,7 @@ class FUSOR:
         :param Fusion fusion: A valid Fusion object
         """
         for structural_component in fusion.structural_components:
-            if isinstance(structural_component, GenomicRegionComponent):
+            if isinstance(structural_component, TemplatedSequenceComponent):
                 location = structural_component.region.location
                 location_id = \
                     ga4gh_identify(models.Location(**location.dict()))
@@ -78,7 +78,7 @@ class FUSOR:
             for `sequence_id`. Default is `ga4gh`
         """
         for structural_component in fusion.structural_components:
-            if isinstance(structural_component, GenomicRegionComponent):
+            if isinstance(structural_component, TemplatedSequenceComponent):
                 location = structural_component.region.location
                 if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                     structural_component.region.location.sequence_id = \
