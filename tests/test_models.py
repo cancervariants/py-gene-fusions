@@ -66,6 +66,64 @@ def location_descriptors():
     """Provide possible templated_sequence input."""
     return [
         {
+            "id": "NC_000001.11:15455",
+            "type": "LocationDescriptor",
+            "location": {
+                "sequence_id": "ncbi:NC_000001.11",
+                "interval": {
+                    "start": {
+                        "type": "Number",
+                        "value": 15455
+                    },
+                    "end": {
+                        "type": "Number",
+                        "value": 15456
+                    }
+                },
+                "type": "SequenceLocation"
+            },
+            "label": "NC_000001.11:15455",
+        },
+        {
+            "id": "NC_000001.11:15566",
+            "type": "LocationDescriptor",
+            "location": {
+                "sequence_id": "ncbi:NC_000001.11",
+                "interval": {
+                    "start": {
+                        "type": "Number",
+                        "value": 15565
+                    },
+                    "end": {
+                        "type": "Number",
+                        "value": 15566
+                    }
+                },
+                "type": "SequenceLocation"
+            },
+            "label": "NC_000001.11:15566",
+        },
+        {
+            "id": "chr12:p12.1",
+            "type": "LocationDescriptor",
+            "location": {
+                "species_id": "taxonomy:9606",
+                "chr": "12",
+                "interval": {"start": "p12.1", "end": "p12.1"}
+            },
+            "label": "chr12:p12.1",
+        },
+        {
+            "id": "chr12:p12.2",
+            "type": "LocationDescriptor",
+            "location": {
+                "species_id": "taxonomy:9606",
+                "chr": "12",
+                "interval": {"start": "p12.2", "end": "p12.2"}
+            },
+            "label": "chr12:p12.2",
+        },
+        {
             "id": "NC_000001.11:15455-15566",
             "type": "LocationDescriptor",
             "location": {
@@ -108,7 +166,8 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "exon_end": 8,
             "exon_end_offset": 7,
             "gene_descriptor": gene_descriptors[0],
-            "component_genomic_region": location_descriptors[1]
+            "component_genomic_start": location_descriptors[2],
+            "component_genomic_end": location_descriptors[3]
         },
         {
             "component_type": "transcript_segment",
@@ -116,7 +175,8 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "exon_start": 1,
             "exon_end": 8,
             "gene_descriptor": gene_descriptors[3],
-            "component_genomic_region": location_descriptors[0]
+            "component_genomic_start": location_descriptors[0],
+            "component_genomic_end": location_descriptors[1]
         },
         {
             "component_type": "transcript_segment",
@@ -125,7 +185,8 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "exon_end": 14,
             "exon_end_offset": -5,
             "gene_descriptor": gene_descriptors[4],
-            "component_genomic_region": location_descriptors[0]
+            "component_genomic_start": location_descriptors[0],
+            "component_genomic_end": location_descriptors[1]
         }
     ]
 
@@ -148,12 +209,12 @@ def templated_sequence_components(location_descriptors):
         {
             "component_type": "templated_sequence",
             "strand": "+",
-            "region": location_descriptors[1]
+            "region": location_descriptors[5]
         },
         {
             "component_type": "templated_sequence",
             "strand": "-",
-            "region": location_descriptors[0]
+            "region": location_descriptors[4]
         }
     ]
 
@@ -269,12 +330,18 @@ def test_transcript_segment_component(transcript_segments):
     assert test_component.gene_descriptor.id == "gene:G1"
     assert test_component.gene_descriptor.label == "G1"
     assert test_component.gene_descriptor.gene.gene_id == "hgnc:9339"
-    test_region = test_component.component_genomic_region
-    assert test_region.location.species_id == "taxonomy:9606"
-    assert test_region.location.type == "ChromosomeLocation"
-    assert test_region.location.chr == "12"
-    assert test_region.location.interval.start == "p12.1"
-    assert test_region.location.interval.end == "p12.2"
+    test_region_start = test_component.component_genomic_start
+    assert test_region_start.location.species_id == "taxonomy:9606"
+    assert test_region_start.location.type == "ChromosomeLocation"
+    assert test_region_start.location.chr == "12"
+    assert test_region_start.location.interval.start == "p12.1"
+    assert test_region_start.location.interval.end == "p12.1"
+    test_region_end = test_component.component_genomic_end
+    assert test_region_end.location.species_id == "taxonomy:9606"
+    assert test_region_end.location.type == "ChromosomeLocation"
+    assert test_region_end.location.chr == "12"
+    assert test_region_end.location.interval.start == "p12.2"
+    assert test_region_end.location.interval.end == "p12.2"
 
     # check CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
@@ -289,10 +356,16 @@ def test_transcript_segment_component(transcript_segments):
                 "gene": {"id": "hgnc:1"},
                 "label": "G1"
             },
-            "component_genomic_region": {
+            "component_genomic_start": {
                 "location": {
                     "species_id": "taxonomy:9606", "chr": "12",
-                    "interval": {"start": "p12.1", "end": "p12.2"},
+                    "interval": {"start": "p12.1", "end": "p12.1"},
+                }
+            },
+            "component_genomic_end": {
+                "location": {
+                    "species_id": "taxonomy:9606", "chr": "12",
+                    "interval": {"start": "p12.2", "end": "p12.2"},
                 }
             }
         })

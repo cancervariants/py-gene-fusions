@@ -43,8 +43,8 @@ def fusion():
                     "type": "GeneDescriptor",
                     "label": "TPM3"
                 },
-                "component_genomic_region": {
-                    "id": "refseq:NM_152263.3_exon1-exon8",
+                "component_genomic_start": {
+                    "id": "refseq:NM_152263.3_exon1",
                     "type": "LocationDescriptor",
                     "location": {
                         "sequence_id": "refseq:NM_152263.3",
@@ -53,6 +53,25 @@ def fusion():
                             "start": {
                                 "type": "Number",
                                 "value": 154192135
+                            },
+                            "end": {
+                                "type": "Number",
+                                "value": 154192136
+                            },
+                            "type": "SequenceInterval"
+                        }
+                    }
+                },
+                "component_genomic_end": {
+                    "id": "refseq:NM_152263.3_exon8",
+                    "type": "LocationDescriptor",
+                    "location": {
+                        "sequence_id": "refseq:NM_152263.3",
+                        "type": "SequenceLocation",
+                        "interval": {
+                            "start": {
+                                "type": "Number",
+                                "value": 154170398
                             },
                             "end": {
                                 "type": "Number",
@@ -140,7 +159,10 @@ def test_add_sequence_id(fusor, fusion_example, fusion):
         if isinstance(structural_component, TemplatedSequenceComponent):
             structural_component.region.location_id = None
         elif isinstance(structural_component, TranscriptSegmentComponent):
-            structural_component.component_genomic_region.location_id = None
+            if structural_component.component_genomic_start:
+                structural_component.component_genomic_start.location_id = None
+            if structural_component.component_genomic_end:
+                structural_component.component_genomic_end.location_id = None
     fusor.add_sequence_id(test_fusion)
     assert test_fusion.dict() == expected_fusion.dict()
 

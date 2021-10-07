@@ -80,7 +80,8 @@ class TranscriptSegmentComponent(BaseModel):
     exon_end: StrictInt
     exon_end_offset: StrictInt = 0
     gene_descriptor: GeneDescriptor
-    component_genomic_region: LocationDescriptor
+    component_genomic_start: LocationDescriptor
+    component_genomic_end: LocationDescriptor
 
     _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)  # noqa: E501
 
@@ -109,23 +110,43 @@ class TranscriptSegmentComponent(BaseModel):
                     "type": "GeneDescriptor",
                     "label": "TPM3",
                 },
-                "component_genomic_region": {
-                    "id": "TPM3:exon1-exon8",
+                "component_genomic_start": {
+                    "id": "TPM3:exon1",
                     "type": "LocationDescriptor",
-                    "location_id": "ga4gh:VSL.jSo1NpOTpoJtHnXuVxQNz_dxk770pB5z",
+                    "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",  # noqa: E501
                     "location": {
                         "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
                         "type": "SequenceLocation",
                         "interval": {
                             "start": {
                                 "type": "Number",
-                                "value": 154192135,
+                                "value": 154192135
                             },
                             "end": {
                                 "type": "Number",
-                                "value": 154170399,
+                                "value": 154192136
                             },
-                            "type": "SequenceInterval",
+                            "type": "SequenceInterval"
+                        }
+                    }
+                },
+                "component_genomic_end": {
+                    "id": "TPM3:exon8",
+                    "type": "LocationDescriptor",
+                    "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",  # noqa: E501
+                    "location": {
+                        "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
+                        "type": "SequenceLocation",
+                        "interval": {
+                            "start": {
+                                "type": "Number",
+                                "value": 154170398
+                            },
+                            "end": {
+                                "type": "Number",
+                                "value": 154170399
+                            },
+                            "type": "SequenceInterval"
                         }
                     }
                 }
@@ -226,7 +247,7 @@ class TemplatedSequenceComponent(BaseModel):
                         "interval": {
                             "type": "SequenceInterval",
                             "start": {"type": "Number", "value": 44908821},
-                            "end": {"type": "Number", "value": 44908822},
+                            "end": {"type": "Number", "value": 44908822}
                         },
                     },
                     "label": "chr12:44908821-44908822(+)"
@@ -426,10 +447,10 @@ class Fusion(BaseModel):
                             "type": "GeneDescriptor",
                             "label": "TPM3",
                         },
-                        "component_genomic_region": {
-                            "id": "TPM3:exon1-exon8",
+                        "component_genomic_start": {
+                            "id": "TPM3:exon1",
                             "type": "LocationDescriptor",
-                            "location_id": "ga4gh:VSL.jSo1NpOTpoJtHnXuVxQNz_dxk770pB5z",
+                            "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",  # noqa: E501
                             "location": {
                                 "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
                                 "type": "SequenceLocation",
@@ -437,6 +458,26 @@ class Fusion(BaseModel):
                                     "start": {
                                         "type": "Number",
                                         "value": 154192135
+                                    },
+                                    "end": {
+                                        "type": "Number",
+                                        "value": 154192136
+                                    },
+                                    "type": "SequenceInterval"
+                                }
+                            }
+                        },
+                        "component_genomic_end": {
+                            "id": "TPM3:exon8",
+                            "type": "LocationDescriptor",
+                            "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",  # noqa: E501
+                            "location": {
+                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
+                                "type": "SequenceLocation",
+                                "interval": {
+                                    "start": {
+                                        "type": "Number",
+                                        "value": 154170398
                                     },
                                     "end": {
                                         "type": "Number",
