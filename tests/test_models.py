@@ -187,6 +187,13 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "gene_descriptor": gene_descriptors[4],
             "component_genomic_start": location_descriptors[0],
             "component_genomic_end": location_descriptors[1]
+        },
+        {
+            "component_type": "transcript_segment",
+            "transcript": "refseq:NM_938439.4",
+            "exon_start": 7,
+            "gene_descriptor": gene_descriptors[4],
+            "component_genomic_start": location_descriptors[0]
         }
     ]
 
@@ -343,6 +350,13 @@ def test_transcript_segment_component(transcript_segments):
     assert test_region_end.location.interval.start == "p12.2"
     assert test_region_end.location.interval.end == "p12.2"
 
+    test_component = TranscriptSegmentComponent(**transcript_segments[3])
+    assert test_component.transcript == "refseq:NM_938439.4"
+    assert test_component.exon_start == 7
+    assert test_component.exon_start_offset == 0
+    assert test_component.exon_end is None
+    assert test_component.exon_end_offset is None
+
     # check CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
         TranscriptSegmentComponent(**{
@@ -386,14 +400,64 @@ def test_transcript_segment_component(transcript_segments):
                 "gene": {"id": "hgnc:1"},
                 "label": "G1"
             },
-            "component_genomic_region": {
+            "component_genomic_start": {
                 "location": {
                     "species_id": "taxonomy:9606", "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.2"},
                 }
+            },
+            "component_genomic_end": {
+                "location": {
+                    "species_id": "taxonomy:9606", "chr": "12",
+                    "interval": {"start": "p12.2", "end": "p12.2"},
+                }
             }
         })
     msg = "unexpected value; permitted: <ComponentType.TRANSCRIPT_SEGMENT: 'transcript_segment'>"  # noqa: E501
+    check_validation_error(exc_info, msg)
+
+    # test component required
+    with pytest.raises(ValidationError) as exc_info:
+        assert TranscriptSegmentComponent(**{
+            "component_type": "templated_sequence",
+            "transcript": "NM_152263.3",
+            "exon_start": "1",
+            "exon_start_offset": "-9",
+            "gene_descriptor": {
+                "id": "test:1",
+                "gene": {"id": "hgnc:1"},
+                "label": "G1"
+            }
+        })
+    msg = "Must give `component_genomic_start` if `exon_start` is given"
+    check_validation_error(exc_info, msg)
+
+    # Neither exon_start or exon_end given
+    with pytest.raises(ValidationError) as exc_info:
+        assert TranscriptSegmentComponent(**{
+            "component_type": "templated_sequence",
+            "transcript": "NM_152263.3",
+            "exon_start_offset": "-9",
+            "exon_end_offset": "7",
+            "gene_descriptor": {
+                "id": "test:1",
+                "gene": {"id": "hgnc:1"},
+                "label": "G1"
+            },
+            "component_genomic_start": {
+                "location": {
+                    "species_id": "taxonomy:9606", "chr": "12",
+                    "interval": {"start": "p12.1", "end": "p12.2"},
+                }
+            },
+            "component_genomic_end": {
+                "location": {
+                    "species_id": "taxonomy:9606", "chr": "12",
+                    "interval": {"start": "p12.2", "end": "p12.2"},
+                }
+            }
+        })
+    msg = "Must give values for either `exon_start`, `exon_end`, or both"
     check_validation_error(exc_info, msg)
 
 

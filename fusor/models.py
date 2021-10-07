@@ -7,7 +7,7 @@ from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
 from ga4gh.vrsatile.pydantic.vrs_model import Sequence
-from pydantic import ValidationError
+from pydantic import ValidationError, root_validator, validator
 
 
 class AdditionalFields(str, Enum):
@@ -75,13 +75,38 @@ class TranscriptSegmentComponent(BaseModel):
 
     component_type: Literal[ComponentType.TRANSCRIPT_SEGMENT] = ComponentType.TRANSCRIPT_SEGMENT  # noqa: E501
     transcript: CURIE
-    exon_start: StrictInt
-    exon_start_offset: StrictInt = 0
-    exon_end: StrictInt
-    exon_end_offset: StrictInt = 0
+    exon_start: Optional[StrictInt]
+    exon_start_offset: Optional[StrictInt] = 0
+    exon_end: Optional[StrictInt]
+    exon_end_offset: Optional[StrictInt] = 0
     gene_descriptor: GeneDescriptor
-    component_genomic_start: LocationDescriptor
-    component_genomic_end: LocationDescriptor
+    component_genomic_start: Optional[LocationDescriptor]
+    component_genomic_end: Optional[LocationDescriptor]
+
+    @root_validator(pre=True)
+    def check_exons(cls, values):
+        """Check that at least one of {`exon_start`, `exon_end`} is set.
+        If set, check that the corresponding `component_genomic` field is set.
+        If not set, set corresponding offset to `None`
+
+        """
+        msg = "Must give values for either `exon_start`, `exon_end`, or both"
+        exon_start = values.get("exon_start")
+        exon_end = values.get("exon_end")
+        assert exon_start or exon_end, msg
+
+        if exon_start:
+            msg = "Must give `component_genomic_start` if `exon_start` is given"  # noqa: E501
+            assert values.get("component_genomic_start"), msg
+        else:
+            values["exon_start_offset"] = None
+
+        if exon_end:
+            msg = "Must give `component_genomic_end` if `exon_end` is given"
+            assert values.get("component_genomic_end"), msg
+        else:
+            values["exon_end_offset"] = None
+        return values
 
     _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)  # noqa: E501
 
