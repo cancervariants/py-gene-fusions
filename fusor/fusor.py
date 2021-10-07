@@ -63,18 +63,15 @@ class FUSOR:
                     ga4gh_identify(models.Location(**location.dict()))
                 structural_component.region.location_id = location_id
             elif isinstance(structural_component, TranscriptSegmentComponent):
-                if structural_component.component_genomic_start:
-                    location = structural_component.component_genomic_start.location  # noqa: E501
-                    location_id = \
-                        ga4gh_identify(models.Location(**location.dict()))
-                    if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                        structural_component.component_genomic_start.location_id = location_id  # noqa: E501
-                if structural_component.component_genomic_end:
-                    location = structural_component.component_genomic_end.location  # noqa: E501
-                    location_id = \
-                        ga4gh_identify(models.Location(**location.dict()))
-                    if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                        structural_component.component_genomic_end.location_id = location_id  # noqa: E501
+                for component_genomic in [
+                    structural_component.component_genomic_start,
+                    structural_component.component_genomic_end
+                ]:
+                    if component_genomic:
+                        location = component_genomic.location
+                        if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                            location_id = ga4gh_identify(models.Location(**location.dict()))  # noqa: E501
+                            component_genomic.location_id = location_id
 
     def add_sequence_id(self, fusion: Fusion,
                         target_namespace: str = "ga4gh") -> None:
@@ -91,16 +88,15 @@ class FUSOR:
                     structural_component.region.location.sequence_id = \
                         self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
             elif isinstance(structural_component, TranscriptSegmentComponent):
-                if structural_component.component_genomic_start:
-                    location = structural_component.component_genomic_start.location  # noqa: E501
-                    if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                        structural_component.component_genomic_start. \
-                            location.sequence_id = self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
-                if structural_component.component_genomic_end:
-                    location = structural_component.component_genomic_end.location  # noqa: E501
-                    if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                        structural_component.component_genomic_end. \
-                            location.sequence_id = self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
+                for component_genomic in [
+                    structural_component.component_genomic_start,
+                    structural_component.component_genomic_end
+                ]:
+                    if component_genomic:
+                        location = component_genomic.location
+                        if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                            component_genomic.location.sequence_id = \
+                                self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
 
     def translate_identifier(self, ac: str,
                              target_namespace: str = "ga4gh") -> Optional[CURIE]:  # noqa: E501
