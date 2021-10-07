@@ -5,9 +5,10 @@ from ga4gh.vrs import models
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrsatile.pydantic.vrs_model import CURIE, VRSTypes
 from fusor import SEQREPO_DATA_PATH
-from fusor.models import Fusion, GenomicRegionComponent, AdditionalFields, \
-    TranscriptSegmentComponent
 from gene.query import QueryHandler
+from fusor.models import Fusion, TemplatedSequenceComponent,\
+    AdditionalFields, TranscriptSegmentComponent
+from fusor import logger
 
 
 class FUSOR:
@@ -15,8 +16,8 @@ class FUSOR:
 
     def __init__(self,
                  seqrepo_data_path: str = SEQREPO_DATA_PATH,
-                 dynamodb_url: str = '',
-                 dynamodb_region: str = 'us-east-2') -> None:
+                 dynamodb_url: str = "",
+                 dynamodb_region: str = "us-east-2") -> None:
         """Initialize FUSOR class.
 
         :param str seqrepo_data_path: Path to SeqRepo data directory
@@ -30,7 +31,7 @@ class FUSOR:
 
     def add_additional_fields(self, fusion: Fusion,
                               add_all: bool = True,
-                              fields: Optional[List[str]] = None,
+                              fields: Optional[List[AdditionalFields]] = None,
                               target_namespace: str = "ga4gh") -> Fusion:
         """Add additional fields to Fusion object.
         Possible fields are shown in `AdditionalFields`
@@ -38,6 +39,7 @@ class FUSOR:
         :param Fusion fusion: A valid Fusion object
         :param bool add_all: `True` if all additional fields  will be added
             in fusion object. `False` if only select fields will be provided.
+            If set to `True`, will always take precedence over `fields`.
         :param list fields: Select fields that will be set. Must be a subset of
             `AdditionalFields`
         :param str target_namespace: The namespace of identifiers to return
@@ -53,6 +55,8 @@ class FUSOR:
                         fusion, target_namespace=target_namespace)
                 elif field == AdditionalFields.LOCATION_ID.value:
                     self.add_location_id(fusion)
+                else:
+                    logger.warning(f"Invalid field: {field}")
 
         return fusion
 
@@ -62,17 +66,21 @@ class FUSOR:
         :param Fusion fusion: A valid Fusion object
         """
         for structural_component in fusion.structural_components:
-            if isinstance(structural_component, GenomicRegionComponent):
+            if isinstance(structural_component, TemplatedSequenceComponent):
                 location = structural_component.region.location
                 location_id = \
                     ga4gh_identify(models.Location(**location.dict()))
                 structural_component.region.location_id = location_id
             elif isinstance(structural_component, TranscriptSegmentComponent):
-                location = structural_component.component_genomic_region.location  # noqa: E501
-                location_id = \
-                    ga4gh_identify(models.Location(**location.dict()))
-                if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                    structural_component.component_genomic_region.location_id = location_id  # noqa: E501
+                for component_genomic in [
+                    structural_component.component_genomic_start,
+                    structural_component.component_genomic_end
+                ]:
+                    if component_genomic:
+                        location = component_genomic.location
+                        if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                            location_id = ga4gh_identify(models.Location(**location.dict()))  # noqa: E501
+                            component_genomic.location_id = location_id
 
     def add_sequence_id(self, fusion: Fusion,
                         target_namespace: str = "ga4gh") -> None:
@@ -83,16 +91,21 @@ class FUSOR:
             for `sequence_id`. Default is `ga4gh`
         """
         for structural_component in fusion.structural_components:
-            if isinstance(structural_component, GenomicRegionComponent):
+            if isinstance(structural_component, TemplatedSequenceComponent):
                 location = structural_component.region.location
                 if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                     structural_component.region.location.sequence_id = \
                         self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
             elif isinstance(structural_component, TranscriptSegmentComponent):
-                location = structural_component.component_genomic_region.location  # noqa: #501
-                if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                    structural_component.component_genomic_region.\
-                        location.sequence_id = self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
+                for component_genomic in [
+                    structural_component.component_genomic_start,
+                    structural_component.component_genomic_end
+                ]:
+                    if component_genomic:
+                        location = component_genomic.location
+                        if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                            component_genomic.location.sequence_id = \
+                                self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
 
     def translate_identifier(self, ac: str,
                              target_namespace: str = "ga4gh") -> Optional[CURIE]:  # noqa: E501
@@ -103,8 +116,13 @@ class FUSOR:
             Default is `ga4gh`
         :return: Identifier for `target_namespace`
         """
-        ga4gh_identifiers = self.seqrepo.translate_identifier(
-            ac, target_namespaces=target_namespace)
+        try:
+            ga4gh_identifiers = self.seqrepo.translate_identifier(
+                ac, target_namespaces=target_namespace)
+        except KeyError as e:
+            logger.warning(f"Unable to get translated identifier: {e}")
+            return None
+
         if ga4gh_identifiers:
             return ga4gh_identifiers[0]
         return None

@@ -1,5 +1,4 @@
 """Model for fusion class"""
-import json
 from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
     Extra
 from typing import Optional, List, Union, Literal
@@ -8,7 +7,7 @@ from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
 from ga4gh.vrsatile.pydantic.vrs_model import Sequence
-from pydantic import ValidationError
+from pydantic import ValidationError, root_validator, validator
 
 
 class AdditionalFields(str, Enum):
@@ -61,10 +60,10 @@ class CriticalDomain(BaseModel):
 
 
 class ComponentType(str, Enum):
-    """Define possible transcript components."""
+    """Define possible structural components."""
 
     TRANSCRIPT_SEGMENT = "transcript_segment"
-    GENOMIC_REGION = "genomic_region"
+    TEMPLATED_SEQUENCE = "templated_sequence"
     LINKER_SEQUENCE = "linker_sequence"
     GENE = "gene"
     UNKNOWN_GENE = "unknown_gene"
@@ -76,12 +75,38 @@ class TranscriptSegmentComponent(BaseModel):
 
     component_type: Literal[ComponentType.TRANSCRIPT_SEGMENT] = ComponentType.TRANSCRIPT_SEGMENT  # noqa: E501
     transcript: CURIE
-    exon_start: StrictInt
-    exon_start_offset: StrictInt = 0
-    exon_end: StrictInt
-    exon_end_offset: StrictInt = 0
+    exon_start: Optional[StrictInt]
+    exon_start_offset: Optional[StrictInt] = 0
+    exon_end: Optional[StrictInt]
+    exon_end_offset: Optional[StrictInt] = 0
     gene_descriptor: GeneDescriptor
-    component_genomic_region: LocationDescriptor
+    component_genomic_start: Optional[LocationDescriptor]
+    component_genomic_end: Optional[LocationDescriptor]
+
+    @root_validator(pre=True)
+    def check_exons(cls, values):
+        """Check that at least one of {`exon_start`, `exon_end`} is set.
+        If set, check that the corresponding `component_genomic` field is set.
+        If not set, set corresponding offset to `None`
+
+        """
+        msg = "Must give values for either `exon_start`, `exon_end`, or both"
+        exon_start = values.get("exon_start")
+        exon_end = values.get("exon_end")
+        assert exon_start or exon_end, msg
+
+        if exon_start:
+            msg = "Must give `component_genomic_start` if `exon_start` is given"  # noqa: E501
+            assert values.get("component_genomic_start"), msg
+        else:
+            values["exon_start_offset"] = None
+
+        if exon_end:
+            msg = "Must give `component_genomic_end` if `exon_end` is given"
+            assert values.get("component_genomic_end"), msg
+        else:
+            values["exon_end_offset"] = None
+        return values
 
     _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)  # noqa: E501
 
@@ -110,23 +135,43 @@ class TranscriptSegmentComponent(BaseModel):
                     "type": "GeneDescriptor",
                     "label": "TPM3",
                 },
-                "component_genomic_region": {
-                    "id": "TPM3:exon1-exon8",
+                "component_genomic_start": {
+                    "id": "TPM3:exon1",
                     "type": "LocationDescriptor",
-                    "location_id": "ga4gh:VSL.jSo1NpOTpoJtHnXuVxQNz_dxk770pB5z",
+                    "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",  # noqa: E501
                     "location": {
                         "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
                         "type": "SequenceLocation",
                         "interval": {
                             "start": {
                                 "type": "Number",
-                                "value": 154192135,
+                                "value": 154192135
                             },
                             "end": {
                                 "type": "Number",
-                                "value": 154170399,
+                                "value": 154192136
                             },
-                            "type": "SequenceInterval",
+                            "type": "SequenceInterval"
+                        }
+                    }
+                },
+                "component_genomic_end": {
+                    "id": "TPM3:exon8",
+                    "type": "LocationDescriptor",
+                    "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",  # noqa: E501
+                    "location": {
+                        "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
+                        "type": "SequenceLocation",
+                        "interval": {
+                            "start": {
+                                "type": "Number",
+                                "value": 154170398
+                            },
+                            "end": {
+                                "type": "Number",
+                                "value": 154170399
+                            },
+                            "type": "SequenceInterval"
                         }
                     }
                 }
@@ -191,10 +236,13 @@ class Strand(str, Enum):
     NEGATIVE = "-"
 
 
-class GenomicRegionComponent(BaseModel):
-    """Define GenomicRegion component class."""
+class TemplatedSequenceComponent(BaseModel):
+    """Define Templated Sequence Component class.
+    A templated sequence is contiguous genomic sequence found in the
+    gene product
+    """
 
-    component_type: Literal[ComponentType.GENOMIC_REGION] = ComponentType.GENOMIC_REGION  # noqa: E501
+    component_type: Literal[ComponentType.TEMPLATED_SEQUENCE] = ComponentType.TEMPLATED_SEQUENCE  # noqa: E501
     region: LocationDescriptor
     strand: Strand
 
@@ -213,7 +261,7 @@ class GenomicRegionComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "genomic_region",
+                "component_type": "templated_sequence",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
                     "type": "LocationDescriptor",
@@ -224,7 +272,7 @@ class GenomicRegionComponent(BaseModel):
                         "interval": {
                             "type": "SequenceInterval",
                             "start": {"type": "Number", "value": 44908821},
-                            "end": {"type": "Number", "value": 44908822},
+                            "end": {"type": "Number", "value": 44908822}
                         },
                     },
                     "label": "chr12:44908821-44908822(+)"
@@ -368,7 +416,7 @@ class Fusion(BaseModel):
     protein_domains: Optional[List[CriticalDomain]]
     structural_components: List[Union[TranscriptSegmentComponent,
                                       GeneComponent,
-                                      GenomicRegionComponent,
+                                      TemplatedSequenceComponent,
                                       LinkerComponent,
                                       UnknownGeneComponent]]
     causative_event: Optional[Event]
@@ -376,16 +424,12 @@ class Fusion(BaseModel):
 
     @validator("structural_components")
     def structural_components_length(cls, v):
-        """Ensure >=2 transcript components"""
+        """Ensure >=2 structural components"""
         if len(v) < 2:
-            raise ValueError("Fusion must contain at least 2 transcript "
+            raise ValueError("Fusion must contain at least 2 structural "
                              "components.")
         else:
             return v
-
-    def make_json(self):
-        """JSON helper function"""
-        return json.dumps(self, default=lambda o: o.__dict__, indent=4)
 
     class Config:
         """Configure class."""
@@ -428,10 +472,10 @@ class Fusion(BaseModel):
                             "type": "GeneDescriptor",
                             "label": "TPM3",
                         },
-                        "component_genomic_region": {
-                            "id": "TPM3:exon1-exon8",
+                        "component_genomic_start": {
+                            "id": "TPM3:exon1",
                             "type": "LocationDescriptor",
-                            "location_id": "ga4gh:VSL.jSo1NpOTpoJtHnXuVxQNz_dxk770pB5z",
+                            "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",  # noqa: E501
                             "location": {
                                 "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
                                 "type": "SequenceLocation",
@@ -439,6 +483,26 @@ class Fusion(BaseModel):
                                     "start": {
                                         "type": "Number",
                                         "value": 154192135
+                                    },
+                                    "end": {
+                                        "type": "Number",
+                                        "value": 154192136
+                                    },
+                                    "type": "SequenceInterval"
+                                }
+                            }
+                        },
+                        "component_genomic_end": {
+                            "id": "TPM3:exon8",
+                            "type": "LocationDescriptor",
+                            "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",  # noqa: E501
+                            "location": {
+                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
+                                "type": "SequenceLocation",
+                                "interval": {
+                                    "start": {
+                                        "type": "Number",
+                                        "value": 154170398
                                     },
                                     "end": {
                                         "type": "Number",

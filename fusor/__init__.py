@@ -1,6 +1,14 @@
 """Fusion package"""
 from pathlib import Path
 from os import environ
+import logging
+
+logging.basicConfig(
+    filename="fusor.log",
+    format="[%(asctime)s] - %(name)s - %(levelname)s : %(message)s")
+logger = logging.getLogger("fusor")
+logger.setLevel(logging.DEBUG)
+
 
 if "SEQREPO_DATA_PATH" in environ:
     SEQREPO_DATA_PATH = environ["SEQREPO_DATA_PATH"]

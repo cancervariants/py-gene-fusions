@@ -3,7 +3,7 @@ from pydantic import ValidationError
 import pytest
 import json
 from fusor.models import TranscriptSegmentComponent, \
-    GenomicRegionComponent, UnknownGeneComponent, GeneComponent, \
+    TemplatedSequenceComponent, UnknownGeneComponent, GeneComponent, \
     AnyGeneComponent, LinkerComponent, CriticalDomain, Event, \
     RegulatoryElement, Fusion
 import copy
@@ -63,8 +63,66 @@ def critical_domains(gene_descriptors):
 
 @pytest.fixture(scope="module")
 def location_descriptors():
-    """Provide possible genomic_region input."""
+    """Provide possible templated_sequence input."""
     return [
+        {
+            "id": "NC_000001.11:15455",
+            "type": "LocationDescriptor",
+            "location": {
+                "sequence_id": "ncbi:NC_000001.11",
+                "interval": {
+                    "start": {
+                        "type": "Number",
+                        "value": 15455
+                    },
+                    "end": {
+                        "type": "Number",
+                        "value": 15456
+                    }
+                },
+                "type": "SequenceLocation"
+            },
+            "label": "NC_000001.11:15455",
+        },
+        {
+            "id": "NC_000001.11:15566",
+            "type": "LocationDescriptor",
+            "location": {
+                "sequence_id": "ncbi:NC_000001.11",
+                "interval": {
+                    "start": {
+                        "type": "Number",
+                        "value": 15565
+                    },
+                    "end": {
+                        "type": "Number",
+                        "value": 15566
+                    }
+                },
+                "type": "SequenceLocation"
+            },
+            "label": "NC_000001.11:15566",
+        },
+        {
+            "id": "chr12:p12.1",
+            "type": "LocationDescriptor",
+            "location": {
+                "species_id": "taxonomy:9606",
+                "chr": "12",
+                "interval": {"start": "p12.1", "end": "p12.1"}
+            },
+            "label": "chr12:p12.1",
+        },
+        {
+            "id": "chr12:p12.2",
+            "type": "LocationDescriptor",
+            "location": {
+                "species_id": "taxonomy:9606",
+                "chr": "12",
+                "interval": {"start": "p12.2", "end": "p12.2"}
+            },
+            "label": "chr12:p12.2",
+        },
         {
             "id": "NC_000001.11:15455-15566",
             "type": "LocationDescriptor",
@@ -108,7 +166,8 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "exon_end": 8,
             "exon_end_offset": 7,
             "gene_descriptor": gene_descriptors[0],
-            "component_genomic_region": location_descriptors[1]
+            "component_genomic_start": location_descriptors[2],
+            "component_genomic_end": location_descriptors[3]
         },
         {
             "component_type": "transcript_segment",
@@ -116,7 +175,8 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "exon_start": 1,
             "exon_end": 8,
             "gene_descriptor": gene_descriptors[3],
-            "component_genomic_region": location_descriptors[0]
+            "component_genomic_start": location_descriptors[0],
+            "component_genomic_end": location_descriptors[1]
         },
         {
             "component_type": "transcript_segment",
@@ -125,7 +185,15 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "exon_end": 14,
             "exon_end_offset": -5,
             "gene_descriptor": gene_descriptors[4],
-            "component_genomic_region": location_descriptors[0]
+            "component_genomic_start": location_descriptors[0],
+            "component_genomic_end": location_descriptors[1]
+        },
+        {
+            "component_type": "transcript_segment",
+            "transcript": "refseq:NM_938439.4",
+            "exon_start": 7,
+            "gene_descriptor": gene_descriptors[4],
+            "component_genomic_start": location_descriptors[0]
         }
     ]
 
@@ -142,18 +210,18 @@ def gene_components(gene_descriptors):
 
 
 @pytest.fixture(scope="module")
-def genomic_region_components(location_descriptors):
-    """Provide possible genomic_region component input data."""
+def templated_sequence_components(location_descriptors):
+    """Provide possible templated sequence component input data."""
     return [
         {
-            "component_type": "genomic_region",
+            "component_type": "templated_sequence",
             "strand": "+",
-            "region": location_descriptors[1]
+            "region": location_descriptors[5]
         },
         {
-            "component_type": "genomic_region",
+            "component_type": "templated_sequence",
             "strand": "-",
-            "region": location_descriptors[0]
+            "region": location_descriptors[4]
         }
     ]
 
@@ -254,7 +322,7 @@ def test_critical_domain(critical_domains, gene_descriptors):
             "id": "interpro_IPR020635",
             "gene_descriptor": gene_descriptors[0]
         })
-    msg = "string does not match regex \"^\w[^:]*:.+$\""  # noqa: W605
+    msg = "string does not match regex \"^\w[^:]*:.+$\""  # noqa: W605, Q003
     check_validation_error(exc_info, msg)
 
 
@@ -269,12 +337,25 @@ def test_transcript_segment_component(transcript_segments):
     assert test_component.gene_descriptor.id == "gene:G1"
     assert test_component.gene_descriptor.label == "G1"
     assert test_component.gene_descriptor.gene.gene_id == "hgnc:9339"
-    test_region = test_component.component_genomic_region
-    assert test_region.location.species_id == "taxonomy:9606"
-    assert test_region.location.type == "ChromosomeLocation"
-    assert test_region.location.chr == "12"
-    assert test_region.location.interval.start == "p12.1"
-    assert test_region.location.interval.end == "p12.2"
+    test_region_start = test_component.component_genomic_start
+    assert test_region_start.location.species_id == "taxonomy:9606"
+    assert test_region_start.location.type == "ChromosomeLocation"
+    assert test_region_start.location.chr == "12"
+    assert test_region_start.location.interval.start == "p12.1"
+    assert test_region_start.location.interval.end == "p12.1"
+    test_region_end = test_component.component_genomic_end
+    assert test_region_end.location.species_id == "taxonomy:9606"
+    assert test_region_end.location.type == "ChromosomeLocation"
+    assert test_region_end.location.chr == "12"
+    assert test_region_end.location.interval.start == "p12.2"
+    assert test_region_end.location.interval.end == "p12.2"
+
+    test_component = TranscriptSegmentComponent(**transcript_segments[3])
+    assert test_component.transcript == "refseq:NM_938439.4"
+    assert test_component.exon_start == 7
+    assert test_component.exon_start_offset == 0
+    assert test_component.exon_end is None
+    assert test_component.exon_end_offset is None
 
     # check CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
@@ -289,20 +370,26 @@ def test_transcript_segment_component(transcript_segments):
                 "gene": {"id": "hgnc:1"},
                 "label": "G1"
             },
-            "component_genomic_region": {
+            "component_genomic_start": {
                 "location": {
                     "species_id": "taxonomy:9606", "chr": "12",
-                    "interval": {"start": "p12.1", "end": "p12.2"},
+                    "interval": {"start": "p12.1", "end": "p12.1"},
+                }
+            },
+            "component_genomic_end": {
+                "location": {
+                    "species_id": "taxonomy:9606", "chr": "12",
+                    "interval": {"start": "p12.2", "end": "p12.2"},
                 }
             }
         })
-    msg = "string does not match regex \"^\\w[^:]*:.+$\""  # noqa: W605
+    msg = "string does not match regex \"^\\w[^:]*:.+$\""  # noqa: W605, Q003
     check_validation_error(exc_info, msg)
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert TranscriptSegmentComponent(**{
-            "component_type": "genomic_region",
+            "component_type": "templated_sequence",
             "transcript": "NM_152263.3",
             "exon_start": "1",
             "exon_start_offset": "-9",
@@ -313,14 +400,64 @@ def test_transcript_segment_component(transcript_segments):
                 "gene": {"id": "hgnc:1"},
                 "label": "G1"
             },
-            "component_genomic_region": {
+            "component_genomic_start": {
                 "location": {
                     "species_id": "taxonomy:9606", "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.2"},
                 }
+            },
+            "component_genomic_end": {
+                "location": {
+                    "species_id": "taxonomy:9606", "chr": "12",
+                    "interval": {"start": "p12.2", "end": "p12.2"},
+                }
             }
         })
     msg = "unexpected value; permitted: <ComponentType.TRANSCRIPT_SEGMENT: 'transcript_segment'>"  # noqa: E501
+    check_validation_error(exc_info, msg)
+
+    # test component required
+    with pytest.raises(ValidationError) as exc_info:
+        assert TranscriptSegmentComponent(**{
+            "component_type": "templated_sequence",
+            "transcript": "NM_152263.3",
+            "exon_start": "1",
+            "exon_start_offset": "-9",
+            "gene_descriptor": {
+                "id": "test:1",
+                "gene": {"id": "hgnc:1"},
+                "label": "G1"
+            }
+        })
+    msg = "Must give `component_genomic_start` if `exon_start` is given"
+    check_validation_error(exc_info, msg)
+
+    # Neither exon_start or exon_end given
+    with pytest.raises(ValidationError) as exc_info:
+        assert TranscriptSegmentComponent(**{
+            "component_type": "templated_sequence",
+            "transcript": "NM_152263.3",
+            "exon_start_offset": "-9",
+            "exon_end_offset": "7",
+            "gene_descriptor": {
+                "id": "test:1",
+                "gene": {"id": "hgnc:1"},
+                "label": "G1"
+            },
+            "component_genomic_start": {
+                "location": {
+                    "species_id": "taxonomy:9606", "chr": "12",
+                    "interval": {"start": "p12.1", "end": "p12.2"},
+                }
+            },
+            "component_genomic_end": {
+                "location": {
+                    "species_id": "taxonomy:9606", "chr": "12",
+                    "interval": {"start": "p12.2", "end": "p12.2"},
+                }
+            }
+        })
+    msg = "Must give values for either `exon_start`, `exon_end`, or both"
     check_validation_error(exc_info, msg)
 
 
@@ -353,7 +490,7 @@ def test_linker_component(linkers):
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert LinkerComponent(**{
-            "component_type": "genomic_region",
+            "component_type": "templated_sequence",
             "linker_sequence":
                 {
                     "id": "sequence:ATG",
@@ -377,12 +514,12 @@ def test_linker_component(linkers):
     check_validation_error(exc_info, msg)
 
 
-def test_genomic_region_component(genomic_region_components,
+def test_genomic_region_component(templated_sequence_components,
                                   location_descriptors):
-    """Test that GenomicRegionComponent initializes correctly."""
+    """Test that TemplatedSequenceComponent initializes correctly."""
     def assert_genomic_region_test_component(test):
-        """Assert that test genomic_region_components[0] data matches expected values."""
-        assert test.component_type == "genomic_region"
+        """Assert that test templated_sequence_components[0] data matches expected values."""
+        assert test.component_type == "templated_sequence"
         assert test.strand.value == "+"
         assert test.region.id == "chr12:p12.1-p12.2"
         assert test.region.type == "LocationDescriptor"
@@ -392,21 +529,21 @@ def test_genomic_region_component(genomic_region_components,
         assert test.region.location.interval.end == "p12.2"
         assert test.region.label == "chr12:p12.1-p12.2"
 
-    test_component = GenomicRegionComponent(**genomic_region_components[0])
+    test_component = TemplatedSequenceComponent(**templated_sequence_components[0])
     assert_genomic_region_test_component(test_component)
 
-    genomic_region_components_cpy = copy.deepcopy(genomic_region_components[0])
+    genomic_region_components_cpy = copy.deepcopy(templated_sequence_components[0])
     genomic_region_components_cpy["region"]["location"]["_id"] = "location:1"
-    test_component = GenomicRegionComponent(**genomic_region_components_cpy)
+    test_component = TemplatedSequenceComponent(**genomic_region_components_cpy)
     assert_genomic_region_test_component(test_component)
 
-    genomic_region_components_cpy = copy.deepcopy(genomic_region_components[0])
+    genomic_region_components_cpy = copy.deepcopy(templated_sequence_components[0])
     genomic_region_components_cpy["region"]["location_id"] = "location:1"
-    test_component = GenomicRegionComponent(**genomic_region_components_cpy)
+    test_component = TemplatedSequenceComponent(**genomic_region_components_cpy)
     assert_genomic_region_test_component(test_component)
 
     with pytest.raises(ValidationError) as exc_info:
-        GenomicRegionComponent(**{
+        TemplatedSequenceComponent(**{
             "region": {
                 "interval": {
                     "start": 39408,
@@ -420,12 +557,12 @@ def test_genomic_region_component(genomic_region_components,
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert GenomicRegionComponent(**{
+        assert TemplatedSequenceComponent(**{
             "component_type": "gene",
             "region": location_descriptors[0],
             "strand": "+"
         })
-    msg = "unexpected value; permitted: <ComponentType.GENOMIC_REGION: 'genomic_region'>"  # noqa: E501
+    msg = "unexpected value; permitted: <ComponentType.TEMPLATED_SEQUENCE: 'templated_sequence'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
@@ -446,7 +583,7 @@ def test_gene_component(gene_descriptors):
                 "label": "G1"
             }
         })
-    msg = "string does not match regex \"^\w[^:]*:.+$\""  # noqa: W605
+    msg = "string does not match regex \"^\w[^:]*:.+$\""  # noqa: W605, Q003
     check_validation_error(exc_info, msg)
 
     # test enum validation
@@ -512,7 +649,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
 
 
 def test_fusion(critical_domains, transcript_segments,
-                genomic_region_components, linkers, gene_components,
+                templated_sequence_components, linkers, gene_components,
                 regulatory_elements):
     """Test that Fusion object initializes correctly"""
     unknown_component = {
@@ -574,7 +711,7 @@ def test_fusion(critical_domains, transcript_segments,
             unknown_component,
             gene_components[0],
             transcript_segments[2],
-            genomic_region_components[1],
+            templated_sequence_components[1],
             linkers[0],
         ]
     })
@@ -616,7 +753,7 @@ def test_fusion(critical_domains, transcript_segments,
         assert Fusion(**{
             "structural_components": [unknown_component]
         })
-    msg = "Fusion must contain at least 2 transcript components."
+    msg = "Fusion must contain at least 2 structural components."
     check_validation_error(exc_info, msg)
 
 
