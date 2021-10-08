@@ -757,9 +757,9 @@ def test_fusion(critical_domains, transcript_segments,
     check_validation_error(exc_info, msg)
 
 
-def test_examples(fusion_example):
+def test_examples(exhaustive_example):
     """Test example JSON files."""
-    assert Fusion(**fusion_example)
+    assert Fusion(**exhaustive_example)
 
     example_1 = json.load(open(EXAMPLES_DIR / "example_1.json", "r"))
     assert Fusion(**example_1)

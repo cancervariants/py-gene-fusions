@@ -234,9 +234,9 @@ def test__normalized_gene_descriptor(fusor):
     assert resp is None
 
 
-def test_add_gene_descriptor(fusor, fusion_example, fusion):
+def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
     """Test that add_gene_descriptor method works correctly."""
-    expected_fusion = Fusion(**fusion_example)
+    expected_fusion = Fusion(**exhaustive_example)
     test_fusion = Fusion(**fusion)
     fusor.add_sequence_id(test_fusion)
     fusor.add_location_id(test_fusion)
