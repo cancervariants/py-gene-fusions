@@ -130,7 +130,11 @@ class FUSOR:
         :return: Gene Descriptor for query
         """
         gene_norm_resp = self.gene_normalizer.normalize(query)
-        if gene_norm_resp["match_type"]:
+        try:
+            match_type = gene_norm_resp["match_type"]
+        except TypeError:
+            match_type = gene_norm_resp.match_type
+        if match_type:
             return GeneDescriptor(**gene_norm_resp["gene_descriptor"])
         return None
 
