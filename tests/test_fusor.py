@@ -23,7 +23,7 @@ def fusion():
                 "id": "interpro:IPR000010",
                 "gene_descriptor": {
                     "id": "gene:CST1",
-                    "gene_id": "hgnc:2743",
+                    "gene_id": "hgnc:2473",
                     "label": "CST1",
                     "type": "GeneDescriptor"
                 }
@@ -187,3 +187,13 @@ def test_translate_identifier(fusor):
 
     identifier = fusor.translate_identifier("refseq_152263.3")
     assert identifier is None
+
+
+def test_add_gene_descriptor(fusor, fusion_example, fusion):
+    """Test that add_gene_descriptor method works correctly."""
+    expected_fusion = Fusion(**fusion_example)
+    test_fusion = Fusion(**fusion)
+    fusor.add_sequence_id(test_fusion)
+    fusor.add_location_id(test_fusion)
+    fusor.add_gene_descriptor(test_fusion)
+    assert test_fusion.dict(exclude_none=True) == expected_fusion.dict(exclude_none=True)
