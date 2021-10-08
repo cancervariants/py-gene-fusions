@@ -5,8 +5,8 @@ from ga4gh.vrs import models
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrsatile.pydantic.vrs_model import CURIE, VRSTypes
 from fusor import SEQREPO_DATA_PATH
-from fusor.models import Fusion, GenomicRegionComponent, AdditionalFields, \
-    TranscriptSegmentComponent
+from fusor.models import Fusion, TemplatedSequenceComponent,\
+    AdditionalFields, TranscriptSegmentComponent
 from fusor import logger
 
 
@@ -57,17 +57,21 @@ class FUSOR:
         :param Fusion fusion: A valid Fusion object
         """
         for structural_component in fusion.structural_components:
-            if isinstance(structural_component, GenomicRegionComponent):
+            if isinstance(structural_component, TemplatedSequenceComponent):
                 location = structural_component.region.location
                 location_id = \
                     ga4gh_identify(models.Location(**location.dict()))
                 structural_component.region.location_id = location_id
             elif isinstance(structural_component, TranscriptSegmentComponent):
-                location = structural_component.component_genomic_region.location  # noqa: E501
-                location_id = \
-                    ga4gh_identify(models.Location(**location.dict()))
-                if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                    structural_component.component_genomic_region.location_id = location_id  # noqa: E501
+                for component_genomic in [
+                    structural_component.component_genomic_start,
+                    structural_component.component_genomic_end
+                ]:
+                    if component_genomic:
+                        location = component_genomic.location
+                        if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                            location_id = ga4gh_identify(models.Location(**location.dict()))  # noqa: E501
+                            component_genomic.location_id = location_id
 
     def add_sequence_id(self, fusion: Fusion,
                         target_namespace: str = "ga4gh") -> None:
@@ -78,16 +82,21 @@ class FUSOR:
             for `sequence_id`. Default is `ga4gh`
         """
         for structural_component in fusion.structural_components:
-            if isinstance(structural_component, GenomicRegionComponent):
+            if isinstance(structural_component, TemplatedSequenceComponent):
                 location = structural_component.region.location
                 if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                     structural_component.region.location.sequence_id = \
                         self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
             elif isinstance(structural_component, TranscriptSegmentComponent):
-                location = structural_component.component_genomic_region.location  # noqa: #501
-                if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                    structural_component.component_genomic_region.\
-                        location.sequence_id = self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
+                for component_genomic in [
+                    structural_component.component_genomic_start,
+                    structural_component.component_genomic_end
+                ]:
+                    if component_genomic:
+                        location = component_genomic.location
+                        if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                            component_genomic.location.sequence_id = \
+                                self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
 
     def translate_identifier(self, ac: str,
                              target_namespace: str = "ga4gh") -> Optional[CURIE]:  # noqa: E501

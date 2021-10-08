@@ -27,10 +27,10 @@
                 "type": "GeneDescriptor",
                 "label": "TPM3"
             },
-            "component_genomic_region": {
-                "id": "refseq:NM_152263.3_exon1-exon8",
+            "component_genomic_start": {
+                "id": "refseq:NM_152263.3_exon1",
                 "type": "LocationDescriptor",
-                "location_id": "ga4gh:VSL.jSo1NpOTpoJtHnXuVxQNz_dxk770pB5z",
+                "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",
                 "location": {
                     "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
                     "type": "SequenceLocation",
@@ -38,6 +38,26 @@
                         "start": {
                             "type": "Number",
                             "value": 154192135
+                        },
+                        "end": {
+                            "type": "Number",
+                            "value": 154192136
+                        },
+                        "type": "SequenceInterval"
+                    }
+                }
+            },
+            "component_genomic_end": {
+                "id": "refseq:NM_152263.3_exon8",
+                "type": "LocationDescriptor",
+                "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",
+                "location": {
+                    "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
+                    "type": "SequenceLocation",
+                    "interval": {
+                        "start": {
+                            "type": "Number",
+                            "value": 154170398
                         },
                         "end": {
                             "type": "Number",
@@ -67,7 +87,7 @@
             }
         },
         {
-            "component_type": "genomic_region",
+            "component_type": "templated_sequence",
             "region": {
                 "id": "chr12:44908821-44908822(+)",
                 "type": "LocationDescriptor",

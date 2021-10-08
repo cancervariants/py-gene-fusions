@@ -13,10 +13,10 @@
                 "label": "EPCAM",
                 "type": "GeneDescriptor"
             },
-            "component_genomic_region": {
+            "component_genomic_start": {
                 "id": "refseq:NC_000001.10",
                 "type": "LocationDescriptor",
-                "location_id": "ga4gh:VSL.4FPKCIh_-5TNXO4Wgj4yc5T82qLDMZtd",
+                "location_id": "ga4gh:VSL.UIbCUkNirSjBoFLSA0Rx6q-EXMDkGmJ3",
                 "location": {
                     "sequence_id": "ga4gh:SQ.S_KjnFVz-FE7M0W6yoaUDgYxLPc1jyWU",
                     "type": "SequenceLocation",
@@ -24,6 +24,26 @@
                         "start": {
                             "type": "Number",
                             "value": 154164609
+                        },
+                        "end": {
+                            "type": "Number",
+                            "value": 154164610
+                        },
+                        "type": "SequenceInterval"
+                    }
+                }
+            },
+            "component_genomic_end": {
+                "id": "refseq:NC_000001.10",
+                "type": "LocationDescriptor",
+                "location_id": "ga4gh:VSL.BqFgzXhISre8ylBSgTKEJtlYBU7J5ZU2",
+                "location": {
+                    "sequence_id": "ga4gh:SQ.S_KjnFVz-FE7M0W6yoaUDgYxLPc1jyWU",
+                    "type": "SequenceLocation",
+                    "interval": {
+                        "start": {
+                            "type": "Number",
+                            "value": 154145382
                         },
                         "end": {
                             "type": "Number",
@@ -47,10 +67,10 @@
                 "label": "MSH2",
                 "type": "GeneDescriptor"
             },
-            "component_genomic_region": {
+            "component_genomic_start": {
                 "id": "refseq:NC_000001.10",
                 "type": "LocationDescriptor",
-                "location_id": "ga4gh:VSL.0-Qb0tsX1qEU4Vktt_KXwnBhHsGjIIl4",
+                "location_id": "ga4gh:VSL.-MwXUhgju0U9OgPA5x6KhWOCfo9UDMhj",
                 "location": {
                     "sequence_id": "ga4gh:SQ.S_KjnFVz-FE7M0W6yoaUDgYxLPc1jyWU",
                     "type": "SequenceLocation",
@@ -58,6 +78,26 @@
                         "start": {
                             "type": "Number",
                             "value": 154163787
+                        },
+                        "end": {
+                            "type": "Number",
+                            "value": 154163788
+                        },
+                        "type": "SequenceInterval"
+                    }
+                }
+            },
+            "component_genomic_end": {
+                "id": "refseq:NC_000001.10",
+                "type": "LocationDescriptor",
+                "location_id": "ga4gh:VSL.fPK62ntQjHYHTJELERsVgD-zJaZiwCZn",
+                "location": {
+                    "sequence_id": "ga4gh:SQ.S_KjnFVz-FE7M0W6yoaUDgYxLPc1jyWU",
+                    "type": "SequenceLocation",
+                    "interval": {
+                        "start": {
+                            "type": "Number",
+                            "value": 154134288
                         },
                         "end": {
                             "type": "Number",
