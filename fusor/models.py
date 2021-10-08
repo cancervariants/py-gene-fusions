@@ -15,6 +15,7 @@ class AdditionalFields(str, Enum):
 
     SEQUENCE_ID = "sequence_id"
     LOCATION_ID = "location_id"
+    GENE_DESCRIPTOR = "gene_descriptor"
 
 
 class DomainStatus(str, Enum):

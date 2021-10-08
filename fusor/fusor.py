@@ -4,9 +4,10 @@ from biocommons.seqrepo import SeqRepo
 from ga4gh.vrs import models
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrsatile.pydantic.vrs_model import CURIE, VRSTypes
+from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor
 from fusor import SEQREPO_DATA_PATH
 from gene.query import QueryHandler
-from fusor.models import Fusion, TemplatedSequenceComponent,\
+from fusor.models import Fusion, TemplatedSequenceComponent, \
     AdditionalFields, TranscriptSegmentComponent
 from fusor import logger
 
@@ -106,6 +107,32 @@ class FUSOR:
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                             component_genomic.location.sequence_id = \
                                 self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
+
+    def add_gene_descriptor(self, fusion: Fusion) -> None:
+        """Add additional fields to `gene_descriptor` in fusion object
+
+        :param Fusion fusion: A valid Fusion object
+        """
+        for field in [fusion.protein_domains, fusion.structural_components,
+                      fusion.regulatory_elements]:
+            for obj in field:
+                if "gene_descriptor" in obj.__fields__.keys():
+                    norm_gene_descr = \
+                        self._normalized_gene_descriptor(obj.gene_descriptor.label)  # noqa: E501
+                    if norm_gene_descr:
+                        obj.gene_descriptor = norm_gene_descr
+
+    def _normalized_gene_descriptor(self,
+                                    query: str) -> Optional[GeneDescriptor]:
+        """Return gene descriptor from normalized response.
+
+        :param str query: Gene query
+        :return: Gene Descriptor for query
+        """
+        gene_norm_resp = self.gene_normalizer.normalize(query)
+        if gene_norm_resp["match_type"]:
+            return GeneDescriptor(**gene_norm_resp["gene_descriptor"])
+        return None
 
     def translate_identifier(self, ac: str,
                              target_namespace: str = "ga4gh") -> Optional[CURIE]:  # noqa: E501
