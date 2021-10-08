@@ -6,10 +6,58 @@
             "name": "cystatin domain",
             "id": "interpro:IPR000010",
             "gene_descriptor": {
-                "id": "gene:CST1",
-                "gene_id": "hgnc:2743",
+                "id": "normalize.gene:CST1",
+                "type": "GeneDescriptor",
                 "label": "CST1",
-                "type": "GeneDescriptor"
+                "xrefs": [
+                    "ensembl:ENSG00000170373",
+                    "ncbigene:1469"
+                ],
+                "extensions": [
+                    {
+                        "type": "Extension",
+                        "name": "symbol_status",
+                        "value": "approved"
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "approved_name",
+                        "value": "cystatin SN"
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "chromosome_location",
+                        "value": {
+                            "species_id": "taxonomy:9606",
+                            "interval": {
+                                "type": "CytobandInterval",
+                                "start": "p11.21",
+                                "end": "p11.21"
+                            },
+                            "_id": "ga4gh:VCL.hbZwuTPozz30UguMICq0wNs5GfFkcpIY",
+                            "type": "ChromosomeLocation",
+                            "chr": "20"
+                        }
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "associated_with",
+                        "value": [
+                            "ena.embl:M19169",
+                            "vega:OTTHUMG00000032085",
+                            "omim:123855",
+                            "ccds:CCDS13160",
+                            "uniprot:P01037",
+                            "refseq:NM_001898",
+                            "ucsc:uc061vvz.1",
+                            "merops:I25.010"
+                        ]
+                    }
+                ],
+                "gene": {
+                    "type": "Gene",
+                    "gene_id": "hgnc:2473"
+                }
             }
         }
     ],
@@ -22,10 +70,96 @@
             "exon_end": 8,
             "exon_end_offset": 0,
             "gene_descriptor": {
-                "id": "gene:TPM3",
-                "gene_id": "hgnc:12012",
+                "id": "normalize.gene:TPM3",
                 "type": "GeneDescriptor",
-                "label": "TPM3"
+                "label": "TPM3",
+                "xrefs": [
+                    "ensembl:ENSG00000143549",
+                    "ncbigene:7170"
+                ],
+                "alternate_labels": [
+                    "NEM1~withdrawn",
+                    "TM30",
+                    "TM-5",
+                    "OK/SW-cl.5",
+                    "TPM3nu",
+                    "TM3",
+                    "TM30nm",
+                    "CAPM1",
+                    "hscp30",
+                    "TRK",
+                    "TPMsk3",
+                    "TM5",
+                    "HEL-S-82p",
+                    "FLJ35371",
+                    "CFTD",
+                    "NEM1",
+                    "HEL-189"
+                ],
+                "extensions": [
+                    {
+                        "type": "Extension",
+                        "name": "symbol_status",
+                        "value": "approved"
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "approved_name",
+                        "value": "tropomyosin 3"
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "chromosome_location",
+                        "value": {
+                            "species_id": "taxonomy:9606",
+                            "interval": {
+                                "type": "CytobandInterval",
+                                "start": "q21.3",
+                                "end": "q21.3"
+                            },
+                            "_id": "ga4gh:VCL.rmJvYV5JccRSEoMVxe5BmuHs9S2VZ4uR",
+                            "type": "ChromosomeLocation",
+                            "chr": "1"
+                        }
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "associated_with",
+                        "value": [
+                            "ccds:CCDS60275",
+                            "cosmic:TPM3",
+                            "ccds:CCDS41402",
+                            "ena.embl:BC008425",
+                            "omim:191030",
+                            "refseq:NM_152263",
+                            "pubmed:1829807",
+                            "uniprot:P06753",
+                            "vega:OTTHUMG00000035853",
+                            "ccds:CCDS1060",
+                            "ucsc:uc001fec.3",
+                            "ccds:CCDS41403",
+                            "ccds:CCDS60274",
+                            "orphanet:120227",
+                            "ccds:CCDS41400",
+                            "pubmed:25369766",
+                            "ccds:CCDS72922",
+                            "ccds:CCDS41401"
+                        ]
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "previous_symbols",
+                        "value": [
+                            "NEM1~withdrawn",
+                            "NEM1",
+                            "FLJ35371"
+                        ]
+                    }
+                ],
+                "gene": {
+                    "type": "Gene",
+                    "gene_id": "hgnc:12012"
+                }
             },
             "component_genomic_start": {
                 "id": "refseq:NM_152263.3_exon1",
@@ -71,10 +205,67 @@
         {
             "component_type": "gene",
             "gene_descriptor": {
-                "id": "gene:ALK",
+                "id": "normalize.gene:ALK",
                 "type": "GeneDescriptor",
-                "gene_id": "hgnc:427",
-                "label": "ALK"
+                "label": "ALK",
+                "xrefs": [
+                    "ensembl:ENSG00000171094",
+                    "ncbigene:238"
+                ],
+                "alternate_labels": [
+                    "NBLST3",
+                    "CD246"
+                ],
+                "extensions": [
+                    {
+                        "type": "Extension",
+                        "name": "symbol_status",
+                        "value": "approved"
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "approved_name",
+                        "value": "ALK receptor tyrosine kinase"
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "chromosome_location",
+                        "value": {
+                            "species_id": "taxonomy:9606",
+                            "interval": {
+                                "type": "CytobandInterval",
+                                "start": "p23.2",
+                                "end": "p23.1"
+                            },
+                            "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
+                            "type": "ChromosomeLocation",
+                            "chr": "2"
+                        }
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "associated_with",
+                        "value": [
+                            "ena.embl:D45915",
+                            "uniprot:Q9UM73",
+                            "pubmed:8122112",
+                            "omim:105590",
+                            "orphanet:160020",
+                            "cosmic:ALK",
+                            "vega:OTTHUMG00000152034",
+                            "ccds:CCDS86828",
+                            "hcdmdb:CD246",
+                            "ccds:CCDS33172",
+                            "ucsc:uc002rmy.4",
+                            "iuphar:1839",
+                            "refseq:NM_004304"
+                        ]
+                    }
+                ],
+                "gene": {
+                    "type": "Gene",
+                    "gene_id": "hgnc:427"
+                }
             }
         },
         {
@@ -120,10 +311,70 @@
         {
             "type": "promoter",
             "gene_descriptor": {
-                "id": "gene:BRAF",
+                "id": "normalize.gene:BRAF",
                 "type": "GeneDescriptor",
-                "gene_id": "hgnc:1097",
-                "label": "BRAF"
+                "label": "BRAF",
+                "xrefs": [
+                    "ensembl:ENSG00000157764",
+                    "ncbigene:673"
+                ],
+                "alternate_labels": [
+                    "RAFB1",
+                    "BRAF1",
+                    "B-RAF1",
+                    "NS7",
+                    "B-raf"
+                ],
+                "extensions": [
+                    {
+                        "type": "Extension",
+                        "name": "symbol_status",
+                        "value": "approved"
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "approved_name",
+                        "value": "B-Raf proto-oncogene, serine/threonine kinase"
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "chromosome_location",
+                        "value": {
+                            "species_id": "taxonomy:9606",
+                            "interval": {
+                                "type": "CytobandInterval",
+                                "start": "q34",
+                                "end": "q34"
+                            },
+                            "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
+                            "type": "ChromosomeLocation",
+                            "chr": "7"
+                        }
+                    },
+                    {
+                        "type": "Extension",
+                        "name": "associated_with",
+                        "value": [
+                            "omim:164757",
+                            "ccds:CCDS87555",
+                            "iuphar:1943",
+                            "ucsc:uc003vwc.5",
+                            "ena.embl:M95712",
+                            "pubmed:2284096",
+                            "refseq:NM_004333",
+                            "ccds:CCDS5863",
+                            "uniprot:P15056",
+                            "vega:OTTHUMG00000157457",
+                            "orphanet:119066",
+                            "cosmic:BRAF",
+                            "pubmed:1565476"
+                        ]
+                    }
+                ],
+                "gene": {
+                    "type": "Gene",
+                    "gene_id": "hgnc:1097"
+                }
             }
         }
     ]

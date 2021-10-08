@@ -1,5 +1,6 @@
 """Module for testing the FUSOR class."""
 import pytest
+from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor
 from fusor import FUSOR
 from fusor.models import Fusion, TemplatedSequenceComponent, \
     TranscriptSegmentComponent
@@ -23,7 +24,7 @@ def fusion():
                 "id": "interpro:IPR000010",
                 "gene_descriptor": {
                     "id": "gene:CST1",
-                    "gene_id": "hgnc:2743",
+                    "gene_id": "hgnc:2473",
                     "label": "CST1",
                     "type": "GeneDescriptor"
                 }
@@ -143,6 +144,39 @@ def fusion():
     }
 
 
+def compare_gene_descriptor(actual, expected):
+    """Test that actual and expected gene descriptors match."""
+    assert actual["id"] == expected["id"]
+    assert actual["type"] == expected["type"]
+    assert actual["gene"] == expected["gene"]
+    assert actual["label"] == expected["label"]
+    assert set(actual["xrefs"]) == set(expected["xrefs"]), "xrefs"
+    if expected["alternate_labels"]:
+        assert set(actual["alternate_labels"]) == set(expected["alternate_labels"]), "alt labels"  # noqa: E501
+    else:
+        assert actual["alternate_labels"] == expected["alternate_labels"]
+    extensions_present = "extensions" in expected.keys()
+    assert ("extensions" in actual.keys()) == extensions_present
+    if extensions_present:
+        assert len(actual["extensions"]) == len(expected["extensions"]), \
+            "len of extensions"
+        n_ext_correct = 0
+        for expected_ext in expected["extensions"]:
+            for actual_ext in actual["extensions"]:
+                if actual_ext["name"] == expected_ext["name"]:
+                    assert isinstance(actual_ext["value"],
+                                      type(expected_ext["value"]))
+                    if isinstance(expected_ext["value"], list):
+                        assert set(actual_ext["value"]) == \
+                               set(expected_ext["value"]), f"{expected_ext['value']} value"  # noqa: E501
+                    else:
+                        assert actual_ext["value"] == expected_ext["value"]
+                    assert actual_ext["type"] == expected_ext["type"]
+                    n_ext_correct += 1
+        assert n_ext_correct == len(expected["extensions"]), \
+            "number of correct extensions"
+
+
 def test_add_additional_fields(fusor, fusion_example, fusion):
     """Test that add_additional_fields method works correctly."""
     expected_fusion = Fusion(**fusion_example)
@@ -187,3 +221,46 @@ def test_translate_identifier(fusor):
 
     identifier = fusor.translate_identifier("refseq_152263.3")
     assert identifier is None
+
+
+def test__normalized_gene_descriptor(fusor):
+    """Test that _normalized_gene_descriptor works correctly."""
+    # Actual response is tested in test_add_gene_descriptor
+    resp = fusor._normalized_gene_descriptor("BRAF")
+    assert resp
+    assert isinstance(resp, GeneDescriptor)
+
+    resp = fusor._normalized_gene_descriptor("B R A F")
+    assert resp is None
+
+
+def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
+    """Test that add_gene_descriptor method works correctly."""
+    expected_fusion = Fusion(**exhaustive_example)
+    test_fusion = Fusion(**fusion)
+    fusor.add_sequence_id(test_fusion)
+    fusor.add_location_id(test_fusion)
+    fusor.add_gene_descriptor(test_fusion)
+
+    e_gds = set()
+    t_gds = set()
+    for e_field in [expected_fusion.protein_domains,
+                    expected_fusion.structural_components,
+                    expected_fusion.regulatory_elements]:
+        for t_field in [test_fusion.protein_domains,
+                        test_fusion.structural_components,
+                        test_fusion.regulatory_elements]:
+            for e_obj in e_field:
+                for t_obj in t_field:
+                    if "gene_descriptor" in e_obj.__fields__.keys():
+                        e_gd = e_obj.gene_descriptor.label
+                        e_gds.add(e_gd)
+                        if "gene_descriptor" in t_obj.__fields__.keys():
+                            t_gd = t_obj.gene_descriptor.label
+                            t_gds.add(t_gd)
+                            if e_gd == t_gd:
+                                compare_gene_descriptor(
+                                    t_obj.gene_descriptor.dict(),
+                                    e_obj.gene_descriptor.dict()
+                                )
+    assert t_gds == e_gds

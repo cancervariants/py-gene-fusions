@@ -4,8 +4,10 @@ from biocommons.seqrepo import SeqRepo
 from ga4gh.vrs import models
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrsatile.pydantic.vrs_model import CURIE, VRSTypes
+from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor
 from fusor import SEQREPO_DATA_PATH
-from fusor.models import Fusion, TemplatedSequenceComponent,\
+from gene.query import QueryHandler
+from fusor.models import Fusion, TemplatedSequenceComponent, \
     AdditionalFields, TranscriptSegmentComponent
 from fusor import logger
 
@@ -13,12 +15,20 @@ from fusor import logger
 class FUSOR:
     """Class for modifying fusion objects."""
 
-    def __init__(self, seqrepo_data_path: str = SEQREPO_DATA_PATH) -> None:
+    def __init__(self,
+                 seqrepo_data_path: str = SEQREPO_DATA_PATH,
+                 dynamodb_url: str = "",
+                 dynamodb_region: str = "us-east-2") -> None:
         """Initialize FUSOR class.
 
         :param str seqrepo_data_path: Path to SeqRepo data directory
+        :param str dynamodb_url: URL to gene-normalizer database source.
+            Can also set environment variable `GENE_NORM_DB_URL`.
+        :param str dynamodb_region: AWS default region for gene-normalizer.
         """
         self.seqrepo = SeqRepo(seqrepo_data_path)
+        self.gene_normalizer = QueryHandler(
+            db_url=dynamodb_url, db_region=dynamodb_region)
 
     def add_additional_fields(self, fusion: Fusion,
                               add_all: bool = True,
@@ -35,6 +45,7 @@ class FUSOR:
             `AdditionalFields`
         :param str target_namespace: The namespace of identifiers to return
             for `sequence_id`. Default is `ga4gh`
+        :return: Updated fusion with specified fields set
         """
         if add_all:
             self.add_sequence_id(fusion, target_namespace)
@@ -51,10 +62,11 @@ class FUSOR:
 
         return fusion
 
-    def add_location_id(self, fusion: Fusion) -> None:
+    def add_location_id(self, fusion: Fusion) -> Fusion:
         """Add `location_id` in fusion object.
 
         :param Fusion fusion: A valid Fusion object
+        :return: Updated fusion with `location_id` fields set
         """
         for structural_component in fusion.structural_components:
             if isinstance(structural_component, TemplatedSequenceComponent):
@@ -72,14 +84,16 @@ class FUSOR:
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                             location_id = ga4gh_identify(models.Location(**location.dict()))  # noqa: E501
                             component_genomic.location_id = location_id
+        return fusion
 
     def add_sequence_id(self, fusion: Fusion,
-                        target_namespace: str = "ga4gh") -> None:
+                        target_namespace: str = "ga4gh") -> Fusion:
         """Add sequence_id in fusion object.
 
         :param Fusion fusion: A valid Fusion object
         :param str target_namespace: The namespace of identifiers to return
             for `sequence_id`. Default is `ga4gh`
+        :return: Updated fusion with `sequence_id` fields set
         """
         for structural_component in fusion.structural_components:
             if isinstance(structural_component, TemplatedSequenceComponent):
@@ -97,6 +111,39 @@ class FUSOR:
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                             component_genomic.location.sequence_id = \
                                 self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
+        return fusion
+
+    def add_gene_descriptor(self, fusion: Fusion) -> Fusion:
+        """Add additional fields to `gene_descriptor` in fusion object
+
+        :param Fusion fusion: A valid Fusion object
+        :return: Updated fusion with additional fields set in `gene_descriptor`
+        """
+        for field in [fusion.protein_domains, fusion.structural_components,
+                      fusion.regulatory_elements]:
+            for obj in field:
+                if "gene_descriptor" in obj.__fields__.keys():
+                    norm_gene_descr = \
+                        self._normalized_gene_descriptor(obj.gene_descriptor.label)  # noqa: E501
+                    if norm_gene_descr:
+                        obj.gene_descriptor = norm_gene_descr
+        return fusion
+
+    def _normalized_gene_descriptor(self,
+                                    query: str) -> Optional[GeneDescriptor]:
+        """Return gene descriptor from normalized response.
+
+        :param str query: Gene query
+        :return: Gene Descriptor for query
+        """
+        gene_norm_resp = self.gene_normalizer.normalize(query)
+        try:
+            match_type = gene_norm_resp["match_type"]
+        except TypeError:
+            match_type = gene_norm_resp.match_type
+        if match_type:
+            return GeneDescriptor(**gene_norm_resp["gene_descriptor"])
+        return None
 
     def translate_identifier(self, ac: str,
                              target_namespace: str = "ga4gh") -> Optional[CURIE]:  # noqa: E501

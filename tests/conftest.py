@@ -7,6 +7,12 @@ EXAMPLES_DIR = APP_ROOT.resolve().parents[0] / "examples"
 
 
 @pytest.fixture(scope="module")
-def fusion_example():
-    """Create test fixture for example of fusion"""
+def exhaustive_example():
+    """Create test fixture for example of fusion (additional fields incl)"""
     return json.load(open(EXAMPLES_DIR / "exhaustive_example.json", "r"))
+
+
+@pytest.fixture(scope="module")
+def fusion_example():
+    """Create test fixture for example of fusion (additional fields excl)"""
+    return json.load(open(EXAMPLES_DIR / "fusion_example.json", "r"))
