@@ -5,6 +5,11 @@ jobs:
         runs-on: ubuntu-latest
         env:
           SEQREPO_DATA_PATH: ./tests/data/seqrepo/latest
+          AWS_ACCESS_KEY_ID: ${{ secrets.DUMMY_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DUMMY_AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-2
+          AWS_DEFAULT_OUTPUT: text
+          GENE_NORM_DB_URL: http://localhost:8000
         steps:
             - uses: actions/checkout@v2
 
