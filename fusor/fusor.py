@@ -45,6 +45,7 @@ class FUSOR:
             `AdditionalFields`
         :param str target_namespace: The namespace of identifiers to return
             for `sequence_id`. Default is `ga4gh`
+        :return: Updated fusion with specified fields set
         """
         if add_all:
             self.add_sequence_id(fusion, target_namespace)
@@ -61,10 +62,11 @@ class FUSOR:
 
         return fusion
 
-    def add_location_id(self, fusion: Fusion) -> None:
+    def add_location_id(self, fusion: Fusion) -> Fusion:
         """Add `location_id` in fusion object.
 
         :param Fusion fusion: A valid Fusion object
+        :return: Updated fusion with `location_id` fields set
         """
         for structural_component in fusion.structural_components:
             if isinstance(structural_component, TemplatedSequenceComponent):
@@ -82,14 +84,16 @@ class FUSOR:
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                             location_id = ga4gh_identify(models.Location(**location.dict()))  # noqa: E501
                             component_genomic.location_id = location_id
+        return fusion
 
     def add_sequence_id(self, fusion: Fusion,
-                        target_namespace: str = "ga4gh") -> None:
+                        target_namespace: str = "ga4gh") -> Fusion:
         """Add sequence_id in fusion object.
 
         :param Fusion fusion: A valid Fusion object
         :param str target_namespace: The namespace of identifiers to return
             for `sequence_id`. Default is `ga4gh`
+        :return: Updated fusion with `sequence_id` fields set
         """
         for structural_component in fusion.structural_components:
             if isinstance(structural_component, TemplatedSequenceComponent):
@@ -107,11 +111,13 @@ class FUSOR:
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                             component_genomic.location.sequence_id = \
                                 self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
+        return fusion
 
-    def add_gene_descriptor(self, fusion: Fusion) -> None:
+    def add_gene_descriptor(self, fusion: Fusion) -> Fusion:
         """Add additional fields to `gene_descriptor` in fusion object
 
         :param Fusion fusion: A valid Fusion object
+        :return: Updated fusion with additional fields set in `gene_descriptor`
         """
         for field in [fusion.protein_domains, fusion.structural_components,
                       fusion.regulatory_elements]:
@@ -121,6 +127,7 @@ class FUSOR:
                         self._normalized_gene_descriptor(obj.gene_descriptor.label)  # noqa: E501
                     if norm_gene_descr:
                         obj.gene_descriptor = norm_gene_descr
+        return fusion
 
     def _normalized_gene_descriptor(self,
                                     query: str) -> Optional[GeneDescriptor]:
