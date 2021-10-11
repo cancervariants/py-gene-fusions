@@ -137,13 +137,7 @@ class FUSOR:
         :return: Gene Descriptor for query
         """
         gene_norm_resp = self.gene_normalizer.normalize(query)
-        try:
-            match_type = gene_norm_resp["match_type"]
-        except TypeError:
-            match_type = gene_norm_resp.match_type
-        if match_type:
-            return GeneDescriptor(**gene_norm_resp["gene_descriptor"])
-        return None
+        return gene_norm_resp.gene_descriptor if gene_norm_resp.match_type else None  # noqa: E501
 
     def translate_identifier(self, ac: str,
                              target_namespace: str = "ga4gh") -> Optional[CURIE]:  # noqa: E501

@@ -8,6 +8,7 @@
             "gene_descriptor": {
                 "id": "normalize.gene:CST1",
                 "type": "GeneDescriptor",
+                "gene_id": "hgnc:2473",
                 "label": "CST1",
                 "xrefs": [
                     "ensembl:ENSG00000170373",
@@ -53,11 +54,7 @@
                             "merops:I25.010"
                         ]
                     }
-                ],
-                "gene": {
-                    "type": "Gene",
-                    "gene_id": "hgnc:2473"
-                }
+                ]
             }
         }
     ],
@@ -72,6 +69,7 @@
             "gene_descriptor": {
                 "id": "normalize.gene:TPM3",
                 "type": "GeneDescriptor",
+                "gene_id": "hgnc:12012",
                 "label": "TPM3",
                 "xrefs": [
                     "ensembl:ENSG00000143549",
@@ -155,11 +153,7 @@
                             "FLJ35371"
                         ]
                     }
-                ],
-                "gene": {
-                    "type": "Gene",
-                    "gene_id": "hgnc:12012"
-                }
+                ]
             },
             "component_genomic_start": {
                 "id": "refseq:NM_152263.3_exon1",
@@ -207,6 +201,7 @@
             "gene_descriptor": {
                 "id": "normalize.gene:ALK",
                 "type": "GeneDescriptor",
+                "gene_id": "hgnc:427",
                 "label": "ALK",
                 "xrefs": [
                     "ensembl:ENSG00000171094",
@@ -261,11 +256,7 @@
                             "refseq:NM_004304"
                         ]
                     }
-                ],
-                "gene": {
-                    "type": "Gene",
-                    "gene_id": "hgnc:427"
-                }
+                ]
             }
         },
         {
@@ -313,6 +304,7 @@
             "gene_descriptor": {
                 "id": "normalize.gene:BRAF",
                 "type": "GeneDescriptor",
+                "gene_id": "hgnc:1097",
                 "label": "BRAF",
                 "xrefs": [
                     "ensembl:ENSG00000157764",
@@ -370,11 +362,7 @@
                             "pubmed:1565476"
                         ]
                     }
-                ],
-                "gene": {
-                    "type": "Gene",
-                    "gene_id": "hgnc:1097"
-                }
+                ]
             }
         }
     ]

@@ -148,7 +148,7 @@ def compare_gene_descriptor(actual, expected):
     """Test that actual and expected gene descriptors match."""
     assert actual["id"] == expected["id"]
     assert actual["type"] == expected["type"]
-    assert actual["gene"] == expected["gene"]
+    assert actual["gene_id"] == expected["gene_id"]
     assert actual["label"] == expected["label"]
     assert set(actual["xrefs"]) == set(expected["xrefs"]), "xrefs"
     if expected["alternate_labels"]:
