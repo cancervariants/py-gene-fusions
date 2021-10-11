@@ -20,6 +20,11 @@ pipenv lock
 pipenv sync
 ```
 
+If you encounter errors, try the following then run the commands again:
+```commandline
+export SYSTEM_VERSION_COMPAT=1
+```
+
 ### Data Downloads
 
 #### SeqRepo
