@@ -16,13 +16,15 @@ for direction on installing pipenv in your compute environment.
 Once installed, from the project root dir, just run:
 
 ```commandline
-pipenv lock
-pipenv sync
+pipenv shell
+pipenv lock && pipenv sync
 ```
 
-If you encounter errors, try the following then run the commands again:
+#### MacOS Errors
+If you encounter errors, try the following:
 ```commandline
 export SYSTEM_VERSION_COMPAT=1
+pipenv lock && pipenv sync
 ```
 
 ### Data Downloads
