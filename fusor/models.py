@@ -28,9 +28,9 @@ class DomainStatus(str, Enum):
 class CriticalDomain(BaseModel):
     """Define CriticalDomain class"""
 
-    status: DomainStatus
-    name: StrictStr
     id: CURIE
+    name: StrictStr
+    status: DomainStatus
     gene_descriptor: GeneDescriptor
 
     _get_id_val = validator("id", allow_reuse=True)(return_value)
