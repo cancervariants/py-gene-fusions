@@ -15,6 +15,11 @@ if "SEQREPO_DATA_PATH" in environ:
 else:
     SEQREPO_DATA_PATH = "/usr/local/share/seqrepo/latest"
 
+if "UTA_DB_URL" in environ:
+    UTA_DB_URL = environ["UTA_DB_URL"]
+else:
+    UTA_DB_URL = "postgresql://uta_admin@localhost:5433/uta/uta_20210129"
+
 from fusor.fusor import FUSOR  # noqa: E402, F401
 
 APP_ROOT = Path(__file__).resolve().parents[0]
