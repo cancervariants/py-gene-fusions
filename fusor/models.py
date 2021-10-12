@@ -1,13 +1,12 @@
 """Model for fusion class"""
 from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
-    Extra
+    Extra, ValidationError, root_validator
 from typing import Optional, List, Union, Literal
 from enum import Enum
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
 from ga4gh.vrsatile.pydantic.vrs_model import Sequence
-from pydantic import ValidationError, root_validator, validator
 
 
 class AdditionalFields(str, Enum):

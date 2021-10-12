@@ -52,39 +52,26 @@ class FUSOR:
             r_frame_preserved: Optional[bool] = None,
             causative_event: Optional[Event] = None,
             regulatory_elements: Optional[RegulatoryElement] = None) -> Fusion:
+        """Create fusion"""
         return Fusion(r_frame_preserved=r_frame_preserved,
                       tructural_components=structural_components,
                       causative_event=causative_event,
                       regulatory_elements=regulatory_elements)
 
-    async def transcript_to_genomic_coordinates(
-            self, gene: Optional[str] = None, transcript: str = None,
-            exon_start: Optional[int] = None, exon_start_offset: Optional[int] = 0,  # noqa: E501
-            exon_end: Optional[int] = None, exon_end_offset: Optional[int] = 0,
-            **kwargs):
-        pass
-
-    async def genomic_to_transcript_exon_coordinates(
-            self, chromosome: Union[str, int], start: Optional[int] = None,
-            end: Optional[int] = None, strand: Optional[int] = None,
-            transcript: Optional[str] = None, gene: Optional[str] = None,
-            residue_mode: ResidueMode = ResidueMode.RESIDUE,
-            **kwargs):
-        pass
-
     async def transcript_segment_component(
             self, use_exon_coords: bool = True,
             use_minimal_gene_descr: bool = True, **kwargs
     ) -> Tuple[Optional[TranscriptSegmentComponent], Optional[str]]:
+        """Create transcript segment component"""
         if use_exon_coords:
-            data = await self.uta_tools.transcript_to_genomic_coordinates(**kwargs)
+            data = await self.uta_tools.transcript_to_genomic_coordinates(**kwargs)  # noqa: E501
         else:
             if "chromosome" in kwargs and kwargs.get("chromosome") is None:
                 msg = "`chromosome` is required when going from genomic to" \
                       " transcript exon coordinates"
                 logger.warning(msg)
                 return None, msg
-            data = await self.uta_tools.genomic_to_transcript_exon_coordinates(**kwargs)
+            data = await self.uta_tools.genomic_to_transcript_exon_coordinates(**kwargs)  # noqa: E501
 
         if data.genomic_data is None:
             return None, data.warnings
@@ -112,7 +99,8 @@ class FUSOR:
         ), None
 
     def gene_component(self, gene: str,
-                       use_minimal_gene_descr: bool = True) -> Tuple[Optional[GeneComponent], Optional[str]]:
+                       use_minimal_gene_descr: bool = True) -> Tuple[Optional[GeneComponent], Optional[str]]:  # noqa: E501
+        """Create gene component"""
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
         if not gene_descr:
@@ -124,8 +112,8 @@ class FUSOR:
             self, start: int, end: int, sequence_id: str, strand: Strand,
             label: Optional[str] = None, add_location_id: bool = False,
             residue_mode: ResidueMode = ResidueMode.RESIDUE,
-            seq_id_target_namespace: Optional[str] = "ga4gh") -> TemplatedSequenceComponent:
-
+            seq_id_target_namespace: Optional[str] = "ga4gh") -> TemplatedSequenceComponent:  # noqa: E501
+        """Create templated sequence component"""
         if residue_mode == ResidueMode.RESIDUE:
             start -= 1
 
@@ -141,7 +129,8 @@ class FUSOR:
 
     def linker_component(
             self, sequence: str,
-            residue_type: CURIE = "SO:0000348") -> Tuple[Optional[LinkerComponent], Optional[str]]:
+            residue_type: CURIE = "SO:0000348") -> Tuple[Optional[LinkerComponent], Optional[str]]:  # noqa: E501
+        """Create linker component"""
         try:
             sequence_descriptor = SequenceDescriptor(
                 id=f"fusor.sequence:{sequence.upper()}",
@@ -156,11 +145,13 @@ class FUSOR:
             return LinkerComponent(linker_sequence=sequence_descriptor), None
 
     def unknown_gene_component(self) -> UnknownGeneComponent:
+        """Create unknown gene component"""
         return UnknownGeneComponent()
 
     def critical_domain(self, status: DomainStatus, name: str,
                         critical_domain_id: CURIE, gene: str,
-                        use_minimal_gene_descr: bool = True) -> Tuple[Optional[CriticalDomain], Optional[str]]:
+                        use_minimal_gene_descr: bool = True) -> Tuple[Optional[CriticalDomain], Optional[str]]:  # noqa: E501
+        """Create critical domain"""
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
         if not gene_descr:

@@ -1,7 +1,5 @@
 [flake8]
-select = Q0
-inline-quotes = "
-ignore = D205, D400
+ignore = D205, D400, Q0
 max-line-length=100
 exclude =
   .git
