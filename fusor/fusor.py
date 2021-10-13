@@ -264,18 +264,26 @@ class FUSOR:
     def _location_descriptor(
             self, start: int, end: int, sequence_id: str,
             label: Optional[str] = None,
-            seq_id_target_namespace: Optional[str] = None
+            seq_id_target_namespace: Optional[str] = None,
+            use_location_id: bool = False
     ) -> LocationDescriptor:
         """Create location descriptor
 
         :param int start: Start position
         :param int end: End position
         :param str sequence_id: Accession for sequence
-        :param str label: label for location
+        :param str label: label for location. If `None`, `sequence_id`
+            will be used as Location Descriptor's `id`
+            Else, label will be used as Location Descriptor's `id`.
         :param str seq_id_target_namespace: If want to use digest for
             `sequence_id`, set this to the namespace you want the digest for.
             Otherwise, leave as `None`.
+        :param bool use_location_id: Takes precedence over
+            `label` or `sequence_id` becoming Location Descriptor's id.
+            `True` if  use ga4gh digest as Location Descriptor's id.
+            `False`, use default of `label` > `sequence_id`
         """
+        seq_id_input = sequence_id
         try:
             sequence_id = coerce_namespace(sequence_id)
         except ValueError:
@@ -300,10 +308,17 @@ class FUSOR:
                                       end=Number(value=end))
         )
 
+        if use_location_id:
+            _id = self._location_id(location.dict())
+        else:
+            quote_id = quote(label) if label else quote(seq_id_input)
+            _id = f"fusor.location_descriptor:{quote_id}"
+
         location_descr = LocationDescriptor(
-            id=f"fusor.location_descriptor:{quote(label)}",
+            id=_id,
             location=location
         )
+
         if label:
             location_descr.label = label
         return location_descr
