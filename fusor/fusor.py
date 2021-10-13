@@ -78,7 +78,9 @@ class FUSOR:
 
     async def transcript_segment_component(
             self, tx_to_genomic_coords: bool = True,
-            use_minimal_gene_descr: bool = True, **kwargs
+            use_minimal_gene_descr: bool = True,
+            seq_id_target_namespace: Optional[str] = None,
+            **kwargs
     ) -> Tuple[Optional[TranscriptSegmentComponent], Optional[str]]:
         """Create transcript segment component
 
@@ -88,6 +90,9 @@ class FUSOR:
         :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
             (`id`, `gene_id`, `label`) will be used. `False` if
             gene-normalizer's gene descriptor will be used
+        :param str seq_id_target_namespace: If want to use digest for
+            `sequence_id`, set this to the namespace you want the digest for.
+            Otherwise, leave as `None`.
         :param kwargs:
             If `tx_to_genomic_coords`, possible key word arguments:
                 (From uta_tools.transcript_to_genomic_coords)
@@ -132,11 +137,11 @@ class FUSOR:
             component_genomic_start=self._location_descriptor(
                 genomic_data.start, genomic_data.start + 1, genomic_data.chr,
                 label=genomic_data.chr,
-                seq_id_target_namespace="ga4gh") if genomic_data.start else None,  # noqa: E501
+                seq_id_target_namespace=seq_id_target_namespace) if genomic_data.start else None,  # noqa: E501
             component_genomic_end=self._location_descriptor(
                 genomic_data.end - 1, genomic_data.end, genomic_data.chr,
                 label=genomic_data.chr,
-                seq_id_target_namespace="ga4gh") if genomic_data.end else None,
+                seq_id_target_namespace=seq_id_target_namespace) if genomic_data.end else None,
         ), None
 
     def gene_component(
