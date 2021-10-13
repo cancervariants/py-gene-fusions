@@ -449,7 +449,7 @@ class FUSOR:
             if use_minimal_gene_descr:
                 gene_descr = GeneDescriptor(
                     id=gene_descr.id,
-                    gene_id=gene_descr.id,
+                    gene_id=gene_descr.gene_id,
                     label=gene_descr.label
                 )
             return gene_descr, None
