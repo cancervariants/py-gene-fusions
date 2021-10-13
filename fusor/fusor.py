@@ -156,7 +156,7 @@ class FUSOR:
         if not gene_descr:
             return None, warning
         else:
-            return gene_descr, None
+            return GeneComponent(gene_descriptor=gene_descr), None
 
     def templated_sequence_component(
             self, start: int, end: int, sequence_id: str, strand: Strand,
