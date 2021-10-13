@@ -205,17 +205,19 @@ class FUSOR:
         :return: Linker Component, warning
         """
         try:
-            sequence_descriptor = SequenceDescriptor(
-                id=f"fusor.sequence:{sequence.upper()}",
-                sequence=sequence,
-                residue_type=residue_type
-            )
+            seq = sequence.upper()
+            params = {
+                "linker_sequence": {
+                    "id": f"fusor.sequence:{seq}",
+                    "sequence": seq,
+                    "residue_type": residue_type
+                }
+            }
+            return LinkerComponent(**params), None
         except ValidationError as e:
             msg = str(e)
             logger.warning(msg)
             return None, msg
-        else:
-            return LinkerComponent(linker_sequence=sequence_descriptor), None
 
     @staticmethod
     def unknown_gene_component() -> UnknownGeneComponent:
