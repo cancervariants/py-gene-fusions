@@ -26,4 +26,4 @@ jobs:
               run: |
                 chmod +x ./tests/data/dynamodb_local_latest/dynamodb_build.bash
                 ./tests/data/dynamodb_local_latest/dynamodb_build.bash
-            - run: pipenv run pytest tests/
+            - run: pipenv run pytest tests/test_models.py
