@@ -188,7 +188,7 @@ class FUSOR:
             seq_id_target_namespace=seq_id_target_namespace)
 
         if add_location_id:
-            location_id = self._location_id(region.location)
+            location_id = self._location_id(region.location.dict())
             region.location_id = location_id
 
         return TemplatedSequenceComponent(region=region, strand=strand)
@@ -369,7 +369,7 @@ class FUSOR:
         :param dict location: VRS Location represented as a dict
         :return: GA4GH digest
         """
-        return ga4gh_identify(models.Location(location))
+        return ga4gh_identify(models.Location(**location))
 
     def add_sequence_id(self, fusion: Fusion,
                         target_namespace: str = "ga4gh") -> Fusion:
