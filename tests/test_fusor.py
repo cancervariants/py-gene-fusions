@@ -227,11 +227,13 @@ def test__normalized_gene_descriptor(fusor):
     """Test that _normalized_gene_descriptor works correctly."""
     # Actual response is tested in test_add_gene_descriptor
     resp = fusor._normalized_gene_descriptor("BRAF")
-    assert resp
-    assert isinstance(resp, GeneDescriptor)
+    assert resp[0]
+    assert resp[1] is None
+    assert isinstance(resp[0], GeneDescriptor)
 
     resp = fusor._normalized_gene_descriptor("B R A F")
-    assert resp is None
+    assert resp[0] is None
+    assert resp[1] == "gene-normalizer unable to normalize B R A F"
 
 
 def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
