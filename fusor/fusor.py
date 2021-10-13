@@ -43,27 +43,68 @@ class FUSOR:
             db_url=dynamodb_url, db_region=dynamodb_region)
         self.uta_tools = UTATools(db_url=db_url, db_pwd=db_pwd)
 
+    @staticmethod
     def fusion(
-            self,
             structural_components: List[Union[
                 TranscriptSegmentComponent, GeneComponent,
                 TemplatedSequenceComponent, LinkerComponent,
                 UnknownGeneComponent]],
             r_frame_preserved: Optional[bool] = None,
             causative_event: Optional[Event] = None,
-            regulatory_elements: Optional[RegulatoryElement] = None) -> Fusion:
-        """Create fusion"""
-        return Fusion(r_frame_preserved=r_frame_preserved,
-                      tructural_components=structural_components,
-                      causative_event=causative_event,
-                      regulatory_elements=regulatory_elements)
+            regulatory_elements: Optional[RegulatoryElement] = None
+    ) -> Tuple[Optional[Fusion], Optional[str]]:
+        """Create fusion
+
+        :param list structural_components:  Structural components
+        :param bool r_frame_preserved: `True` if r frame is preserved.
+            `False` otherwise
+        :param Optional[Event] causative_event: Causative event
+        :param Optional[RegulatoryElement] regulatory_elements: Regulatory
+            Element
+        :return: Fusion, warning
+        """
+        try:
+            fusion = Fusion(
+                r_frame_preserved=r_frame_preserved,
+                structural_components=structural_components,
+                causative_event=causative_event,
+                regulatory_elements=regulatory_elements
+            )
+        except ValidationError as e:
+            msg = str(e)
+            return None, msg
+        else:
+            return fusion, None
 
     async def transcript_segment_component(
-            self, use_exon_coords: bool = True,
+            self, tx_to_genomic_coords: bool = True,
             use_minimal_gene_descr: bool = True, **kwargs
     ) -> Tuple[Optional[TranscriptSegmentComponent], Optional[str]]:
-        """Create transcript segment component"""
-        if use_exon_coords:
+        """Create transcript segment component
+
+        :param bool tx_to_genomic_coords: `True` if going from transcript
+            to genomic coordinates. `False` if going from genomic to
+            transcript exon coordinates.
+        :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
+            (`id`, `gene_id`, `label`) will be used. `False` if
+            gene-normalizer's gene descriptor will be used
+        :param kwargs:
+            If `tx_to_genomic_coords`, possible key word arguments:
+                (From uta_tools.transcript_to_genomic_coords)
+                gene: Optional[str] = None, transcript: str = None,
+                exon_start: Optional[int] = None,
+                exon_start_offset: Optional[int] = 0,
+                exon_end: Optional[int] = None,
+                exon_end_offset: Optional[int] = 0
+            else:
+                (From uta_tools.genomic_to_transcript_exon_coordinates)
+                chromosome: Union[str, int], start: Optional[int] = None,
+                end: Optional[int] = None, strand: Optional[int] = None,
+                transcript: Optional[str] = None, gene: Optional[str] = None,
+                residue_mode: ResidueMode = ResidueMode.RESIDUE
+        :return: Transcript Segment Component, warning
+        """
+        if tx_to_genomic_coords:
             data = await self.uta_tools.transcript_to_genomic_coordinates(**kwargs)  # noqa: E501
         else:
             if "chromosome" in kwargs and kwargs.get("chromosome") is None:
@@ -98,9 +139,18 @@ class FUSOR:
                 seq_id_target_namespace="ga4gh") if genomic_data.end else None,
         ), None
 
-    def gene_component(self, gene: str,
-                       use_minimal_gene_descr: bool = True) -> Tuple[Optional[GeneComponent], Optional[str]]:  # noqa: E501
-        """Create gene component"""
+    def gene_component(
+            self, gene: str,
+            use_minimal_gene_descr: bool = True
+    ) -> Tuple[Optional[GeneComponent], Optional[str]]:
+        """Create gene component
+
+        :param str gene: Gene
+        :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
+            (`id`, `gene_id`, `label`) will be used. `False` if
+            gene-normalizer's gene descriptor will be used
+        :return: GeneComponent, warning
+        """
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
         if not gene_descr:
@@ -112,8 +162,24 @@ class FUSOR:
             self, start: int, end: int, sequence_id: str, strand: Strand,
             label: Optional[str] = None, add_location_id: bool = False,
             residue_mode: ResidueMode = ResidueMode.RESIDUE,
-            seq_id_target_namespace: Optional[str] = "ga4gh") -> TemplatedSequenceComponent:  # noqa: E501
-        """Create templated sequence component"""
+            seq_id_target_namespace: Optional[str] = None
+    ) -> TemplatedSequenceComponent:
+        """Create templated sequence component
+
+        :param int start: Genomic start
+        :param int end: Genomic end
+        :param str sequence_id: Chromosome accession for sequence
+        :param Strand strand: Strand
+        :param str label: Label for genomic location
+        :param bool add_location_id: `True` if `location_id` will be added
+            to `region`. `False` otherwise.
+        :param ResidueMode residue_mode: Determines coordinate base used.
+            Must be one of `residue` or `inter-residue`.
+        :param str seq_id_target_namespace: If want to use digest for
+            `sequence_id`, set this to the namespace you want the digest for.
+            Otherwise, leave as `None`.
+        :return: Templated Sequence Component
+        """
         if residue_mode == ResidueMode.RESIDUE:
             start -= 1
 
@@ -127,10 +193,17 @@ class FUSOR:
 
         return TemplatedSequenceComponent(region=region, strand=strand)
 
+    @staticmethod
     def linker_component(
-            self, sequence: str,
-            residue_type: CURIE = "SO:0000348") -> Tuple[Optional[LinkerComponent], Optional[str]]:  # noqa: E501
-        """Create linker component"""
+            sequence: str,
+            residue_type: CURIE = "SO:0000348"
+    ) -> Tuple[Optional[LinkerComponent], Optional[str]]:
+        """Create linker component
+
+        :param str sequence: Sequence
+        :param CURIE residue_type: Residue type for `sequence`
+        :return: Linker Component, warning
+        """
         try:
             sequence_descriptor = SequenceDescriptor(
                 id=f"fusor.sequence:{sequence.upper()}",
@@ -144,14 +217,31 @@ class FUSOR:
         else:
             return LinkerComponent(linker_sequence=sequence_descriptor), None
 
-    def unknown_gene_component(self) -> UnknownGeneComponent:
-        """Create unknown gene component"""
+    @staticmethod
+    def unknown_gene_component() -> UnknownGeneComponent:
+        """Create unknown gene component
+
+        :return: Unknown Gene Component
+        """
         return UnknownGeneComponent()
 
-    def critical_domain(self, status: DomainStatus, name: str,
-                        critical_domain_id: CURIE, gene: str,
-                        use_minimal_gene_descr: bool = True) -> Tuple[Optional[CriticalDomain], Optional[str]]:  # noqa: E501
-        """Create critical domain"""
+    def critical_domain(
+            self, status: DomainStatus, name: str,
+            critical_domain_id: CURIE, gene: str,
+            use_minimal_gene_descr: bool = True
+    ) -> Tuple[Optional[CriticalDomain], Optional[str]]:
+        """Create critical domain
+
+        :param DomainStatus status: Status for domain.
+            Must be either `lost` or `preserved`
+        :param str name: Name for critical domain
+        :param CURIE critical_domain_id: ID for critical domain
+        :param str gene: Gene
+        :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
+            (`id`, `gene_id`, `label`) will be used. `False` if
+            gene-normalizer's gene descriptor will be used
+        :return: Critical Domain, warning
+        """
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
         if not gene_descr:
@@ -169,9 +259,21 @@ class FUSOR:
             logger.warning(msg)
             return None, msg
 
-    def _location_descriptor(self, start: int, end: int, sequence_id: str,
-                             label: Optional[str] = None,
-                             seq_id_target_namespace: Optional[str] = None):
+    def _location_descriptor(
+            self, start: int, end: int, sequence_id: str,
+            label: Optional[str] = None,
+            seq_id_target_namespace: Optional[str] = None
+    ) -> LocationDescriptor:
+        """Create location descriptor
+
+        :param int start: Start position
+        :param int end: End position
+        :param str sequence_id: Accession for sequence
+        :param str label: label for location
+        :param str seq_id_target_namespace: If want to use digest for
+            `sequence_id`, set this to the namespace you want the digest for.
+            Otherwise, leave as `None`.
+        """
         try:
             sequence_id = coerce_namespace(sequence_id)
         except ValueError:
@@ -204,10 +306,11 @@ class FUSOR:
             location_descr.label = label
         return location_descr
 
-    def add_additional_fields(self, fusion: Fusion,
-                              add_all: bool = True,
-                              fields: Optional[List[AdditionalFields]] = None,
-                              target_namespace: str = "ga4gh") -> Fusion:
+    def add_additional_fields(
+            self, fusion: Fusion, add_all: bool = True,
+            fields: Optional[List[AdditionalFields]] = None,
+            target_namespace: str = "ga4gh"
+    ) -> Fusion:
         """Add additional fields to Fusion object.
         Possible fields are shown in `AdditionalFields`
 
@@ -259,7 +362,13 @@ class FUSOR:
                             component_genomic.location_id = location_id
         return fusion
 
-    def _location_id(self, location: Dict):
+    @staticmethod
+    def _location_id(location: Dict) -> CURIE:
+        """Return GA4GH digest for location
+
+        :param dict location: VRS Location represented as a dict
+        :return: GA4GH digest
+        """
         return ga4gh_identify(models.Location(location))
 
     def add_sequence_id(self, fusion: Fusion,
@@ -307,11 +416,15 @@ class FUSOR:
 
     def _normalized_gene_descriptor(
             self, query: str,
-            use_minimal_gene_descr: bool = True) -> Tuple[Optional[GeneDescriptor], Optional[str]]:
+            use_minimal_gene_descr: bool = True
+    ) -> Tuple[Optional[GeneDescriptor], Optional[str]]:
         """Return gene descriptor from normalized response.
 
         :param str query: Gene query
-        :return: Gene Descriptor for query
+        :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
+            (`id`, `gene_id`, `label`) will be used. `False` if
+            gene-normalizer's gene descriptor will be used
+        :return: Gene Descriptor, warning
         """
         gene_norm_resp = self.gene_normalizer.normalize(query)
         if gene_norm_resp.match_type:
@@ -326,8 +439,9 @@ class FUSOR:
         else:
             return None, f"gene-normalizer unable to normalize {query}"
 
-    def translate_identifier(self, ac: str,
-                             target_namespace: str = "ga4gh") -> Optional[CURIE]:  # noqa: E501
+    def translate_identifier(
+            self, ac: str, target_namespace: str = "ga4gh"
+    ) -> Optional[CURIE]:
         """Return `target_namespace` identifier for accession provided.
 
         :param str ac: Identifier accession
