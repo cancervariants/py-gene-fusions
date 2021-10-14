@@ -518,7 +518,9 @@ def test_genomic_region_component(templated_sequence_components,
                                   location_descriptors):
     """Test that TemplatedSequenceComponent initializes correctly."""
     def assert_genomic_region_test_component(test):
-        """Assert that test templated_sequence_components[0] data matches expected values."""
+        """Assert that test templated_sequence_components[0] data matches
+        expected values.
+        """
         assert test.component_type == "templated_sequence"
         assert test.strand.value == "+"
         assert test.region.id == "chr12:p12.1-p12.2"
@@ -529,17 +531,22 @@ def test_genomic_region_component(templated_sequence_components,
         assert test.region.location.interval.end == "p12.2"
         assert test.region.label == "chr12:p12.1-p12.2"
 
-    test_component = TemplatedSequenceComponent(**templated_sequence_components[0])
+    test_component = \
+        TemplatedSequenceComponent(**templated_sequence_components[0])
     assert_genomic_region_test_component(test_component)
 
-    genomic_region_components_cpy = copy.deepcopy(templated_sequence_components[0])
+    genomic_region_components_cpy = \
+        copy.deepcopy(templated_sequence_components[0])
     genomic_region_components_cpy["region"]["location"]["_id"] = "location:1"
-    test_component = TemplatedSequenceComponent(**genomic_region_components_cpy)
+    test_component = \
+        TemplatedSequenceComponent(**genomic_region_components_cpy)
     assert_genomic_region_test_component(test_component)
 
-    genomic_region_components_cpy = copy.deepcopy(templated_sequence_components[0])
+    genomic_region_components_cpy = \
+        copy.deepcopy(templated_sequence_components[0])
     genomic_region_components_cpy["region"]["location_id"] = "location:1"
-    test_component = TemplatedSequenceComponent(**genomic_region_components_cpy)
+    test_component = \
+        TemplatedSequenceComponent(**genomic_region_components_cpy)
     assert_genomic_region_test_component(test_component)
 
     with pytest.raises(ValidationError) as exc_info:
@@ -592,7 +599,7 @@ def test_gene_component(gene_descriptors):
             "component_type": "unknown_gene",
             "gene_descriptor": gene_descriptors[0]
         })
-    msg = "unexpected value; permitted: <ComponentType.GENE: 'gene'>"  # noqa: E501
+    msg = "unexpected value; permitted: <ComponentType.GENE: 'gene'>"
     check_validation_error(exc_info, msg)
 
 

@@ -150,7 +150,7 @@ class FUSOR:
             component_genomic_end=self._location_descriptor(
                 genomic_data.end - 1, genomic_data.end, genomic_data.chr,
                 label=genomic_data.chr,
-                seq_id_target_namespace=seq_id_target_namespace) if genomic_data.end else None,
+                seq_id_target_namespace=seq_id_target_namespace) if genomic_data.end else None,  # noqa: E501
         ), None
 
     def gene_component(
