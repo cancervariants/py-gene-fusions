@@ -1,5 +1,5 @@
 [flake8]
-select = Q0, ANN001, ANN2, D
+select = Q0, ANN001, ANN2, D, E501
 ignore = D205, D400
 max-line-length=100
 inline-quotes = "
