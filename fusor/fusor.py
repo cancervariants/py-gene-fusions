@@ -213,7 +213,8 @@ class FUSOR:
         """Create linker component
 
         :param str sequence: Sequence
-        :param CURIE residue_type: Residue type for `sequence`
+        :param CURIE residue_type: Sequence Ontology code for residue type of
+            `sequence`
         :return: Linker Component, warning
         """
         try:
