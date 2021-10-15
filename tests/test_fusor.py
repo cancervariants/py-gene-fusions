@@ -163,7 +163,7 @@ def templated_sequence_component(location_descriptor):
     """Create test fixture for templated sequence component"""
     params = {
         "component_type": "templated_sequence",
-        "region":  location_descriptor.dict(exclude_none=True),
+        "region": location_descriptor.dict(exclude_none=True),
         "strand": "+"
     }
     return TemplatedSequenceComponent(**params)

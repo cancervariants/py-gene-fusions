@@ -1,6 +1,5 @@
 [flake8]
-select = Q0, ANN001, ANN2, D, E501
-ignore = D205, D400
+ignore = D205, D400, ANN101, ANN003
 inline-quotes = "
 exclude =
   .git
