@@ -123,9 +123,8 @@ class FUSOR:
                 start = kwargs.get("start")
                 kwargs["start"] = start - 1 if start else None
             data = await self.uta_tools.genomic_to_transcript_exon_coordinates(**kwargs)  # noqa: E501
-            if data.genomic_data:
-                if residue_mode != ResidueMode.INTER_RESIDUE:
-                    data.genomic_data.start = data.genomic_data.start + 1 if data.genomic_data.start else None  # noqa: E501
+            if data.genomic_data and residue_mode != ResidueMode.INTER_RESIDUE:
+                data.genomic_data.start = data.genomic_data.start + 1 if data.genomic_data.start else None  # noqa: E501
 
         if data.genomic_data is None:
             return None, data.warnings
