@@ -16,9 +16,33 @@ for direction on installing pipenv in your compute environment.
 Once installed, from the project root dir, just run:
 
 ```commandline
-pipenv lock
-pipenv sync
+pipenv shell
+pipenv lock && pipenv sync
 ```
+
+#### MacOS Errors
+If you encounter errors, try the following:
+```commandline
+export SYSTEM_VERSION_COMPAT=1
+pipenv lock && pipenv sync
+```
+
+### Data Downloads
+
+#### SeqRepo
+`FUSOR` relies on [seqrepo](https://github.com/biocommons/biocommons.seqrepo), which you must download yourself.
+
+From the _root_ directory:
+```
+pip install seqrepo
+sudo mkdir /usr/local/share/seqrepo
+sudo chown $USER /usr/local/share/seqrepo
+seqrepo pull -i 2021-01-29
+```
+
+#### Gene Normalizer
+
+`FUSOR` also relies on data from [gene-normalizer's](https://github.com/cancervariants/gene-normalization) DynamoDB tables, which you must download yourself. See the [README](https://github.com/cancervariants/gene-normalization#readme) for deploying the database.
 
 ### Init coding style tests
 
