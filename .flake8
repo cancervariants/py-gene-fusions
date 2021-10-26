@@ -1,8 +1,6 @@
 [flake8]
-select = Q0
+ignore = D205, D400, ANN101, ANN003
 inline-quotes = "
-ignore = D205, D400
-max-line-length=100
 exclude =
   .git
   venv
@@ -10,3 +8,6 @@ exclude =
   source
   outputs
   docs/*
+per-file-ignores =
+  tests/*:ANN001, ANN2
+  fusor/models.py:ANN001, ANN205, ANN201
