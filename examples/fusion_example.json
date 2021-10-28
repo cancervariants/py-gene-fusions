@@ -113,6 +113,9 @@
         },
         {
             "component_type": "unknown_gene"
+        },
+        {
+            "component_type": "any_gene"
         }
     ],
     "causative_event": "rearrangement",

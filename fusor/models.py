@@ -422,7 +422,8 @@ class Fusion(BaseModel):
                                       GeneComponent,
                                       TemplatedSequenceComponent,
                                       LinkerComponent,
-                                      UnknownGeneComponent]]
+                                      UnknownGeneComponent,
+                                      AnyGeneComponent]]
     causative_event: Optional[Event]
     regulatory_elements: Optional[List[RegulatoryElement]]
 

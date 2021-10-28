@@ -5,7 +5,7 @@ from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
 from fusor import FUSOR
 from fusor.models import Fusion, TemplatedSequenceComponent, \
     TranscriptSegmentComponent, LinkerComponent, UnknownGeneComponent, \
-    CriticalDomain, GeneComponent
+    AnyGeneComponent, CriticalDomain, GeneComponent
 import copy
 
 
@@ -332,6 +332,9 @@ def fusion():
             },
             {
                 "component_type": "unknown_gene"
+            },
+            {
+                "component_type": "any_gene"
             }
         ],
         "causative_event": "rearrangement",
@@ -649,8 +652,14 @@ def test_linker_component(fusor, linker_component):
 
 def test_unknown_gene_component(fusor):
     """Test that unknown_gene_component method works correctly."""
-    uknown_gc = fusor.unknown_gene_component()
-    assert uknown_gc.dict() == UnknownGeneComponent().dict()
+    unknown_gc = fusor.unknown_gene_component()
+    assert unknown_gc.dict() == UnknownGeneComponent().dict()
+
+
+def test_any_gene_component(fusor):
+    """Test that any_gene component method works correctly."""
+    any_gc = fusor.any_gene_component()
+    assert any_gc.dict() == AnyGeneComponent().dict()
 
 
 def test_critical_domain(fusor, critical_domain, critical_domain_min):
