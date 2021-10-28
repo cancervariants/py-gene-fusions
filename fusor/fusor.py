@@ -14,8 +14,8 @@ from fusor import SEQREPO_DATA_PATH
 from gene.query import QueryHandler
 from fusor.models import Fusion, TemplatedSequenceComponent, \
     AdditionalFields, TranscriptSegmentComponent, GeneComponent, \
-    LinkerComponent, UnknownGeneComponent, RegulatoryElement, Event, \
-    DomainStatus, CriticalDomain, Strand
+    LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
+    RegulatoryElement, Event, DomainStatus, CriticalDomain, Strand
 from fusor import logger, UTA_DB_URL
 from bioutils.accessions import coerce_namespace
 from uta_tools.schemas import ResidueMode
@@ -37,6 +37,8 @@ class FUSOR:
         :param str dynamodb_url: URL to gene-normalizer database source.
             Can also set environment variable `GENE_NORM_DB_URL`.
         :param str dynamodb_region: AWS default region for gene-normalizer.
+        :param str db_url: Postgres URL for UTA
+        :param str db_pwd: Postgres database password
         """
         self.seqrepo = SeqRepo(seqrepo_data_path)
         self.gene_normalizer = QueryHandler(
@@ -47,28 +49,35 @@ class FUSOR:
     def fusion(
             structural_components: List[Union[
                 TranscriptSegmentComponent, GeneComponent,
-                TemplatedSequenceComponent, LinkerComponent,
+                TemplatedSequenceComponent, LinkerComponent, AnyGeneComponent,
                 UnknownGeneComponent]],
             r_frame_preserved: Optional[bool] = None,
             causative_event: Optional[Event] = None,
-            regulatory_elements: Optional[RegulatoryElement] = None
+            regulatory_elements: Optional[RegulatoryElement] = None,
+            protein_domains: Optional[List[CriticalDomain]] = None
     ) -> Tuple[Optional[Fusion], Optional[str]]:
         """Create fusion
 
         :param list structural_components:  Structural components
-        :param bool r_frame_preserved: `True` if r frame is preserved.
-            `False` otherwise
-        :param Optional[Event] causative_event: Causative event
-        :param Optional[RegulatoryElement] regulatory_elements: Regulatory
-            Element
-        :return: Fusion, warning
+        :param Optional[bool] r_frame_preserved: `True` if reading frame is
+            preserved.  `False` otherwise
+        :param Optional[Event] causative_event: Causative event of the fusion,
+            if known
+        :param Optional[RegulatoryElement] regulatory_elements: affected
+            regulatory elements
+        :param Optional[List[CriticalDomain]] domains: lost or preserved
+            functional domains
+        :return: Tuple where position 0 is complete Fusion object if successful
+            or None if unsuccessful, and position 1 is None if successful or
+            a string describing the error if unsuccessful
         """
         try:
             fusion = Fusion(
                 r_frame_preserved=r_frame_preserved,
                 structural_components=structural_components,
                 causative_event=causative_event,
-                regulatory_elements=regulatory_elements
+                regulatory_elements=regulatory_elements,
+                protein_domains=protein_domains
             )
         except ValidationError as e:
             msg = str(e)
@@ -90,7 +99,7 @@ class FUSOR:
         :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
             (`id`, `gene_id`, `label`) will be used. `False` if
             gene-normalizer's gene descriptor will be used
-        :param str seq_id_target_namespace: If want to use digest for
+        :param Optional[str] seq_id_target_namespace: If want to use digest for
             `sequence_id`, set this to the namespace you want the digest for.
             Otherwise, leave as `None`.
         :param kwargs:
@@ -182,12 +191,12 @@ class FUSOR:
         :param int end: Genomic end
         :param str sequence_id: Chromosome accession for sequence
         :param Strand strand: Strand
-        :param str label: Label for genomic location
+        :param Optional[str] label: Label for genomic location
         :param bool add_location_id: `True` if `location_id` will be added
             to `region`. `False` otherwise.
         :param ResidueMode residue_mode: Determines coordinate base used.
             Must be one of `residue` or `inter-residue`.
-        :param str seq_id_target_namespace: If want to use digest for
+        :param Optional[str] seq_id_target_namespace: If want to use digest for
             `sequence_id`, set this to the namespace you want the digest for.
             Otherwise, leave as `None`.
         :return: Templated Sequence Component
@@ -207,15 +216,16 @@ class FUSOR:
 
     @staticmethod
     def linker_component(
-            sequence: str,
-            residue_type: CURIE = "SO:0000348"
+        sequence: str,
+        residue_type: CURIE = "SO:0000348"  # type: ignore
     ) -> Tuple[Optional[LinkerComponent], Optional[str]]:
         """Create linker component
 
         :param str sequence: Sequence
         :param CURIE residue_type: Sequence Ontology code for residue type of
             `sequence`
-        :return: Linker Component, warning
+        :return: Tuple containing a complete Linker component and None if
+            successful, or a None value and warning message if unsuccessful
         """
         try:
             seq = sequence.upper()
@@ -231,6 +241,14 @@ class FUSOR:
             msg = str(e)
             logger.warning(msg)
             return None, msg
+
+    @staticmethod
+    def any_gene_component() -> AnyGeneComponent:
+        """Create an any gene component.
+
+        :return: Any gene component
+        """
+        return AnyGeneComponent()
 
     @staticmethod
     def unknown_gene_component() -> UnknownGeneComponent:
@@ -255,7 +273,8 @@ class FUSOR:
         :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
             (`id`, `gene_id`, `label`) will be used. `False` if
             gene-normalizer's gene descriptor will be used
-        :return: Critical Domain, warning
+        :return: Tuple with CriticalDomain and None value for warnings if
+            successful, or a None value and warning message if unsuccessful
         """
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
@@ -454,7 +473,8 @@ class FUSOR:
         :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
             (`id`, `gene_id`, `label`) will be used. `False` if
             gene-normalizer's gene descriptor will be used
-        :return: Gene Descriptor, warning
+        :return: Tuple with gene descriptor and None value for warnings if
+            successful, and None value with warning string if unsuccessful
         """
         gene_norm_resp = self.gene_normalizer.normalize(query)
         if gene_norm_resp.match_type:
