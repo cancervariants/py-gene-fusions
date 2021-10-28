@@ -53,16 +53,20 @@ class FUSOR:
                 UnknownGeneComponent]],
             r_frame_preserved: Optional[bool] = None,
             causative_event: Optional[Event] = None,
-            regulatory_elements: Optional[RegulatoryElement] = None
+            regulatory_elements: Optional[RegulatoryElement] = None,
+            protein_domains: Optional[List[CriticalDomain]] = None
     ) -> Tuple[Optional[Fusion], Optional[str]]:
         """Create fusion
 
         :param list structural_components:  Structural components
-        :param Optional[bool] r_frame_preserved: `True` if r frame is
+        :param Optional[bool] r_frame_preserved: `True` if reading frame is
             preserved.  `False` otherwise
-        :param Optional[Event] causative_event: Causative event
-        :param Optional[RegulatoryElement] regulatory_elements: Regulatory
-            Element
+        :param Optional[Event] causative_event: Causative event of the fusion,
+            if known
+        :param Optional[RegulatoryElement] regulatory_elements: affected
+            regulatory elements
+        :param Optional[List[CriticalDomain]] domains: lost or preserved
+            functional domains
         :return: Tuple where position 0 is complete Fusion object if successful
             or None if unsuccessful, and position 1 is None if successful or
             a string describing the error if unsuccessful
@@ -72,7 +76,8 @@ class FUSOR:
                 r_frame_preserved=r_frame_preserved,
                 structural_components=structural_components,
                 causative_event=causative_event,
-                regulatory_elements=regulatory_elements
+                regulatory_elements=regulatory_elements,
+                protein_domains=protein_domains
             )
         except ValidationError as e:
             msg = str(e)

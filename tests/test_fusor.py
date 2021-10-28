@@ -478,10 +478,16 @@ def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
     assert t_gds == e_gds
 
 
-def test_fusion(fusor, linker_component, templated_sequence_component):
+def test_fusion(fusor, linker_component, templated_sequence_component,
+                transcript_segment_component, critical_domain):
     """Test that fusion method works correctly."""
     f = fusor.fusion([templated_sequence_component,
                       linker_component, UnknownGeneComponent()])
+    assert isinstance(f[0], Fusion)
+    assert f[1] is None
+
+    f = fusor.fusion([transcript_segment_component, AnyGeneComponent()],
+                     protein_domains=[critical_domain])
     assert isinstance(f[0], Fusion)
     assert f[1] is None
 
