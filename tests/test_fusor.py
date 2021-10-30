@@ -5,7 +5,8 @@ from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
 from fusor import FUSOR
 from fusor.models import Fusion, TemplatedSequenceComponent, \
     TranscriptSegmentComponent, LinkerComponent, UnknownGeneComponent, \
-    AnyGeneComponent, CriticalDomain, GeneComponent
+    AnyGeneComponent, CriticalDomain, GeneComponent, RegulatoryElement, \
+    RegulatoryElementType
 import copy
 
 
@@ -131,6 +132,26 @@ def critical_domain(braf_gene_descr):
         "gene_descriptor": braf_gene_descr
     }
     return CriticalDomain(**params)
+
+
+@pytest.fixture(scope="module")
+def regulatory_element(braf_gene_descr):
+    """Create regulatory element test fixture."""
+    params = {
+        "type": "promoter",
+        "gene_descriptor": braf_gene_descr
+    }
+    return RegulatoryElement(**params)
+
+
+@pytest.fixture(scope="module")
+def regulatory_element_min(braf_gene_descr_min):
+    """Create regulatory element test fixture with minimal gene descriptor."""
+    params = {
+        "type": "promoter",
+        "gene_descriptor": braf_gene_descr_min
+    }
+    return RegulatoryElement(**params)
 
 
 @pytest.fixture(scope="module")
@@ -378,7 +399,7 @@ def compare_gene_descriptor(actual, expected):
                                       type(expected_ext["value"]))
                     if isinstance(expected_ext["value"], list):
                         assert set(actual_ext["value"]) == \
-                               set(expected_ext["value"]), f"{expected_ext['value']} value"  # noqa: E501
+                            set(expected_ext["value"]), f"{expected_ext['value']} value"  # noqa: E501
                     else:
                         assert actual_ext["value"] == expected_ext["value"]
                     assert actual_ext["type"] == expected_ext["type"]
@@ -702,7 +723,29 @@ def test_critical_domain(fusor, critical_domain, critical_domain_min):
         "interpro:IPR001245", "BRAF", use_minimal_gene_descr=False)
     assert cd[0] is None
     assert "value is not a valid enumeration member; permitted: " \
-           "'lost', 'preserved'" in cd[1]
+        "'lost', 'preserved'" in cd[1]
+
+
+def test_regulatory_element(fusor, regulatory_element, regulatory_element_min):
+    """Test regulatory_element method."""
+
+    def compare_re(actual, expected):
+        """Compare actual and expected regulatory element results."""
+        assert actual[0]
+        assert actual[1] is None
+        actual = actual[0].dict()
+        expected = expected.dict()
+        assert actual.keys() == expected.keys()
+        assert actual["type"] == expected["type"]
+        compare_gene_descriptor(actual["gene_descriptor"],
+                                expected["gene_descriptor"])
+
+    re = fusor.regulatory_element(RegulatoryElementType.PROMOTER, "BRAF")
+    compare_re(re, regulatory_element_min)
+
+    re = fusor.regulatory_element(RegulatoryElementType.PROMOTER, "BRAF",
+                                  False)
+    compare_re(re, regulatory_element)
 
 
 def test__location_descriptor(fusor, location_descriptor):

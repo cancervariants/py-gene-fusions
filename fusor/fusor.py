@@ -15,7 +15,8 @@ from gene.query import QueryHandler
 from fusor.models import Fusion, TemplatedSequenceComponent, \
     AdditionalFields, TranscriptSegmentComponent, GeneComponent, \
     LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
-    RegulatoryElement, Event, DomainStatus, CriticalDomain, Strand
+    RegulatoryElement, Event, DomainStatus, CriticalDomain, Strand, \
+    RegulatoryElementType
 from fusor import logger, UTA_DB_URL
 from bioutils.accessions import coerce_namespace
 from uta_tools.schemas import ResidueMode
@@ -286,6 +287,33 @@ class FUSOR:
                 id=critical_domain_id,
                 name=name,
                 status=status,
+                gene_descriptor=gene_descr
+            ), None
+        except ValidationError as e:
+            msg = str(e)
+            logger.warning(msg)
+            return None, msg
+
+    def regulatory_element(
+        self, element_type: RegulatoryElementType, gene: str,
+        use_minimal_gene_descr: bool = True
+    ) -> Tuple[Optional[RegulatoryElement], Optional[str]]:
+        """Create RegulatoryElement
+        :param RegulatoryElementType element_type: one of {"promoter",
+            "enhancer"}
+        :param str gene: gene term to fetch normalized descriptor for
+        :return: Tuple with RegulatoryElement instance and None value for
+            warnings if successful, or a None value and warning message if
+            unsuccessful
+        """
+        gene_descr, warning = self._normalized_gene_descriptor(
+            gene, use_minimal_gene_descr=use_minimal_gene_descr)
+        if not gene_descr:
+            return (None, warning)
+
+        try:
+            return RegulatoryElement(
+                type=element_type,
                 gene_descriptor=gene_descr
             ), None
         except ValidationError as e:
