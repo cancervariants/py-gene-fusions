@@ -38,25 +38,11 @@ def gene_descriptors():
             "id": "gene:ALK",
             "gene_id": "hgnc:1837",
             "label": "ALK",
-        }
-    ]
-
-
-@pytest.fixture(scope="module")
-def critical_domains(gene_descriptors):
-    """Provide possible critical_domains input."""
-    return [
-        {
-            "status": "preserved",
-            "name": "phlebovirus glycoprotein g1",
-            "id": "interpro:IPR010826",
-            "gene_descriptor": gene_descriptors[0]
         },
         {
-            "status": "lost",
-            "name": "tyrosine kinase catalytic domain",
-            "id": "interpro:IPR020635",
-            "gene_descriptor": gene_descriptors[3]
+            "id": "gene:YAP1",
+            "gene_id": "hgnc:16262",
+            "label": "YAP1"
         }
     ]
 
@@ -152,6 +138,63 @@ def location_descriptors():
             },
             "label": "chr12:p12.1-p12.2",
         },
+        {
+            "id": "fusor.location_descriptor:NP_001123617.1",
+            "type": "LocationDescriptor",
+            "location": {
+                "sequence_id": "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
+                "type": "SequenceLocation",
+                "interval": {
+                    "start": {
+                        "type": "Number",
+                        "value": 171
+                    },
+                    "end": {
+                        "type": "Number",
+                        "value": 204
+                    }
+                }
+            }
+        },
+        {
+            "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+            "type": "SequenceLocation",
+            "interval": {
+                "start": {
+                    "type": "Number",
+                    "value": 510
+                },
+                "end": {
+                    "type": "Number",
+                    "value": 781
+                }
+            }
+        }
+    ]
+
+
+@pytest.fixture(scope="module")
+def critical_domains(gene_descriptors, location_descriptors):
+    """Provide possible critical_domains input."""
+    return [
+        {
+            "status": "preserved",
+            "name": "WW domain",
+            "id": "interpro:IPR001202",
+            "gene_descriptor": gene_descriptors[5],
+            "location_descriptor": location_descriptors[6]
+        },
+        {
+            "status": "lost",
+            "name": "Tyrosine-protein kinase, catalytic domain",
+            "id": "interpro:IPR020635",
+            "gene_descriptor": gene_descriptors[3],
+            "location_descriptor": {
+                "id": "fusor.location_descriptor:NP_002520.2",
+                "type": "LocationDescriptor",
+                "location": location_descriptors[7]
+            }
+        }
     ]
 
 
@@ -285,7 +328,7 @@ def check_validation_error(exc_info, expected_msg: str,
                            index: int = 0):
     """Check ValidationError instance for expected message.
     :param ExceptionInfo exc_info: ValidationError instance raised and captured
-        by pytest.
+    by pytest.
     :param str expected_msg: message expected to be provided by error
     :param int index: optional index (if multiple errors are raised)
     :return: None, but may raise AssertionError if incorrect behavior found.
@@ -297,11 +340,33 @@ def test_critical_domain(critical_domains, gene_descriptors):
     """Test CriticalDomain object initializes correctly"""
     test_domain = CriticalDomain(**critical_domains[0])
     assert test_domain.status == "preserved"
-    assert test_domain.name == "phlebovirus glycoprotein g1"
-    assert test_domain.id == "interpro:IPR010826"
-    assert test_domain.gene_descriptor.id == "gene:G1"
-    assert test_domain.gene_descriptor.label == "G1"
-    assert test_domain.gene_descriptor.gene.gene_id == "hgnc:9339"
+    assert test_domain.name == "WW domain"
+    assert test_domain.id == "interpro:IPR001202"
+    assert test_domain.gene_descriptor.id == "gene:YAP1"
+    assert test_domain.gene_descriptor.gene_id == "hgnc:16262"
+    assert test_domain.gene_descriptor.label == "YAP1"
+    test_loc = test_domain.location_descriptor
+    assert test_loc.id == "fusor.location_descriptor:NP_001123617.1"
+    assert test_loc.type == "LocationDescriptor"
+    assert test_loc.location.sequence_id == "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7"  # noqa: E501
+    assert test_loc.location.interval.type == "SequenceInterval"
+    assert test_loc.location.interval.start.value == 171
+    assert test_loc.location.interval.end.value == 204
+
+    test_domain = CriticalDomain(**critical_domains[1])
+    assert test_domain.status == "lost"
+    assert test_domain.name == "Tyrosine-protein kinase, catalytic domain"
+    assert test_domain.id == "interpro:IPR020635"
+    assert test_domain.gene_descriptor.id == "gene:NTRK1"
+    assert test_domain.gene_descriptor.gene_id == "hgnc:8031"
+    assert test_domain.gene_descriptor.label == "NTRK1"
+    test_loc = test_domain.location_descriptor
+    assert test_loc.id == "fusor.location_descriptor:NP_002520.2"
+    assert test_loc.type == "LocationDescriptor"
+    assert test_loc.location.sequence_id == "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6"  # noqa: E501
+    assert test_loc.location.interval.type == "SequenceInterval"
+    assert test_loc.location.interval.start.value == 510
+    assert test_loc.location.interval.end.value == 781
 
     # test status string
     with pytest.raises(ValidationError) as exc_info:
@@ -479,10 +544,10 @@ def test_linker_component(linkers):
     with pytest.raises(ValidationError) as exc_info:
         LinkerComponent(**{
             "linker_sequence":
-                {
-                    "id": "sequence:ACT1",
-                    "sequence": "ACT1"
-                }
+            {
+                "id": "sequence:ACT1",
+                "sequence": "ACT1"
+            }
         })
     msg = "sequence does not match regex '^[A-Za-z*\\-]*$'"
     check_validation_error(exc_info, msg)
@@ -492,10 +557,10 @@ def test_linker_component(linkers):
         assert LinkerComponent(**{
             "component_type": "templated_sequence",
             "linker_sequence":
-                {
-                    "id": "sequence:ATG",
-                    "sequence": "ATG"
-                }
+            {
+                "id": "sequence:ATG",
+                "sequence": "ATG"
+            }
         })
     msg = "unexpected value; permitted: <ComponentType.LINKER_SEQUENCE: 'linker_sequence'>"  # noqa: E501
     check_validation_error(exc_info, msg)

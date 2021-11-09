@@ -3,13 +3,30 @@
     "protein_domains": [
         {
             "status": "lost",
-            "name": "cystatin domain",
-            "id": "interpro:IPR000010",
+            "name": "Tyrosine-protein kinase, catalytic domain",
+            "id": "interpro:IPR020635",
             "gene_descriptor": {
-                "id": "gene:CST1",
-                "gene_id": "hgnc:2473",
-                "label": "CST1",
-                "type": "GeneDescriptor"
+                "id": "gene:ALK",
+                "gene_id": "hgnc:1837",
+                "label": "ALK"
+            },
+            "location_descriptor": {
+                "id": "fusor.location_descriptor:NP_002520.2",
+                "type": "LocationDescriptor",
+                "location": {
+                    "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                    "type": "SequenceLocation",
+                    "interval": {
+                        "start": {
+                            "type": "Number",
+                            "value": 510
+                        },
+                        "end": {
+                            "type": "Number",
+                            "value": 781
+                        }
+                    }
+                }
             }
         }
     ],
