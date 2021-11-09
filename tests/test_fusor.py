@@ -211,8 +211,8 @@ def transcript_segment_component():
             "label": "NC_000001.11",
             "location": {
                 "interval": {
-                    "end": {"type": "Number", "value": 154170399},
-                    "start": {"type": "Number", "value": 154170398},
+                    "end": {"type": "Number", "value": 154170400},
+                    "start": {"type": "Number", "value": 154170399},
                     "type": "SequenceInterval"
                 },
                 "sequence_id": "refseq:NC_000001.11",
@@ -230,6 +230,41 @@ def transcript_segment_component():
                     "type": "SequenceInterval"
                 },
                 "sequence_id": "refseq:NC_000001.11",
+                "type": "SequenceLocation"
+            },
+            "type": "LocationDescriptor"
+        }
+    }
+    return TranscriptSegmentComponent(**params)
+
+
+@pytest.fixture(scope="module")
+def mane_transcript_segment_component():
+    """Create transcript segment component test fixture"""
+    params = {
+        "component_type": "transcript_segment",
+        "exon_end": None,
+        "exon_end_offset": None,
+        "exon_start": 2,
+        "exon_start_offset": 0,
+        "gene_descriptor": {
+            "gene_id": "hgnc:12761",
+            "id": "normalize.gene:WEE1",
+            "label": "WEE1",
+            "type": "GeneDescriptor"
+        },
+        "transcript": "refseq:NM_003390.4",
+        "component_genomic_end": None,
+        "component_genomic_start": {
+            "id": "fusor.location_descriptor:NC_000011.10",
+            "label": "NC_000011.10",
+            "location": {
+                "interval": {
+                    "end": {"type": "Number", "value": 9576094},
+                    "start": {"type": "Number", "value": 9576093},
+                    "type": "SequenceInterval"
+                },
+                "sequence_id": "refseq:NC_000011.10",
                 "type": "SequenceLocation"
             },
             "type": "LocationDescriptor"
@@ -519,7 +554,8 @@ def test_fusion(fusor, linker_component, templated_sequence_component,
 
 @pytest.mark.asyncio
 async def test_transcript_segment_component(fusor,
-                                            transcript_segment_component):
+                                            transcript_segment_component,
+                                            mane_transcript_segment_component):
     """Test that transcript_segment_component method works correctly"""
     # Transcript Input
     tsg = await fusor.transcript_segment_component(
@@ -580,8 +616,8 @@ async def test_transcript_segment_component(fusor,
     assert tsg[0].dict() == expected.dict()
 
     expected.exon_end_offset = -5
-    expected.component_genomic_end.location.interval.start.value = 154170403
-    expected.component_genomic_end.location.interval.end.value = 154170404
+    expected.component_genomic_end.location.interval.start.value = 154170404
+    expected.component_genomic_end.location.interval.end.value = 154170405
 
     # Transcript Input
     tsg = await fusor.transcript_segment_component(
@@ -620,6 +656,14 @@ async def test_transcript_segment_component(fusor,
     assert tsg[0]
     assert tsg[1] is None
     assert tsg[0].dict() == expected.dict()
+
+    # MANE
+    tsg = await fusor.transcript_segment_component(
+        tx_to_genomic_coords=False, chromosome="NC_000011.10",
+        start=9576094, gene="WEE1")
+    assert tsg[0]
+    assert tsg[1] is None
+    assert tsg[0].dict() == mane_transcript_segment_component.dict()
 
 
 def test_gene_component(fusor, braf_gene_descr_min, braf_gene_descr):
