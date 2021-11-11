@@ -1,26 +1,26 @@
 """Module for modifying fusion objects."""
 from typing import Optional, List, Union, Tuple, Dict
+
 from biocommons.seqrepo import SeqRepo
-from ga4gh.vrs import models
+from bioutils.accessions import coerce_namespace
 from ga4gh.core import ga4gh_identify
+from ga4gh.vrs import models
 from ga4gh.vrsatile.pydantic.vrs_model import CURIE, VRSTypes, \
     SequenceLocation, Number, SequenceInterval
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor,\
     LocationDescriptor
 from pydantic.error_wrappers import ValidationError
 from uta_tools.uta_tools import UTATools
-
-from fusor import SEQREPO_DATA_PATH
+from uta_tools.schemas import ResidueMode
+from urllib.parse import quote
 from gene.query import QueryHandler
+
+from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.models import Fusion, TemplatedSequenceComponent, \
     AdditionalFields, TranscriptSegmentComponent, GeneComponent, \
     LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
     RegulatoryElement, Event, DomainStatus, CriticalDomain, Strand, \
     RegulatoryElementType
-from fusor import logger, UTA_DB_URL
-from bioutils.accessions import coerce_namespace
-from uta_tools.schemas import ResidueMode
-from urllib.parse import quote
 
 
 class FUSOR:
