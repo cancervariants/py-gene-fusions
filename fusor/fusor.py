@@ -262,18 +262,27 @@ class FUSOR:
     def critical_domain(
             self, status: DomainStatus, name: str,
             critical_domain_id: CURIE, gene: str,
-            use_minimal_gene_descr: bool = True
+            sequence_id: str, start: int, end: int,
+            use_minimal_gene_descr: bool = True,
+            seq_id_target_namespace: Optional[str] = None,
     ) -> Tuple[Optional[CriticalDomain], Optional[str]]:
-        """Create critical domain
+        """Build critical domain instance.
 
-        :param DomainStatus status: Status for domain.
-            Must be either `lost` or `preserved`
-        :param str name: Name for critical domain
-        :param CURIE critical_domain_id: ID for critical domain
+        :param DomainStatus status: Status for domain.  Must be either `lost`
+            or `preserved`
+        :param str name: Domain name
+        :param CURIE critical_domain_id: Domain ID
         :param str gene: Gene
+        :param str sequence_id: sequence on which provided coordinates are
+            located
+        :param int start: start position on sequence
+        :param in end: end position on sequence
         :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
             (`id`, `gene_id`, `label`) will be used. `False` if
             gene-normalizer's gene descriptor will be used
+        :param Optional[str] seq_id_target_namespace: If want to use digest for
+            `sequence_id`, set this to the namespace you want the digest for.
+            Otherwise, leave as `None`.
         :return: Tuple with CriticalDomain and None value for warnings if
             successful, or a None value and warning message if unsuccessful
         """
@@ -282,12 +291,18 @@ class FUSOR:
         if not gene_descr:
             return None, warning
 
+        loc_descr = self._location_descriptor(
+            start, end, sequence_id,
+            seq_id_target_namespace=seq_id_target_namespace
+        )
+
         try:
             return CriticalDomain(
                 id=critical_domain_id,
                 name=name,
                 status=status,
-                gene_descriptor=gene_descr
+                gene_descriptor=gene_descr,
+                location_descriptor=loc_descr
             ), None
         except ValidationError as e:
             msg = str(e)
@@ -437,6 +452,11 @@ class FUSOR:
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                             location_id = self._location_id(location.dict())
                             component_genomic.location_id = location_id
+        if fusion.protein_domains:
+            for domain in fusion.protein_domains:
+                location = domain.location_descriptor.location
+                location_id = self._location_id(location.dict())
+                domain.location_descriptor.location_id = location_id
         return fusion
 
     @staticmethod
