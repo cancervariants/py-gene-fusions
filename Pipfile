@@ -10,7 +10,7 @@ jsonschema = ">=2.3, <4.0"
 "ga4gh.vrs" = {version = "==0.7.0rc3", extras = ["extras"]}
 "biocommons.seqrepo" = "*"
 gene-normalizer = "*"
-uta-tools = "*"
+uta-tools = ">=0.0.9"
 
 [dev-packages]
 fusor = {editable = true, path = "."}
