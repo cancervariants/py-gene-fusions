@@ -20,6 +20,14 @@ if "UTA_DB_URL" in environ:
 else:
     UTA_DB_URL = "postgresql://uta_admin@localhost:5433/uta/uta_20210129"
 
+logging.getLogger("boto3").setLevel(logging.INFO)
+logging.getLogger("botocore").setLevel(logging.INFO)
+logging.getLogger("nose").setLevel(logging.INFO)
+logging.getLogger(
+    "python_jsonschema_objects.classbuilder"
+).setLevel(logging.INFO)
+logging.getLogger("urllib3").setLevel(logging.INFO)
+
 from fusor.fusor import FUSOR  # noqa: E402, F401
 
 APP_ROOT = Path(__file__).resolve().parents[0]
