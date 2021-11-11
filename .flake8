@@ -10,4 +10,4 @@ exclude =
   docs/*
 per-file-ignores =
   tests/*:ANN001, ANN2
-  fusor/models.py:ANN001, ANN205, ANN201
+  *fusor/models.py:ANN001, ANN205, ANN201

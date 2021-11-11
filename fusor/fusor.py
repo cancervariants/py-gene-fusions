@@ -131,10 +131,9 @@ class FUSOR:
             # TODO: Remove once fixed in uta_tools
             if residue_mode != ResidueMode.INTER_RESIDUE:
                 start = kwargs.get("start")
-                kwargs["start"] = start - 1 if start else None
+                kwargs["start"] = start - 1 if start is not None else None
+                kwargs["residue_mode"] = "inter-residue"
             data = await self.uta_tools.genomic_to_transcript_exon_coordinates(**kwargs)  # noqa: E501
-            if data.genomic_data and residue_mode != ResidueMode.INTER_RESIDUE:
-                data.genomic_data.start = data.genomic_data.start + 1 if data.genomic_data.start else None  # noqa: E501
 
         if data.genomic_data is None:
             return None, data.warnings
@@ -156,7 +155,7 @@ class FUSOR:
                 label=genomic_data.chr,
                 seq_id_target_namespace=seq_id_target_namespace) if genomic_data.start else None,  # noqa: E501
             component_genomic_end=self._location_descriptor(
-                genomic_data.end - 1, genomic_data.end, genomic_data.chr,
+                genomic_data.end, genomic_data.end + 1, genomic_data.chr,
                 label=genomic_data.chr,
                 seq_id_target_namespace=seq_id_target_namespace) if genomic_data.end else None,  # noqa: E501
         ), None
