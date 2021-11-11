@@ -13,6 +13,7 @@
             "location_descriptor": {
                 "id": "fusor.location_descriptor:NP_002520.2",
                 "type": "LocationDescriptor",
+                "location_id": "ga4gh:VSL.ek3ARZYW4ZNSRrtkETN4Mmv3809eLATv",
                 "location": {
                     "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
                     "type": "SequenceLocation",
