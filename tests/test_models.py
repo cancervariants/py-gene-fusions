@@ -157,16 +157,20 @@ def location_descriptors():
             }
         },
         {
-            "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
-            "type": "SequenceLocation",
-            "interval": {
-                "start": {
-                    "type": "Number",
-                    "value": 510
-                },
-                "end": {
-                    "type": "Number",
-                    "value": 781
+            "id": "fusor.location_descriptor:NP_002520.2",
+            "type": "LocationDescriptor",
+            "location": {
+                "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                "type": "SequenceLocation",
+                "interval": {
+                    "start": {
+                        "type": "Number",
+                        "value": 510
+                    },
+                    "end": {
+                        "type": "Number",
+                        "value": 781
+                    }
                 }
             }
         }
@@ -189,11 +193,7 @@ def critical_domains(gene_descriptors, location_descriptors):
             "name": "Tyrosine-protein kinase, catalytic domain",
             "id": "interpro:IPR020635",
             "gene_descriptor": gene_descriptors[3],
-            "location_descriptor": {
-                "id": "fusor.location_descriptor:NP_002520.2",
-                "type": "LocationDescriptor",
-                "location": location_descriptors[7]
-            }
+            "location_descriptor": location_descriptors[7],
         }
     ]
 
