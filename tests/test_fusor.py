@@ -879,6 +879,15 @@ def test_critical_domain(fusor, critical_domain, critical_domain_min,
     assert "value is not a valid enumeration member; permitted: " \
         "'lost', 'preserved'" in cd[1]
 
+    cd = fusor.critical_domain(
+        "preserved",
+        "Serine-threonine/tyrosine-protein kinase, catalytic domain",
+        "interpro:IPR001245", "BRAF", "NM_004333.4", 458, 712,
+        seq_id_target_namespace="ga4gh",
+        use_minimal_gene_descr=True)
+    assert cd[0] is None
+    assert "Sequence_id must be a protein accession." in cd[1]
+
 
 def test_regulatory_element(fusor, regulatory_element, regulatory_element_min):
     """Test regulatory_element method."""

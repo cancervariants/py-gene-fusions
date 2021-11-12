@@ -272,8 +272,8 @@ class FUSOR:
         :param str name: Domain name
         :param CURIE critical_domain_id: Domain ID
         :param str gene: Gene
-        :param str sequence_id: sequence on which provided coordinates are
-            located
+        :param str sequence_id: protein sequence on which provided coordinates
+            are located
         :param int start: start position on sequence
         :param in end: end position on sequence
         :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
@@ -285,6 +285,13 @@ class FUSOR:
         :return: Tuple with CriticalDomain and None value for warnings if
             successful, or a None value and warning message if unsuccessful
         """
+        sequence_id_lower = sequence_id.lower()
+        if not (sequence_id_lower.startswith("np_")) or \
+                (sequence_id_lower.startswith("ensp")):
+            msg = "Sequence_id must be a protein accession."
+            logger.warning(msg)
+            return None, msg
+
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
         if not gene_descr:
