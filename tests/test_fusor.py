@@ -820,7 +820,7 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
                            functional_domain_seq_id):
     """Test that functional_domain method works correctly"""
 
-    def compare_cd(actual, expected):
+    def compare_domains(actual, expected):
         """Compare actual and expected functional domain data"""
         assert actual[0]
         assert actual[1] is None
@@ -853,14 +853,14 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
         use_minimal_gene_descr=False)
-    compare_cd(cd, functional_domain)
+    compare_domains(cd, functional_domain)
 
     cd = fusor.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
         use_minimal_gene_descr=True)
-    compare_cd(cd, functional_domain_min)
+    compare_domains(cd, functional_domain_min)
 
     cd = fusor.functional_domain(
         "preserved",
@@ -868,7 +868,7 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
         seq_id_target_namespace="ga4gh",
         use_minimal_gene_descr=True)
-    compare_cd(cd, functional_domain_seq_id)
+    compare_domains(cd, functional_domain_seq_id)
 
     cd = fusor.functional_domain(
         "preserveded",
