@@ -5,7 +5,7 @@ from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
 from fusor import FUSOR
 from fusor.models import Fusion, TemplatedSequenceComponent, \
     TranscriptSegmentComponent, LinkerComponent, UnknownGeneComponent, \
-    AnyGeneComponent, CriticalDomain, GeneComponent, RegulatoryElement, \
+    AnyGeneComponent, FunctionalDomain, GeneComponent, RegulatoryElement, \
     RegulatoryElementType
 import copy
 
@@ -159,8 +159,9 @@ def location_descriptor_braf_domain_seq_id():
 
 
 @pytest.fixture(scope="module")
-def critical_domain_min(braf_gene_descr_min, location_descriptor_braf_domain):
-    """Create critical domain test fixture."""
+def functional_domain_min(braf_gene_descr_min,
+                          location_descriptor_braf_domain):
+    """Create functional domain test fixture."""
     params = {
         "status": "preserved",
         "name": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
@@ -168,12 +169,12 @@ def critical_domain_min(braf_gene_descr_min, location_descriptor_braf_domain):
         "gene_descriptor": braf_gene_descr_min,
         "location_descriptor": location_descriptor_braf_domain
     }
-    return CriticalDomain(**params)
+    return FunctionalDomain(**params)
 
 
 @pytest.fixture(scope="module")
-def critical_domain(braf_gene_descr, location_descriptor_braf_domain):
-    """Create critical domain test fixture."""
+def functional_domain(braf_gene_descr, location_descriptor_braf_domain):
+    """Create functional domain test fixture."""
     params = {
         "status": "preserved",
         "name": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
@@ -181,13 +182,13 @@ def critical_domain(braf_gene_descr, location_descriptor_braf_domain):
         "gene_descriptor": braf_gene_descr,
         "location_descriptor": location_descriptor_braf_domain
     }
-    return CriticalDomain(**params)
+    return FunctionalDomain(**params)
 
 
 @pytest.fixture(scope="module")
-def critical_domain_seq_id(braf_gene_descr_min,
-                           location_descriptor_braf_domain_seq_id):
-    """Create critical domain test fixture."""
+def functional_domain_seq_id(braf_gene_descr_min,
+                             location_descriptor_braf_domain_seq_id):
+    """Create functional domain test fixture."""
     params = {
         "status": "preserved",
         "name": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
@@ -195,7 +196,7 @@ def critical_domain_seq_id(braf_gene_descr_min,
         "gene_descriptor": braf_gene_descr_min,
         "location_descriptor": location_descriptor_braf_domain_seq_id
     }
-    return CriticalDomain(**params)
+    return FunctionalDomain(**params)
 
 
 @pytest.fixture(scope="module")
@@ -342,7 +343,7 @@ def fusion():
     """Create fusion test fixture."""
     return {
         "r_frame_preserved": True,
-        "protein_domains": [
+        "functional_domains": [
             {
                 "status": "lost",
                 "name": "Tyrosine-protein kinase, catalytic domain",
@@ -594,10 +595,10 @@ def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
 
     e_gds = set()
     t_gds = set()
-    for e_field in [expected_fusion.protein_domains,
+    for e_field in [expected_fusion.functional_domains,
                     expected_fusion.structural_components,
                     expected_fusion.regulatory_elements]:
-        for t_field in [actual.protein_domains,
+        for t_field in [actual.functional_domains,
                         actual.structural_components,
                         actual.regulatory_elements]:
             for e_obj in e_field:
@@ -617,7 +618,7 @@ def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
 
 
 def test_fusion(fusor, linker_component, templated_sequence_component,
-                transcript_segment_component, critical_domain):
+                transcript_segment_component, functional_domain):
     """Test that fusion method works correctly."""
     f = fusor.fusion([templated_sequence_component,
                       linker_component, UnknownGeneComponent()])
@@ -625,7 +626,7 @@ def test_fusion(fusor, linker_component, templated_sequence_component,
     assert f[1] is None
 
     f = fusor.fusion([transcript_segment_component, AnyGeneComponent()],
-                     protein_domains=[critical_domain])
+                     functional_domains=[functional_domain])
     assert isinstance(f[0], Fusion)
     assert f[1] is None
 
@@ -815,12 +816,12 @@ def test_any_gene_component(fusor):
     assert any_gc.dict() == AnyGeneComponent().dict()
 
 
-def test_critical_domain(fusor, critical_domain, critical_domain_min,
-                         critical_domain_seq_id):
-    """Test that critical_domain method works correctly"""
+def test_functional_domain(fusor, functional_domain, functional_domain_min,
+                           functional_domain_seq_id):
+    """Test that functional_domain method works correctly"""
 
     def compare_cd(actual, expected):
-        """Compare actual and expected critical domain data"""
+        """Compare actual and expected functional domain data"""
         assert actual[0]
         assert actual[1] is None
         actual = actual[0].dict()
@@ -847,29 +848,29 @@ def test_critical_domain(fusor, critical_domain, critical_domain_min,
             else:
                 assert actual[key] == expected[key]
 
-    cd = fusor.critical_domain(
+    cd = fusor.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
         use_minimal_gene_descr=False)
-    compare_cd(cd, critical_domain)
+    compare_cd(cd, functional_domain)
 
-    cd = fusor.critical_domain(
+    cd = fusor.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
         use_minimal_gene_descr=True)
-    compare_cd(cd, critical_domain_min)
+    compare_cd(cd, functional_domain_min)
 
-    cd = fusor.critical_domain(
+    cd = fusor.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
         seq_id_target_namespace="ga4gh",
         use_minimal_gene_descr=True)
-    compare_cd(cd, critical_domain_seq_id)
+    compare_cd(cd, functional_domain_seq_id)
 
-    cd = fusor.critical_domain(
+    cd = fusor.functional_domain(
         "preserveded",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
@@ -880,7 +881,7 @@ def test_critical_domain(fusor, critical_domain, critical_domain_min,
         "'lost', 'preserved'" in cd[1]
 
     # check for protein accession
-    cd = fusor.critical_domain(
+    cd = fusor.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NM_004333.4", 458, 712,
@@ -890,7 +891,7 @@ def test_critical_domain(fusor, critical_domain, critical_domain_min,
     assert "Sequence_id must be a protein accession." in cd[1]
 
     # check for recognized protein accession
-    cd = fusor.critical_domain(
+    cd = fusor.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF",
@@ -903,7 +904,7 @@ def test_critical_domain(fusor, critical_domain, critical_domain_min,
         in cd[1]
 
     # check that coordinates exist on sequence
-    cd = fusor.critical_domain(
+    cd = fusor.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF",

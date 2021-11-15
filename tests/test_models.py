@@ -4,7 +4,7 @@ import pytest
 import json
 from fusor.models import TranscriptSegmentComponent, \
     TemplatedSequenceComponent, UnknownGeneComponent, GeneComponent, \
-    AnyGeneComponent, LinkerComponent, CriticalDomain, Event, \
+    AnyGeneComponent, LinkerComponent, FunctionalDomain, Event, \
     RegulatoryElement, Fusion
 import copy
 from tests.conftest import EXAMPLES_DIR
@@ -178,8 +178,8 @@ def location_descriptors():
 
 
 @pytest.fixture(scope="module")
-def critical_domains(gene_descriptors, location_descriptors):
-    """Provide possible critical_domains input."""
+def functional_domains(gene_descriptors, location_descriptors):
+    """Provide possible functional_domains input."""
     return [
         {
             "status": "preserved",
@@ -336,9 +336,9 @@ def check_validation_error(exc_info, expected_msg: str,
     assert exc_info.value.errors()[index]["msg"] == expected_msg
 
 
-def test_critical_domain(critical_domains, gene_descriptors):
-    """Test CriticalDomain object initializes correctly"""
-    test_domain = CriticalDomain(**critical_domains[0])
+def test_functional_domain(functional_domains, gene_descriptors):
+    """Test FunctionalDomain object initializes correctly"""
+    test_domain = FunctionalDomain(**functional_domains[0])
     assert test_domain.status == "preserved"
     assert test_domain.name == "WW domain"
     assert test_domain.id == "interpro:IPR001202"
@@ -353,7 +353,7 @@ def test_critical_domain(critical_domains, gene_descriptors):
     assert test_loc.location.interval.start.value == 171
     assert test_loc.location.interval.end.value == 204
 
-    test_domain = CriticalDomain(**critical_domains[1])
+    test_domain = FunctionalDomain(**functional_domains[1])
     assert test_domain.status == "lost"
     assert test_domain.name == "Tyrosine-protein kinase, catalytic domain"
     assert test_domain.id == "interpro:IPR020635"
@@ -370,7 +370,7 @@ def test_critical_domain(critical_domains, gene_descriptors):
 
     # test status string
     with pytest.raises(ValidationError) as exc_info:
-        CriticalDomain(**{
+        FunctionalDomain(**{
             "status": "gained",
             "name": "tyrosine kinase catalytic domain",
             "id": "interpro:IPR020635",
@@ -381,7 +381,7 @@ def test_critical_domain(critical_domains, gene_descriptors):
 
     # test domain ID CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
-        CriticalDomain(**{
+        FunctionalDomain(**{
             "status": "lost",
             "name": "tyrosine kinase catalytic domain",
             "id": "interpro_IPR020635",
@@ -720,7 +720,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
     check_validation_error(exc_info, msg)
 
 
-def test_fusion(critical_domains, transcript_segments,
+def test_fusion(functional_domains, transcript_segments,
                 templated_sequence_components, linkers, gene_components,
                 regulatory_elements):
     """Test that Fusion object initializes correctly"""
@@ -731,7 +731,7 @@ def test_fusion(critical_domains, transcript_segments,
     # test valid object
     fusion = Fusion(**{
         "r_frame_preserved": True,
-        "protein_domains": [critical_domains[0]],
+        "functional_domains": [functional_domains[0]],
         "structural_components": [
             transcript_segments[1], transcript_segments[2]
         ],
@@ -814,7 +814,7 @@ def test_fusion(critical_domains, transcript_segments,
     with pytest.raises(ValidationError) as exc_info:
         assert Fusion(**{
             "r_frame_preserved": True,
-            "protein_domains": [critical_domains[1]],
+            "functional_domains": [functional_domains[1]],
             "causative_event": "rearrangement",
             "regulatory_elements": [regulatory_elements[0]]
         })

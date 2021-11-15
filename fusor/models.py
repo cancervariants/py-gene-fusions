@@ -19,14 +19,14 @@ class AdditionalFields(str, Enum):
 
 
 class DomainStatus(str, Enum):
-    """Define possible statuses of critical domains."""
+    """Define possible statuses of functional domains."""
 
     LOST = "lost"
     PRESERVED = "preserved"
 
 
-class CriticalDomain(BaseModel):
-    """Define CriticalDomain class"""
+class FunctionalDomain(BaseModel):
+    """Define FunctionalDomain class"""
 
     id: CURIE
     name: StrictStr
@@ -437,7 +437,7 @@ class Fusion(BaseModel):
     """Define Fusion class"""
 
     r_frame_preserved: Optional[StrictBool]
-    protein_domains: Optional[List[CriticalDomain]]
+    functional_domains: Optional[List[FunctionalDomain]]
     structural_components: List[Union[TranscriptSegmentComponent,
                                       GeneComponent,
                                       TemplatedSequenceComponent,
@@ -470,7 +470,7 @@ class Fusion(BaseModel):
                 prop.pop("title", None)
             schema["example"] = {
                 "r_frame_preserved": True,
-                "protein_domains": [
+                "functional_domains": [
                     {
                         "status": "lost",
                         "name": "cystatin domain",

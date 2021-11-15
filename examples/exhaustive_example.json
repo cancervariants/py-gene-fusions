@@ -1,6 +1,6 @@
 {
   "r_frame_preserved": true,
-  "protein_domains": [
+  "functional_domains": [
     {
       "status": "lost",
       "name": "Tyrosine-protein kinase, catalytic domain",
