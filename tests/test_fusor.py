@@ -879,6 +879,7 @@ def test_critical_domain(fusor, critical_domain, critical_domain_min,
     assert "value is not a valid enumeration member; permitted: " \
         "'lost', 'preserved'" in cd[1]
 
+    # check for protein accession
     cd = fusor.critical_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
@@ -887,6 +888,32 @@ def test_critical_domain(fusor, critical_domain, critical_domain_min,
         use_minimal_gene_descr=True)
     assert cd[0] is None
     assert "Sequence_id must be a protein accession." in cd[1]
+
+    # check for recognized protein accession
+    cd = fusor.critical_domain(
+        "preserved",
+        "Serine-threonine/tyrosine-protein kinase, catalytic domain",
+        "interpro:IPR001245", "BRAF",
+        "NP_9999.999",
+        458, 712,
+        seq_id_target_namespace="ga4gh",
+        use_minimal_gene_descr=True)
+    assert cd[0] is None
+    assert "Invalid sequence ID: Unable to retrieve NP_9999.999 from SeqRepo" \
+        in cd[1]
+
+    # check that coordinates exist on sequence
+    cd = fusor.critical_domain(
+        "preserved",
+        "Serine-threonine/tyrosine-protein kinase, catalytic domain",
+        "interpro:IPR001245", "BRAF",
+        "NP_004324.2",
+        458, 712000,
+        seq_id_target_namespace="ga4gh",
+        use_minimal_gene_descr=True)
+    assert cd[0] is None
+    assert "Invalid position: 712000 on NP_004324.2" \
+        in cd[1]
 
 
 def test_regulatory_element(fusor, regulatory_element, regulatory_element_min):
