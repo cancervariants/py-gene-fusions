@@ -1,26 +1,26 @@
 """Module for modifying fusion objects."""
 from typing import Optional, List, Union, Tuple, Dict
+from urllib.parse import quote
+
 from biocommons.seqrepo import SeqRepo
-from ga4gh.vrs import models
+from bioutils.accessions import coerce_namespace
 from ga4gh.core import ga4gh_identify
+from ga4gh.vrs import models
 from ga4gh.vrsatile.pydantic.vrs_model import CURIE, VRSTypes, \
     SequenceLocation, Number, SequenceInterval
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor,\
     LocationDescriptor
 from pydantic.error_wrappers import ValidationError
 from uta_tools.uta_tools import UTATools
-
-from fusor import SEQREPO_DATA_PATH
+from uta_tools.schemas import ResidueMode
 from gene.query import QueryHandler
+
+from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.models import Fusion, TemplatedSequenceComponent, \
     AdditionalFields, TranscriptSegmentComponent, GeneComponent, \
     LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
-    RegulatoryElement, Event, DomainStatus, CriticalDomain, Strand, \
+    RegulatoryElement, Event, DomainStatus, FunctionalDomain, Strand, \
     RegulatoryElementType
-from fusor import logger, UTA_DB_URL
-from bioutils.accessions import coerce_namespace
-from uta_tools.schemas import ResidueMode
-from urllib.parse import quote
 
 
 class FUSOR:
@@ -55,7 +55,7 @@ class FUSOR:
             r_frame_preserved: Optional[bool] = None,
             causative_event: Optional[Event] = None,
             regulatory_elements: Optional[RegulatoryElement] = None,
-            protein_domains: Optional[List[CriticalDomain]] = None
+            functional_domains: Optional[List[FunctionalDomain]] = None
     ) -> Tuple[Optional[Fusion], Optional[str]]:
         """Create fusion
 
@@ -66,7 +66,7 @@ class FUSOR:
             if known
         :param Optional[RegulatoryElement] regulatory_elements: affected
             regulatory elements
-        :param Optional[List[CriticalDomain]] domains: lost or preserved
+        :param Optional[List[FunctionalDomain]] domains: lost or preserved
             functional domains
         :return: Tuple where position 0 is complete Fusion object if successful
             or None if unsuccessful, and position 1 is None if successful or
@@ -78,7 +78,7 @@ class FUSOR:
                 structural_components=structural_components,
                 causative_event=causative_event,
                 regulatory_elements=regulatory_elements,
-                protein_domains=protein_domains
+                functional_domains=functional_domains
             )
         except ValidationError as e:
             msg = str(e)
@@ -258,35 +258,64 @@ class FUSOR:
         """
         return UnknownGeneComponent()
 
-    def critical_domain(
+    def functional_domain(
             self, status: DomainStatus, name: str,
-            critical_domain_id: CURIE, gene: str,
-            use_minimal_gene_descr: bool = True
-    ) -> Tuple[Optional[CriticalDomain], Optional[str]]:
-        """Create critical domain
+            functional_domain_id: CURIE, gene: str,
+            sequence_id: str, start: int, end: int,
+            use_minimal_gene_descr: bool = True,
+            seq_id_target_namespace: Optional[str] = None,
+    ) -> Tuple[Optional[FunctionalDomain], Optional[str]]:
+        """Build functional domain instance.
 
-        :param DomainStatus status: Status for domain.
-            Must be either `lost` or `preserved`
-        :param str name: Name for critical domain
-        :param CURIE critical_domain_id: ID for critical domain
+        :param DomainStatus status: Status for domain.  Must be either `lost`
+            or `preserved`
+        :param str name: Domain name
+        :param CURIE functional_domain_id: Domain ID
         :param str gene: Gene
+        :param str sequence_id: protein sequence on which provided coordinates
+            are located
+        :param int start: start position on sequence
+        :param in end: end position on sequence
         :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
             (`id`, `gene_id`, `label`) will be used. `False` if
             gene-normalizer's gene descriptor will be used
-        :return: Tuple with CriticalDomain and None value for warnings if
+        :param Optional[str] seq_id_target_namespace: If want to use digest for
+            `sequence_id`, set this to the namespace you want the digest for.
+            Otherwise, leave as `None`.
+        :return: Tuple with FunctionalDomain and None value for warnings if
             successful, or a None value and warning message if unsuccessful
         """
+        sequence_id_lower = sequence_id.lower()
+        if not (sequence_id_lower.startswith("np_")) or \
+                (sequence_id_lower.startswith("ensp")):
+            msg = "Sequence_id must be a protein accession."
+            logger.warning(msg)
+            return None, msg
+
+        valid = self.uta_tools.seqrepo_access.is_valid_input_sequence(
+            sequence_id, start, end
+        )
+
+        if not valid[0]:
+            return None, valid[1]
+
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
         if not gene_descr:
             return None, warning
 
+        loc_descr = self._location_descriptor(
+            start, end, sequence_id,
+            seq_id_target_namespace=seq_id_target_namespace
+        )
+
         try:
-            return CriticalDomain(
-                id=critical_domain_id,
+            return FunctionalDomain(
+                id=functional_domain_id,
                 name=name,
                 status=status,
-                gene_descriptor=gene_descr
+                gene_descriptor=gene_descr,
+                location_descriptor=loc_descr
             ), None
         except ValidationError as e:
             msg = str(e)
@@ -436,6 +465,11 @@ class FUSOR:
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                             location_id = self._location_id(location.dict())
                             component_genomic.location_id = location_id
+        if fusion.functional_domains:
+            for domain in fusion.functional_domains:
+                location = domain.location_descriptor.location
+                location_id = self._location_id(location.dict())
+                domain.location_descriptor.location_id = location_id
         return fusion
 
     @staticmethod
@@ -480,7 +514,7 @@ class FUSOR:
         :param Fusion fusion: A valid Fusion object
         :return: Updated fusion with additional fields set in `gene_descriptor`
         """
-        for field in [fusion.protein_domains, fusion.structural_components,
+        for field in [fusion.functional_domains, fusion.structural_components,
                       fusion.regulatory_elements]:
             for obj in field:
                 if "gene_descriptor" in obj.__fields__.keys():

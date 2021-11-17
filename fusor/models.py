@@ -1,8 +1,9 @@
 """Model for fusion class"""
-from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
-    Extra, ValidationError, root_validator
 from typing import Optional, List, Union, Literal
 from enum import Enum
+
+from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
+    Extra, ValidationError, root_validator
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
@@ -18,19 +19,20 @@ class AdditionalFields(str, Enum):
 
 
 class DomainStatus(str, Enum):
-    """Define possible statuses of critical domains."""
+    """Define possible statuses of functional domains."""
 
     LOST = "lost"
     PRESERVED = "preserved"
 
 
-class CriticalDomain(BaseModel):
-    """Define CriticalDomain class"""
+class FunctionalDomain(BaseModel):
+    """Define FunctionalDomain class"""
 
     id: CURIE
     name: StrictStr
     status: DomainStatus
     gene_descriptor: GeneDescriptor
+    location_descriptor: LocationDescriptor
 
     _get_id_val = validator("id", allow_reuse=True)(return_value)
 
@@ -48,13 +50,31 @@ class CriticalDomain(BaseModel):
                 prop.pop("title", None)
             schema["example"] = {
                 "status": "lost",
-                "name": "cystatin domain",
-                "id": "interpro:IPR000010",
+                "name": "Tyrosine-protein kinase, catalytic domain",
+                "id": "interpro:IPR020635",
                 "gene_descriptor": {
-                    "id": "gene:CST1",
-                    "gene_id": "hgnc:2743",
-                    "label": "CST1",
+                    "id": "gene:NTRK1",
+                    "gene_id": "hgnc:8031",
+                    "label": "8031",
                     "type": "GeneDescriptor",
+                },
+                "location_descriptor": {
+                    "id": "fusor.location_descriptor:NP_002520.2",
+                    "type": "LocationDescriptor",
+                    "location": {
+                        "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",  # noqa: E501
+                        "type": "SequenceLocation",
+                        "interval": {
+                            "start": {
+                                "type": "Number",
+                                "value": 510
+                            },
+                            "end": {
+                                "type": "Number",
+                                "value": 781
+                            }
+                        }
+                    }
                 }
             }
 
@@ -417,7 +437,7 @@ class Fusion(BaseModel):
     """Define Fusion class"""
 
     r_frame_preserved: Optional[StrictBool]
-    protein_domains: Optional[List[CriticalDomain]]
+    functional_domains: Optional[List[FunctionalDomain]]
     structural_components: List[Union[TranscriptSegmentComponent,
                                       GeneComponent,
                                       TemplatedSequenceComponent,
@@ -450,7 +470,7 @@ class Fusion(BaseModel):
                 prop.pop("title", None)
             schema["example"] = {
                 "r_frame_preserved": True,
-                "protein_domains": [
+                "functional_domains": [
                     {
                         "status": "lost",
                         "name": "cystatin domain",
