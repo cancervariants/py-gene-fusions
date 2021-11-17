@@ -891,17 +891,17 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
     assert "Sequence_id must be a protein accession." in cd[1]
 
     # check for recognized protein accession
+    accession = "NP_9999.999"
     cd = fusor.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF",
-        "NP_9999.999",
+        accession,
         458, 712,
         seq_id_target_namespace="ga4gh",
         use_minimal_gene_descr=True)
     assert cd[0] is None
-    assert "Invalid sequence ID: Unable to retrieve NP_9999.999 from SeqRepo" \
-        in cd[1]
+    assert f"Accession, {accession}, not found in SeqRepo" in cd[1]
 
     # check that coordinates exist on sequence
     cd = fusor.functional_domain(
@@ -913,8 +913,8 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
         seq_id_target_namespace="ga4gh",
         use_minimal_gene_descr=True)
     assert cd[0] is None
-    assert "Invalid position: 712000 on NP_004324.2" \
-        in cd[1]
+    assert "End inter-residue coordinate (711999) is out of index on " \
+        "NP_004324.2" in cd[1]
 
 
 def test_regulatory_element(fusor, regulatory_element, regulatory_element_min):

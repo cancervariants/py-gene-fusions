@@ -292,10 +292,12 @@ class FUSOR:
             logger.warning(msg)
             return None, msg
 
-        invalid = self._get_sequence_validation_warnings(sequence_id, start,
-                                                         end)
-        if invalid:
-            return None, invalid
+        valid = self.uta_tools.seqrepo_access.is_valid_input_sequence(
+            sequence_id, start, end
+        )
+
+        if not valid[0]:
+            return None, valid[1]
 
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
@@ -568,44 +570,3 @@ class FUSOR:
         if ga4gh_identifiers:
             return ga4gh_identifiers[0]
         return None
-
-    def _get_sequence_validation_warnings(
-            self,
-            sequence_id: str,
-            start: Optional[int] = None,
-            end: Optional[int] = None
-    ) -> Optional[str]:
-        """Check sequence ID and start and/or end positions against SeqRepo
-        for validity.
-        :param str sequence_id: sequence identifier
-        :param Optional[int] start: start position on sequence
-        :param Optional[int] end: end position on sequence
-        :return: string description of error if invalid, None if valid
-        """
-        # check sequence ID
-        if start is None or end is None:
-            return "Invalid input: must provide start and/or end position"
-        elif start is None:
-            end = start
-        elif end is None:
-            start = end
-
-        try:
-            self.seqrepo.fetch(sequence_id, start=end - 1, end=end)
-        except KeyError:
-            warning = (f"Invalid sequence ID: Unable to retrieve {sequence_id}"
-                       f" from SeqRepo")
-            logger.warning(warning)
-            return warning
-        except ValueError as e:
-            warning = f"{sequence_id}: {e}"
-            logger.warning(warning)
-            return warning
-
-        # check valid end position
-        if not self.seqrepo.fetch(sequence_id, start=end - 1, end=end):
-            warning = (f"Invalid position: {end} on {sequence_id}")
-            logger.warning(warning)
-            return warning
-        else:
-            return None
