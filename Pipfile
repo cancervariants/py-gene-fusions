@@ -7,7 +7,7 @@ name = "pypi"
 pydantic = "*"
 jsonschema = ">=2.3, <4.0"
 "ga4gh.vrsatile.pydantic" = "*"
-"ga4gh.vrs" = {version = "==0.7.0rc3", extras = ["extras"]}
+"ga4gh.vrs" = {version = ">=0.7.2", extras = ["extras"]}
 "biocommons.seqrepo" = "*"
 gene-normalizer = "*"
 uta-tools = ">=0.0.10"
