@@ -6,9 +6,9 @@ from biocommons.seqrepo import SeqRepo
 from bioutils.accessions import coerce_namespace
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models
-from ga4gh.vrsatile.pydantic.vrs_model import CURIE, VRSTypes, \
+from ga4gh.vrsatile.pydantic.vrs_models import CURIE, VRSTypes, \
     SequenceLocation, Number, SequenceInterval
-from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor,\
+from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor,\
     LocationDescriptor
 from pydantic.error_wrappers import ValidationError
 from uta_tools.uta_tools import UTATools

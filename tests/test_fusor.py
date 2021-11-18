@@ -1,6 +1,6 @@
 """Module for testing the FUSOR class."""
 import pytest
-from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
+from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
     LocationDescriptor
 from fusor import FUSOR
 from fusor.models import Fusion, TemplatedSequenceComponent, \
