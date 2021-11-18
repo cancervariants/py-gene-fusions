@@ -5,9 +5,9 @@ from enum import Enum
 from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
     Extra, ValidationError, root_validator
 from ga4gh.vrsatile.pydantic import return_value
-from ga4gh.vrsatile.pydantic.vrsatile_model import GeneDescriptor, \
+from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
-from ga4gh.vrsatile.pydantic.vrs_model import Sequence
+from ga4gh.vrsatile.pydantic.vrs_models import Sequence
 
 
 class AdditionalFields(str, Enum):
