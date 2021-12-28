@@ -966,3 +966,10 @@ def test__location_descriptor(fusor, location_descriptor_tpm3):
     ld = fusor._location_descriptor(154170398, 154170399, "refseq:NM_152263.3",
                                     label="example_label")
     assert ld.dict() == expected.dict()
+
+
+def test_generate_nomenclature(fusor, fusion):
+    """Test that nomenclature generation is correct."""
+    fusion_instance = Fusion(**fusion)
+    nm = fusor.generate_nomenclature(fusion_instance)
+    assert nm == "NM_152263.3(TPM3):e.1_8::ALK(hgnc:427)::ACGT::NC_000012.12:g.44908821_44908822(+)::?::*"  # noqa: E501
