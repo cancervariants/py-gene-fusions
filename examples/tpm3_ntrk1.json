@@ -1,0 +1,59 @@
+{
+  "structural_components": [
+    {
+      "component_type": "transcript_segment",
+      "transcript": "refseq:NM_152263.4",
+      "exon_end": 8,
+      "exon_end_offset": -70,
+      "gene_descriptor": {
+        "id": "normalize.gene:TPM3",
+        "type": "GeneDescriptor",
+        "label": "TPM3",
+        "gene_id": "hgnc:12012"
+      },
+      "component_genomic_end": {
+        "id": "fusor.location_descriptor:NC_000001.11",
+        "type": "LocationDescriptor",
+        "label": "NC_000001.11",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": { "type": "Number", "value": 154170469 },
+            "end": { "type": "Number", "value": 154170470 }
+          }
+        }
+      }
+    },
+    {
+      "component_type": "transcript_segment",
+      "transcript": "refseq:NM_002529.4",
+      "exon_start": 7,
+      "exon_start_offset": 0,
+      "gene_descriptor": {
+        "id": "normalize.gene:NTRK1",
+        "type": "GeneDescriptor",
+        "label": "NTRK1",
+        "gene_id": "hgnc:8031"
+      },
+      "component_genomic_start": {
+        "id": "fusor.location_descriptor:NC_000001.11",
+        "type": "LocationDescriptor",
+        "label": "NC_000001.11",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": { "type": "Number", "value": 156871755 },
+            "end": { "type": "Number", "value": 156871756 }
+          }
+        }
+      }
+    }
+  ],
+    "functional_domains": [
+
+    ]
+}
