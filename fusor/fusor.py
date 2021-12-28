@@ -20,7 +20,7 @@ from fusor.models import Fusion, TemplatedSequenceComponent, \
     AdditionalFields, TranscriptSegmentComponent, GeneComponent, \
     LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
     RegulatoryElement, Event, DomainStatus, FunctionalDomain, Strand, \
-    RegulatoryElementType
+    RegulatoryElementType, ComponentType
 
 
 class FUSOR:
@@ -570,3 +570,48 @@ class FUSOR:
         if ga4gh_identifiers:
             return ga4gh_identifiers[0]
         return None
+
+    def generate_nomenclature(self, fusion: Fusion) -> str:
+        """Generate human-readable nomenclature describing provided fusion
+        :param Fusion fusion: a valid fusion
+        :return: string summarizing fusion in human-readable way per
+            established ga4gh nomenclature
+        """
+        nom_parts = []
+        for component in fusion.structural_components:
+            if component.component_type == ComponentType.ANY_GENE:
+                nom_parts.append("*")
+            elif component.component_type == ComponentType.UNKNOWN_GENE:
+                nom_parts.append("?")
+            elif component.component_type == ComponentType.GENE:
+                label = component.gene_descriptor.label
+                gene_id = component.gene_descriptor.gene_id
+                nom_parts.append(f"{label}({gene_id})")
+            elif component.component_type == ComponentType.LINKER_SEQUENCE:
+                nom_parts.append(component.linker_sequence.sequence)
+            elif component.component_type == ComponentType.TRANSCRIPT_SEGMENT:
+                tx = str(component.transcript).split(":")[1]
+                label = component.gene_descriptor.label
+                comp_name = f"{tx}({label}):e."
+                if component.exon_start is not None:
+                    comp_name += str(component.exon_start)
+                    if component.exon_start_offset:
+                        if component.exon_start_offset > 0:
+                            comp_name += f"+{component.exon_start_offset}"
+                        else:
+                            comp_name += str(component.exon_start_offset)
+                comp_name += "_"
+                if component.exon_end is not None:
+                    comp_name += str(component.exon_end)
+                    if component.exon_end_offset:
+                        if component.exon_end_offset > 0:
+                            comp_name += f"+{component.exon_end_offset}"
+                        else:
+                            comp_name += str(component.exon_end_offset)
+                nom_parts.append(comp_name)
+            elif component.component_type == ComponentType.TEMPLATED_SEQUENCE:
+                loc = component.region.location
+                start = loc.interval.start.value
+                end = loc.interval.end.value
+                nom_parts.append(f"{loc.sequence_id.split(':')[1]}:g.{start}_{end}({component.strand})")  # noqa: E501
+        return "::".join(nom_parts)
