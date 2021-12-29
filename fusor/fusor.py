@@ -571,11 +571,12 @@ class FUSOR:
             return ga4gh_identifiers[0]
         return None
 
-    def generate_nomenclature(self, fusion: Fusion) -> str:
+    @staticmethod
+    def generate_nomenclature(fusion: Fusion) -> str:
         """Generate human-readable nomenclature describing provided fusion
         :param Fusion fusion: a valid fusion
         :return: string summarizing fusion in human-readable way per
-            established ga4gh nomenclature
+            VICC fusion curation nomenclature
         """
         nom_parts = []
         for component in fusion.structural_components:
@@ -590,7 +591,7 @@ class FUSOR:
             elif component.component_type == ComponentType.LINKER_SEQUENCE:
                 nom_parts.append(component.linker_sequence.sequence)
             elif component.component_type == ComponentType.TRANSCRIPT_SEGMENT:
-                tx = str(component.transcript).split(":")[1]
+                tx = component.transcript.split(":")[1]
                 label = component.gene_descriptor.label
                 comp_name = f"{tx}({label}):e."
                 if component.exon_start is not None:
