@@ -2,22 +2,18 @@
   "r_frame_preserved": true,
   "functional_domains": [
     {
-      "status": "lost",
-      "name": "Tyrosine-protein kinase, catalytic domain",
       "id": "interpro:IPR020635",
+      "name": "Tyrosine-protein kinase, catalytic domain",
+      "status": "lost",
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
         "type": "GeneDescriptor",
         "label": "ALK",
         "description": null,
         "xrefs": ["ensembl:ENSG00000171094", "ncbigene:238"],
-        "alternate_labels": ["CD246", "NBLST3"],
+        "alternate_labels": ["CD246", "ALK1", "NBLST3"],
         "extensions": [
-          {
-            "type": "Extension",
-            "name": "symbol_status",
-            "value": "approved"
-          },
+          { "type": "Extension", "name": "symbol_status", "value": "approved" },
           {
             "type": "Extension",
             "name": "approved_name",
@@ -27,55 +23,57 @@
             "type": "Extension",
             "name": "chromosome_location",
             "value": {
+              "type": "ChromosomeLocation",
+              "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
               "species_id": "taxonomy:9606",
+              "chr": "2",
               "interval": {
                 "type": "CytobandInterval",
                 "start": "p23.2",
                 "end": "p23.1"
-              },
-              "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
-              "type": "ChromosomeLocation",
-              "chr": "2"
+              }
             }
           },
           {
             "type": "Extension",
             "name": "associated_with",
             "value": [
-              "ena.embl:D45915",
-              "uniprot:Q9UM73",
-              "pubmed:8122112",
-              "omim:105590",
-              "orphanet:160020",
-              "cosmic:ALK",
               "vega:OTTHUMG00000152034",
+              "refseq:NM_004304",
               "ccds:CCDS86828",
-              "hcdmdb:CD246",
-              "ccds:CCDS33172",
-              "ucsc:uc002rmy.4",
               "iuphar:1839",
-              "refseq:NM_004304"
+              "orphanet:160020",
+              "ccds:CCDS33172",
+              "omim:105590",
+              "ucsc:uc002rmy.4",
+              "uniprot:Q9UM73",
+              "cosmic:ALK",
+              "ena.embl:D45915",
+              "pubmed:8122112",
+              "hcdmdb:CD246"
             ]
           }
         ],
-        "gene_id": "hgnc:427"
+        "gene_id": "hgnc:427",
+        "gene": null
       },
       "location_descriptor": {
-        "type": "LocationDescriptor",
         "id": "fusor.location_descriptor:NP_004295.2",
+        "type": "LocationDescriptor",
+        "label": null,
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "location_id": "ga4gh:VSL.hQKhk6ZOOYZAmShXrzhfb6H3j65ovsKu",
         "location": {
+          "id": null,
           "type": "SequenceLocation",
-          "sequence_id": "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs",
+          "sequence_id": "refseq:NP_004295.2",
           "interval": {
             "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 1116
-            },
-            "end": {
-              "type": "Number",
-              "value": 1383
-            }
+            "start": { "type": "Number", "value": 1116 },
+            "end": { "type": "Number", "value": 1383 }
           }
         }
       }
@@ -92,34 +90,30 @@
       "gene_descriptor": {
         "id": "normalize.gene:TPM3",
         "type": "GeneDescriptor",
-        "gene_id": "hgnc:12012",
         "label": "TPM3",
+        "description": null,
         "xrefs": ["ensembl:ENSG00000143549", "ncbigene:7170"],
         "alternate_labels": [
-          "NEM1~withdrawn",
+          "HEL-S-82p",
+          "TM3",
+          "hscp30",
           "TM30",
           "TM-5",
-          "OK/SW-cl.5",
+          "NEM1~withdrawn",
           "TPM3nu",
-          "TM3",
-          "TM30nm",
-          "CAPM1",
-          "hscp30",
           "TRK",
-          "TPMsk3",
+          "TM30nm",
           "TM5",
-          "HEL-S-82p",
-          "FLJ35371",
-          "CFTD",
+          "CAPM1",
           "NEM1",
+          "CFTD",
+          "TPMsk3",
+          "OK/SW-cl.5",
+          "FLJ35371",
           "HEL-189"
         ],
         "extensions": [
-          {
-            "type": "Extension",
-            "name": "symbol_status",
-            "value": "approved"
-          },
+          { "type": "Extension", "name": "symbol_status", "value": "approved" },
           {
             "type": "Extension",
             "name": "approved_name",
@@ -129,85 +123,87 @@
             "type": "Extension",
             "name": "chromosome_location",
             "value": {
+              "type": "ChromosomeLocation",
+              "_id": "ga4gh:VCL.rmJvYV5JccRSEoMVxe5BmuHs9S2VZ4uR",
               "species_id": "taxonomy:9606",
+              "chr": "1",
               "interval": {
                 "type": "CytobandInterval",
                 "start": "q21.3",
                 "end": "q21.3"
-              },
-              "_id": "ga4gh:VCL.rmJvYV5JccRSEoMVxe5BmuHs9S2VZ4uR",
-              "type": "ChromosomeLocation",
-              "chr": "1"
+              }
             }
           },
           {
             "type": "Extension",
             "name": "associated_with",
             "value": [
-              "ccds:CCDS60275",
               "cosmic:TPM3",
-              "ccds:CCDS41402",
-              "ena.embl:BC008425",
-              "omim:191030",
-              "refseq:NM_152263",
-              "pubmed:1829807",
-              "uniprot:P06753",
-              "vega:OTTHUMG00000035853",
-              "ccds:CCDS1060",
-              "ucsc:uc001fec.3",
-              "ccds:CCDS41403",
-              "ccds:CCDS60274",
               "orphanet:120227",
+              "vega:OTTHUMG00000035853",
+              "omim:191030",
+              "ucsc:uc001fec.3",
+              "pubmed:1829807",
+              "ena.embl:BC008425",
+              "ccds:CCDS41402",
               "ccds:CCDS41400",
+              "uniprot:P06753",
+              "ccds:CCDS60274",
+              "refseq:NM_152263",
               "pubmed:25369766",
+              "ccds:CCDS41403",
               "ccds:CCDS72922",
-              "ccds:CCDS41401"
+              "ccds:CCDS60275",
+              "ccds:CCDS41401",
+              "ccds:CCDS1060"
             ]
           },
           {
             "type": "Extension",
             "name": "previous_symbols",
-            "value": ["NEM1~withdrawn", "NEM1", "FLJ35371"]
+            "value": ["FLJ35371", "NEM1", "NEM1~withdrawn"]
           }
-        ]
+        ],
+        "gene_id": "hgnc:12012",
+        "gene": null
       },
       "component_genomic_start": {
-        "id": "refseq:NM_152263.3_exon1",
+        "id": "fusor.location_descriptor:NC_000001.11",
         "type": "LocationDescriptor",
-        "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",
+        "label": "NC_000001.11",
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "location_id": "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW",
         "location": {
-          "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
+          "id": null,
           "type": "SequenceLocation",
+          "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
           "interval": {
-            "start": {
-              "type": "Number",
-              "value": 154192135
-            },
-            "end": {
-              "type": "Number",
-              "value": 154192136
-            },
-            "type": "SequenceInterval"
+            "type": "SequenceInterval",
+            "start": { "type": "Number", "value": 154192135 },
+            "end": { "type": "Number", "value": 154192136 }
           }
         }
       },
       "component_genomic_end": {
-        "id": "refseq:NM_152263.3_exon8",
+        "id": "fusor.location_descriptor:NC_000001.11",
         "type": "LocationDescriptor",
-        "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",
+        "label": "NC_000001.11",
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "location_id": "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq",
         "location": {
-          "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
+          "id": null,
           "type": "SequenceLocation",
+          "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
           "interval": {
-            "start": {
-              "type": "Number",
-              "value": 154170398
-            },
-            "end": {
-              "type": "Number",
-              "value": 154170399
-            },
-            "type": "SequenceInterval"
+            "type": "SequenceInterval",
+            "start": { "type": "Number", "value": 154170399 },
+            "end": { "type": "Number", "value": 154170400 }
           }
         }
       }
@@ -217,16 +213,12 @@
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
         "type": "GeneDescriptor",
-        "gene_id": "hgnc:427",
         "label": "ALK",
+        "description": null,
         "xrefs": ["ensembl:ENSG00000171094", "ncbigene:238"],
-        "alternate_labels": ["NBLST3", "CD246"],
+        "alternate_labels": ["CD246", "ALK1", "NBLST3"],
         "extensions": [
-          {
-            "type": "Extension",
-            "name": "symbol_status",
-            "value": "approved"
-          },
+          { "type": "Extension", "name": "symbol_status", "value": "approved" },
           {
             "type": "Extension",
             "name": "approved_name",
@@ -236,44 +228,52 @@
             "type": "Extension",
             "name": "chromosome_location",
             "value": {
+              "type": "ChromosomeLocation",
+              "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
               "species_id": "taxonomy:9606",
+              "chr": "2",
               "interval": {
                 "type": "CytobandInterval",
                 "start": "p23.2",
                 "end": "p23.1"
-              },
-              "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
-              "type": "ChromosomeLocation",
-              "chr": "2"
+              }
             }
           },
           {
             "type": "Extension",
             "name": "associated_with",
             "value": [
-              "ena.embl:D45915",
-              "uniprot:Q9UM73",
-              "pubmed:8122112",
-              "omim:105590",
-              "orphanet:160020",
-              "cosmic:ALK",
               "vega:OTTHUMG00000152034",
+              "refseq:NM_004304",
               "ccds:CCDS86828",
-              "hcdmdb:CD246",
-              "ccds:CCDS33172",
-              "ucsc:uc002rmy.4",
               "iuphar:1839",
-              "refseq:NM_004304"
+              "orphanet:160020",
+              "ccds:CCDS33172",
+              "omim:105590",
+              "ucsc:uc002rmy.4",
+              "uniprot:Q9UM73",
+              "cosmic:ALK",
+              "ena.embl:D45915",
+              "pubmed:8122112",
+              "hcdmdb:CD246"
             ]
           }
-        ]
+        ],
+        "gene_id": "hgnc:427",
+        "gene": null
       }
     },
     {
       "component_type": "linker_sequence",
       "linker_sequence": {
-        "id": "sequence:ACGT",
+        "id": "fusor.sequence:ACGT",
         "type": "SequenceDescriptor",
+        "label": null,
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "sequence_id": null,
         "sequence": "ACGT",
         "residue_type": "SO:0000348"
       }
@@ -281,34 +281,29 @@
     {
       "component_type": "templated_sequence",
       "region": {
-        "id": "chr12:44908821-44908822(+)",
+        "id": "fusor.location_descriptor:NC_000001.11",
         "type": "LocationDescriptor",
-        "location_id": "ga4gh:VSL.AG54ZRBhg6pwpPLafF4KgaAHpdFio6l5",
+        "label": null,
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "location_id": "ga4gh:VSL._T8a-GXBEKTQPxWhSCFf-VzEMi4QdHra",
         "location": {
+          "id": null,
           "type": "SequenceLocation",
-          "sequence_id": "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+          "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
           "interval": {
             "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 44908821
-            },
-            "end": {
-              "type": "Number",
-              "value": 44908822
-            }
+            "start": { "type": "Number", "value": 44908820 },
+            "end": { "type": "Number", "value": 44908822 }
           }
-        },
-        "label": "chr12:44908821-44908822(+)"
+        }
       },
       "strand": "+"
     },
-    {
-      "component_type": "unknown_gene"
-    },
-    {
-      "component_type": "any_gene"
-    }
+    { "component_type": "unknown_gene" },
+    { "component_type": "any_gene" }
   ],
   "causative_event": "rearrangement",
   "regulatory_elements": [
@@ -317,16 +312,12 @@
       "gene_descriptor": {
         "id": "normalize.gene:BRAF",
         "type": "GeneDescriptor",
-        "gene_id": "hgnc:1097",
         "label": "BRAF",
+        "description": null,
         "xrefs": ["ensembl:ENSG00000157764", "ncbigene:673"],
-        "alternate_labels": ["RAFB1", "BRAF1", "B-RAF1", "NS7", "B-raf"],
+        "alternate_labels": ["BRAF1", "B-RAF1", "B-raf", "NS7", "RAFB1"],
         "extensions": [
-          {
-            "type": "Extension",
-            "name": "symbol_status",
-            "value": "approved"
-          },
+          { "type": "Extension", "name": "symbol_status", "value": "approved" },
           {
             "type": "Extension",
             "name": "approved_name",
@@ -336,37 +327,39 @@
             "type": "Extension",
             "name": "chromosome_location",
             "value": {
+              "type": "ChromosomeLocation",
+              "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
               "species_id": "taxonomy:9606",
+              "chr": "7",
               "interval": {
                 "type": "CytobandInterval",
                 "start": "q34",
                 "end": "q34"
-              },
-              "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
-              "type": "ChromosomeLocation",
-              "chr": "7"
+              }
             }
           },
           {
             "type": "Extension",
             "name": "associated_with",
             "value": [
-              "omim:164757",
+              "refseq:NM_004333",
               "ccds:CCDS87555",
+              "cosmic:BRAF",
+              "orphanet:119066",
+              "uniprot:P15056",
+              "pubmed:2284096",
+              "ccds:CCDS5863",
+              "ena.embl:M95712",
+              "pubmed:1565476",
+              "vega:OTTHUMG00000157457",
               "iuphar:1943",
               "ucsc:uc003vwc.5",
-              "ena.embl:M95712",
-              "pubmed:2284096",
-              "refseq:NM_004333",
-              "ccds:CCDS5863",
-              "uniprot:P15056",
-              "vega:OTTHUMG00000157457",
-              "orphanet:119066",
-              "cosmic:BRAF",
-              "pubmed:1565476"
+              "omim:164757"
             ]
           }
-        ]
+        ],
+        "gene_id": "hgnc:1097",
+        "gene": null
       }
     }
   ]

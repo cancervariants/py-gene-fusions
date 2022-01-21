@@ -15,4 +15,4 @@ def exhaustive_example():
 @pytest.fixture(scope="module")
 def fusion_example():
     """Create test fixture for example of fusion (additional fields excl)"""
-    return json.load(open(EXAMPLES_DIR / "fusion_example.json", "r"))
+    return json.load(open(EXAMPLES_DIR / "minimal_example.json", "r"))

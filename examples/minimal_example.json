@@ -1,0 +1,151 @@
+{
+  "r_frame_preserved": true,
+  "functional_domains": [
+    {
+      "id": "interpro:IPR020635",
+      "name": "Tyrosine-protein kinase, catalytic domain",
+      "status": "lost",
+      "gene_descriptor": {
+        "id": "normalize.gene:hgnc%3A427",
+        "type": "GeneDescriptor",
+        "label": "ALK",
+        "gene_id": "hgnc:427"
+      },
+      "location_descriptor": {
+        "id": "fusor.location_descriptor:NP_004295.2",
+        "type": "LocationDescriptor",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NP_004295.2",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 1116
+            },
+            "end": {
+              "type": "Number",
+              "value": 1383
+            }
+          }
+        }
+      }
+    }
+  ],
+  "structural_components": [
+    {
+      "component_type": "transcript_segment",
+      "transcript": "refseq:NM_152263.3",
+      "exon_start": 1,
+      "exon_start_offset": 0,
+      "exon_end": 8,
+      "exon_end_offset": 0,
+      "gene_descriptor": {
+        "id": "normalize.gene:TPM3",
+        "type": "GeneDescriptor",
+        "label": "TPM3",
+        "gene_id": "hgnc:12012"
+      },
+      "component_genomic_start": {
+        "id": "fusor.location_descriptor:NC_000001.11",
+        "type": "LocationDescriptor",
+        "label": "NC_000001.11",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NC_000001.11",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 154192135
+            },
+            "end": {
+              "type": "Number",
+              "value": 154192136
+            }
+          }
+        }
+      },
+      "component_genomic_end": {
+        "id": "fusor.location_descriptor:NC_000001.11",
+        "type": "LocationDescriptor",
+        "label": "NC_000001.11",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NC_000001.11",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 154170399
+            },
+            "end": {
+              "type": "Number",
+              "value": 154170400
+            }
+          }
+        }
+      }
+    },
+    {
+      "component_type": "gene",
+      "gene_descriptor": {
+        "id": "normalize.gene:ALK",
+        "type": "GeneDescriptor",
+        "label": "ALK",
+        "gene_id": "hgnc:427"
+      }
+    },
+    {
+      "component_type": "linker_sequence",
+      "linker_sequence": {
+        "id": "fusor.sequence:ACGT",
+        "type": "SequenceDescriptor",
+        "sequence": "ACGT",
+        "residue_type": "SO:0000348"
+      }
+    },
+    {
+      "component_type": "templated_sequence",
+      "region": {
+        "id": "fusor.location_descriptor:NC_000023.11",
+        "type": "LocationDescriptor",
+        "location_id": "ga4gh:VSL.q0Hnb9gpYDyUuTix4Fesy5ungdnc4dWm",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NC_000023.11",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 44908820
+            },
+            "end": {
+              "type": "Number",
+              "value": 44908822
+            }
+          }
+        }
+      },
+      "strand": "+"
+    },
+    {
+      "component_type": "unknown_gene"
+    },
+    {
+      "component_type": "any_gene"
+    }
+  ],
+  "causative_event": "rearrangement",
+  "regulatory_elements": [
+    {
+      "type": "promoter",
+      "gene_descriptor": {
+        "id": "gene:BRAF",
+        "type": "GeneDescriptor",
+        "label": "BRAF",
+        "gene_id": "hgnc:1097"
+      }
+    }
+  ]
+}

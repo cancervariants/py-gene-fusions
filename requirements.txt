@@ -6,7 +6,7 @@
 #
 
 -i https://pypi.org/simple
-aiofiles==0.7.0; python_version < '4' and python_full_version >= '3.6.0'
+aiofiles==0.7.0; python_full_version >= '3.6.0' and python_full_version < '4.0.0'
 anyio==3.3.4; python_full_version >= '3.6.2'
 appdirs==1.4.4
 appnope==0.1.2; sys_platform == 'darwin'
@@ -40,7 +40,7 @@ gffutils==0.10.1
 h11==0.12.0; python_full_version >= '3.6.0'
 hgvs==1.5.1
 humanfriendly==10.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
-idna==3.3; python_version >= '3'
+idna==3.3; python_version >= '3.5'
 importlib-metadata==4.8.2; python_version < '3.10'
 inflection==0.5.1; python_version >= '3.5'
 ipython==7.29.0; python_version >= '3.7'
@@ -50,7 +50,7 @@ jsonschema==3.2.0
 lxml==4.6.4; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 markdown==3.3.6; python_full_version >= '3.6.0'
 matplotlib-inline==0.1.3; python_version >= '3.5'
-numpy==1.21.4; python_version < '3.10' and platform_machine != 'aarch64' and platform_machine != 'arm64'
+numpy==1.21.4; python_version < '3.11' and python_version >= '3.7'
 pandas==1.3.4; python_full_version >= '3.7.1'
 parse==1.19.0
 parsley==1.3
@@ -65,7 +65,7 @@ pyee==8.2.2
 pyfaidx==0.6.3.1
 pygments==2.10.0; python_version >= '3.5'
 pyliftover==0.4
-pyppeteer==0.2.6; python_version < '4' and python_full_version >= '3.6.1'
+pyppeteer==0.2.6; python_full_version >= '3.6.1' and python_full_version < '4.0.0'
 pyquery==1.4.3
 pyrsistent==0.18.0; python_full_version >= '3.6.0'
 pysam==0.18.0
@@ -76,6 +76,7 @@ pyyaml==6.0; python_full_version >= '3.6.0'
 requests-html==0.10.0; python_full_version >= '3.6.0'
 requests==2.26.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
 s3transfer==0.5.0; python_full_version >= '3.6.0'
+setuptools==59.1.1; python_full_version >= '3.6.0'
 simplejson==3.17.6; python_version >= '2.5' and python_version not in '3.0, 3.1, 3.2, 3.3'
 six==1.16.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 sniffio==1.2.0; python_version >= '3.5'
@@ -86,7 +87,7 @@ tabulate==0.8.9
 tqdm==4.62.3; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 traitlets==5.1.1; python_version >= '3.7'
 typing-extensions==4.0.0; python_full_version >= '3.6.0'
-urllib3==1.26.7; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'
+urllib3==1.26.7; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_full_version < '4.0.0'
 uta-tools==0.0.10
 uvicorn==0.15.0
 w3lib==1.22.0
