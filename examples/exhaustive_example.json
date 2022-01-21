@@ -11,7 +11,7 @@
         "label": "ALK",
         "description": null,
         "xrefs": ["ensembl:ENSG00000171094", "ncbigene:238"],
-        "alternate_labels": ["CD246", "NBLST3"],
+        "alternate_labels": ["CD246", "NBLST3", "ALK1"],
         "extensions": [
           {
             "type": "Extension",
@@ -220,7 +220,7 @@
         "gene_id": "hgnc:427",
         "label": "ALK",
         "xrefs": ["ensembl:ENSG00000171094", "ncbigene:238"],
-        "alternate_labels": ["NBLST3", "CD246"],
+        "alternate_labels": ["NBLST3", "CD246", "ALK1"],
         "extensions": [
           {
             "type": "Extension",

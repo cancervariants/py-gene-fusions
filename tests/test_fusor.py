@@ -1,13 +1,16 @@
 """Module for testing the FUSOR class."""
+import copy
+
 import pytest
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
     LocationDescriptor
+
 from fusor import FUSOR
+from fusor.exceptions import IDTranslationException
 from fusor.models import Fusion, TemplatedSequenceComponent, \
     TranscriptSegmentComponent, LinkerComponent, UnknownGeneComponent, \
     AnyGeneComponent, FunctionalDomain, GeneComponent, RegulatoryElement, \
     RegulatoryElementType
-import copy
 
 
 @pytest.fixture(scope="module")
@@ -491,6 +494,44 @@ def fusion():
     }
 
 
+@pytest.fixture(scope="module")
+def fusion_custom_sequence_id():
+    """Create fixture using custom/unrecognized sequence ID"""
+    params = {
+        "structural_components": [
+            {
+                "component_type": "templated_sequence",
+                "strand": "+",
+                "region": {
+                    "id": "fusor.location_descriptor:NM_152263.3",
+                    "type": "LocationDescriptor",
+                    "location": {
+                        "sequence_id": "refseq:chr12",
+                        "type": "SequenceLocation",
+                        "interval": {
+                            "start": {
+                                "type": "Number",
+                                "value": 154170398
+                            },
+                            "end": {
+                                "type": "Number",
+                                "value": 154170399
+                            },
+                            "type": "SequenceInterval"
+                        }
+                    }
+                }
+            },
+            {"component_type": "any_gene"}
+        ],
+        "r_frame_preserved": True,
+        "functional_domains": [],
+        "causative_event": None,
+        "regulatory_elements": []
+    }
+    return Fusion(**params)
+
+
 def compare_gene_descriptor(actual, expected):
     """Test that actual and expected gene descriptors match."""
     assert actual["id"] == expected["id"]
@@ -526,16 +567,24 @@ def compare_gene_descriptor(actual, expected):
             "number of correct extensions"
 
 
-def test_add_additional_fields(fusor, fusion_example, fusion):
+def test_add_additional_fields(fusor, fusion_example, fusion,
+                               fusion_custom_sequence_id):
     """Test that add_additional_fields method works correctly."""
     expected_fusion = Fusion(**fusion_example)
     fusion = Fusion(**fusion)
     fusor.add_additional_fields(fusion)
     assert fusion.dict() == expected_fusion.dict()
 
+    # test handling of custom/unrecognized sequence IDs
+    expected_fusion = copy.deepcopy(fusion_custom_sequence_id)
+    fusion = fusor.add_additional_fields(fusion_custom_sequence_id)
+    ts_reg = fusion.structural_components[0].region
+    assert ts_reg.location.sequence_id == "refseq:chr12"
+    assert ts_reg.location_id == "ga4gh:VSL.K6sdndDkb0wSEZtTGbAqAJoEooe_2BA7"
 
-def test_add_sequence_id(fusor, fusion_example, fusion):
-    """Test that add_sequence_id method works correctly."""
+
+def test_add_translated_sequence_id(fusor, fusion_example, fusion):
+    """Test that add_translated_sequence_id method works correctly."""
     expected_fusion = Fusion(**fusion_example)
     actual = Fusion(**fusion)
     for structural_component in expected_fusion.structural_components:
@@ -546,7 +595,7 @@ def test_add_sequence_id(fusor, fusion_example, fusion):
                 structural_component.component_genomic_start.location_id = None
             if structural_component.component_genomic_end:
                 structural_component.component_genomic_end.location_id = None
-    fusor.add_sequence_id(actual)
+    fusor.add_translated_sequence_id(actual)
     assert actual.dict() == expected_fusion.dict()
 
 
@@ -554,7 +603,7 @@ def test_add_location_id(fusor, fusion_example, fusion):
     """Test that add_location_id method works correctly."""
     expected_fusion = Fusion(**fusion_example)
     actual = Fusion(**fusion)
-    fusor.add_sequence_id(actual)
+    fusor.add_translated_sequence_id(actual)
     fusor.add_location_id(actual)
     assert actual.dict() == expected_fusion.dict()
 
@@ -568,8 +617,20 @@ def test_translate_identifier(fusor):
     identifier = fusor.translate_identifier("refseq:NM_152263.3")
     assert identifier == expected
 
-    identifier = fusor.translate_identifier("refseq_152263.3")
-    assert identifier is None
+    # test non-default target
+    identifier = fusor.translate_identifier(
+        "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
+        "refseq"
+    )
+    assert identifier == "refseq:NM_152263.3"
+
+    # test no namespace
+    with pytest.raises(IDTranslationException):
+        identifier = fusor.translate_identifier("152263.3")
+
+    # test unrecognized namespace
+    with pytest.raises(IDTranslationException):
+        identifier = fusor.translate_identifier("fake_namespace:NM_152263.3")
 
 
 def test__normalized_gene_descriptor(fusor):
@@ -589,7 +650,7 @@ def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
     """Test that add_gene_descriptor method works correctly."""
     expected_fusion = Fusion(**exhaustive_example)
     actual = Fusion(**fusion)
-    fusor.add_sequence_id(actual)
+    fusor.add_translated_sequence_id(actual)
     fusor.add_location_id(actual)
     fusor.add_gene_descriptor(actual)
 

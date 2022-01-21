@@ -258,7 +258,7 @@ class Strand(str, Enum):
 
 class TemplatedSequenceComponent(BaseModel):
     """Define Templated Sequence Component class.
-    A templated sequence is contiguous genomic sequence found in the
+    A templated sequence is a contiguous genomic sequence found in the
     gene product
     """
 
