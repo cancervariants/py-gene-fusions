@@ -1,10 +1,73 @@
 {
+  "r_frame_preserved": true,
+  "functional_domains": [
+    {
+      "id": "interpro:IPR000533",
+      "name": "Tropomyosin",
+      "status": "preserved",
+      "gene_descriptor": {
+        "id": "normalize.gene:hgnc%3A12012",
+        "type": "GeneDescriptor",
+        "label": "TPM3",
+        "gene_id": "hgnc:12012"
+      },
+      "location_descriptor": {
+        "id": "fusor.location_descriptor:NP_689476.2",
+        "type": "LocationDescriptor",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NP_689476.2",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 49
+            },
+            "end": {
+              "type": "Number",
+              "value": 284
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "interpro:IPR020635",
+      "name": "Tyrosine-protein kinase, catalytic domain",
+      "status": "preserved",
+      "gene_descriptor": {
+        "id": "normalize.gene:hgnc%3A8031",
+        "type": "GeneDescriptor",
+        "label": "NTRK1",
+        "gene_id": "hgnc:8031"
+      },
+      "location_descriptor": {
+        "id": "fusor.location_descriptor:NP_002520.2",
+        "type": "LocationDescriptor",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NP_002520.2",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 510
+            },
+            "end": {
+              "type": "Number",
+              "value": 781
+            }
+          }
+        }
+      }
+    }
+  ],
   "structural_components": [
     {
       "component_type": "transcript_segment",
-      "transcript": "refseq:NM_152263.4",
+      "transcript": "refseq:NM_152263.3",
       "exon_end": 8,
-      "exon_end_offset": -70,
+      "exon_end_offset": 0,
       "gene_descriptor": {
         "id": "normalize.gene:TPM3",
         "type": "GeneDescriptor",
@@ -17,19 +80,25 @@
         "label": "NC_000001.11",
         "location": {
           "type": "SequenceLocation",
-          "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+          "sequence_id": "refseq:NC_000001.11",
           "interval": {
             "type": "SequenceInterval",
-            "start": { "type": "Number", "value": 154170469 },
-            "end": { "type": "Number", "value": 154170470 }
+            "start": {
+              "type": "Number",
+              "value": 154170399
+            },
+            "end": {
+              "type": "Number",
+              "value": 154170400
+            }
           }
         }
       }
     },
     {
       "component_type": "transcript_segment",
-      "transcript": "refseq:NM_002529.4",
-      "exon_start": 7,
+      "transcript": "refseq:NM_002529.3",
+      "exon_start": 10,
       "exon_start_offset": 0,
       "gene_descriptor": {
         "id": "normalize.gene:NTRK1",
@@ -43,17 +112,22 @@
         "label": "NC_000001.11",
         "location": {
           "type": "SequenceLocation",
-          "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+          "sequence_id": "refseq:NC_000001.11",
           "interval": {
             "type": "SequenceInterval",
-            "start": { "type": "Number", "value": 156871755 },
-            "end": { "type": "Number", "value": 156871756 }
+            "start": {
+              "type": "Number",
+              "value": 156874626
+            },
+            "end": {
+              "type": "Number",
+              "value": 156874627
+            }
           }
         }
       }
     }
   ],
-    "functional_domains": [
-
-    ]
+  "causative_event": "rearrangement",
+  "regulatory_elements": []
 }
