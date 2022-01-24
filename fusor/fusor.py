@@ -583,7 +583,8 @@ class FUSOR:
 
         if target_ids:
             return target_ids[0]
-        raise IDTranslationException
+        else:
+            raise IDTranslationException
 
     @staticmethod
     def generate_nomenclature(fusion: Fusion) -> str:
