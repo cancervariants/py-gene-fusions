@@ -248,11 +248,89 @@ def location_descriptor_tpm3():
 
 
 @pytest.fixture(scope="module")
-def templated_sequence_component(location_descriptor_tpm3):
+def templated_sequence_component():
     """Create test fixture for templated sequence component"""
     params = {
         "component_type": "templated_sequence",
-        "region": location_descriptor_tpm3.dict(exclude_none=True),
+        "region": {
+            "id": "fusor.location_descriptor:NC_000001.11",
+            "type": "LocationDescriptor",
+            "location": {
+                "type": "SequenceLocation",
+                "sequence_id": "refseq:NC_000001.11",
+                "interval": {
+                    "type": "SequenceInterval",
+                    "start": {
+                        "type": "Number",
+                        "value": 99
+                    },
+                    "end": {
+                        "type": "Number",
+                        "value": 150
+                    }
+                }
+            }
+        },
+        "strand": "+"
+    }
+    return TemplatedSequenceComponent(**params)
+
+
+@pytest.fixture()
+def templated_sequence_component_ensg():
+    """Create test fixture using non-seqrepo-recognized sequence ID"""
+    params = {
+        "component_type": "templated_sequence",
+        "region": {
+            "id": "fusor.location_descriptor:ENSG00000157764",
+            "type": "LocationDescriptor",
+            "location": {
+                "type": "SequenceLocation",
+                "sequence_id": "ensembl:ENSG00000157764",
+                "interval": {
+                    "type": "SequenceInterval",
+                    "start": {
+                        "type": "Number",
+                        "value": 140719328
+                    },
+                    "end": {
+                        "type": "Number",
+                        "value": 140719400
+                    }
+                }
+            }
+        },
+        "strand": "-"
+    }
+    return TemplatedSequenceComponent(**params)
+
+
+@pytest.fixture(scope="module")
+def templated_sequence_component_custom_id():
+    """Create test fixture using custom (ie unable to coerce namespace)
+    sequence identifier.
+    """
+    params = {
+        "component_type": "templated_sequence",
+        "region": {
+            "id": "fusor.location_descriptor:custom_ID__1",
+            "type": "LocationDescriptor",
+            "location": {
+                "type": "SequenceLocation",
+                "sequence_id": "sequence.id:custom_ID__1",
+                "interval": {
+                    "type": "SequenceInterval",
+                    "start": {
+                        "type": "Number",
+                        "value": 200
+                    },
+                    "end": {
+                        "type": "Number",
+                        "value": 300
+                    }
+                }
+            }
+        },
         "strand": "+"
     }
     return TemplatedSequenceComponent(**params)
@@ -493,34 +571,12 @@ def fusion():
     }
 
 
-@pytest.fixture(scope="module")
-def fusion_custom_sequence_id():
-    """Create fixture using custom/unrecognized sequence ID"""
+@pytest.fixture()
+def fusion_ensg_sequence_id(templated_sequence_component_ensg):
+    """Create fixture using Ensemble gene ID."""
     params = {
         "structural_components": [
-            {
-                "component_type": "templated_sequence",
-                "strand": "+",
-                "region": {
-                    "id": "fusor.location_descriptor:NM_152263.3",
-                    "type": "LocationDescriptor",
-                    "location": {
-                        "sequence_id": "refseq:chr12",
-                        "type": "SequenceLocation",
-                        "interval": {
-                            "start": {
-                                "type": "Number",
-                                "value": 154170398
-                            },
-                            "end": {
-                                "type": "Number",
-                                "value": 154170399
-                            },
-                            "type": "SequenceInterval"
-                        }
-                    }
-                }
-            },
+            templated_sequence_component_ensg,
             {"component_type": "any_gene"}
         ],
         "r_frame_preserved": True,
@@ -566,8 +622,8 @@ def compare_gene_descriptor(actual, expected):
             "number of correct extensions"
 
 
-def test_add_additional_fields(fusor, fusion_example,
-                               fusion_custom_sequence_id):
+def test_add_additional_fields(fusor, fusion_example, fusion,
+                               fusion_ensg_sequence_id):
     """Test that add_additional_fields method works correctly."""
     fusion = Fusion(**fusion_example)
 
@@ -584,12 +640,12 @@ def test_add_additional_fields(fusor, fusion_example,
     actual_fusion = fusor.add_additional_fields(fusion)
     assert actual_fusion.dict() == expected_fusion.dict()
 
-    # test handling of custom/unrecognized sequence IDs
-    expected_fusion = copy.deepcopy(fusion_custom_sequence_id)
-    fusion = fusor.add_additional_fields(fusion_custom_sequence_id)
+    # test handling of unrecognized sequence IDs
+    expected_fusion = copy.deepcopy(fusion_ensg_sequence_id)
+    fusion = fusor.add_additional_fields(fusion_ensg_sequence_id)
     ts_reg = fusion.structural_components[0].region
-    assert ts_reg.location.sequence_id == "refseq:chr12"
-    assert ts_reg.location_id == "ga4gh:VSL.K6sdndDkb0wSEZtTGbAqAJoEooe_2BA7"
+    assert ts_reg.location.sequence_id == "ensembl:ENSG00000157764"
+    assert ts_reg.location_id == "ga4gh:VSL.dUll0TA05efQf0TsmcP03mtdGcpP9jPH"
 
 
 def test_add_translated_sequence_id(fusor, fusion_example):
@@ -843,23 +899,48 @@ def test_gene_component(fusor, braf_gene_descr_min, braf_gene_descr):
     assert gc[1] == "gene-normalizer unable to normalize BRA F"
 
 
-def test_templated_sequence_component(fusor, templated_sequence_component):
+def test_templated_sequence_component(fusor, templated_sequence_component,
+                                      templated_sequence_component_ensg,
+                                      templated_sequence_component_custom_id):
     """Test that templated sequence component works correctly"""
     tsg = fusor.templated_sequence_component(
-        154170399, 154170399, "NM_152263.3", "+", residue_mode="residue"
+        100, 150, "NC_000001.11", "+", residue_mode="residue"
     )
     assert tsg.dict() == templated_sequence_component.dict()
 
     tsg = fusor.templated_sequence_component(
-        154170398, 154170399, "NM_152263.3", "+", residue_mode="inter-residue"
+        99, 150, "NC_000001.11", "+", residue_mode="inter-residue"
     )
     assert tsg.dict() == templated_sequence_component.dict()
 
     expected = copy.deepcopy(templated_sequence_component.dict())
-    expected["region"]["location"]["sequence_id"] = "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT"  # noqa: E501
-    expected["region"]["location_id"] = "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa"  # noqa: E501
+    expected["region"]["location"]["sequence_id"] = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # noqa: E501
+    expected["region"]["location_id"] = "ga4gh:VSL.bL1N-PQfp4dGlEz6PEd34fGxdxo82Zkb"  # noqa: E501
     tsg = fusor.templated_sequence_component(
-        154170399, 154170399, "NM_152263.3", "+", add_location_id=True,
+        100, 150, "NC_000001.11", "+", add_location_id=True,
+        seq_id_target_namespace="ga4gh"
+    )
+    assert tsg.dict() == expected
+
+    tsg = fusor.templated_sequence_component(
+        140719329, 140719400, "ENSG00000157764", "-"
+    )
+    assert tsg.dict() == templated_sequence_component_ensg.dict()
+
+    # test untranslateable sequence ID
+    # adds "ensembl" namespace but unable to translate to ga4gh digest ID
+    expected = copy.deepcopy(templated_sequence_component_ensg.dict())
+    tsg = fusor.templated_sequence_component(
+        140719329, 140719400, "ENSG00000157764", "-",
+        seq_id_target_namespace="ga4gh"
+    )
+    assert tsg.dict() == expected
+
+    # test in-house/bespoke sequence ID
+    # can't coerce namespace or translate to ga4gh ID
+    expected = copy.deepcopy(templated_sequence_component_custom_id.dict())
+    tsg = fusor.templated_sequence_component(
+        200, 300, "custom_ID__1", "+", residue_mode="inter-residue",
         seq_id_target_namespace="ga4gh"
     )
     assert tsg.dict() == expected
