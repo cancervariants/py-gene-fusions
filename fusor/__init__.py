@@ -3,6 +3,8 @@ from pathlib import Path
 from os import environ
 import logging
 
+from .version import __version__  # noqa: F401
+
 logging.basicConfig(
     filename="fusor.log",
     format="[%(asctime)s] - %(name)s - %(levelname)s : %(message)s")

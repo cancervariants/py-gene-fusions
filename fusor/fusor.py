@@ -20,7 +20,8 @@ from fusor.models import Fusion, TemplatedSequenceComponent, \
     AdditionalFields, TranscriptSegmentComponent, GeneComponent, \
     LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
     RegulatoryElement, Event, DomainStatus, FunctionalDomain, Strand, \
-    RegulatoryElementType
+    RegulatoryElementType, ComponentType
+from fusor.exceptions import IDTranslationException
 
 
 class FUSOR:
@@ -381,14 +382,15 @@ class FUSOR:
                 sequence_id = f"sequence.id:{sequence_id}"
 
         if seq_id_target_namespace:
-            seq_id = self.translate_identifier(
-                sequence_id, target_namespace=seq_id_target_namespace)
-            if seq_id:
-                sequence_id = seq_id
-            else:
+            try:
+                seq_id = self.translate_identifier(
+                    sequence_id, target_namespace=seq_id_target_namespace)
+            except IDTranslationException:
                 logger.warning(f"Unable to translate {sequence_id} using"
                                f" {seq_id_target_namespace} as the target"
                                f" namespace")
+            else:
+                sequence_id = seq_id
 
         location = SequenceLocation(
             sequence_id=sequence_id,
@@ -430,12 +432,12 @@ class FUSOR:
         :return: Updated fusion with specified fields set
         """
         if add_all:
-            self.add_sequence_id(fusion, target_namespace)
+            self.add_translated_sequence_id(fusion, target_namespace)
             self.add_location_id(fusion)
         else:
             for field in fields:
                 if field == AdditionalFields.SEQUENCE_ID.value:
-                    self.add_sequence_id(
+                    self.add_translated_sequence_id(
                         fusion, target_namespace=target_namespace)
                 elif field == AdditionalFields.LOCATION_ID.value:
                     self.add_location_id(fusion)
@@ -481,31 +483,57 @@ class FUSOR:
         """
         return ga4gh_identify(models.Location(**location))
 
-    def add_sequence_id(self, fusion: Fusion,
-                        target_namespace: str = "ga4gh") -> Fusion:
-        """Add sequence_id in fusion object.
+    def add_translated_sequence_id(self, fusion: Fusion,
+                                   target_namespace: str = "ga4gh") -> Fusion:
+        """Translate sequence_ids in fusion object.
 
         :param Fusion fusion: A valid Fusion object
-        :param str target_namespace: The namespace of identifiers to return
-            for `sequence_id`. Default is `ga4gh`
+        :param str target_namespace: ID namespace to translate sequence IDs to
         :return: Updated fusion with `sequence_id` fields set
         """
-        for structural_component in fusion.structural_components:
-            if isinstance(structural_component, TemplatedSequenceComponent):
-                location = structural_component.region.location
+        for component in fusion.structural_components:
+            if isinstance(component, TemplatedSequenceComponent):
+                location = component.region.location
                 if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                    structural_component.region.location.sequence_id = \
-                        self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
-            elif isinstance(structural_component, TranscriptSegmentComponent):
-                for component_genomic in [
-                    structural_component.component_genomic_start,
-                    structural_component.component_genomic_end
+                    try:
+                        new_id = self.translate_identifier(
+                            location.sequence_id, target_namespace
+                        )
+                    except IDTranslationException:
+                        pass
+                    else:
+                        component.region.location.sequence_id = new_id
+            elif isinstance(component, TranscriptSegmentComponent):
+                for loc_descr in [
+                    component.component_genomic_start,
+                    component.component_genomic_end
                 ]:
-                    if component_genomic:
-                        location = component_genomic.location
+                    if loc_descr:
+                        location = loc_descr.location
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                            component_genomic.location.sequence_id = \
-                                self.translate_identifier(location.sequence_id, target_namespace)  # noqa: E501
+                            try:
+                                new_id = self.translate_identifier(
+                                    location.sequence_id, target_namespace
+                                )
+                            except IDTranslationException:
+                                continue
+                            loc_descr.location.sequence_id = new_id
+        if fusion.functional_domains:
+            for domain in fusion.functional_domains:
+                if (
+                    domain.location_descriptor
+                    and domain.location_descriptor.location
+                    and (domain.location_descriptor.location.type ==
+                         "SequenceLocation")
+                ):
+                    try:
+                        new_id = self.translate_identifier(
+                            domain.location_descriptor.location.sequence_id,
+                            target_namespace
+                        )
+                    except IDTranslationException:
+                        continue
+                    domain.location_descriptor.location.sequence_id = new_id
         return fusion
 
     def add_gene_descriptor(self, fusion: Fusion) -> Fusion:
@@ -552,21 +580,69 @@ class FUSOR:
 
     def translate_identifier(
             self, ac: str, target_namespace: str = "ga4gh"
-    ) -> Optional[CURIE]:
+    ) -> CURIE:
         """Return `target_namespace` identifier for accession provided.
 
         :param str ac: Identifier accession
         :param str target_namespace: The namespace of identifiers to return.
             Default is `ga4gh`
         :return: Identifier for `target_namespace`
+        :raise: IDTranslationException if unable to perform desired translation
         """
         try:
-            ga4gh_identifiers = self.seqrepo.translate_identifier(
+            target_ids = self.seqrepo.translate_identifier(
                 ac, target_namespaces=target_namespace)
         except KeyError as e:
             logger.warning(f"Unable to get translated identifier: {e}")
-            return None
+            raise IDTranslationException
 
-        if ga4gh_identifiers:
-            return ga4gh_identifiers[0]
-        return None
+        if target_ids:
+            return target_ids[0]
+        else:
+            raise IDTranslationException
+
+    @staticmethod
+    def generate_nomenclature(fusion: Fusion) -> str:
+        """Generate human-readable nomenclature describing provided fusion
+        :param Fusion fusion: a valid fusion
+        :return: string summarizing fusion in human-readable way per
+            VICC fusion curation nomenclature
+        """
+        nom_parts = []
+        for component in fusion.structural_components:
+            if component.component_type == ComponentType.ANY_GENE:
+                nom_parts.append("*")
+            elif component.component_type == ComponentType.UNKNOWN_GENE:
+                nom_parts.append("?")
+            elif component.component_type == ComponentType.GENE:
+                label = component.gene_descriptor.label
+                gene_id = component.gene_descriptor.gene_id
+                nom_parts.append(f"{label}({gene_id})")
+            elif component.component_type == ComponentType.LINKER_SEQUENCE:
+                nom_parts.append(component.linker_sequence.sequence)
+            elif component.component_type == ComponentType.TRANSCRIPT_SEGMENT:
+                tx = component.transcript.split(":")[1]
+                label = component.gene_descriptor.label
+                comp_name = f"{tx}({label}):e."
+                if component.exon_start is not None:
+                    comp_name += str(component.exon_start)
+                    if component.exon_start_offset:
+                        if component.exon_start_offset > 0:
+                            comp_name += f"+{component.exon_start_offset}"
+                        else:
+                            comp_name += str(component.exon_start_offset)
+                comp_name += "_"
+                if component.exon_end is not None:
+                    comp_name += str(component.exon_end)
+                    if component.exon_end_offset:
+                        if component.exon_end_offset > 0:
+                            comp_name += f"+{component.exon_end_offset}"
+                        else:
+                            comp_name += str(component.exon_end_offset)
+                nom_parts.append(comp_name)
+            elif component.component_type == ComponentType.TEMPLATED_SEQUENCE:
+                loc = component.region.location
+                start = loc.interval.start.value
+                end = loc.interval.end.value
+                nom_parts.append(f"{loc.sequence_id.split(':')[1]}:g.{start}_{end}({component.strand})")  # noqa: E501
+        return "::".join(nom_parts)

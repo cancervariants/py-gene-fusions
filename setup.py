@@ -1,4 +1,7 @@
 """Module for package and distribution"""
 from setuptools import setup
 
-setup(version="0.0.14")
+from fusor.version import __version__
+
+
+setup(version=__version__)

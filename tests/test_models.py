@@ -833,5 +833,10 @@ def test_examples(exhaustive_example):
     """Test example JSON files."""
     assert Fusion(**exhaustive_example)
 
-    example_1 = json.load(open(EXAMPLES_DIR / "example_1.json", "r"))
-    assert Fusion(**example_1)
+    for example in [
+            "alk.json", "epcam_msh2.json", "exhaustive_example.json",
+            "tpm3_ntrk1.json", "tpm3_pdgfrb.json"
+    ]:
+        with open(EXAMPLES_DIR / example, "r") as example_file:
+            example = json.load(example_file)
+        assert Fusion(**example)
