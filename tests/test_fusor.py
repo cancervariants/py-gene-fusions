@@ -437,7 +437,6 @@ def fusion():
                 "location_descriptor": {
                     "id": "fusor.location_descriptor:NP_002520.2",
                     "type": "LocationDescriptor",
-                    "location_id": "ga4gh:VSL.ek3ARZYW4ZNSRrtkETN4Mmv3809eLATv",  # noqa: E501
                     "location": {
                         "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",  # noqa: E501
                         "type": "SequenceLocation",
@@ -626,10 +625,20 @@ def compare_gene_descriptor(actual, expected):
 def test_add_additional_fields(fusor, fusion_example, fusion,
                                fusion_ensg_sequence_id):
     """Test that add_additional_fields method works correctly."""
-    expected_fusion = Fusion(**fusion_example)
-    fusion = Fusion(**fusion)
-    fusor.add_additional_fields(fusion)
-    assert fusion.dict() == expected_fusion.dict()
+    fusion = Fusion(**fusion_example)
+
+    expected_fusion = copy.deepcopy(fusion)
+    expected_fusion.functional_domains[0].location_descriptor.location_id = "ga4gh:VSL.2CWYzSpOJfZq7KW4VIUKeP5SJtepRar0"  # type: ignore # noqa: E501
+    expected_fusion.functional_domains[0].location_descriptor.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[0].component_genomic_start.location_id = "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[0].component_genomic_start.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[0].component_genomic_end.location_id = "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[0].component_genomic_end.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[3].region.location_id = "ga4gh:VSL.zd12pX_ju2gLq9a9UOYgM8AtbkuhnyUu"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[3].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
+
+    actual_fusion = fusor.add_additional_fields(fusion)
+    assert actual_fusion.dict() == expected_fusion.dict()
 
     # test handling of unrecognized sequence IDs
     expected_fusion = copy.deepcopy(fusion_ensg_sequence_id)
@@ -639,29 +648,32 @@ def test_add_additional_fields(fusor, fusion_example, fusion,
     assert ts_reg.location_id == "ga4gh:VSL.dUll0TA05efQf0TsmcP03mtdGcpP9jPH"
 
 
-def test_add_translated_sequence_id(fusor, fusion_example, fusion):
+def test_add_translated_sequence_id(fusor, fusion_example):
     """Test that add_translated_sequence_id method works correctly."""
-    expected_fusion = Fusion(**fusion_example)
-    actual = Fusion(**fusion)
-    for structural_component in expected_fusion.structural_components:
-        if isinstance(structural_component, TemplatedSequenceComponent):
-            structural_component.region.location_id = None
-        elif isinstance(structural_component, TranscriptSegmentComponent):
-            if structural_component.component_genomic_start:
-                structural_component.component_genomic_start.location_id = None
-            if structural_component.component_genomic_end:
-                structural_component.component_genomic_end.location_id = None
-    fusor.add_translated_sequence_id(actual)
-    assert actual.dict() == expected_fusion.dict()
+    fusion = Fusion(**fusion_example)
+
+    expected_fusion = copy.deepcopy(fusion)
+    expected_fusion.functional_domains[0].location_descriptor.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[0].component_genomic_start.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[0].component_genomic_end.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[3].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
+
+    actual_fusion = fusor.add_translated_sequence_id(fusion)
+    assert actual_fusion.dict() == expected_fusion.dict()
 
 
-def test_add_location_id(fusor, fusion_example, fusion):
+def test_add_location_id(fusor, fusion_example):
     """Test that add_location_id method works correctly."""
-    expected_fusion = Fusion(**fusion_example)
-    actual = Fusion(**fusion)
-    fusor.add_translated_sequence_id(actual)
-    fusor.add_location_id(actual)
-    assert actual.dict() == expected_fusion.dict()
+    fusion = Fusion(**fusion_example)
+
+    expected_fusion = copy.deepcopy(fusion)
+    expected_fusion.functional_domains[0].location_descriptor.location_id = "ga4gh:VSL.hQKhk6ZOOYZAmShXrzhfb6H3j65ovsKu"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[0].component_genomic_start.location_id = "ga4gh:VSL.n7i6VMRAuSgAjwVopxhWAJdlPJMfk7KR"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[0].component_genomic_end.location_id = "ga4gh:VSL.wQ4TpNbsTPq_A-eQTL44gbP3f4fnp0vx"  # type: ignore # noqa: E501
+    expected_fusion.structural_components[3].region.location_id = "ga4gh:VSL.eHfgOlEjzNRiYZBzeCvg7Ru9N-YxuFT-"  # type: ignore # noqa: E501
+
+    actual_fusion = fusor.add_location_id(fusion)
+    assert actual_fusion.dict() == expected_fusion.dict()
 
 
 def test_translate_identifier(fusor):

@@ -1,0 +1,18 @@
+{
+  "functional_domains": [],
+  "structural_components": [
+    {
+      "component_type": "gene",
+      "gene_descriptor": {
+        "id": "normalize.gene:ALK",
+        "type": "GeneDescriptor",
+        "label": "ALK",
+        "gene_id": "hgnc:427"
+      }
+    },
+    {
+      "component_type": "any_gene"
+    }
+  ],
+  "regulatory_elements": []
+}

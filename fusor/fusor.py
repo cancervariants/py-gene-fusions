@@ -516,9 +516,24 @@ class FUSOR:
                                     location.sequence_id, target_namespace
                                 )
                             except IDTranslationException:
-                                pass
-                            else:
-                                loc_descr.location.sequence_id = new_id
+                                continue
+                            loc_descr.location.sequence_id = new_id
+        if fusion.functional_domains:
+            for domain in fusion.functional_domains:
+                if (
+                    domain.location_descriptor
+                    and domain.location_descriptor.location
+                    and (domain.location_descriptor.location.type ==
+                         "SequenceLocation")
+                ):
+                    try:
+                        new_id = self.translate_identifier(
+                            domain.location_descriptor.location.sequence_id,
+                            target_namespace
+                        )
+                    except IDTranslationException:
+                        continue
+                    domain.location_descriptor.location.sequence_id = new_id
         return fusion
 
     def add_gene_descriptor(self, fusion: Fusion) -> Fusion:
