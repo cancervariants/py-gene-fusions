@@ -1,13 +1,23 @@
 """Model for fusion class"""
 from typing import Optional, List, Union, Literal
 from enum import Enum
+from abc import ABC
 
 from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
     Extra, ValidationError, root_validator
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
-from ga4gh.vrsatile.pydantic.vrs_models import Sequence
+from ga4gh.vrsatile.pydantic.vrs_models import Sequence, SequenceLocation
+
+
+class BaseModelForbidExtra(BaseModel):
+    """Base model with extra fields forbidden."""
+
+    class Config:
+        """Configure class."""
+
+        extra = Extra.forbid
 
 
 class AdditionalFields(str, Enum):
@@ -36,10 +46,8 @@ class FunctionalDomain(BaseModel):
 
     _get_id_val = validator("id", allow_reuse=True)(return_value)
 
-    class Config:
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -90,7 +98,19 @@ class ComponentType(str, Enum):
     ANY_GENE = "any_gene"
 
 
-class TranscriptSegmentComponent(BaseModel):
+class Component(ABC, BaseModel):
+    """Define base component class."""
+
+    def nomenclature(self, i: Optional[int] = None) -> str:
+        """Generate component nomenclature representation.
+        :param Optional[int] i: index position in fusion component list. If
+            1st, should == 0. If last, should == -1. Leave unset otherwise.
+        :return: string with nomenclature representation of component.
+        """
+        raise NotImplementedError
+
+
+class TranscriptSegmentComponent(Component):
     """Define TranscriptSegment class"""
 
     component_type: Literal[ComponentType.TRANSCRIPT_SEGMENT] = ComponentType.TRANSCRIPT_SEGMENT  # noqa: E501
@@ -130,10 +150,22 @@ class TranscriptSegmentComponent(BaseModel):
 
     _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)  # noqa: E501
 
-    class Config:
-        """Configure class."""
+    def nomenclature(self, i: Optional[int] = None) -> str:
+        """Generate component nomenclature."""
+        prefix = f"{self.transcript}({self.gene_descriptor.label})"
+        start, start_offset, end, end_offset = "", "", "", ""
+        if i != -1:
+            end = self.exon_end
+            if self.exon_end_offset is not None:
+                end_offset = self.exon_end_offset
+        if i != 0:
+            start = self.exon_start
+            if self.exon_start_offset is not None:
+                start_offset = self.exon_start_offset
+        return f"{prefix}: e.{start}{start_offset}_{end}{end_offset}"
 
-        extra = Extra.forbid
+    class Config(BaseModelForbidExtra.Config):
+        """Configure class."""
 
         @staticmethod
         def schema_extra(schema, _):
@@ -198,11 +230,15 @@ class TranscriptSegmentComponent(BaseModel):
             }
 
 
-class LinkerComponent(BaseModel):
+class LinkerComponent(Component):
     """Define Linker class (linker sequence)"""
 
     component_type: Literal[ComponentType.LINKER_SEQUENCE] = ComponentType.LINKER_SEQUENCE  # noqa: E501
     linker_sequence: SequenceDescriptor
+
+    def nomenclature(self, _: Optional[int] = None) -> str:
+        """Generate component nomenclature."""
+        return self.linker_sequence.sequence  # type: ignore
 
     @validator("linker_sequence", pre=True)
     def validate_sequence(cls, v):
@@ -226,10 +262,8 @@ class LinkerComponent(BaseModel):
 
         return v
 
-    class Config:
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -267,11 +301,22 @@ class TemplatedSequenceComponent(BaseModel):
     strand: Strand
 
     # add strand to sequencelocation, add chr property
+    def nomenclature(self, _: Optional[int] = None) -> str:
+        """Generate component nomenclature."""
+        if self.region and self.region.location:
+            location = self.region.location
+            if isinstance(location, SequenceLocation):
+                sequence_id = location.sequence_id
+                start = location.interval.start.number
+                end = location.interval.end.number
+                return f"{sequence_id}: g.{start}_{end}({self.strand.value})"
+            else:
+                raise ValueError
+        else:
+            raise ValueError
 
-    class Config:
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -301,16 +346,24 @@ class TemplatedSequenceComponent(BaseModel):
             }
 
 
-class GeneComponent(BaseModel):
+class GeneComponent(Component):
     """Define Gene component class."""
 
     component_type: Literal[ComponentType.GENE] = ComponentType.GENE
     gene_descriptor: GeneDescriptor
 
-    class Config:
-        """Configure class."""
+    def nomenclature(self, _: Optional[int] = None) -> str:
+        """Generate component nomenclature."""
+        if self.gene_descriptor.gene_id:
+            gene_id = self.gene_descriptor.gene_id
+        elif self.gene_descriptor.gene and self.gene_descriptor.gene.gene_id:
+            gene_id = self.gene_descriptor.gene.gene_id
+        else:
+            raise ValueError
+        return f"{self.gene_descriptor.label}({gene_id})"
 
-        extra = Extra.forbid
+    class Config(BaseModelForbidExtra.Config):
+        """Configure class."""
 
         @staticmethod
         def schema_extra(schema, _):
@@ -342,10 +395,12 @@ class UnknownGeneComponent(BaseModel):
 
     component_type: Literal[ComponentType.UNKNOWN_GENE] = ComponentType.UNKNOWN_GENE  # noqa: E501
 
-    class Config:
-        """Configure class."""
+    def nomenclature(self, _: Optional[int] = None) -> str:
+        """Generate component nomenclature."""
+        return "?"
 
-        extra = Extra.forbid
+    class Config(BaseModelForbidExtra.Config):
+        """Configure class."""
 
         @staticmethod
         def schema_extra(schema, _):
@@ -372,10 +427,12 @@ class AnyGeneComponent(BaseModel):
 
     component_type: Literal[ComponentType.ANY_GENE] = ComponentType.ANY_GENE
 
-    class Config:
-        """Configure class."""
+    def nomenclature(self, _: Optional[int] = None) -> str:
+        """Generate component nomenclature."""
+        return "*"
 
-        extra = Extra.forbid
+    class Config(BaseModelForbidExtra.Config):
+        """Configure class."""
 
         @staticmethod
         def schema_extra(schema, _):
@@ -398,22 +455,75 @@ class Event(str, Enum):
 
 
 class RegulatoryElementType(str, Enum):
-    """Define possible types of Regulatory Elements."""
+    """Define possible types of Regulatory Elements. Options are the possible
+    values for /regulatory_class value property in the INSDC controlled
+    vocabulary.
+    https://www.insdc.org/controlled-vocabulary-regulatoryclass
+    """
 
-    PROMOTER = "promoter"
+    ATTENUATOR = "attenuator"
+    CAAT_SIGNAL = "caat_signal"
     ENHANCER = "enhancer"
+    ENHANCER_BLOCKING_ELEMENT = "enhancer_blocking_element"
+    GC_SIGNAL = "gc_signal"
+    IMPRINTING_CONTROL_REGION = "imprinting_control_region"
+    INSULATOR = "insulator"
+    LOCUS_CONTROL_REGION = "locus_control_region"
+    MINUS_35_SIGNAL = "minus_35_signal"
+    MINUS_10_SIGNAL = "minus_10_signal"
+    POLYA_SIGNAL_SEQUENCE = "polya_signal_sequence"
+    PROMOTER = "promoter"
+    RESPONSE_ELEMENT = "response_element"
+    RIBOSOME_BINDING_SITE = "ribosome_binding_site"
+    RIBOSWITCH = "riboswitch"
+    SILENCER = "silencer"
+    TATA_BOX = "tata_box"
+    TERMINATOR = "terminator"
+    OTHER = "other"
 
 
 class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class"""
 
     type: RegulatoryElementType
-    gene_descriptor: GeneDescriptor
+    reference_id: Optional[CURIE] = None
+    gene_descriptor: Optional[GeneDescriptor] = None
+    genomic_location_start: Optional[LocationDescriptor] = None
+    genomic_lcoation_end: Optional[LocationDescriptor] = None
 
-    class Config:
+    _get_ref_id_val = validator("reference_id", allow_reuse=True)(return_value)
+
+    @root_validator(pre=True)
+    def ensure_min_values(cls, values):
+        """Ensure one of {`reference_id`, `gene_descriptor`,
+        `location_descriptor`} is set.
+        """
+        if not any([values["reference_id"], values["gene_descriptor"],
+                    values["genomic_location_start"] and values["genomic_location_end"]]):  # noqa: E501
+            raise ValueError
+        return values
+
+    def nomenclature(self, i: Optional[int]) -> str:
+        """Generate component nomenclature representation.
+        :param Optional[int] i: index position in fusion component list. If
+            1st, should == 0. If last, should == -1. Leave unset otherwise.
+        :return: string with nomenclature representation of component.
+        """
+        nm_string = f"reg_{self.type.value}"
+        if self.reference_id:
+            nm_string += f"_{self.reference_id}"
+        # if element reference:
+        # _<reference_id>
+        # if located element:
+        # _<Chromosome ID>(chr <1-22,X,Y>): 
+        # g.<start coordinate>_<end coordinate>
+
+        nm_string += f"@{self.gene_descriptor.gene_id}"
+
+        return nm_string
+
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -433,19 +543,11 @@ class RegulatoryElement(BaseModel):
             }
 
 
-class Fusion(BaseModel):
+class Fusion(BaseModel, ABC):
     """Define Fusion class"""
 
-    r_frame_preserved: Optional[StrictBool]
-    functional_domains: Optional[List[FunctionalDomain]]
-    structural_components: List[Union[TranscriptSegmentComponent,
-                                      GeneComponent,
-                                      TemplatedSequenceComponent,
-                                      LinkerComponent,
-                                      UnknownGeneComponent,
-                                      AnyGeneComponent]]
-    causative_event: Optional[Event]
     regulatory_elements: Optional[List[RegulatoryElement]]
+    structural_components: List[Component]
 
     @validator("structural_components")
     def structural_components_length(cls, v):
@@ -456,10 +558,122 @@ class Fusion(BaseModel):
         else:
             return v
 
-    class Config:
+    @validator("structural_components")
+    def structural_components_ends(cls, v):
+        """Ensure start/end components are of legal types and have fields
+        required by their position.
+        """
+        # TODO first check for regulatoryelement
+        if isinstance(v[0], TranscriptSegmentComponent):
+            if v[0].exon_start is None:
+                raise ValueError
+        elif isinstance(v[0], LinkerComponent):
+            raise ValueError
+
+        if isinstance(v[-1], TranscriptSegmentComponent):
+            if v[-1].exon_end is None:
+                raise ValueError
+        elif isinstance(v[-1], LinkerComponent):
+            raise ValueError
+
+
+class Evidence(str, Enum):
+    """Form of evidence supporting identification of the fusion."""
+
+    OBSERVED = "observed"
+    INFERRED = "inferred"
+
+
+class MolecularAssay(BaseModelForbidExtra):
+    """Information pertaining to the assay used in identifying the fusion."""
+
+    assay_name: Optional[StrictStr]
+    eco_id: Optional[CURIE]
+    eco_label: Optional[StrictStr]
+    method_uri: Optional[CURIE]
+
+    _get_eco_id_val = validator("eco_id", allow_reuse=True)(return_value)
+    _get_method_id_val = validator("method_id", allow_reuse=True)(return_value)
+
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
-        extra = Extra.forbid
+        @staticmethod
+        def schema_extra(schema, _):
+            """Provide example"""
+            schema["example"] = {
+                "method_uri": "pmid:34974290",
+                "eco_id": "ECO:0005629",
+                "eco_label": "DNA affinity chromatography evidence used in manual assertion",  # noqa: E501
+                "assay_name": "Breakapart FISH probe"
+            }
+
+
+class AssayedFusion(Fusion):
+    """Assayed gene fusions from biological specimens are directly detected
+    using RNA-based gene fusion assays, or alternatively may be inferred from
+    genomic rearrangements detected by whole genome sequencing or by
+    coarser-scale cytogenomic assays. Example: an EWSR1 fusion inferred
+    from a breakapart FISH assay.
+    """
+
+    causative_event: Optional[Event]
+    fusion_evidence: Optional[Evidence]
+    molecular_assay: Optional[MolecularAssay]
+    structural_components: List[Union[TranscriptSegmentComponent,
+                                      GeneComponent,
+                                      TemplatedSequenceComponent,
+                                      LinkerComponent,
+                                      UnknownGeneComponent]]
+
+    class Config(BaseModelForbidExtra.Config):
+        """Configure class."""
+
+        @staticmethod
+        def schema_extra(schema, _):
+            """Provide example"""
+            if "title" in schema.keys():
+                schema.pop("title", None)
+            for prop in schema.get("properties", {}).values():
+                prop.pop("title", None)
+            schema["example"] = {
+                "causative_event": "rearrangement",
+                "fusion_evidence": "observed",
+                "molecular_assay": '{"ECO_id": "ECO:0007159"}',
+                "structural_components": [
+                    {
+                        "component_type": "gene",
+                        "gene_descriptor": {
+                            "id": "gene:EWSR1",
+                            "gene_id": "hgnc:3058",
+                            "label": "EWSR1",
+                            "type": "GeneDescriptor",
+                        }
+                    },
+                    {
+                        "component_type": "UnknownGene"
+                    }
+                ]
+            }
+
+
+class CategoricalFusion(Fusion):
+    """Categorical gene fusions are generalized concepts representing a class
+    of fusions by their shared attributes, such as retained or lost regulatory
+    elements and/or functional domains, and are typically curated from the
+    biomedical literature for use in genomic knowledgebases.
+    """
+
+    r_frame_preserved: Optional[StrictBool]
+    functional_domains: Optional[List[FunctionalDomain]]
+    structural_components: List[Union[TranscriptSegmentComponent,
+                                      GeneComponent,
+                                      TemplatedSequenceComponent,
+                                      LinkerComponent,
+                                      AnyGeneComponent]]
+
+    class Config(BaseModelForbidExtra.Config):
+        """Configure class."""
 
         @staticmethod
         def schema_extra(schema, _):
@@ -548,7 +762,6 @@ class Fusion(BaseModel):
                         }
                     }
                 ],
-                "causative_event": "rearrangement",
                 "regulatory_elements": [
                     {
                         "type": "promoter",
