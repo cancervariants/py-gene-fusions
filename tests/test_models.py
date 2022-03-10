@@ -182,6 +182,7 @@ def functional_domains(gene_descriptors, location_descriptors):
     """Provide possible functional_domains input."""
     return [
         {
+            "type": "FunctionalDomain",
             "status": "preserved",
             "name": "WW domain",
             "id": "interpro:IPR001202",
@@ -213,7 +214,7 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "component_genomic_end": location_descriptors[3]
         },
         {
-            "component_type": "transcript_segment",
+            "type": "TranscriptSegmentComponent",
             "transcript": "refseq:NM_034348.3",
             "exon_start": 1,
             "exon_end": 8,
@@ -222,7 +223,7 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "component_genomic_end": location_descriptors[1]
         },
         {
-            "component_type": "transcript_segment",
+            "type": "TranscriptSegmentComponent",
             "transcript": "refseq:NM_938439.4",
             "exon_start": 7,
             "exon_end": 14,
@@ -232,7 +233,7 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "component_genomic_end": location_descriptors[1]
         },
         {
-            "component_type": "transcript_segment",
+            "type": "TranscriptSegmentComponent",
             "transcript": "refseq:NM_938439.4",
             "exon_start": 7,
             "gene_descriptor": gene_descriptors[4],
@@ -246,7 +247,7 @@ def gene_components(gene_descriptors):
     """Provide possible gene component input data."""
     return [
         {
-            "component_type": "gene",
+            "type": "GeneComponent",
             "gene_descriptor": gene_descriptors[1],
         }
     ]
@@ -257,12 +258,12 @@ def templated_sequence_components(location_descriptors):
     """Provide possible templated sequence component input data."""
     return [
         {
-            "component_type": "templated_sequence",
+            "type": "TemplatedSequenceComponent",
             "strand": "+",
             "region": location_descriptors[5]
         },
         {
-            "component_type": "templated_sequence",
+            "type": "TemplatedSequenceComponent",
             "strand": "-",
             "region": location_descriptors[4]
         }
@@ -299,15 +300,15 @@ def linkers(sequence_descriptors):
     """Provide possible linker component input data."""
     return [
         {
-            "component_type": "linker_sequence",
+            "type": "LinkerSequenceComponent",
             "linker_sequence": sequence_descriptors[0]
         },
         {
-            "component_type": "linker_sequence",
+            "type": "LinkerSequenceComponent",
             "linker_sequence": sequence_descriptors[1]
         },
         {
-            "component_type": "linker_sequence",
+            "type": "LinkerSequenceComponent",
             "linker_sequence": sequence_descriptors[2]
         }
     ]
@@ -318,7 +319,7 @@ def regulatory_elements(gene_descriptors):
     """Provide possible regulatory_element input data."""
     return [
         {
-            "type": "promoter",
+            "element_type": "promoter",
             "gene_descriptor": gene_descriptors[0]
         }
     ]
@@ -339,6 +340,7 @@ def check_validation_error(exc_info, expected_msg: str,
 def test_functional_domain(functional_domains, gene_descriptors):
     """Test FunctionalDomain object initializes correctly"""
     test_domain = FunctionalDomain(**functional_domains[0])
+    assert test_domain.type == "FunctionalDomain"
     assert test_domain.status == "preserved"
     assert test_domain.name == "WW domain"
     assert test_domain.id == "interpro:IPR001202"
@@ -354,6 +356,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
     assert test_loc.location.interval.end.value == 204
 
     test_domain = FunctionalDomain(**functional_domains[1])
+    assert test_domain.type == "FunctionalDomain"
     assert test_domain.status == "lost"
     assert test_domain.name == "Tyrosine-protein kinase, catalytic domain"
     assert test_domain.id == "interpro:IPR020635"
@@ -454,7 +457,7 @@ def test_transcript_segment_component(transcript_segments):
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert TranscriptSegmentComponent(**{
-            "component_type": "templated_sequence",
+            "type": "TemplatedSequenceComponent",
             "transcript": "NM_152263.3",
             "exon_start": "1",
             "exon_start_offset": "-9",
@@ -478,7 +481,7 @@ def test_transcript_segment_component(transcript_segments):
                 }
             }
         })
-    msg = "unexpected value; permitted: <ComponentType.TRANSCRIPT_SEGMENT: 'transcript_segment'>"  # noqa: E501
+    msg = "unexpected value; permitted: <FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT: 'TranscriptSegmentComponent'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
     # test component required
@@ -500,7 +503,7 @@ def test_transcript_segment_component(transcript_segments):
     # Neither exon_start or exon_end given
     with pytest.raises(ValidationError) as exc_info:
         assert TranscriptSegmentComponent(**{
-            "component_type": "templated_sequence",
+            "type": "TranscriptSegmentComponent",
             "transcript": "NM_152263.3",
             "exon_start_offset": "-9",
             "exon_end_offset": "7",
@@ -529,7 +532,7 @@ def test_transcript_segment_component(transcript_segments):
 def test_linker_component(linkers):
     """Test Linker object initializes correctly"""
     def check_linker(actual, expected_id, expected_sequence):
-        assert actual.component_type == "linker_sequence"
+        assert actual.type == "LinkerSequenceComponent"
         assert actual.linker_sequence.id == expected_id
         assert actual.linker_sequence.sequence == expected_sequence
         assert actual.linker_sequence.type == "SequenceDescriptor"
@@ -555,20 +558,20 @@ def test_linker_component(linkers):
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert LinkerComponent(**{
-            "component_type": "templated_sequence",
+            "type": "TemplatedSequenceComponent",
             "linker_sequence":
             {
                 "id": "sequence:ATG",
                 "sequence": "ATG"
             }
         })
-    msg = "unexpected value; permitted: <ComponentType.LINKER_SEQUENCE: 'linker_sequence'>"  # noqa: E501
+    msg = "unexpected value; permitted: <FUSORTypes.LINKER_SEQUENCE_COMPONENT: 'LinkerSequenceComponent'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
     # test no extras
     with pytest.raises(ValidationError) as exc_info:
         assert LinkerComponent(**{
-            "component_type": "linker_sequence",
+            "type": "LinkerSequenceComponent",
             "linker_sequence": {
                 "id": "sequence:G",
                 "sequence": "G"
@@ -586,7 +589,7 @@ def test_genomic_region_component(templated_sequence_components,
         """Assert that test templated_sequence_components[0] data matches
         expected values.
         """
-        assert test.component_type == "templated_sequence"
+        assert test.type == "TemplatedSequenceComponent"
         assert test.strand.value == "+"
         assert test.region.id == "chr12:p12.1-p12.2"
         assert test.region.type == "LocationDescriptor"
@@ -630,18 +633,18 @@ def test_genomic_region_component(templated_sequence_components,
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert TemplatedSequenceComponent(**{
-            "component_type": "gene",
+            "type": "GeneComponent",
             "region": location_descriptors[0],
             "strand": "+"
         })
-    msg = "unexpected value; permitted: <ComponentType.TEMPLATED_SEQUENCE: 'templated_sequence'>"  # noqa: E501
+    msg = "unexpected value; permitted: <FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT: 'TemplatedSequenceComponent'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
 def test_gene_component(gene_descriptors):
     """Test that Gene component initializes correctly."""
     test_component = GeneComponent(**{"gene_descriptor": gene_descriptors[0]})
-    assert test_component.component_type == "gene"
+    assert test_component.type == "GeneComponent"
     assert test_component.gene_descriptor.id == "gene:G1"
     assert test_component.gene_descriptor.label == "G1"
     assert test_component.gene_descriptor.gene.gene_id == "hgnc:9339"
@@ -661,34 +664,34 @@ def test_gene_component(gene_descriptors):
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert GeneComponent(**{
-            "component_type": "unknown_gene",
+            "type": "UnknownGeneComponent",
             "gene_descriptor": gene_descriptors[0]
         })
-    msg = "unexpected value; permitted: <ComponentType.GENE: 'gene'>"
+    msg = "unexpected value; permitted: <FUSORTypes.GENE_COMPONENT: 'GeneComponent'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
 def test_unknown_gene_component():
     """Test that unknown_gene component initializes correctly."""
     test_component = UnknownGeneComponent()
-    assert test_component.component_type == "unknown_gene"
+    assert test_component.type == "UnknownGeneComponent"
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert UnknownGeneComponent(component_type="gene")
-    msg = "unexpected value; permitted: <ComponentType.UNKNOWN_GENE: 'unknown_gene'>"  # noqa: E501
+        assert UnknownGeneComponent(type="gene")
+    msg = "unexpected value; permitted: <FUSORTypes.UNKNOWN_GENE_COMPONENT: 'UnknownGeneComponent'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
 def test_any_gene_component():
     """Test that any_gene component initializes correctly."""
     test_component = AnyGeneComponent()
-    assert test_component.component_type == "any_gene"
+    assert test_component.type == "AnyGeneComponent"
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert AnyGeneComponent(component_type="unknown_gene")
-    msg = "unexpected value; permitted: <ComponentType.ANY_GENE: 'any_gene'>"
+        assert AnyGeneComponent(type="unknown_gene")
+    msg = "unexpected value; permitted: <FUSORTypes.ANY_GENE_COMPONENT: 'AnyGeneComponent'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
@@ -705,7 +708,7 @@ def test_event():
 def test_regulatory_element(regulatory_elements, gene_descriptors):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
-    assert test_reg_elmt.type.value == "promoter"
+    assert test_reg_elmt.element_type.value == "promoter"
     assert test_reg_elmt.gene_descriptor.id == "gene:G1"
     assert test_reg_elmt.gene_descriptor.gene.gene_id == "hgnc:9339"
     assert test_reg_elmt.gene_descriptor.label == "G1"
@@ -713,7 +716,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
     # check type constraint
     with pytest.raises(ValidationError) as exc_info:
         RegulatoryElement(**{
-            "type": "notpromoter",
+            "element_type": "notpromoter",
             "gene": gene_descriptors[0]
         })
     msg = "value is not a valid enumeration member; permitted: 'promoter', 'enhancer'"  # noqa: E501
@@ -725,7 +728,7 @@ def test_fusion(functional_domains, transcript_segments,
                 regulatory_elements):
     """Test that Fusion object initializes correctly"""
     unknown_component = {
-        "component_type": "unknown_gene",
+        "type": "UnknownGeneComponent",
     }
 
     # test valid object
@@ -745,7 +748,7 @@ def test_fusion(functional_domains, transcript_segments,
     fusion = Fusion(**{
         "structural_components": [
             {
-                "component_type": "gene",
+                "type": "GeneComponent",
                 "gene_descriptor": {
                     "type": "GeneDescriptor",
                     "id": "gene:NTRK1",
@@ -754,7 +757,7 @@ def test_fusion(functional_domains, transcript_segments,
                 }
             },
             {
-                "component_type": "gene",
+                "type": "GeneComponent",
                 "gene_descriptor": {
                     "type": "GeneDescriptor",
                     "id": "gene:ABL1",
@@ -765,9 +768,9 @@ def test_fusion(functional_domains, transcript_segments,
         ],
         "regulatory_elements": []
     })
-    assert fusion.structural_components[0].component_type == "gene"
+    assert fusion.structural_components[0].type == "GeneComponent"
     assert fusion.structural_components[0].gene_descriptor.id == "gene:NTRK1"
-    assert fusion.structural_components[1].component_type == "gene"
+    assert fusion.structural_components[1].type == "GeneComponent"
     assert fusion.structural_components[1].gene_descriptor.type == "GeneDescriptor"  # noqa: E501
 
     # test that non-component properties are optional
@@ -790,7 +793,7 @@ def test_fusion(functional_domains, transcript_segments,
     assert Fusion(**{
         "structural_components": [
             {
-                "component_type": "linker_sequence",
+                "type": "LinkerSequenceComponent",
                 "linker_sequence": {
                     "id": "a:b",
                     "type": "SequenceDescriptor",
@@ -799,7 +802,7 @@ def test_fusion(functional_domains, transcript_segments,
                 }
             },
             {
-                "component_type": "linker_sequence",
+                "type": "LinkerSequenceComponent",
                 "linker_sequence": {
                     "id": "a:b",
                     "type": "SequenceDescriptor",
@@ -829,13 +832,15 @@ def test_fusion(functional_domains, transcript_segments,
     check_validation_error(exc_info, msg)
 
 
-def test_examples(exhaustive_example):
+def test_examples(exhaustive_example, fusion_example):
     """Test example JSON files."""
     assert Fusion(**exhaustive_example)
 
+    assert Fusion(**fusion_example)
+
     for example in [
-            "alk.json", "epcam_msh2.json", "exhaustive_example.json",
-            "tpm3_ntrk1.json", "tpm3_pdgfrb.json"
+            "alk.json", "epcam_msh2.json", "tpm3_ntrk1.json",
+            "tpm3_pdgfrb.json"
     ]:
         with open(EXAMPLES_DIR / example, "r") as example_file:
             example = json.load(example_file)

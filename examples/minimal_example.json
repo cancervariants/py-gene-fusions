@@ -1,7 +1,9 @@
 {
+  "type": "Fusion",
   "r_frame_preserved": true,
   "functional_domains": [
     {
+      "type": "FunctionalDomain",
       "id": "interpro:IPR020635",
       "name": "Tyrosine-protein kinase, catalytic domain",
       "status": "lost",
@@ -34,7 +36,7 @@
   ],
   "structural_components": [
     {
-      "component_type": "transcript_segment",
+      "type": "TranscriptSegmentComponent",
       "transcript": "refseq:NM_152263.3",
       "exon_start": 1,
       "exon_start_offset": 0,
@@ -88,7 +90,7 @@
       }
     },
     {
-      "component_type": "gene",
+      "type": "GeneComponent",
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
         "type": "GeneDescriptor",
@@ -97,7 +99,7 @@
       }
     },
     {
-      "component_type": "linker_sequence",
+      "type": "LinkerSequenceComponent",
       "linker_sequence": {
         "id": "fusor.sequence:ACGT",
         "type": "SequenceDescriptor",
@@ -106,7 +108,7 @@
       }
     },
     {
-      "component_type": "templated_sequence",
+      "type": "TemplatedSequenceComponent",
       "region": {
         "id": "fusor.location_descriptor:NC_000023.11",
         "type": "LocationDescriptor",
@@ -130,16 +132,17 @@
       "strand": "+"
     },
     {
-      "component_type": "unknown_gene"
+      "type": "UnknownGeneComponent"
     },
     {
-      "component_type": "any_gene"
+      "type": "AnyGeneComponent"
     }
   ],
   "causative_event": "rearrangement",
   "regulatory_elements": [
     {
-      "type": "promoter",
+      "type": "RegulatoryElement",
+      "element_type": "promoter",
       "gene_descriptor": {
         "id": "gene:BRAF",
         "type": "GeneDescriptor",

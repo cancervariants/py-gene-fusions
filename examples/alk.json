@@ -1,8 +1,9 @@
 {
+  "type": "Fusion",
   "functional_domains": [],
   "structural_components": [
     {
-      "component_type": "gene",
+      "type": "GeneComponent",
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
         "type": "GeneDescriptor",
@@ -11,7 +12,7 @@
       }
     },
     {
-      "component_type": "any_gene"
+      "type": "AnyGeneComponent"
     }
   ],
   "regulatory_elements": []

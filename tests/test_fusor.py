@@ -108,7 +108,7 @@ def linker_component():
             "residue_type": "SO:0000348",
             "type": "SequenceDescriptor"
         },
-        "component_type": "linker_sequence"
+        "type": "LinkerSequenceComponent"
     }
     return LinkerComponent(**params)
 
@@ -206,7 +206,7 @@ def functional_domain_seq_id(braf_gene_descr_min,
 def regulatory_element(braf_gene_descr):
     """Create regulatory element test fixture."""
     params = {
-        "type": "promoter",
+        "element_type": "promoter",
         "gene_descriptor": braf_gene_descr
     }
     return RegulatoryElement(**params)
@@ -216,7 +216,7 @@ def regulatory_element(braf_gene_descr):
 def regulatory_element_min(braf_gene_descr_min):
     """Create regulatory element test fixture with minimal gene descriptor."""
     params = {
-        "type": "promoter",
+        "element_type": "promoter",
         "gene_descriptor": braf_gene_descr_min
     }
     return RegulatoryElement(**params)
@@ -251,7 +251,7 @@ def location_descriptor_tpm3():
 def templated_sequence_component():
     """Create test fixture for templated sequence component"""
     params = {
-        "component_type": "templated_sequence",
+        "type": "TemplatedSequenceComponent",
         "region": {
             "id": "fusor.location_descriptor:NC_000001.11",
             "type": "LocationDescriptor",
@@ -280,7 +280,7 @@ def templated_sequence_component():
 def templated_sequence_component_ensg():
     """Create test fixture using non-seqrepo-recognized sequence ID"""
     params = {
-        "component_type": "templated_sequence",
+        "type": "TemplatedSequenceComponent",
         "region": {
             "id": "fusor.location_descriptor:ENSG00000157764",
             "type": "LocationDescriptor",
@@ -311,7 +311,7 @@ def templated_sequence_component_custom_id():
     sequence identifier.
     """
     params = {
-        "component_type": "templated_sequence",
+        "type": "TemplatedSequenceComponent",
         "region": {
             "id": "fusor.location_descriptor:custom_ID__1",
             "type": "LocationDescriptor",
@@ -340,7 +340,7 @@ def templated_sequence_component_custom_id():
 def transcript_segment_component():
     """Create transcript segment component test fixture"""
     params = {
-        "component_type": "transcript_segment",
+        "type": "TranscriptSegmentComponent",
         "exon_end": 8,
         "exon_end_offset": 0,
         "exon_start": 1,
@@ -388,7 +388,7 @@ def transcript_segment_component():
 def mane_transcript_segment_component():
     """Create transcript segment component test fixture"""
     params = {
-        "component_type": "transcript_segment",
+        "type": "TranscriptSegmentComponent",
         "exon_end": None,
         "exon_end_offset": None,
         "exon_start": 2,
@@ -456,7 +456,7 @@ def fusion():
         ],
         "structural_components": [
             {
-                "component_type": "transcript_segment",
+                "type": "TranscriptSegmentComponent",
                 "transcript": "refseq:NM_152263.3",
                 "exon_start": 1,
                 "exon_start_offset": 0,
@@ -508,7 +508,7 @@ def fusion():
                 }
             },
             {
-                "component_type": "gene",
+                "type": "GeneComponent",
                 "gene_descriptor": {
                     "id": "gene:ALK",
                     "type": "GeneDescriptor",
@@ -517,7 +517,7 @@ def fusion():
                 }
             },
             {
-                "component_type": "linker_sequence",
+                "type": "LinkerSequenceComponent",
                 "linker_sequence": {
                     "id": "sequence:ACGT",
                     "type": "SequenceDescriptor",
@@ -526,7 +526,7 @@ def fusion():
                 }
             },
             {
-                "component_type": "templated_sequence",
+                "type": "TemplatedSequenceComponent",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
                     "type": "LocationDescriptor",
@@ -550,16 +550,16 @@ def fusion():
                 "strand": "+"
             },
             {
-                "component_type": "unknown_gene"
+                "type": "UnknownGeneComponent"
             },
             {
-                "component_type": "any_gene"
+                "type": "AnyGeneComponent"
             }
         ],
         "causative_event": "rearrangement",
         "regulatory_elements": [
             {
-                "type": "promoter",
+                "element_type": "promoter",
                 "gene_descriptor": {
                     "id": "gene:BRAF",
                     "type": "GeneDescriptor",
@@ -577,7 +577,7 @@ def fusion_ensg_sequence_id(templated_sequence_component_ensg):
     params = {
         "structural_components": [
             templated_sequence_component_ensg,
-            {"component_type": "any_gene"}
+            {"type": "AnyGeneComponent"}
         ],
         "r_frame_preserved": True,
         "functional_domains": [],
