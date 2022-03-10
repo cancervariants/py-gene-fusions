@@ -20,6 +20,20 @@ class BaseModelForbidExtra(BaseModel):
         extra = Extra.forbid
 
 
+class FUSORTypes(str, Enum):
+    """Define FUSOR object type values."""
+
+    FUNCTIONAL_DOMAIN = "FunctionalDomain"
+    TRANSCRIPT_SEGMENT_COMPONENT = "TranscriptSegmentComponent"
+    TEMPLATED_SEQUENCE_COMPONENT = "TemplatedSequenceComponent"
+    LINKER_SEQUENCE_COMPONENT = "LinkerSequenceComponent"
+    GENE_COMPONENT = "GeneComponent"
+    UNKNOWN_GENE_COMPONENT = "UnknownGeneComponent"
+    ANY_GENE_COMPONENT = "AnyGeneComponent"
+    REGULATORY_ELEMENT = "RegulatoryElement"
+    FUSION = "Fusion"
+
+
 class AdditionalFields(str, Enum):
     """Define possible fields that can be added to Fusion object."""
 
@@ -38,6 +52,7 @@ class DomainStatus(str, Enum):
 class FunctionalDomain(BaseModel):
     """Define FunctionalDomain class"""
 
+    type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     id: CURIE
     name: StrictStr
     status: DomainStatus
@@ -57,6 +72,7 @@ class FunctionalDomain(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
+                "type": "FunctionalDomain",
                 "status": "lost",
                 "name": "Tyrosine-protein kinase, catalytic domain",
                 "id": "interpro:IPR020635",
@@ -87,33 +103,16 @@ class FunctionalDomain(BaseModel):
             }
 
 
-class ComponentType(str, Enum):
-    """Define possible structural components."""
-
-    TRANSCRIPT_SEGMENT = "transcript_segment"
-    TEMPLATED_SEQUENCE = "templated_sequence"
-    LINKER_SEQUENCE = "linker_sequence"
-    GENE = "gene"
-    UNKNOWN_GENE = "unknown_gene"
-    ANY_GENE = "any_gene"
-
-
 class Component(ABC, BaseModel):
     """Define base component class."""
 
-    def nomenclature(self, i: Optional[int] = None) -> str:
-        """Generate component nomenclature representation.
-        :param Optional[int] i: index position in fusion component list. If
-            1st, should == 0. If last, should == -1. Leave unset otherwise.
-        :return: string with nomenclature representation of component.
-        """
-        raise NotImplementedError
+    pass
 
 
 class TranscriptSegmentComponent(Component):
     """Define TranscriptSegment class"""
 
-    component_type: Literal[ComponentType.TRANSCRIPT_SEGMENT] = ComponentType.TRANSCRIPT_SEGMENT  # noqa: E501
+    type: Literal[FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT] = FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT  # noqa: E501
     transcript: CURIE
     exon_start: Optional[StrictInt]
     exon_start_offset: Optional[StrictInt] = 0
@@ -175,13 +174,14 @@ class TranscriptSegmentComponent(Component):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "transcript_segment",
+                "type": "TranscriptSegmentComponent",
                 "transcript": "refseq:NM_152263.3",
                 "exon_start": 1,
                 "exon_start_offset": 0,
                 "exon_end": 8,
                 "exon_end_offset": 0,
                 "gene_descriptor": {
+                    "type": "GeneDescriptor",
                     "id": "gene:TPM3",
                     "gene_id": "hgnc:12012",
                     "type": "GeneDescriptor",
@@ -233,7 +233,7 @@ class TranscriptSegmentComponent(Component):
 class LinkerComponent(Component):
     """Define Linker class (linker sequence)"""
 
-    component_type: Literal[ComponentType.LINKER_SEQUENCE] = ComponentType.LINKER_SEQUENCE  # noqa: E501
+    type: Literal[FUSORTypes.LINKER_SEQUENCE_COMPONENT] = FUSORTypes.LINKER_SEQUENCE_COMPONENT  # noqa: E501
     linker_sequence: SequenceDescriptor
 
     def nomenclature(self, _: Optional[int] = None) -> str:
@@ -273,7 +273,7 @@ class LinkerComponent(Component):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "linker_sequence",
+                "type": "LinkerSequenceComponent",
                 "linker_sequence": {
                     "id": "sequence:ACGT",
                     "type": "SequenceDescriptor",
@@ -296,7 +296,7 @@ class TemplatedSequenceComponent(BaseModel):
     gene product
     """
 
-    component_type: Literal[ComponentType.TEMPLATED_SEQUENCE] = ComponentType.TEMPLATED_SEQUENCE  # noqa: E501
+    type: Literal[FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT] = FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT  # noqa: E501
     region: LocationDescriptor
     strand: Strand
 
@@ -326,7 +326,7 @@ class TemplatedSequenceComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "templated_sequence",
+                "type": "TemplatedSequenceComponent",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
                     "type": "LocationDescriptor",
@@ -349,7 +349,7 @@ class TemplatedSequenceComponent(BaseModel):
 class GeneComponent(Component):
     """Define Gene component class."""
 
-    component_type: Literal[ComponentType.GENE] = ComponentType.GENE
+    type: Literal[FUSORTypes.GENE_COMPONENT] = FUSORTypes.GENE_COMPONENT
     gene_descriptor: GeneDescriptor
 
     def nomenclature(self, _: Optional[int] = None) -> str:
@@ -373,7 +373,7 @@ class GeneComponent(Component):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "gene",
+                "type": "GeneComponent",
                 "gene_descriptor": {
                     "id": "gene:BRAF",
                     "gene_id": "hgnc:1097",
@@ -393,7 +393,7 @@ class UnknownGeneComponent(BaseModel):
     an UnknownGene component.
     """
 
-    component_type: Literal[ComponentType.UNKNOWN_GENE] = ComponentType.UNKNOWN_GENE  # noqa: E501
+    type: Literal[FUSORTypes.UNKNOWN_GENE_COMPONENT] = FUSORTypes.UNKNOWN_GENE_COMPONENT  # noqa: E501
 
     def nomenclature(self, _: Optional[int] = None) -> str:
         """Generate component nomenclature."""
@@ -410,7 +410,7 @@ class UnknownGeneComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "unknown_gene"
+                "type": "UnknownGeneComponent"
             }
 
 
@@ -425,7 +425,7 @@ class AnyGeneComponent(BaseModel):
     AnyGene component.
     """
 
-    component_type: Literal[ComponentType.ANY_GENE] = ComponentType.ANY_GENE
+    type: Literal[FUSORTypes.ANY_GENE_COMPONENT] = FUSORTypes.ANY_GENE_COMPONENT  # noqa: E501
 
     def nomenclature(self, _: Optional[int] = None) -> str:
         """Generate component nomenclature."""
@@ -442,7 +442,7 @@ class AnyGeneComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "any_gene"
+                "type": "AnyGeneComponent"
             }
 
 
@@ -485,7 +485,8 @@ class RegulatoryElementType(str, Enum):
 class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class"""
 
-    type: RegulatoryElementType
+    type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT  # noqa: E501
+    element_type: RegulatoryElementType
     reference_id: Optional[CURIE] = None
     gene_descriptor: Optional[GeneDescriptor] = None
     genomic_location_start: Optional[LocationDescriptor] = None
@@ -533,7 +534,8 @@ class RegulatoryElement(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "type": "promoter",
+                "type": "RegulatoryElement",
+                "element_type": "Promoter",
                 "gene_descriptor": {
                     "id": "gene:BRAF",
                     "gene_id": "hgnc:1097",
@@ -683,6 +685,7 @@ class CategoricalFusion(Fusion):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
+                "type": "Fusion",
                 "r_frame_preserved": True,
                 "functional_domains": [
                     {
@@ -699,7 +702,7 @@ class CategoricalFusion(Fusion):
                 ],
                 "structural_components": [
                     {
-                        "component_type": "transcript_segment",
+                        "component_type": "TranscriptSegment",
                         "transcript": "refseq:NM_152263.3",
                         "exon_start": 1,
                         "exon_start_offset": 0,
@@ -764,7 +767,7 @@ class CategoricalFusion(Fusion):
                 ],
                 "regulatory_elements": [
                     {
-                        "type": "promoter",
+                        "element_type": "promoter",
                         "gene": {
                             "id": "gene:BRAF",
                             "type": "GeneDescriptor",

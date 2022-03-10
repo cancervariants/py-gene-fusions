@@ -20,7 +20,7 @@ from fusor.models import Fusion, TemplatedSequenceComponent, \
     AdditionalFields, TranscriptSegmentComponent, GeneComponent, \
     LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
     RegulatoryElement, Event, DomainStatus, FunctionalDomain, Strand, \
-    RegulatoryElementType, ComponentType
+    RegulatoryElementType, FUSORTypes
 from fusor.exceptions import IDTranslationException
 
 
@@ -342,7 +342,7 @@ class FUSOR:
 
         try:
             return RegulatoryElement(
-                type=element_type,
+                element_type=element_type,
                 gene_descriptor=gene_descr
             ), None
         except ValidationError as e:
@@ -610,17 +610,17 @@ class FUSOR:
         """
         nom_parts = []
         for component in fusion.structural_components:
-            if component.component_type == ComponentType.ANY_GENE:
+            if component.type == FUSORTypes.ANY_GENE_COMPONENT:
                 nom_parts.append("*")
-            elif component.component_type == ComponentType.UNKNOWN_GENE:
+            elif component.type == FUSORTypes.UNKNOWN_GENE_COMPONENT:
                 nom_parts.append("?")
-            elif component.component_type == ComponentType.GENE:
+            elif component.type == FUSORTypes.GENE_COMPONENT:
                 label = component.gene_descriptor.label
                 gene_id = component.gene_descriptor.gene_id
                 nom_parts.append(f"{label}({gene_id})")
-            elif component.component_type == ComponentType.LINKER_SEQUENCE:
+            elif component.type == FUSORTypes.LINKER_SEQUENCE_COMPONENT:
                 nom_parts.append(component.linker_sequence.sequence)
-            elif component.component_type == ComponentType.TRANSCRIPT_SEGMENT:
+            elif component.type == FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT:
                 tx = component.transcript.split(":")[1]
                 label = component.gene_descriptor.label
                 comp_name = f"{tx}({label}):e."
@@ -640,7 +640,7 @@ class FUSOR:
                         else:
                             comp_name += str(component.exon_end_offset)
                 nom_parts.append(comp_name)
-            elif component.component_type == ComponentType.TEMPLATED_SEQUENCE:
+            elif component.type == FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT:
                 loc = component.region.location
                 start = loc.interval.start.value
                 end = loc.interval.end.value

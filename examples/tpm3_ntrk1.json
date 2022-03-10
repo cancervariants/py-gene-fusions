@@ -1,7 +1,9 @@
 {
+  "type": "Fusion",
   "r_frame_preserved": true,
   "functional_domains": [
     {
+      "type": "FunctionalDomain",
       "id": "interpro:IPR000533",
       "name": "Tropomyosin",
       "status": "preserved",
@@ -32,6 +34,7 @@
       }
     },
     {
+      "type": "FunctionalDomain",
       "id": "interpro:IPR020635",
       "name": "Tyrosine-protein kinase, catalytic domain",
       "status": "preserved",
@@ -64,7 +67,7 @@
   ],
   "structural_components": [
     {
-      "component_type": "transcript_segment",
+      "type": "TranscriptSegmentComponent",
       "transcript": "refseq:NM_152263.3",
       "exon_end": 8,
       "exon_end_offset": 0,
@@ -96,7 +99,7 @@
       }
     },
     {
-      "component_type": "transcript_segment",
+      "type": "TranscriptSegmentComponent",
       "transcript": "refseq:NM_002529.3",
       "exon_start": 10,
       "exon_start_offset": 0,
