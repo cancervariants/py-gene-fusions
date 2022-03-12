@@ -15,5 +15,6 @@
       "type": "AnyGeneComponent"
     }
   ],
-  "regulatory_elements": []
+  "regulatory_elements": [],
+  "type": "categorical_fusion"
 }
