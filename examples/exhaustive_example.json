@@ -1,6 +1,5 @@
 {
-  "type": "Fusion",
-  "r_frame_preserved": true,
+  "type": "CategoricalFusion",
   "functional_domains": [
     {
       "type": "FunctionalDomain",
@@ -304,15 +303,13 @@
       },
       "strand": "+"
     },
-    { "type": "UnknownGeneComponent" },
     { "type": "AnyGeneComponent" }
   ],
-  "causative_event": "rearrangement",
   "regulatory_elements": [
     {
       "type": "RegulatoryElement",
       "element_type": "promoter",
-      "gene_descriptor": {
+      "associated_gene": {
         "id": "normalize.gene:BRAF",
         "type": "GeneDescriptor",
         "label": "BRAF",
