@@ -1,22 +1,16 @@
 """Module for testing the FUSOR class."""
 import copy
+import json
 
 import pytest
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
     LocationDescriptor
 
-from fusor import FUSOR
-from fusor.exceptions import IDTranslationException
-from fusor.models import Fusion, TemplatedSequenceComponent, \
-    TranscriptSegmentComponent, LinkerComponent, UnknownGeneComponent, \
-    AnyGeneComponent, FunctionalDomain, GeneComponent, RegulatoryElement, \
-    RegulatoryElementType
-
-
-@pytest.fixture(scope="module")
-def fusor():
-    """Create test fixture for fusor object"""
-    return FUSOR()
+from fusor.models import AssayedFusion, CategoricalFusion, \
+    TemplatedSequenceComponent, TranscriptSegmentComponent, \
+    LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
+    FunctionalDomain, GeneComponent, RegulatoryElement, RegulatoryElementType
+from tests.conftest import EXAMPLES_DIR
 
 
 @pytest.fixture(scope="module")
@@ -206,8 +200,9 @@ def functional_domain_seq_id(braf_gene_descr_min,
 def regulatory_element(braf_gene_descr):
     """Create regulatory element test fixture."""
     params = {
+        "type": "RegulatoryElement",
         "element_type": "promoter",
-        "gene_descriptor": braf_gene_descr
+        "associated_gene": braf_gene_descr
     }
     return RegulatoryElement(**params)
 
@@ -217,7 +212,7 @@ def regulatory_element_min(braf_gene_descr_min):
     """Create regulatory element test fixture with minimal gene descriptor."""
     params = {
         "element_type": "promoter",
-        "gene_descriptor": braf_gene_descr_min
+        "associated_gene": braf_gene_descr_min
     }
     return RegulatoryElement(**params)
 
@@ -423,6 +418,7 @@ def mane_transcript_segment_component():
 def fusion():
     """Create fusion test fixture."""
     return {
+        "type": "CategoricalFusion",
         "r_frame_preserved": True,
         "functional_domains": [
             {
@@ -550,17 +546,14 @@ def fusion():
                 "strand": "+"
             },
             {
-                "type": "UnknownGeneComponent"
-            },
-            {
                 "type": "AnyGeneComponent"
             }
         ],
-        "causative_event": "rearrangement",
         "regulatory_elements": [
             {
+                "type": "RegulatoryElement",
                 "element_type": "promoter",
-                "gene_descriptor": {
+                "associated_gene": {
                     "id": "gene:BRAF",
                     "type": "GeneDescriptor",
                     "gene_id": "hgnc:1097",
@@ -575,16 +568,16 @@ def fusion():
 def fusion_ensg_sequence_id(templated_sequence_component_ensg):
     """Create fixture using Ensemble gene ID."""
     params = {
+        "type": "CategoricalFusion",
         "structural_components": [
             templated_sequence_component_ensg,
             {"type": "AnyGeneComponent"}
         ],
         "r_frame_preserved": True,
         "functional_domains": [],
-        "causative_event": None,
         "regulatory_elements": []
     }
-    return Fusion(**params)
+    return CategoricalFusion(**params)
 
 
 def compare_gene_descriptor(actual, expected):
@@ -625,7 +618,7 @@ def compare_gene_descriptor(actual, expected):
 def test_add_additional_fields(fusor, fusion_example, fusion,
                                fusion_ensg_sequence_id):
     """Test that add_additional_fields method works correctly."""
-    fusion = Fusion(**fusion_example)
+    fusion = CategoricalFusion(**fusion_example)
 
     expected_fusion = copy.deepcopy(fusion)
     expected_fusion.functional_domains[0].location_descriptor.location_id = "ga4gh:VSL.2CWYzSpOJfZq7KW4VIUKeP5SJtepRar0"  # type: ignore # noqa: E501
@@ -650,7 +643,7 @@ def test_add_additional_fields(fusor, fusion_example, fusion,
 
 def test_add_translated_sequence_id(fusor, fusion_example):
     """Test that add_translated_sequence_id method works correctly."""
-    fusion = Fusion(**fusion_example)
+    fusion = CategoricalFusion(**fusion_example)
 
     expected_fusion = copy.deepcopy(fusion)
     expected_fusion.functional_domains[0].location_descriptor.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
@@ -662,43 +655,15 @@ def test_add_translated_sequence_id(fusor, fusion_example):
     assert actual_fusion.dict() == expected_fusion.dict()
 
 
-def test_add_location_id(fusor, fusion_example):
+def test_add_location_id(fusor, fusion_example, exhaustive_example):
     """Test that add_location_id method works correctly."""
-    fusion = Fusion(**fusion_example)
+    fusion = fusor.add_location_id(CategoricalFusion(**fusion_example))
+    actual = CategoricalFusion(**exhaustive_example)
 
-    expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.functional_domains[0].location_descriptor.location_id = "ga4gh:VSL.hQKhk6ZOOYZAmShXrzhfb6H3j65ovsKu"  # type: ignore # noqa: E501
-    expected_fusion.structural_components[0].component_genomic_start.location_id = "ga4gh:VSL.n7i6VMRAuSgAjwVopxhWAJdlPJMfk7KR"  # type: ignore # noqa: E501
-    expected_fusion.structural_components[0].component_genomic_end.location_id = "ga4gh:VSL.wQ4TpNbsTPq_A-eQTL44gbP3f4fnp0vx"  # type: ignore # noqa: E501
-    expected_fusion.structural_components[3].region.location_id = "ga4gh:VSL.eHfgOlEjzNRiYZBzeCvg7Ru9N-YxuFT-"  # type: ignore # noqa: E501
-
-    actual_fusion = fusor.add_location_id(fusion)
-    assert actual_fusion.dict() == expected_fusion.dict()
-
-
-def test_translate_identifier(fusor):
-    """Test that translate_identifier method works correctly."""
-    expected = "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT"
-    identifier = fusor.translate_identifier("NM_152263.3")
-    assert identifier == expected
-
-    identifier = fusor.translate_identifier("refseq:NM_152263.3")
-    assert identifier == expected
-
-    # test non-default target
-    identifier = fusor.translate_identifier(
-        "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
-        "refseq"
-    )
-    assert identifier == "refseq:NM_152263.3"
-
-    # test no namespace
-    with pytest.raises(IDTranslationException):
-        identifier = fusor.translate_identifier("152263.3")
-
-    # test unrecognized namespace
-    with pytest.raises(IDTranslationException):
-        identifier = fusor.translate_identifier("fake_namespace:NM_152263.3")
+    assert fusion.functional_domains[0].location_descriptor.location_id == actual.functional_domains[0].location_descriptor.location_id  # noqa: E501
+    assert fusion.structural_components[0].component_genomic_start.location_id == actual.structural_components[0].component_genomic_start.location_id  # noqa: E501
+    assert fusion.structural_components[0].component_genomic_end.location_id == actual.structural_components[0].component_genomic_end.location_id  # noqa: E501
+    assert fusion.structural_components[3].region.location_id == actual.structural_components[3].region.location_id  # noqa: E501
 
 
 def test__normalized_gene_descriptor(fusor):
@@ -716,8 +681,8 @@ def test__normalized_gene_descriptor(fusor):
 
 def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
     """Test that add_gene_descriptor method works correctly."""
-    expected_fusion = Fusion(**exhaustive_example)
-    actual = Fusion(**fusion)
+    expected_fusion = CategoricalFusion(**exhaustive_example)
+    actual = CategoricalFusion(**fusion)
     fusor.add_translated_sequence_id(actual)
     fusor.add_location_id(actual)
     fusor.add_gene_descriptor(actual)
@@ -748,20 +713,72 @@ def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
 
 def test_fusion(fusor, linker_component, templated_sequence_component,
                 transcript_segment_component, functional_domain):
-    """Test that fusion method works correctly."""
-    f = fusor.fusion([templated_sequence_component,
-                      linker_component, UnknownGeneComponent()])
-    assert isinstance(f[0], Fusion)
+    """Test that fusion methods work correctly."""
+    # infer type from properties
+    f = fusor.fusion(**{
+        "structural_components": [
+            templated_sequence_component, linker_component,
+            UnknownGeneComponent()
+        ]
+    })
+    assert isinstance(f[0], AssayedFusion)
+    assert f[1] is None
+    f = fusor.fusion(**{
+        "structural_components": [
+            transcript_segment_component, AnyGeneComponent()
+        ],
+        "functional_domains": [functional_domain]
+    })
+    assert isinstance(f[0], CategoricalFusion)
     assert f[1] is None
 
-    f = fusor.fusion([transcript_segment_component, AnyGeneComponent()],
-                     functional_domains=[functional_domain])
-    assert isinstance(f[0], Fusion)
-    assert f[1] is None
-
-    f = fusor.fusion([linker_component])
+    # catch conflicting property args
+    f = fusor.fusion(**{
+        "structural_components": [
+            transcript_segment_component, UnknownGeneComponent()
+        ],
+        "causative_event": "rearrangement",
+        "functional_domains": [functional_domain]
+    })
     assert f[0] is None
-    assert "Fusion must contain at least 2 structural components" in f[1]
+    assert "Received conflicting attributes" in f[1]
+
+    # handle indeterminate type
+    f = fusor.fusion(**{
+        "structural_components": [
+            transcript_segment_component, templated_sequence_component
+        ],
+    })
+    assert f[0] is None
+    assert "Unable to determine fusion type" in f[1]
+
+    # handle both type parameter options
+    f = fusor.fusion(
+        fusion_type="AssayedFusion",
+        **{
+            "structural_components": [
+                templated_sequence_component,
+                linker_component,
+                UnknownGeneComponent()
+            ]
+        }
+    )
+    assert isinstance(f[0], AssayedFusion)
+    assert f[1] is None
+    f = fusor.fusion(**{
+        "type": "CategoricalFusion",
+        "structural_components": [transcript_segment_component,
+                                  AnyGeneComponent()],
+        "functional_domains": [functional_domain]
+    })
+    assert isinstance(f[0], CategoricalFusion)
+    assert f[1] is None
+
+    # catch and pass on validation errors
+    f = fusor.fusion(fusion_type="CategoricalFusion",
+                     structural_components=[linker_component])
+    assert f[0] is None
+    assert "Provided fusion contains an insufficient number of structural components and regulatory elements." in f[1]  # noqa: E501
 
 
 @pytest.mark.asyncio
@@ -1082,8 +1099,8 @@ def test_regulatory_element(fusor, regulatory_element, regulatory_element_min):
         expected = expected.dict()
         assert actual.keys() == expected.keys()
         assert actual["type"] == expected["type"]
-        compare_gene_descriptor(actual["gene_descriptor"],
-                                expected["gene_descriptor"])
+        compare_gene_descriptor(actual["associated_gene"],
+                                expected["associated_gene"])
 
     re = fusor.regulatory_element(RegulatoryElementType.PROMOTER, "BRAF")
     compare_re(re, regulatory_element_min)
@@ -1122,8 +1139,41 @@ def test__location_descriptor(fusor, location_descriptor_tpm3):
     assert ld.dict() == expected.dict()
 
 
-def test_generate_nomenclature(fusor, fusion):
+def test_generate_nomenclature(fusor, fusion, fusion_example,
+                               exhaustive_example):
     """Test that nomenclature generation is correct."""
-    fusion_instance = Fusion(**fusion)
-    nm = fusor.generate_nomenclature(fusion_instance)
-    assert nm == "NM_152263.3(TPM3):e.1_8::ALK(hgnc:427)::ACGT::NC_000012.12:g.44908821_44908822(+)::?::*"  # noqa: E501
+    fixture_nomenclature = "reg_promoter@BRAF(hgnc:1097)::refseq:NM_152263.3(TPM3):e.1_8::ALK(hgnc:427)::ACGT::refseq:NC_000012.12(chr 12):g.44908821_44908822(+)::v"  # noqa: E501
+    nm = fusor.generate_nomenclature(CategoricalFusion(**fusion))
+    assert nm == fixture_nomenclature
+
+    fixture_nomenclature = "reg_promoter@BRAF(hgnc:1097)::refseq:NM_152263.3(TPM3):e.1_8::ALK(hgnc:427)::ACGT::refseq:NC_000023.11(chr X):g.44908820_44908822(+)::v"  # noqa: E501
+    nm = fusor.generate_nomenclature(CategoricalFusion(**fusion_example))
+    assert nm == fixture_nomenclature
+
+    nm = fusor.generate_nomenclature(CategoricalFusion(**exhaustive_example))
+    assert nm == fixture_nomenclature
+
+    with open(EXAMPLES_DIR / "alk.json", "r") as alk_file:
+        fusion = CategoricalFusion(**json.load(alk_file))
+    nm = fusor.generate_nomenclature(fusion)
+    assert nm == "ALK(hgnc:427)::v"
+
+    with open(EXAMPLES_DIR / "epcam_msh2.json", "r") as epcam_file:
+        fusion = CategoricalFusion(**json.load(epcam_file))
+    nm = fusor.generate_nomenclature(fusion)
+    assert nm == "refseq:NM_002354.2(EPCAM):e._5::AGGCTCCCTTGG::refseq:NM_000251.2(MSH2):e.2_"  # noqa: E501
+
+    with open(EXAMPLES_DIR / "tpm3_ntrk1.json", "r") as ntrk_file:
+        fusion = AssayedFusion(**json.load(ntrk_file))
+    nm = fusor.generate_nomenclature(fusion)
+    assert nm == "refseq:NM_152263.3(TPM3):e._8::refseq:NM_002529.3(NTRK1):e.10_"  # noqa: E501
+
+    with open(EXAMPLES_DIR / "tpm3_pdgfrb.json", "r") as pdgfrb_file:
+        fusion = CategoricalFusion(**json.load(pdgfrb_file))
+    nm = fusor.generate_nomenclature(fusion)
+    assert nm == "refseq:NM_152263.3(TPM3):e._8::refseq:NM_002609.3(PDGFRB):e.11_"  # noqa: E501
+
+    with open(EXAMPLES_DIR / "ewsr1.json", "r") as ewsr1_file:
+        fusion = AssayedFusion(**json.load(ewsr1_file))
+    nm = fusor.generate_nomenclature(fusion)
+    assert nm == "EWSR1(hgnc:3508)::?"

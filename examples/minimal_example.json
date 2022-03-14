@@ -115,7 +115,7 @@
         "location_id": "ga4gh:VSL.q0Hnb9gpYDyUuTix4Fesy5ungdnc4dWm",
         "location": {
           "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000023.11",
+          "sequence_id": "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
           "interval": {
             "type": "SequenceInterval",
             "start": {

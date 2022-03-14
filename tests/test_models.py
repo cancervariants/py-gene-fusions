@@ -2,10 +2,10 @@
 from pydantic import ValidationError
 import pytest
 import json
-from fusor.models import TranscriptSegmentComponent, \
-    TemplatedSequenceComponent, UnknownGeneComponent, GeneComponent, \
-    AnyGeneComponent, LinkerComponent, FunctionalDomain, Event, \
-    RegulatoryElement, Fusion
+from fusor.models import AbstractFusion, AssayedFusion, CategoricalFusion, \
+    TranscriptSegmentComponent, TemplatedSequenceComponent, \
+    UnknownGeneComponent, GeneComponent,  AnyGeneComponent, LinkerComponent, \
+    FunctionalDomain, Event, RegulatoryElement
 import copy
 from tests.conftest import EXAMPLES_DIR
 
@@ -320,7 +320,7 @@ def regulatory_elements(gene_descriptors):
     return [
         {
             "element_type": "promoter",
-            "gene_descriptor": gene_descriptors[0]
+            "associated_gene": gene_descriptors[0]
         }
     ]
 
@@ -709,18 +709,26 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
     assert test_reg_elmt.element_type.value == "promoter"
-    assert test_reg_elmt.gene_descriptor.id == "gene:G1"
-    assert test_reg_elmt.gene_descriptor.gene.gene_id == "hgnc:9339"
-    assert test_reg_elmt.gene_descriptor.label == "G1"
+    assert test_reg_elmt.associated_gene.id == "gene:G1"
+    assert test_reg_elmt.associated_gene.gene.gene_id == "hgnc:9339"
+    assert test_reg_elmt.associated_gene.label == "G1"
 
     # check type constraint
     with pytest.raises(ValidationError) as exc_info:
         RegulatoryElement(**{
             "element_type": "notpromoter",
-            "gene": gene_descriptors[0]
+            "associated_gene": gene_descriptors[0]
         })
-    msg = "value is not a valid enumeration member; permitted: 'promoter', 'enhancer'"  # noqa: E501
-    check_validation_error(exc_info, msg)
+    assert exc_info.value.errors()[0]["msg"].startswith(
+        "value is not a valid enumeration member; permitted: "
+    )
+
+    # require minimum input
+    with pytest.raises(ValidationError) as exc_info:
+        RegulatoryElement(**{
+            "element_type": "enhancer",
+        })
+    assert exc_info.value.errors()[0]["msg"] == "Must set >=1 of {`element_reference`, `associated_gene`, `genomic_location`}"  # noqa: E501
 
 
 def test_fusion(functional_domains, transcript_segments,
@@ -732,20 +740,19 @@ def test_fusion(functional_domains, transcript_segments,
     }
 
     # test valid object
-    fusion = Fusion(**{
+    fusion = CategoricalFusion(**{
         "r_frame_preserved": True,
         "functional_domains": [functional_domains[0]],
         "structural_components": [
             transcript_segments[1], transcript_segments[2]
         ],
-        "causative_event": "rearrangement",
         "regulatory_elements": [regulatory_elements[0]]
     })
 
     assert fusion.structural_components[0].transcript == "refseq:NM_034348.3"
 
     # check correct parsing of nested items
-    fusion = Fusion(**{
+    fusion = CategoricalFusion(**{
         "structural_components": [
             {
                 "type": "GeneComponent",
@@ -774,14 +781,15 @@ def test_fusion(functional_domains, transcript_segments,
     assert fusion.structural_components[1].gene_descriptor.type == "GeneDescriptor"  # noqa: E501
 
     # test that non-component properties are optional
-    assert Fusion(**{
+    assert CategoricalFusion(**{
         "structural_components": [
             transcript_segments[1], transcript_segments[2]
         ]
     })
 
     # test variety of component types
-    assert Fusion(**{
+    assert AssayedFusion(**{
+        "type": "AssayedFusion",
         "structural_components": [
             unknown_component,
             gene_components[0],
@@ -790,58 +798,81 @@ def test_fusion(functional_domains, transcript_segments,
             linkers[0],
         ]
     })
-    assert Fusion(**{
-        "structural_components": [
-            {
-                "type": "LinkerSequenceComponent",
-                "linker_sequence": {
-                    "id": "a:b",
-                    "type": "SequenceDescriptor",
-                    "sequence": "AC",
-                    "residue_type": "SO:0000348"
+    with pytest.raises(ValidationError) as exc_info:
+        assert CategoricalFusion(**{
+            "type": "CategoricalFusion",
+            "structural_components": [
+                {
+                    "type": "LinkerSequenceComponent",
+                    "linker_sequence": {
+                        "id": "a:b",
+                        "type": "SequenceDescriptor",
+                        "sequence": "AC",
+                        "residue_type": "SO:0000348"
+                    }
+                },
+                {
+                    "type": "LinkerSequenceComponent",
+                    "linker_sequence": {
+                        "id": "a:b",
+                        "type": "SequenceDescriptor",
+                        "sequence": "AC",
+                        "residue_type": "SO:0000348"
+                    }
                 }
-            },
-            {
-                "type": "LinkerSequenceComponent",
-                "linker_sequence": {
-                    "id": "a:b",
-                    "type": "SequenceDescriptor",
-                    "sequence": "AC",
-                    "residue_type": "SO:0000348"
-                }
-            }
-        ]
-    })
+            ]
+        })
+    msg = "First structural component cannot be LinkerSequence"
+    check_validation_error(exc_info, msg)
 
     # components are mandatory
     with pytest.raises(ValidationError) as exc_info:
-        assert Fusion(**{
-            "r_frame_preserved": True,
+        assert AssayedFusion(**{
             "functional_domains": [functional_domains[1]],
             "causative_event": "rearrangement",
             "regulatory_elements": [regulatory_elements[0]]
         })
     check_validation_error(exc_info, "field required")
 
-    # must have >= 2 components
+    # must have >= 2 components + regulatory elements
     with pytest.raises(ValidationError) as exc_info:
-        assert Fusion(**{
+        assert AssayedFusion(**{
             "structural_components": [unknown_component]
         })
-    msg = "Fusion must contain at least 2 structural components."
+    msg = "Provided fusion contains an insufficient number of structural components and regulatory elements."  # noqa: E501
     check_validation_error(exc_info, msg)
+    assert AssayedFusion(**{
+        "regulatory_elements": [regulatory_elements[0]],
+        "structural_components": [transcript_segments[0]]
+    })
+
+    # can't create base fusion
+    with pytest.raises(ValidationError) as exc_info:
+        assert AbstractFusion(**{
+            "structural_components": [transcript_segments[2],
+                                      linkers[0]]
+        })
+    check_validation_error(exc_info,
+                           "Cannot instantiate Fusion abstract class")
 
 
 def test_examples(exhaustive_example, fusion_example):
     """Test example JSON files."""
-    assert Fusion(**exhaustive_example)
+    assert CategoricalFusion(**exhaustive_example)
 
-    assert Fusion(**fusion_example)
+    assert CategoricalFusion(**fusion_example)
 
-    for example in [
-            "alk.json", "epcam_msh2.json", "tpm3_ntrk1.json",
-            "tpm3_pdgfrb.json"
-    ]:
-        with open(EXAMPLES_DIR / example, "r") as example_file:
-            example = json.load(example_file)
-        assert Fusion(**example)
+    with open(EXAMPLES_DIR / "alk.json", "r") as alk_file:
+        assert CategoricalFusion(**json.load(alk_file))
+
+    with open(EXAMPLES_DIR / "epcam_msh2.json", "r") as epcam_file:
+        assert CategoricalFusion(**json.load(epcam_file))
+
+    with open(EXAMPLES_DIR / "tpm3_ntrk1.json", "r") as ntrk_file:
+        assert AssayedFusion(**json.load(ntrk_file))
+
+    with open(EXAMPLES_DIR / "tpm3_pdgfrb.json", "r") as pdgfrb_file:
+        assert CategoricalFusion(**json.load(pdgfrb_file))
+
+    with open(EXAMPLES_DIR / "ewsr1.json", "r") as ewsr1_file:
+        assert AssayedFusion(**json.load(ewsr1_file))

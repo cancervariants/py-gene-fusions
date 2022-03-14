@@ -17,12 +17,12 @@ from gene.query import QueryHandler
 
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.models import AssayedFusion, AssayedFusionComponents, \
-    CategoricalFusion, CategoricalFusionComponents, Event, Evidence, Fusion, \
-    MolecularAssay, TemplatedSequenceComponent, \
+    CategoricalFusion, CategoricalFusionComponents, Component, ComponentType, \
+    Event, Evidence, Fusion, MolecularAssay, TemplatedSequenceComponent, \
     AdditionalFields, TranscriptSegmentComponent, GeneComponent, \
     LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
     RegulatoryElement, DomainStatus, FunctionalDomain, Strand, \
-    RegulatoryElementType, FUSORTypes, FusionType
+    RegulatoryElementType, FusionType
 from fusor.nomenclature import reg_element_nomenclature, \
     tx_segment_nomenclature, templated_seq_nomenclature, gene_nomenclature
 from fusor.exceptions import IDTranslationException
@@ -52,6 +52,23 @@ class FUSOR:
             db_url=dynamodb_url, db_region=dynamodb_region)
         self.uta_tools = UTATools(db_url=db_url, db_pwd=db_pwd)
 
+    @staticmethod
+    def _contains_component_type(kwargs: Dict,
+                                 comp_type: ComponentType) -> bool:
+        """Check if fusion contains component of a specific type. Helper method
+        for inferring fusion type.
+        :param Dict kwargs: keyword args given to fusion method
+        :param ComponentType comp_type: component type to match
+        :return: True if at least one component of given type is found,
+        False otherwise.
+        """
+        for c in kwargs["structural_components"]:
+            if isinstance(c, Dict) and c.get("type") == comp_type:
+                return True
+            elif isinstance(c, Component) and c.type == comp_type:
+                return True
+        return False
+
     def fusion(self, fusion_type: Optional[FusionType] = None,
                **kwargs) -> Tuple[Optional[Fusion], Optional[str]]:
         """Construct fusion object.
@@ -62,30 +79,35 @@ class FUSOR:
         and any relevant warnings
         """
         # try explicit type param
-        if not fusion_type and "type" in kwargs:
-            try:
-                fusion_type = FusionType[kwargs["type"]]
-            except ValueError:
-                return (None, "Invalid type parameter")
+        explicit_type = kwargs.get("type")
+        if not fusion_type and explicit_type:
+            if explicit_type in FusionType.values():
+                fusion_type = explicit_type
+                kwargs.pop("type")
+            else:
+                return (None, f"Invalid type parameter: {explicit_type}")
         if fusion_type:
             if fusion_type == FusionType.CATEGORICAL_FUSION:
                 return self.categorical_fusion(**kwargs)
             elif fusion_type == FusionType.ASSAYED_FUSION:
                 return self.assayed_fusion(**kwargs)
             else:
-                return (None, "Invalid fusion_type parameter")
+                return (None, f"Invalid fusion_type parameter: {fusion_type}")
 
         # try to infer from provided attributes
         categorical_attributes = any([
-            "domains" in kwargs,
+            "functional_domains" in kwargs,
             "r_frame_preserved" in kwargs,
-            [c for c in kwargs["structural_components"] if c.get("type") == FUSORTypes.ANY_GENE_COMPONENT]  # noqa: E501
+            self._contains_component_type(kwargs,
+                                          ComponentType.ANY_GENE_COMPONENT)
         ])
         assayed_attributes = any([
             "causative_event" in kwargs,
+            "event_description" in kwargs,
             "fusion_evidence" in kwargs,
             "molecular_assay" in kwargs,
-            [c for c in kwargs["structural_components"] if c.get("type") == FUSORTypes.UNKNOWN_GENE_COMPONENT]  # noqa: E501
+            self._contains_component_type(kwargs,
+                                          ComponentType.UNKNOWN_GENE_COMPONENT)
         ])
         if categorical_attributes and not assayed_attributes:
             return self.categorical_fusion(**kwargs)
@@ -100,7 +122,7 @@ class FUSOR:
     def categorical_fusion(
         structural_components: CategoricalFusionComponents,
         regulatory_elements: Optional[List[RegulatoryElement]] = None,
-        domains: Optional[List[FunctionalDomain]] = None,
+        functional_domains: Optional[List[FunctionalDomain]] = None,
         r_frame_preserved: Optional[bool] = None
     ) -> Tuple[Optional[CategoricalFusion], Optional[str]]:
         """Construct a categorical fusion object
@@ -118,7 +140,7 @@ class FUSOR:
         try:
             fusion = CategoricalFusion(
                 structural_components=structural_components,
-                functional_domains=domains,
+                functional_domains=functional_domains,
                 r_frame_preserved=r_frame_preserved,
                 regulatory_elements=regulatory_elements
             )
@@ -132,7 +154,7 @@ class FUSOR:
         regulatory_elements: Optional[List[RegulatoryElement]] = None,
         causative_event: Optional[Event] = None,
         fusion_evidence: Optional[Evidence] = None,
-        molecular_assay: Optional[MolecularAssay] = None
+        molecular_assay: Optional[MolecularAssay] = None,
     ) -> Tuple[Optional[AssayedFusion], Optional[str]]:
         """Construct an assayed fusion object
         :param AssayedFusionComponents structural_components: components
@@ -165,7 +187,7 @@ class FUSOR:
             use_minimal_gene_descr: bool = True,
             seq_id_target_namespace: Optional[str] = None,
             **kwargs
-    ) -> Tuple[Optional[TranscriptSegmentComponent], Optional[str]]:
+    ) -> Tuple[Optional[TranscriptSegmentComponent], Optional[List[str]]]:
         """Create transcript segment component
 
         :param bool tx_to_genomic_coords: `True` if going from transcript
@@ -200,7 +222,7 @@ class FUSOR:
                 msg = "`chromosome` is required when going from genomic to" \
                       " transcript exon coordinates"
                 logger.warning(msg)
-                return None, msg
+                return None, [msg]
             residue_mode = kwargs.get("residue_mode")
             # TODO: Remove once fixed in uta_tools
             if residue_mode != ResidueMode.INTER_RESIDUE:
@@ -210,7 +232,7 @@ class FUSOR:
             data = await self.uta_tools.genomic_to_transcript_exon_coordinates(**kwargs)  # noqa: E501
 
         if data.genomic_data is None:
-            return None, data.warnings  # TODO type error?
+            return None, data.warnings
 
         genomic_data = data.genomic_data
         genomic_data.transcript = coerce_namespace(genomic_data.transcript)
@@ -218,8 +240,8 @@ class FUSOR:
         normalized_gene_response = self._normalized_gene_descriptor(
             genomic_data.gene,
             use_minimal_gene_descr=use_minimal_gene_descr)
-        if not normalized_gene_response[0]:
-            return None, normalized_gene_response[1]
+        if not normalized_gene_response[0] and normalized_gene_response[1]:
+            return None, [normalized_gene_response[1]]
 
         return TranscriptSegmentComponent(
             transcript=genomic_data.transcript,
@@ -527,7 +549,8 @@ class FUSOR:
     def add_location_id(self, fusion: Fusion) -> Fusion:
         """Add `location_id` in fusion object.
 
-        :param Fusion fusion: A valid Fusion object
+        :param Union[CategoricalFusion, AssayedFusion] fusion: A valid Fusion
+        object.
         :return: Updated fusion with `location_id` fields set
         """
         for structural_component in fusion.structural_components:
@@ -545,11 +568,18 @@ class FUSOR:
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                             location_id = self._location_id(location.dict())
                             component_genomic.location_id = location_id
-        if fusion.functional_domains:
+        if isinstance(fusion, CategoricalFusion) and fusion.functional_domains:
             for domain in fusion.functional_domains:
                 location = domain.location_descriptor.location
                 location_id = self._location_id(location.dict())
                 domain.location_descriptor.location_id = location_id
+        if fusion.regulatory_elements:
+            for element in fusion.regulatory_elements:
+                if element.genomic_location:
+                    location = element.genomic_location
+                    if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                        location_id = self._location_id(location.dict())
+                        element.genomic_location.location_id = location_id
         return fusion
 
     @staticmethod
@@ -623,14 +653,20 @@ class FUSOR:
         :param Fusion fusion: A valid Fusion object
         :return: Updated fusion with additional fields set in `gene_descriptor`
         """
-        for field in [fusion.functional_domains, fusion.structural_components,
-                      fusion.regulatory_elements]:
-            for obj in field:
-                if "gene_descriptor" in obj.__fields__.keys():
-                    norm_gene_descr, _ = \
-                        self._normalized_gene_descriptor(obj.gene_descriptor.label, use_minimal_gene_descr=False)  # noqa: E501
+        fields = [
+            (fusion.structural_components, "gene_descriptor"),
+            (fusion.regulatory_elements, "associated_gene")
+        ]
+        if fusion.type == FusionType.CATEGORICAL_FUSION:
+            fields.append((fusion.functional_domains, "gene_descriptor"))
+        for (property, field_name) in fields:
+            for obj in property:
+                if field_name in obj.__fields__.keys():
+                    label = obj.__getattribute__(field_name).label
+                    norm_gene_descr, _ = self._normalized_gene_descriptor(
+                        label, use_minimal_gene_descr=False)
                     if norm_gene_descr:
-                        obj.gene_descriptor = norm_gene_descr
+                        obj.__setattr__(field_name, norm_gene_descr)
         return fusion
 
     def _normalized_gene_descriptor(
@@ -665,24 +701,31 @@ class FUSOR:
         :return: string summarizing fusion in human-readable way per
             VICC fusion curation nomenclature
         """
-        nom_parts = []
+        parts = []
         if fusion.regulatory_elements:
+            num_reg_elements = len(fusion.regulatory_elements)
             for element in fusion.regulatory_elements:
-                nom_parts.append(
-                    reg_element_nomenclature(element, self.seqrepo))
+                parts.append(reg_element_nomenclature(element, self.seqrepo))
+        else:
+            num_reg_elements = 0
         for i, component in enumerate(fusion.structural_components):
             if isinstance(component, AnyGeneComponent):
-                nom_parts.append("v")
+                parts.append("v")
             elif isinstance(component, UnknownGeneComponent):
-                nom_parts.append("?")
+                parts.append("?")
             elif isinstance(component, LinkerComponent):
-                nom_parts.append(component.linker_sequence.sequence)
+                parts.append(component.linker_sequence.sequence)
             elif isinstance(component, TranscriptSegmentComponent):
-                nom_parts.append(tx_segment_nomenclature(component, i))
+                parts.append(tx_segment_nomenclature(
+                    component,
+                    first=(i + num_reg_elements == 0),
+                    last=(i + 1 == len(fusion.structural_components))
+                ))
             elif isinstance(component, TemplatedSequenceComponent):
-                nom_parts.append(templated_seq_nomenclature(component))
+                parts.append(templated_seq_nomenclature(component,
+                                                        self.seqrepo))
             elif isinstance(component, GeneComponent):
-                nom_parts.append(gene_nomenclature(component))
+                parts.append(gene_nomenclature(component))
             else:
                 raise ValueError
-        return "::".join(nom_parts)
+        return "::".join(parts)

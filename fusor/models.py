@@ -1,5 +1,5 @@
 """Model for fusion class"""
-from typing import Optional, List, Union, Literal
+from typing import Optional, List, Union, Literal, Set
 from enum import Enum
 from abc import ABC
 
@@ -104,8 +104,21 @@ class FunctionalDomain(BaseModel):
             }
 
 
+class ComponentType(str, Enum):
+    """Define possible component type values."""
+
+    TRANSCRIPT_SEGMENT_COMPONENT = FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT.value  # noqa: E501
+    TEMPLATED_SEQUENCE_COMPONENT = FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT.value  # noqa: E501
+    LINKER_SEQUENCE_COMPONENT = FUSORTypes.LINKER_SEQUENCE_COMPONENT.value
+    GENE_COMPONENT = FUSORTypes.GENE_COMPONENT.value
+    UNKNOWN_GENE_COMPONENT = FUSORTypes.UNKNOWN_GENE_COMPONENT.value
+    ANY_GENE_COMPONENT = FUSORTypes.ANY_GENE_COMPONENT.value
+
+
 class Component(ABC, BaseModel):
     """Define base component class."""
+
+    type: ComponentType
 
 
 class TranscriptSegmentComponent(Component):
@@ -271,17 +284,15 @@ class Strand(str, Enum):
     NEGATIVE = "-"
 
 
-class TemplatedSequenceComponent(BaseModel):
+class TemplatedSequenceComponent(Component):
     """Define Templated Sequence Component class.
-    A templated sequence is a contiguous genomic sequence found in the
-    gene product
+    A templated sequence is a contiguous genomic sequence found in the gene
+    product.
     """
 
     type: Literal[FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT] = FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT  # noqa: E501
     region: LocationDescriptor
     strand: Strand
-
-    # TODO? add strand to sequencelocation, add chr property
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -341,7 +352,7 @@ class GeneComponent(Component):
             }
 
 
-class UnknownGeneComponent(BaseModel):
+class UnknownGeneComponent(Component):
     """Define UnknownGene class. This is primarily intended to represent a
     partner in the result of a fusion partner-agnostic assay, which identifies
     the absence of an expected gene. For example, a FISH break-apart probe may
@@ -368,7 +379,7 @@ class UnknownGeneComponent(BaseModel):
             }
 
 
-class AnyGeneComponent(BaseModel):
+class AnyGeneComponent(Component):
     """Define AnyGene class. This is primarily intended to represent a partner
     in a categorical fusion, typifying generalizable characteristics of a class
     of fusions such as retained or lost regulatory elements and/or functional
@@ -451,7 +462,7 @@ class RegulatoryElement(BaseModel):
         if not any([values.get("element_reference"),
                     values.get("associated_gene"),
                     values.get("genomic_location")]):  # noqa: E501
-            raise ValueError
+            raise ValueError("Must set >=1 of {`element_reference`, `associated_gene`, `genomic_location`}")  # noqa: E501
         return values
 
     class Config(BaseModelForbidExtra.Config):
@@ -491,11 +502,16 @@ class RegulatoryElement(BaseModel):
 class FusionType(str, Enum):
     """Specify possible Fusion types."""
 
-    CATEGORICAL_FUSION = FUSORTypes.CATEGORICAL_FUSION
-    ASSAYED_FUSION = FUSORTypes.ASSAYED_FUSION
+    CATEGORICAL_FUSION = FUSORTypes.CATEGORICAL_FUSION.value
+    ASSAYED_FUSION = FUSORTypes.ASSAYED_FUSION.value
+
+    @classmethod
+    def values(cls) -> Set:  # noqa: ANN102
+        """Provide all possible enum values."""
+        return set(map(lambda c: c.value, cls))
 
 
-class Fusion(BaseModel, ABC):
+class AbstractFusion(BaseModel, ABC):
     """Define Fusion class"""
 
     type: FusionType
@@ -505,7 +521,7 @@ class Fusion(BaseModel, ABC):
     @root_validator(pre=True)
     def enforce_abc(cls, values):
         """Ensure only subclasses can be instantiated."""
-        if cls.__name__ == "Fusion":
+        if cls.__name__ == "AbstractFusion":
             raise ValueError("Cannot instantiate Fusion abstract class")
         return values
 
@@ -565,10 +581,10 @@ class Evidence(str, Enum):
 class MolecularAssay(BaseModelForbidExtra):
     """Information pertaining to the assay used in identifying the fusion."""
 
-    assay_name: Optional[StrictStr]
-    eco_id: Optional[CURIE]
-    eco_label: Optional[StrictStr]
-    method_uri: Optional[CURIE]
+    assay_name: Optional[StrictStr] = None
+    eco_id: Optional[CURIE] = None
+    eco_label: Optional[StrictStr] = None
+    method_uri: Optional[CURIE] = None
 
     _get_eco_id_val = validator("eco_id", allow_reuse=True)(return_value)
     _get_method_id_val = validator("method_uri", allow_reuse=True)(return_value)  # noqa: E501
@@ -587,21 +603,12 @@ class MolecularAssay(BaseModelForbidExtra):
             }
 
 
-AssayedFusionComponents = List[
-    Union[
-        TranscriptSegmentComponent, GeneComponent, TemplatedSequenceComponent,
-        LinkerComponent, UnknownGeneComponent
-    ]
-]
+AssayedFusionComponents = List[Union[TranscriptSegmentComponent, GeneComponent,
+                                     TemplatedSequenceComponent,
+                                     LinkerComponent, UnknownGeneComponent]]
 
 
-class EventDescription(BaseModelForbidExtra):
-    """Describe causative event."""
-
-    pass  # TODO ???
-
-
-class AssayedFusion(Fusion):
+class AssayedFusion(AbstractFusion):
     """Assayed gene fusions from biological specimens are directly detected
     using RNA-based gene fusion assays, or alternatively may be inferred from
     genomic rearrangements detected by whole genome sequencing or by
@@ -610,10 +617,10 @@ class AssayedFusion(Fusion):
     """
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
-    causative_event: Optional[Event]
-    event_description: Optional[EventDescription]
-    fusion_evidence: Optional[Evidence]
-    molecular_assay: Optional[MolecularAssay]
+    causative_event: Optional[Event] = None
+    event_description: Optional[StrictStr] = None
+    fusion_evidence: Optional[Evidence] = None
+    molecular_assay: Optional[MolecularAssay] = None
     structural_components: AssayedFusionComponents
 
     class Config(BaseModelForbidExtra.Config):
@@ -630,6 +637,7 @@ class AssayedFusion(Fusion):
                 "type": "AssayedFusion",
                 "causative_event": "rearrangement",
                 "fusion_evidence": "observed",
+                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
                 "molecular_assay": '{"ECO_id": "ECO:0007159"}',
                 "structural_components": [
                     {
@@ -655,7 +663,7 @@ CategoricalFusionComponents = List[Union[TranscriptSegmentComponent,
                                          AnyGeneComponent]]
 
 
-class CategoricalFusion(Fusion):
+class CategoricalFusion(AbstractFusion):
     """Categorical gene fusions are generalized concepts representing a class
     of fusions by their shared attributes, such as retained or lost regulatory
     elements and/or functional domains, and are typically curated from the
@@ -770,3 +778,6 @@ class CategoricalFusion(Fusion):
                     }
                 ]
             }
+
+
+Fusion = Union[CategoricalFusion, AssayedFusion]

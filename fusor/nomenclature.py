@@ -17,20 +17,21 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
         or if missing element reference ID, genomic location, and associated
         gene
     """
-    nm_type_string = f"reg_{element.type.value}"
+    nm_type_string = f"reg_{element.element_type.value}"
     nm_string = ""
     if element.element_reference:
         nm_string += f"_{element.element_reference}"
     elif element.genomic_location:
         start = element.genomic_location
         sequence_id = start.location.sequence_id
+        refseq_id = translate_identifier(sr, sequence_id, "refseq")
         try:
             chr = str(
                 translate_identifier(sr, sequence_id, "GRCh38")
             ).split(":")[1]
         except IDTranslationException:
             raise ValueError
-        nm_string += f"_{sequence_id}(chr{chr}):g.{start.location.interval.start.value}_{start.location.interval.end.value}"  # noqa: E501
+        nm_string += f"_{refseq_id}(chr {chr}):g.{start.location.interval.start.value}_{start.location.interval.end.value}"  # noqa: E501
     if element.associated_gene:
         if element.associated_gene.gene_id:
             gene_id = gene_id = element.associated_gene.gene_id
@@ -49,26 +50,29 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
 
 
 def tx_segment_nomenclature(component: TranscriptSegmentComponent,
-                            i: int) -> str:
+                            first: bool,
+                            last: bool) -> str:
     """Return fusion nomenclature for transcript segment component
     :param TranscriptSegmentComponent component: a tx segment component
-    :param int i: index of component in fusion components sequence
+    :param bool first: True if first component in sequence
+    :param bool last: True if last component in sequence
     :return: component nomenclature representation
     """
     prefix = f"{component.transcript}({component.gene_descriptor.label})"
     start, start_offset, end, end_offset = "", "", "", ""
-    if i != -1:
-        end = component.exon_end
-        if component.exon_end_offset is not None:
-            end_offset = component.exon_end_offset
-    if i != 0:
+    if not first:
         start = component.exon_start
-        if component.exon_start_offset is not None:
+        if component.exon_start_offset:
             start_offset = component.exon_start_offset
-    return f"{prefix}: e.{start}{start_offset}_{end}{end_offset}"
+    if not last:
+        end = component.exon_end
+        if component.exon_end_offset:
+            end_offset = component.exon_end_offset
+    return f"{prefix}:e.{start}{start_offset}_{end}{end_offset}"
 
 
-def templated_seq_nomenclature(component: TemplatedSequenceComponent) -> str:
+def templated_seq_nomenclature(component: TemplatedSequenceComponent,
+                               sr: SeqRepo) -> str:
     """Return fusion nomenclature for templated sequence component.
     :param TemplatedSequenceComponent component: a templated sequence component
     :return: component nomenclature representation
@@ -78,10 +82,17 @@ def templated_seq_nomenclature(component: TemplatedSequenceComponent) -> str:
     if component.region and component.region.location:
         location = component.region.location
         if isinstance(location, SequenceLocation):
-            sequence_id = location.sequence_id
-            start = location.interval.start.number
-            end = location.interval.end.number
-            return f"{sequence_id}: g.{start}_{end}({component.strand.value})"
+            sequence_id = str(location.sequence_id)
+            refseq_id = translate_identifier(sr, sequence_id, "refseq")
+            start = location.interval.start.value
+            end = location.interval.end.value
+            try:
+                chr = str(
+                    translate_identifier(sr, sequence_id, "GRCh38")
+                ).split(":")[1]
+            except IDTranslationException:
+                raise ValueError
+            return f"{refseq_id}(chr {chr}):g.{start}_{end}({component.strand.value})"  # noqa: E501
         else:
             raise ValueError
     else:
