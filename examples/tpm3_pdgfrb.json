@@ -1,5 +1,5 @@
 {
-  "type": "Fusion",
+  "type": "CategoricalFusion",
   "functional_domains": [],
   "structural_components": [
     {
