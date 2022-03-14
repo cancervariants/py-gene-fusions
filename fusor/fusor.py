@@ -549,8 +549,7 @@ class FUSOR:
     def add_location_id(self, fusion: Fusion) -> Fusion:
         """Add `location_id` in fusion object.
 
-        :param Union[CategoricalFusion, AssayedFusion] fusion: A valid Fusion
-        object.
+        :param Fusion fusion: A valid Fusion object.
         :return: Updated fusion with `location_id` fields set
         """
         for structural_component in fusion.structural_components:
