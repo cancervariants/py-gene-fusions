@@ -525,20 +525,13 @@ class AbstractFusion(BaseModel, ABC):
             raise ValueError("Cannot instantiate Fusion abstract class")
         return values
 
-    @root_validator(skip_on_failure=True)
-    def check_components_length(cls, values):
-        """Ensure >=2 structural components + regulatory elements"""
-        components = len(values.get("structural_components", []))
-        if values.get("regulatory_elements"):
-            elements = len(values["regulatory_elements"])
+    @validator("structural_components")
+    def check_components_length(cls, v):
+        """Ensure >=2 structural components"""
+        if len(v) < 2:
+            raise ValueError("Fusions require >= 2 structural components")
         else:
-            elements = 0
-        if (components < 1) or (components + elements < 2):
-            raise ValueError("Provided fusion contains an insufficient number "
-                             "of structural components and regulatory "
-                             "elements.")
-        else:
-            return values
+            return v
 
     @root_validator(skip_on_failure=True)
     def structural_components_ends(cls, values):

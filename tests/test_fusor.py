@@ -1,6 +1,5 @@
 """Module for testing the FUSOR class."""
 import copy
-import json
 
 import pytest
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
@@ -10,7 +9,6 @@ from fusor.models import AssayedFusion, CategoricalFusion, \
     TemplatedSequenceComponent, TranscriptSegmentComponent, \
     LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
     FunctionalDomain, GeneComponent, RegulatoryElement, RegulatoryElementType
-from tests.conftest import EXAMPLES_DIR
 
 
 @pytest.fixture(scope="module")
@@ -412,156 +410,6 @@ def mane_transcript_segment_component():
         }
     }
     return TranscriptSegmentComponent(**params)
-
-
-@pytest.fixture(scope="module")
-def fusion():
-    """Create fusion test fixture."""
-    return {
-        "type": "CategoricalFusion",
-        "r_frame_preserved": True,
-        "functional_domains": [
-            {
-                "status": "lost",
-                "name": "Tyrosine-protein kinase, catalytic domain",
-                "id": "interpro:IPR020635",
-                "gene_descriptor": {
-                    "id": "gene:ALK",
-                    "gene_id": "hgnc:1837",
-                    "label": "ALK"
-                },
-                "location_descriptor": {
-                    "id": "fusor.location_descriptor:NP_002520.2",
-                    "type": "LocationDescriptor",
-                    "location": {
-                        "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",  # noqa: E501
-                        "type": "SequenceLocation",
-                        "interval": {
-                            "start": {
-                                "type": "Number",
-                                "value": 510
-                            },
-                            "end": {
-                                "type": "Number",
-                                "value": 781
-                            }
-                        }
-                    }
-                }
-            }
-        ],
-        "structural_components": [
-            {
-                "type": "TranscriptSegmentComponent",
-                "transcript": "refseq:NM_152263.3",
-                "exon_start": 1,
-                "exon_start_offset": 0,
-                "exon_end": 8,
-                "exon_end_offset": 0,
-                "gene_descriptor": {
-                    "id": "gene:TPM3",
-                    "gene_id": "hgnc:12012",
-                    "type": "GeneDescriptor",
-                    "label": "TPM3"
-                },
-                "component_genomic_start": {
-                    "id": "refseq:NM_152263.3_exon1",
-                    "type": "LocationDescriptor",
-                    "location": {
-                        "sequence_id": "refseq:NM_152263.3",
-                        "type": "SequenceLocation",
-                        "interval": {
-                            "start": {
-                                "type": "Number",
-                                "value": 154192135
-                            },
-                            "end": {
-                                "type": "Number",
-                                "value": 154192136
-                            },
-                            "type": "SequenceInterval"
-                        }
-                    }
-                },
-                "component_genomic_end": {
-                    "id": "refseq:NM_152263.3_exon8",
-                    "type": "LocationDescriptor",
-                    "location": {
-                        "sequence_id": "refseq:NM_152263.3",
-                        "type": "SequenceLocation",
-                        "interval": {
-                            "start": {
-                                "type": "Number",
-                                "value": 154170398
-                            },
-                            "end": {
-                                "type": "Number",
-                                "value": 154170399
-                            },
-                            "type": "SequenceInterval"
-                        }
-                    }
-                }
-            },
-            {
-                "type": "GeneComponent",
-                "gene_descriptor": {
-                    "id": "gene:ALK",
-                    "type": "GeneDescriptor",
-                    "gene_id": "hgnc:427",
-                    "label": "ALK"
-                }
-            },
-            {
-                "type": "LinkerSequenceComponent",
-                "linker_sequence": {
-                    "id": "sequence:ACGT",
-                    "type": "SequenceDescriptor",
-                    "sequence": "ACGT",
-                    "residue_type": "SO:0000348"
-                }
-            },
-            {
-                "type": "TemplatedSequenceComponent",
-                "region": {
-                    "id": "chr12:44908821-44908822(+)",
-                    "type": "LocationDescriptor",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NC_000012.12",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {
-                                "type": "Number",
-                                "value": 44908821
-                            },
-                            "end": {
-                                "type": "Number",
-                                "value": 44908822
-                            }
-                        }
-                    },
-                    "label": "chr12:44908821-44908822(+)"
-                },
-                "strand": "+"
-            },
-            {
-                "type": "AnyGeneComponent"
-            }
-        ],
-        "regulatory_elements": [
-            {
-                "type": "RegulatoryElement",
-                "element_type": "promoter",
-                "associated_gene": {
-                    "id": "gene:BRAF",
-                    "type": "GeneDescriptor",
-                    "gene_id": "hgnc:1097",
-                    "label": "BRAF"
-                }
-            }
-        ]
-    }
 
 
 @pytest.fixture()
@@ -1137,43 +985,3 @@ def test__location_descriptor(fusor, location_descriptor_tpm3):
     ld = fusor._location_descriptor(154170398, 154170399, "refseq:NM_152263.3",
                                     label="example_label")
     assert ld.dict() == expected.dict()
-
-
-def test_generate_nomenclature(fusor, fusion, fusion_example,
-                               exhaustive_example):
-    """Test that nomenclature generation is correct."""
-    fixture_nomenclature = "reg_promoter@BRAF(hgnc:1097)::refseq:NM_152263.3(TPM3):e.1_8::ALK(hgnc:427)::ACGT::refseq:NC_000012.12(chr 12):g.44908821_44908822(+)::v"  # noqa: E501
-    nm = fusor.generate_nomenclature(CategoricalFusion(**fusion))
-    assert nm == fixture_nomenclature
-
-    fixture_nomenclature = "reg_promoter@BRAF(hgnc:1097)::refseq:NM_152263.3(TPM3):e.1_8::ALK(hgnc:427)::ACGT::refseq:NC_000023.11(chr X):g.44908820_44908822(+)::v"  # noqa: E501
-    nm = fusor.generate_nomenclature(CategoricalFusion(**fusion_example))
-    assert nm == fixture_nomenclature
-
-    nm = fusor.generate_nomenclature(CategoricalFusion(**exhaustive_example))
-    assert nm == fixture_nomenclature
-
-    with open(EXAMPLES_DIR / "alk.json", "r") as alk_file:
-        fusion = CategoricalFusion(**json.load(alk_file))
-    nm = fusor.generate_nomenclature(fusion)
-    assert nm == "ALK(hgnc:427)::v"
-
-    with open(EXAMPLES_DIR / "epcam_msh2.json", "r") as epcam_file:
-        fusion = CategoricalFusion(**json.load(epcam_file))
-    nm = fusor.generate_nomenclature(fusion)
-    assert nm == "refseq:NM_002354.2(EPCAM):e._5::AGGCTCCCTTGG::refseq:NM_000251.2(MSH2):e.2_"  # noqa: E501
-
-    with open(EXAMPLES_DIR / "tpm3_ntrk1.json", "r") as ntrk_file:
-        fusion = AssayedFusion(**json.load(ntrk_file))
-    nm = fusor.generate_nomenclature(fusion)
-    assert nm == "refseq:NM_152263.3(TPM3):e._8::refseq:NM_002529.3(NTRK1):e.10_"  # noqa: E501
-
-    with open(EXAMPLES_DIR / "tpm3_pdgfrb.json", "r") as pdgfrb_file:
-        fusion = CategoricalFusion(**json.load(pdgfrb_file))
-    nm = fusor.generate_nomenclature(fusion)
-    assert nm == "refseq:NM_152263.3(TPM3):e._8::refseq:NM_002609.3(PDGFRB):e.11_"  # noqa: E501
-
-    with open(EXAMPLES_DIR / "ewsr1.json", "r") as ewsr1_file:
-        fusion = AssayedFusion(**json.load(ewsr1_file))
-    nm = fusor.generate_nomenclature(fusion)
-    assert nm == "EWSR1(hgnc:3508)::?"

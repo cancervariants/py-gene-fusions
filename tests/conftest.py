@@ -24,3 +24,153 @@ def exhaustive_example():
 def fusion_example():
     """Create test fixture for example of fusion (additional fields excl)"""
     return json.load(open(EXAMPLES_DIR / "minimal_example.json", "r"))
+
+
+@pytest.fixture(scope="module")
+def fusion():
+    """Create fusion test fixture."""
+    return {
+        "type": "CategoricalFusion",
+        "r_frame_preserved": True,
+        "functional_domains": [
+            {
+                "status": "lost",
+                "name": "Tyrosine-protein kinase, catalytic domain",
+                "id": "interpro:IPR020635",
+                "gene_descriptor": {
+                    "id": "gene:ALK",
+                    "gene_id": "hgnc:1837",
+                    "label": "ALK"
+                },
+                "location_descriptor": {
+                    "id": "fusor.location_descriptor:NP_002520.2",
+                    "type": "LocationDescriptor",
+                    "location": {
+                        "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",  # noqa: E501
+                        "type": "SequenceLocation",
+                        "interval": {
+                            "start": {
+                                "type": "Number",
+                                "value": 510
+                            },
+                            "end": {
+                                "type": "Number",
+                                "value": 781
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "structural_components": [
+            {
+                "type": "TranscriptSegmentComponent",
+                "transcript": "refseq:NM_152263.3",
+                "exon_start": 1,
+                "exon_start_offset": 0,
+                "exon_end": 8,
+                "exon_end_offset": 0,
+                "gene_descriptor": {
+                    "id": "gene:TPM3",
+                    "gene_id": "hgnc:12012",
+                    "type": "GeneDescriptor",
+                    "label": "TPM3"
+                },
+                "component_genomic_start": {
+                    "id": "refseq:NM_152263.3_exon1",
+                    "type": "LocationDescriptor",
+                    "location": {
+                        "sequence_id": "refseq:NM_152263.3",
+                        "type": "SequenceLocation",
+                        "interval": {
+                            "start": {
+                                "type": "Number",
+                                "value": 154192135
+                            },
+                            "end": {
+                                "type": "Number",
+                                "value": 154192136
+                            },
+                            "type": "SequenceInterval"
+                        }
+                    }
+                },
+                "component_genomic_end": {
+                    "id": "refseq:NM_152263.3_exon8",
+                    "type": "LocationDescriptor",
+                    "location": {
+                        "sequence_id": "refseq:NM_152263.3",
+                        "type": "SequenceLocation",
+                        "interval": {
+                            "start": {
+                                "type": "Number",
+                                "value": 154170398
+                            },
+                            "end": {
+                                "type": "Number",
+                                "value": 154170399
+                            },
+                            "type": "SequenceInterval"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "GeneComponent",
+                "gene_descriptor": {
+                    "id": "gene:ALK",
+                    "type": "GeneDescriptor",
+                    "gene_id": "hgnc:427",
+                    "label": "ALK"
+                }
+            },
+            {
+                "type": "LinkerSequenceComponent",
+                "linker_sequence": {
+                    "id": "sequence:ACGT",
+                    "type": "SequenceDescriptor",
+                    "sequence": "ACGT",
+                    "residue_type": "SO:0000348"
+                }
+            },
+            {
+                "type": "TemplatedSequenceComponent",
+                "region": {
+                    "id": "chr12:44908821-44908822(+)",
+                    "type": "LocationDescriptor",
+                    "location": {
+                        "type": "SequenceLocation",
+                        "sequence_id": "refseq:NC_000012.12",
+                        "interval": {
+                            "type": "SequenceInterval",
+                            "start": {
+                                "type": "Number",
+                                "value": 44908821
+                            },
+                            "end": {
+                                "type": "Number",
+                                "value": 44908822
+                            }
+                        }
+                    },
+                    "label": "chr12:44908821-44908822(+)"
+                },
+                "strand": "+"
+            },
+            {
+                "type": "AnyGeneComponent"
+            }
+        ],
+        "regulatory_elements": [
+            {
+                "type": "RegulatoryElement",
+                "element_type": "promoter",
+                "associated_gene": {
+                    "id": "gene:BRAF",
+                    "type": "GeneDescriptor",
+                    "gene_id": "hgnc:1097",
+                    "label": "BRAF"
+                }
+            }
+        ]
+    }

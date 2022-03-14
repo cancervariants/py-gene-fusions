@@ -702,10 +702,13 @@ class FUSOR:
             VICC fusion curation nomenclature
         """
         parts = []
+        element_genes = []
         if fusion.regulatory_elements:
             num_reg_elements = len(fusion.regulatory_elements)
             for element in fusion.regulatory_elements:
                 parts.append(reg_element_nomenclature(element, self.seqrepo))
+                if element.associated_gene:
+                    element_genes.append(element.associated_gene.label)
         else:
             num_reg_elements = 0
         for i, component in enumerate(fusion.structural_components):
@@ -716,16 +719,20 @@ class FUSOR:
             elif isinstance(component, LinkerComponent):
                 parts.append(component.linker_sequence.sequence)
             elif isinstance(component, TranscriptSegmentComponent):
-                parts.append(tx_segment_nomenclature(
-                    component,
-                    first=(i + num_reg_elements == 0),
-                    last=(i + 1 == len(fusion.structural_components))
-                ))
+                if not any([gene == component.gene_descriptor.label
+                            for gene in element_genes]):
+                    parts.append(tx_segment_nomenclature(
+                        component,
+                        first=(i + num_reg_elements == 0),
+                        last=(i + 1 == len(fusion.structural_components))
+                    ))
             elif isinstance(component, TemplatedSequenceComponent):
                 parts.append(templated_seq_nomenclature(component,
                                                         self.seqrepo))
             elif isinstance(component, GeneComponent):
-                parts.append(gene_nomenclature(component))
+                if not any([gene == component.gene_descriptor.label
+                            for gene in element_genes]):
+                    parts.append(gene_nomenclature(component))
             else:
                 raise ValueError
         return "::".join(parts)
