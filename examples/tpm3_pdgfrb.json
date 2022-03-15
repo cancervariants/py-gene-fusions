@@ -1,8 +1,9 @@
 {
+  "type": "CategoricalFusion",
   "functional_domains": [],
   "structural_components": [
     {
-      "component_type": "transcript_segment",
+      "type": "TranscriptSegmentComponent",
       "transcript": "refseq:NM_152263.3",
       "exon_end": 8,
       "exon_end_offset": 0,
@@ -34,7 +35,7 @@
       }
     },
     {
-      "component_type": "transcript_segment",
+      "type": "TranscriptSegmentComponent",
       "transcript": "refseq:NM_002609.3",
       "exon_start": 11,
       "exon_start_offset": 0,

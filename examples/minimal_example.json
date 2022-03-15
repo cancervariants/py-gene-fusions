@@ -1,7 +1,9 @@
 {
+  "type": "CategoricalFusion",
   "r_frame_preserved": true,
   "functional_domains": [
     {
+      "type": "FunctionalDomain",
       "id": "interpro:IPR020635",
       "name": "Tyrosine-protein kinase, catalytic domain",
       "status": "lost",
@@ -34,7 +36,7 @@
   ],
   "structural_components": [
     {
-      "component_type": "transcript_segment",
+      "type": "TranscriptSegmentComponent",
       "transcript": "refseq:NM_152263.3",
       "exon_start": 1,
       "exon_start_offset": 0,
@@ -88,7 +90,7 @@
       }
     },
     {
-      "component_type": "gene",
+      "type": "GeneComponent",
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
         "type": "GeneDescriptor",
@@ -97,7 +99,7 @@
       }
     },
     {
-      "component_type": "linker_sequence",
+      "type": "LinkerSequenceComponent",
       "linker_sequence": {
         "id": "fusor.sequence:ACGT",
         "type": "SequenceDescriptor",
@@ -106,14 +108,14 @@
       }
     },
     {
-      "component_type": "templated_sequence",
+      "type": "TemplatedSequenceComponent",
       "region": {
         "id": "fusor.location_descriptor:NC_000023.11",
         "type": "LocationDescriptor",
         "location_id": "ga4gh:VSL.q0Hnb9gpYDyUuTix4Fesy5ungdnc4dWm",
         "location": {
           "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000023.11",
+          "sequence_id": "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
           "interval": {
             "type": "SequenceInterval",
             "start": {
@@ -130,17 +132,14 @@
       "strand": "+"
     },
     {
-      "component_type": "unknown_gene"
-    },
-    {
-      "component_type": "any_gene"
+      "type": "AnyGeneComponent"
     }
   ],
-  "causative_event": "rearrangement",
   "regulatory_elements": [
     {
-      "type": "promoter",
-      "gene_descriptor": {
+      "type": "RegulatoryElement",
+      "element_type": "promoter",
+      "associated_gene": {
         "id": "gene:BRAF",
         "type": "GeneDescriptor",
         "label": "BRAF",

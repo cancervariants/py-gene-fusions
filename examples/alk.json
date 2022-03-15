@@ -1,8 +1,40 @@
 {
-  "functional_domains": [],
+  "type": "CategoricalFusion",
+  "functional_domains": [
+    {
+      "id": "interpro:IPR017441",
+      "name": "Protein kinase, ATP binding site",
+      "status": "preserved",
+      "gene_descriptor": {
+        "id": "normalize.gene:hgnc%3A427",
+        "type": "GeneDescriptor",
+        "label": "ALK",
+        "gene_id": "hgnc:427"
+      },
+      "location_descriptor": {
+        "id": "fusor.location_descriptor:NP_004295.2",
+        "type": "LocationDescriptor",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NP_004295.2",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 1122
+            },
+            "end": {
+              "type": "Number",
+              "value": 1150
+            }
+          }
+        }
+      }
+    }
+  ],
   "structural_components": [
     {
-      "component_type": "gene",
+      "type": "GeneComponent",
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
         "type": "GeneDescriptor",
@@ -11,8 +43,7 @@
       }
     },
     {
-      "component_type": "any_gene"
+      "type": "AnyGeneComponent"
     }
-  ],
-  "regulatory_elements": []
+  ]
 }

@@ -1,0 +1,24 @@
+{
+  "type": "AssayedFusion",
+  "structural_components": [
+    {
+      "type": "GeneComponent",
+      "gene_descriptor": {
+        "type": "GeneDescriptor",
+        "id": "normalize.gene:EWSR1",
+        "label": "EWSR1",
+        "gene_id": "hgnc:3508"
+      }
+    },
+    {
+      "type": "UnknownGeneComponent"
+    }
+  ],
+  "causative_event": "rearrangement",
+  "fusion_evidence": "inferred",
+  "molecular_assay": {
+    "assay_name": "Fluorescence in-situ hybridization (FISH)",
+    "eco_id": "ECO:0001828",
+    "eco_label": "inference of sequence features from visual inspection used in manual assertion"
+  }
+}

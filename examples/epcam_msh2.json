@@ -1,8 +1,9 @@
 {
+  "type": "CategoricalFusion",
   "functional_domains": [],
   "structural_components": [
     {
-      "component_type": "transcript_segment",
+      "type": "TranscriptSegmentComponent",
       "transcript": "refseq:NM_002354.2",
       "exon_end": 5,
       "exon_end_offset": 0,
@@ -34,7 +35,7 @@
       }
     },
     {
-      "component_type": "linker_sequence",
+      "type": "LinkerSequenceComponent",
       "linker_sequence": {
         "id": "fusor.sequence:AGGCTCCCTTGG",
         "type": "SequenceDescriptor",
@@ -43,7 +44,7 @@
       }
     },
     {
-      "component_type": "transcript_segment",
+      "type": "TranscriptSegmentComponent",
       "transcript": "refseq:NM_000251.2",
       "exon_start": 2,
       "exon_start_offset": 0,

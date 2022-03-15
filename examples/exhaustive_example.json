@@ -1,7 +1,8 @@
 {
-  "r_frame_preserved": true,
+  "type": "CategoricalFusion",
   "functional_domains": [
     {
+      "type": "FunctionalDomain",
       "id": "interpro:IPR020635",
       "name": "Tyrosine-protein kinase, catalytic domain",
       "status": "lost",
@@ -81,7 +82,7 @@
   ],
   "structural_components": [
     {
-      "component_type": "transcript_segment",
+      "type": "TranscriptSegmentComponent",
       "transcript": "refseq:NM_152263.3",
       "exon_start": 1,
       "exon_start_offset": 0,
@@ -175,7 +176,7 @@
         "xrefs": null,
         "alternate_labels": null,
         "extensions": null,
-        "location_id": "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW",
+        "location_id": "ga4gh:VSL.n7i6VMRAuSgAjwVopxhWAJdlPJMfk7KR",
         "location": {
           "id": null,
           "type": "SequenceLocation",
@@ -195,7 +196,7 @@
         "xrefs": null,
         "alternate_labels": null,
         "extensions": null,
-        "location_id": "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq",
+        "location_id": "ga4gh:VSL.wQ4TpNbsTPq_A-eQTL44gbP3f4fnp0vx",
         "location": {
           "id": null,
           "type": "SequenceLocation",
@@ -209,7 +210,7 @@
       }
     },
     {
-      "component_type": "gene",
+      "type": "GeneComponent",
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
         "type": "GeneDescriptor",
@@ -264,7 +265,7 @@
       }
     },
     {
-      "component_type": "linker_sequence",
+      "type": "LinkerSequenceComponent",
       "linker_sequence": {
         "id": "fusor.sequence:ACGT",
         "type": "SequenceDescriptor",
@@ -279,20 +280,20 @@
       }
     },
     {
-      "component_type": "templated_sequence",
+      "type": "TemplatedSequenceComponent",
       "region": {
-        "id": "fusor.location_descriptor:NC_000001.11",
+        "id": "fusor.location_descriptor:NC_000023.11",
         "type": "LocationDescriptor",
         "label": null,
         "description": null,
         "xrefs": null,
         "alternate_labels": null,
         "extensions": null,
-        "location_id": "ga4gh:VSL._T8a-GXBEKTQPxWhSCFf-VzEMi4QdHra",
+        "location_id": "ga4gh:VSL.zd12pX_ju2gLq9a9UOYgM8AtbkuhnyUu",
         "location": {
           "id": null,
           "type": "SequenceLocation",
-          "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+          "sequence_id": "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
           "interval": {
             "type": "SequenceInterval",
             "start": { "type": "Number", "value": 44908820 },
@@ -302,14 +303,13 @@
       },
       "strand": "+"
     },
-    { "component_type": "unknown_gene" },
-    { "component_type": "any_gene" }
+    { "type": "AnyGeneComponent" }
   ],
-  "causative_event": "rearrangement",
   "regulatory_elements": [
     {
-      "type": "promoter",
-      "gene_descriptor": {
+      "type": "RegulatoryElement",
+      "element_type": "promoter",
+      "associated_gene": {
         "id": "normalize.gene:BRAF",
         "type": "GeneDescriptor",
         "label": "BRAF",

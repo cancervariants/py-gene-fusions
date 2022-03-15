@@ -1,6 +1,7 @@
 """Model for fusion class"""
-from typing import Optional, List, Union, Literal
+from typing import Optional, List, Union, Literal, Set
 from enum import Enum
+from abc import ABC
 
 from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
     Extra, ValidationError, root_validator
@@ -8,6 +9,30 @@ from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
 from ga4gh.vrsatile.pydantic.vrs_models import Sequence
+
+
+class BaseModelForbidExtra(BaseModel):
+    """Base model with extra fields forbidden."""
+
+    class Config:
+        """Configure class."""
+
+        extra = Extra.forbid
+
+
+class FUSORTypes(str, Enum):
+    """Define FUSOR object type values."""
+
+    FUNCTIONAL_DOMAIN = "FunctionalDomain"
+    TRANSCRIPT_SEGMENT_COMPONENT = "TranscriptSegmentComponent"
+    TEMPLATED_SEQUENCE_COMPONENT = "TemplatedSequenceComponent"
+    LINKER_SEQUENCE_COMPONENT = "LinkerSequenceComponent"
+    GENE_COMPONENT = "GeneComponent"
+    UNKNOWN_GENE_COMPONENT = "UnknownGeneComponent"
+    ANY_GENE_COMPONENT = "AnyGeneComponent"
+    REGULATORY_ELEMENT = "RegulatoryElement"
+    CATEGORICAL_FUSION = "CategoricalFusion"
+    ASSAYED_FUSION = "AssayedFusion"
 
 
 class AdditionalFields(str, Enum):
@@ -28,6 +53,7 @@ class DomainStatus(str, Enum):
 class FunctionalDomain(BaseModel):
     """Define FunctionalDomain class"""
 
+    type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     id: CURIE
     name: StrictStr
     status: DomainStatus
@@ -36,10 +62,8 @@ class FunctionalDomain(BaseModel):
 
     _get_id_val = validator("id", allow_reuse=True)(return_value)
 
-    class Config:
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -49,6 +73,7 @@ class FunctionalDomain(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
+                "type": "FunctionalDomain",
                 "status": "lost",
                 "name": "Tyrosine-protein kinase, catalytic domain",
                 "id": "interpro:IPR020635",
@@ -80,20 +105,26 @@ class FunctionalDomain(BaseModel):
 
 
 class ComponentType(str, Enum):
-    """Define possible structural components."""
+    """Define possible component type values."""
 
-    TRANSCRIPT_SEGMENT = "transcript_segment"
-    TEMPLATED_SEQUENCE = "templated_sequence"
-    LINKER_SEQUENCE = "linker_sequence"
-    GENE = "gene"
-    UNKNOWN_GENE = "unknown_gene"
-    ANY_GENE = "any_gene"
+    TRANSCRIPT_SEGMENT_COMPONENT = FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT.value  # noqa: E501
+    TEMPLATED_SEQUENCE_COMPONENT = FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT.value  # noqa: E501
+    LINKER_SEQUENCE_COMPONENT = FUSORTypes.LINKER_SEQUENCE_COMPONENT.value
+    GENE_COMPONENT = FUSORTypes.GENE_COMPONENT.value
+    UNKNOWN_GENE_COMPONENT = FUSORTypes.UNKNOWN_GENE_COMPONENT.value
+    ANY_GENE_COMPONENT = FUSORTypes.ANY_GENE_COMPONENT.value
 
 
-class TranscriptSegmentComponent(BaseModel):
+class Component(ABC, BaseModel):
+    """Define base component class."""
+
+    type: ComponentType
+
+
+class TranscriptSegmentComponent(Component):
     """Define TranscriptSegment class"""
 
-    component_type: Literal[ComponentType.TRANSCRIPT_SEGMENT] = ComponentType.TRANSCRIPT_SEGMENT  # noqa: E501
+    type: Literal[FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT] = FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT  # noqa: E501
     transcript: CURIE
     exon_start: Optional[StrictInt]
     exon_start_offset: Optional[StrictInt] = 0
@@ -130,10 +161,8 @@ class TranscriptSegmentComponent(BaseModel):
 
     _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)  # noqa: E501
 
-    class Config:
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -143,13 +172,14 @@ class TranscriptSegmentComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "transcript_segment",
+                "type": "TranscriptSegmentComponent",
                 "transcript": "refseq:NM_152263.3",
                 "exon_start": 1,
                 "exon_start_offset": 0,
                 "exon_end": 8,
                 "exon_end_offset": 0,
                 "gene_descriptor": {
+                    "type": "GeneDescriptor",
                     "id": "gene:TPM3",
                     "gene_id": "hgnc:12012",
                     "type": "GeneDescriptor",
@@ -198,10 +228,10 @@ class TranscriptSegmentComponent(BaseModel):
             }
 
 
-class LinkerComponent(BaseModel):
+class LinkerComponent(Component):
     """Define Linker class (linker sequence)"""
 
-    component_type: Literal[ComponentType.LINKER_SEQUENCE] = ComponentType.LINKER_SEQUENCE  # noqa: E501
+    type: Literal[FUSORTypes.LINKER_SEQUENCE_COMPONENT] = FUSORTypes.LINKER_SEQUENCE_COMPONENT  # noqa: E501
     linker_sequence: SequenceDescriptor
 
     @validator("linker_sequence", pre=True)
@@ -226,10 +256,8 @@ class LinkerComponent(BaseModel):
 
         return v
 
-    class Config:
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -239,7 +267,7 @@ class LinkerComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "linker_sequence",
+                "type": "LinkerSequenceComponent",
                 "linker_sequence": {
                     "id": "sequence:ACGT",
                     "type": "SequenceDescriptor",
@@ -256,22 +284,18 @@ class Strand(str, Enum):
     NEGATIVE = "-"
 
 
-class TemplatedSequenceComponent(BaseModel):
+class TemplatedSequenceComponent(Component):
     """Define Templated Sequence Component class.
-    A templated sequence is a contiguous genomic sequence found in the
-    gene product
+    A templated sequence is a contiguous genomic sequence found in the gene
+    product.
     """
 
-    component_type: Literal[ComponentType.TEMPLATED_SEQUENCE] = ComponentType.TEMPLATED_SEQUENCE  # noqa: E501
+    type: Literal[FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT] = FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT  # noqa: E501
     region: LocationDescriptor
     strand: Strand
 
-    # add strand to sequencelocation, add chr property
-
-    class Config:
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -281,7 +305,7 @@ class TemplatedSequenceComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "templated_sequence",
+                "type": "TemplatedSequenceComponent",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
                     "type": "LocationDescriptor",
@@ -301,16 +325,14 @@ class TemplatedSequenceComponent(BaseModel):
             }
 
 
-class GeneComponent(BaseModel):
+class GeneComponent(Component):
     """Define Gene component class."""
 
-    component_type: Literal[ComponentType.GENE] = ComponentType.GENE
+    type: Literal[FUSORTypes.GENE_COMPONENT] = FUSORTypes.GENE_COMPONENT
     gene_descriptor: GeneDescriptor
 
-    class Config:
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -320,7 +342,7 @@ class GeneComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "gene",
+                "type": "GeneComponent",
                 "gene_descriptor": {
                     "id": "gene:BRAF",
                     "gene_id": "hgnc:1097",
@@ -330,7 +352,7 @@ class GeneComponent(BaseModel):
             }
 
 
-class UnknownGeneComponent(BaseModel):
+class UnknownGeneComponent(Component):
     """Define UnknownGene class. This is primarily intended to represent a
     partner in the result of a fusion partner-agnostic assay, which identifies
     the absence of an expected gene. For example, a FISH break-apart probe may
@@ -340,12 +362,10 @@ class UnknownGeneComponent(BaseModel):
     an UnknownGene component.
     """
 
-    component_type: Literal[ComponentType.UNKNOWN_GENE] = ComponentType.UNKNOWN_GENE  # noqa: E501
+    type: Literal[FUSORTypes.UNKNOWN_GENE_COMPONENT] = FUSORTypes.UNKNOWN_GENE_COMPONENT  # noqa: E501
 
-    class Config:
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -355,11 +375,11 @@ class UnknownGeneComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "unknown_gene"
+                "type": "UnknownGeneComponent"
             }
 
 
-class AnyGeneComponent(BaseModel):
+class AnyGeneComponent(Component):
     """Define AnyGene class. This is primarily intended to represent a partner
     in a categorical fusion, typifying generalizable characteristics of a class
     of fusions such as retained or lost regulatory elements and/or functional
@@ -370,12 +390,10 @@ class AnyGeneComponent(BaseModel):
     AnyGene component.
     """
 
-    component_type: Literal[ComponentType.ANY_GENE] = ComponentType.ANY_GENE
+    type: Literal[FUSORTypes.ANY_GENE_COMPONENT] = FUSORTypes.ANY_GENE_COMPONENT  # noqa: E501
 
-    class Config:
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -385,7 +403,7 @@ class AnyGeneComponent(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "component_type": "any_gene"
+                "type": "AnyGeneComponent"
             }
 
 
@@ -398,22 +416,57 @@ class Event(str, Enum):
 
 
 class RegulatoryElementType(str, Enum):
-    """Define possible types of Regulatory Elements."""
+    """Define possible types of Regulatory Elements. Options are the possible
+    values for /regulatory_class value property in the INSDC controlled
+    vocabulary.
+    https://www.insdc.org/controlled-vocabulary-regulatoryclass
+    """
 
-    PROMOTER = "promoter"
+    ATTENUATOR = "attenuator"
+    CAAT_SIGNAL = "caat_signal"
     ENHANCER = "enhancer"
+    ENHANCER_BLOCKING_ELEMENT = "enhancer_blocking_element"
+    GC_SIGNAL = "gc_signal"
+    IMPRINTING_CONTROL_REGION = "imprinting_control_region"
+    INSULATOR = "insulator"
+    LOCUS_CONTROL_REGION = "locus_control_region"
+    MINUS_35_SIGNAL = "minus_35_signal"
+    MINUS_10_SIGNAL = "minus_10_signal"
+    POLYA_SIGNAL_SEQUENCE = "polya_signal_sequence"
+    PROMOTER = "promoter"
+    RESPONSE_ELEMENT = "response_element"
+    RIBOSOME_BINDING_SITE = "ribosome_binding_site"
+    RIBOSWITCH = "riboswitch"
+    SILENCER = "silencer"
+    TATA_BOX = "tata_box"
+    TERMINATOR = "terminator"
+    OTHER = "other"
 
 
 class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class"""
 
-    type: RegulatoryElementType
-    gene_descriptor: GeneDescriptor
+    type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT  # noqa: E501
+    element_type: RegulatoryElementType
+    element_reference: Optional[CURIE] = None
+    associated_gene: Optional[GeneDescriptor] = None
+    genomic_location: Optional[LocationDescriptor] = None
 
-    class Config:
+    _get_ref_id_val = validator("element_reference", allow_reuse=True)(return_value)  # noqa: E501
+
+    @root_validator(pre=True)
+    def ensure_min_values(cls, values):
+        """Ensure one of {`element_reference`, `associated_gene`,
+        `genomic_location`} is set.
+        """
+        if not any([values.get("element_reference"),
+                    values.get("associated_gene"),
+                    values.get("genomic_location")]):  # noqa: E501
+            raise ValueError("Must set >=1 of {`element_reference`, `associated_gene`, `genomic_location`}")  # noqa: E501
+        return values
+
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
-
-        extra = Extra.forbid
 
         @staticmethod
         def schema_extra(schema, _):
@@ -423,43 +476,148 @@ class RegulatoryElement(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "type": "promoter",
-                "gene_descriptor": {
-                    "id": "gene:BRAF",
-                    "gene_id": "hgnc:1097",
-                    "label": "BRAF",
-                    "type": "GeneDescriptor",
+                "type": "RegulatoryElement",
+                "element_type": "Promoter",
+                "genomic_location": {
+                    "type": "LocationDescriptor",
+                    "location": {
+                        "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",  # noqa: E501
+                        "type": "SequenceLocation",
+                        "interval": {
+                            "type": "SequenceInterval",
+                            "start": {
+                                "type": "Number",
+                                "value": 155593
+                            },
+                            "end": {
+                                "type": "Number",
+                                "value": 155610
+                            }
+                        }
+                    }
                 }
             }
 
 
-class Fusion(BaseModel):
+class FusionType(str, Enum):
+    """Specify possible Fusion types."""
+
+    CATEGORICAL_FUSION = FUSORTypes.CATEGORICAL_FUSION.value
+    ASSAYED_FUSION = FUSORTypes.ASSAYED_FUSION.value
+
+    @classmethod
+    def values(cls) -> Set:  # noqa: ANN102
+        """Provide all possible enum values."""
+        return set(map(lambda c: c.value, cls))
+
+
+class AbstractFusion(BaseModel, ABC):
     """Define Fusion class"""
 
-    r_frame_preserved: Optional[StrictBool]
-    functional_domains: Optional[List[FunctionalDomain]]
-    structural_components: List[Union[TranscriptSegmentComponent,
-                                      GeneComponent,
-                                      TemplatedSequenceComponent,
-                                      LinkerComponent,
-                                      UnknownGeneComponent,
-                                      AnyGeneComponent]]
-    causative_event: Optional[Event]
+    type: FusionType
     regulatory_elements: Optional[List[RegulatoryElement]]
+    structural_components: List[Component]
+
+    @root_validator(pre=True)
+    def enforce_abc(cls, values):
+        """Ensure only subclasses can be instantiated."""
+        if cls.__name__ == "AbstractFusion":
+            raise ValueError("Cannot instantiate Fusion abstract class")
+        return values
 
     @validator("structural_components")
-    def structural_components_length(cls, v):
+    def check_components_length(cls, v):
         """Ensure >=2 structural components"""
         if len(v) < 2:
-            raise ValueError("Fusion must contain at least 2 structural "
-                             "components.")
+            raise ValueError("Fusions require >= 2 structural components")
         else:
             return v
 
-    class Config:
+    @root_validator(skip_on_failure=True)
+    def structural_components_ends(cls, values):
+        """Ensure start/end components are of legal types and have fields
+        required by their position.
+        """
+        components = values.get("structural_components")
+        if isinstance(components[0], TranscriptSegmentComponent):
+            if components[0].exon_end is None and not values["regulatory_elements"]:  # noqa: E501
+                raise ValueError(
+                    "5' TranscriptSegmentComponent fusion partner must "
+                    "contain ending exon position"
+                )
+        elif isinstance(components[0], LinkerComponent):
+            raise ValueError(
+                "First structural component cannot be LinkerSequence")
+
+        if len(components) > 2:
+            for component in components[1:-1]:
+                if isinstance(component, TranscriptSegmentComponent):
+                    if component.exon_start is None or component.exon_end is None:  # noqa: E501
+                        raise ValueError(
+                            "Connective TranscriptSegmentComponents must "
+                            "include both start and end positions"
+                        )
+        if isinstance(components[-1], TranscriptSegmentComponent):
+            if components[-1].exon_start is None:
+                raise ValueError("3' fusion partner junction must include "
+                                 "starting position")
+        return values
+
+
+class Evidence(str, Enum):
+    """Form of evidence supporting identification of the fusion."""
+
+    OBSERVED = "observed"
+    INFERRED = "inferred"
+
+
+class MolecularAssay(BaseModelForbidExtra):
+    """Information pertaining to the assay used in identifying the fusion."""
+
+    assay_name: Optional[StrictStr] = None
+    eco_id: Optional[CURIE] = None
+    eco_label: Optional[StrictStr] = None
+    method_uri: Optional[CURIE] = None
+
+    _get_eco_id_val = validator("eco_id", allow_reuse=True)(return_value)
+    _get_method_id_val = validator("method_uri", allow_reuse=True)(return_value)  # noqa: E501
+
+    class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
-        extra = Extra.forbid
+        @staticmethod
+        def schema_extra(schema, _):
+            """Provide example"""
+            schema["example"] = {
+                "method_uri": "pmid:34974290",
+                "eco_id": "ECO:0005629",
+                "eco_label": "DNA affinity chromatography evidence used in manual assertion",  # noqa: E501
+                "assay_name": "Breakapart FISH probe"
+            }
+
+
+AssayedFusionComponents = List[Union[TranscriptSegmentComponent, GeneComponent,
+                                     TemplatedSequenceComponent,
+                                     LinkerComponent, UnknownGeneComponent]]
+
+
+class AssayedFusion(AbstractFusion):
+    """Assayed gene fusions from biological specimens are directly detected
+    using RNA-based gene fusion assays, or alternatively may be inferred from
+    genomic rearrangements detected by whole genome sequencing or by
+    coarser-scale cytogenomic assays. Example: an EWSR1 fusion inferred
+    from a breakapart FISH assay.
+    """
+
+    type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
+    causative_event: Optional[Event] = None
+    event_description: Optional[StrictStr] = None
+    fusion_evidence: Optional[Evidence] = None
+    molecular_assay: Optional[MolecularAssay] = None
+    structural_components: AssayedFusionComponents
+
+    class Config(BaseModelForbidExtra.Config):
+        """Configure class."""
 
         @staticmethod
         def schema_extra(schema, _):
@@ -469,6 +627,59 @@ class Fusion(BaseModel):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
+                "type": "AssayedFusion",
+                "causative_event": "rearrangement",
+                "fusion_evidence": "observed",
+                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+                "molecular_assay": '{"ECO_id": "ECO:0007159"}',
+                "structural_components": [
+                    {
+                        "component_type": "gene",
+                        "gene_descriptor": {
+                            "id": "gene:EWSR1",
+                            "gene_id": "hgnc:3058",
+                            "label": "EWSR1",
+                            "type": "GeneDescriptor",
+                        }
+                    },
+                    {
+                        "component_type": "UnknownGene"
+                    }
+                ]
+            }
+
+
+CategoricalFusionComponents = List[Union[TranscriptSegmentComponent,
+                                         GeneComponent,
+                                         TemplatedSequenceComponent,
+                                         LinkerComponent,
+                                         AnyGeneComponent]]
+
+
+class CategoricalFusion(AbstractFusion):
+    """Categorical gene fusions are generalized concepts representing a class
+    of fusions by their shared attributes, such as retained or lost regulatory
+    elements and/or functional domains, and are typically curated from the
+    biomedical literature for use in genomic knowledgebases.
+    """
+
+    type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION  # noqa: E501
+    r_frame_preserved: Optional[StrictBool]
+    functional_domains: Optional[List[FunctionalDomain]]
+    structural_components: CategoricalFusionComponents
+
+    class Config(BaseModelForbidExtra.Config):
+        """Configure class."""
+
+        @staticmethod
+        def schema_extra(schema, _):
+            """Provide example"""
+            if "title" in schema.keys():
+                schema.pop("title", None)
+            for prop in schema.get("properties", {}).values():
+                prop.pop("title", None)
+            schema["example"] = {
+                "type": "CategoricalFusion",
                 "r_frame_preserved": True,
                 "functional_domains": [
                     {
@@ -485,7 +696,7 @@ class Fusion(BaseModel):
                 ],
                 "structural_components": [
                     {
-                        "component_type": "transcript_segment",
+                        "component_type": "TranscriptSegment",
                         "transcript": "refseq:NM_152263.3",
                         "exon_start": 1,
                         "exon_start_offset": 0,
@@ -548,10 +759,9 @@ class Fusion(BaseModel):
                         }
                     }
                 ],
-                "causative_event": "rearrangement",
                 "regulatory_elements": [
                     {
-                        "type": "promoter",
+                        "element_type": "promoter",
                         "gene": {
                             "id": "gene:BRAF",
                             "type": "GeneDescriptor",
@@ -561,3 +771,6 @@ class Fusion(BaseModel):
                     }
                 ]
             }
+
+
+Fusion = Union[CategoricalFusion, AssayedFusion]
