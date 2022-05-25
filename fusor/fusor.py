@@ -17,10 +17,10 @@ from gene.query import QueryHandler
 
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.models import AssayedFusion, AssayedFusionElements, \
-    CategoricalFusion, CategoricalFusionElements, BaseElement, ElementType, \
-    Event, Evidence, Fusion, MolecularAssay, TemplatedSequenceElement, \
-    AdditionalFields, TranscriptSegmentElement, GeneElement, \
-    LinkerElement, UnknownGeneElement, MultiplePossibleGenesElement, \
+    CategoricalFusion, CategoricalFusionElements, BaseStructuralElement, \
+    StructuralElementType, Event, Evidence, Fusion, MolecularAssay, \
+    TemplatedSequenceElement, AdditionalFields, TranscriptSegmentElement, \
+    GeneElement, LinkerElement, UnknownGeneElement, MultiplePossibleGenesElement, \
     RegulatoryElement, DomainStatus, FunctionalDomain, Strand, \
     RegulatoryElementType, FusionType
 from fusor.nomenclature import reg_element_nomenclature, \
@@ -53,7 +53,7 @@ class FUSOR:
         self.uta_tools = UTATools(db_url=db_url, db_pwd=db_pwd)
 
     @staticmethod
-    def _contains_element_type(kwargs: Dict, elm_type: ElementType) -> bool:
+    def _contains_element_type(kwargs: Dict, elm_type: StructuralElementType) -> bool:
         """Check if fusion contains element of a specific type. Helper method
         for inferring fusion type.
         :param Dict kwargs: keyword args given to fusion method
@@ -64,7 +64,7 @@ class FUSOR:
         for c in kwargs["structural_elements"]:
             if isinstance(c, Dict) and c.get("type") == elm_type:
                 return True
-            elif isinstance(c, BaseElement) and c.type == elm_type:
+            elif isinstance(c, BaseStructuralElement) and c.type == elm_type:
                 return True
         return False
 
@@ -98,15 +98,17 @@ class FUSOR:
         categorical_attributes = any([
             "critical_functional_domains" in kwargs,
             "r_frame_preserved" in kwargs,
-            self._contains_element_type(kwargs,
-                                        ElementType.MULTIPLE_POSSIBLE_GENES_ELEMENT)
+            self._contains_element_type(
+                kwargs, StructuralElementType.MULTIPLE_POSSIBLE_GENES_ELEMENT
+            )
         ])
         assayed_attributes = any([
             "causative_event" in kwargs,
             "event_description" in kwargs,
             "fusion_evidence" in kwargs,
             "molecular_assay" in kwargs,
-            self._contains_element_type(kwargs, ElementType.UNKNOWN_GENE_ELEMENT)
+            self._contains_element_type(kwargs,
+                                        StructuralElementType.UNKNOWN_GENE_ELEMENT)
         ])
         if categorical_attributes and not assayed_attributes:
             return self.categorical_fusion(**kwargs)

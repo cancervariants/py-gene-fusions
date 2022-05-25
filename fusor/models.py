@@ -104,8 +104,8 @@ class FunctionalDomain(BaseModel):
             }
 
 
-class ElementType(str, Enum):
-    """Define possible element type values."""
+class StructuralElementType(str, Enum):
+    """Define possible structural element type values."""
 
     TRANSCRIPT_SEGMENT_ELEMENT = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT.value
     TEMPLATED_SEQUENCE_ELEMENT = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT.value
@@ -115,13 +115,13 @@ class ElementType(str, Enum):
     MULTIPLE_POSSIBLE_GENES_ELEMENT = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT.value
 
 
-class BaseElement(ABC, BaseModel):
-    """Define base element class."""
+class BaseStructuralElement(ABC, BaseModel):
+    """Define base structural element class."""
 
-    type: ElementType
+    type: StructuralElementType
 
 
-class TranscriptSegmentElement(BaseElement):
+class TranscriptSegmentElement(BaseStructuralElement):
     """Define TranscriptSegment class"""
 
     type: Literal[FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT] = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT  # noqa: E501
@@ -228,7 +228,7 @@ class TranscriptSegmentElement(BaseElement):
             }
 
 
-class LinkerElement(BaseElement):
+class LinkerElement(BaseStructuralElement):
     """Define Linker class (linker sequence)"""
 
     type: Literal[FUSORTypes.LINKER_SEQUENCE_ELEMENT] = FUSORTypes.LINKER_SEQUENCE_ELEMENT  # noqa: E501
@@ -284,7 +284,7 @@ class Strand(str, Enum):
     NEGATIVE = "-"
 
 
-class TemplatedSequenceElement(BaseElement):
+class TemplatedSequenceElement(BaseStructuralElement):
     """Define Templated Sequence Element class.
     A templated sequence is a contiguous genomic sequence found in the gene
     product.
@@ -325,7 +325,7 @@ class TemplatedSequenceElement(BaseElement):
             }
 
 
-class GeneElement(BaseElement):
+class GeneElement(BaseStructuralElement):
     """Define Gene Element class."""
 
     type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
@@ -352,7 +352,7 @@ class GeneElement(BaseElement):
             }
 
 
-class UnknownGeneElement(BaseElement):
+class UnknownGeneElement(BaseStructuralElement):
     """Define UnknownGene class. This is primarily intended to represent a
     partner in the result of a fusion partner-agnostic assay, which identifies
     the absence of an expected gene. For example, a FISH break-apart probe may
@@ -379,7 +379,7 @@ class UnknownGeneElement(BaseElement):
             }
 
 
-class MultiplePossibleGenesElement(BaseElement):
+class MultiplePossibleGenesElement(BaseStructuralElement):
     """Define MultiplePossibleGenesElement class. This is primarily intended to
     represent a partner in a categorical fusion, typifying generalizable
     characteristics of a class of fusions such as retained or lost regulatory elements
@@ -408,11 +408,12 @@ class MultiplePossibleGenesElement(BaseElement):
 
 
 class Event(str, Enum):
-    """Define Event class (causative event)"""
+    """Permissible values for describing the underlying causative event driving an
+    assayed fusion.
+    """
 
     REARRANGEMENT = "rearrangement"
-    READTHROUGH = "read-through"
-    TRANSSPLICING = "trans-splicing"
+    POST_TRANSCRIPTIONAL = "post-transcriptional"
 
 
 class RegulatoryElementType(str, Enum):
@@ -516,7 +517,7 @@ class AbstractFusion(BaseModel, ABC):
 
     type: FusionType
     regulatory_elements: Optional[List[RegulatoryElement]]
-    structural_elements: List[BaseElement]
+    structural_elements: List[BaseStructuralElement]
 
     @root_validator(pre=True)
     def enforce_abc(cls, values):
