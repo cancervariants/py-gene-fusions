@@ -1,6 +1,6 @@
 {
   "type": "CategoricalFusion",
-  "functional_domains": [
+  "critical_functional_domains": [
     {
       "type": "FunctionalDomain",
       "id": "interpro:IPR020635",
@@ -12,9 +12,13 @@
         "label": "ALK",
         "description": null,
         "xrefs": ["ensembl:ENSG00000171094", "ncbigene:238"],
-        "alternate_labels": ["CD246", "ALK1", "NBLST3"],
+        "alternate_labels": ["NBLST3", "CD246", "ALK1"],
         "extensions": [
-          { "type": "Extension", "name": "symbol_status", "value": "approved" },
+          {
+            "type": "Extension",
+            "name": "symbol_status",
+            "value": "approved"
+          },
           {
             "type": "Extension",
             "name": "approved_name",
@@ -24,8 +28,8 @@
             "type": "Extension",
             "name": "chromosome_location",
             "value": {
-              "type": "ChromosomeLocation",
               "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
+              "type": "ChromosomeLocation",
               "species_id": "taxonomy:9606",
               "chr": "2",
               "interval": {
@@ -39,20 +43,35 @@
             "type": "Extension",
             "name": "associated_with",
             "value": [
-              "vega:OTTHUMG00000152034",
-              "refseq:NM_004304",
-              "ccds:CCDS86828",
-              "iuphar:1839",
-              "orphanet:160020",
               "ccds:CCDS33172",
-              "omim:105590",
-              "ucsc:uc002rmy.4",
-              "uniprot:Q9UM73",
-              "cosmic:ALK",
-              "ena.embl:D45915",
               "pubmed:8122112",
-              "hcdmdb:CD246"
+              "orphanet:160020",
+              "ccds:CCDS86828",
+              "cosmic:ALK",
+              "uniprot:Q9UM73",
+              "omim:105590",
+              "iuphar:1839",
+              "hcdmdb:CD246",
+              "vega:OTTHUMG00000152034",
+              "ena.embl:D45915",
+              "refseq:NM_004304",
+              "ucsc:uc002rmy.4"
             ]
+          },
+          {
+            "type": "Extension",
+            "name": "hgnc_locus_type",
+            "value": "gene with protein product"
+          },
+          {
+            "type": "Extension",
+            "name": "ncbi_gene_type",
+            "value": "protein-coding"
+          },
+          {
+            "type": "Extension",
+            "name": "ensembl_biotype",
+            "value": "protein_coding"
           }
         ],
         "gene_id": "hgnc:427",
@@ -80,9 +99,9 @@
       }
     }
   ],
-  "structural_components": [
+  "structural_elements": [
     {
-      "type": "TranscriptSegmentComponent",
+      "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_152263.3",
       "exon_start": 1,
       "exon_start_offset": 0,
@@ -95,26 +114,30 @@
         "description": null,
         "xrefs": ["ensembl:ENSG00000143549", "ncbigene:7170"],
         "alternate_labels": [
-          "HEL-S-82p",
-          "TM3",
-          "hscp30",
-          "TM30",
           "TM-5",
-          "NEM1~withdrawn",
-          "TPM3nu",
-          "TRK",
-          "TM30nm",
           "TM5",
-          "CAPM1",
-          "NEM1",
-          "CFTD",
-          "TPMsk3",
+          "NEM1~withdrawn",
           "OK/SW-cl.5",
+          "TM30nm",
+          "TPMsk3",
+          "HEL-S-82p",
+          "TRK",
+          "CAPM1",
+          "TPM3nu",
           "FLJ35371",
+          "TM30",
+          "TM3",
+          "CFTD",
+          "NEM1",
+          "hscp30",
           "HEL-189"
         ],
         "extensions": [
-          { "type": "Extension", "name": "symbol_status", "value": "approved" },
+          {
+            "type": "Extension",
+            "name": "symbol_status",
+            "value": "approved"
+          },
           {
             "type": "Extension",
             "name": "approved_name",
@@ -124,8 +147,8 @@
             "type": "Extension",
             "name": "chromosome_location",
             "value": {
-              "type": "ChromosomeLocation",
               "_id": "ga4gh:VCL.rmJvYV5JccRSEoMVxe5BmuHs9S2VZ4uR",
+              "type": "ChromosomeLocation",
               "species_id": "taxonomy:9606",
               "chr": "1",
               "interval": {
@@ -139,36 +162,52 @@
             "type": "Extension",
             "name": "associated_with",
             "value": [
-              "cosmic:TPM3",
-              "orphanet:120227",
               "vega:OTTHUMG00000035853",
-              "omim:191030",
-              "ucsc:uc001fec.3",
-              "pubmed:1829807",
-              "ena.embl:BC008425",
-              "ccds:CCDS41402",
               "ccds:CCDS41400",
-              "uniprot:P06753",
-              "ccds:CCDS60274",
-              "refseq:NM_152263",
-              "pubmed:25369766",
-              "ccds:CCDS41403",
-              "ccds:CCDS72922",
-              "ccds:CCDS60275",
+              "ccds:CCDS1060",
+              "ccds:CCDS41402",
               "ccds:CCDS41401",
-              "ccds:CCDS1060"
+              "pubmed:25369766",
+              "cosmic:TPM3",
+              "refseq:NM_152263",
+              "orphanet:120227",
+              "uniprot:P06753",
+              "ccds:CCDS72922",
+              "ccds:CCDS60274",
+              "ucsc:uc001fec.3",
+              "omim:191030",
+              "ccds:CCDS41403",
+              "ena.embl:BC008425",
+              "ccds:CCDS60275",
+              "pubmed:1829807"
             ]
           },
           {
             "type": "Extension",
             "name": "previous_symbols",
-            "value": ["FLJ35371", "NEM1", "NEM1~withdrawn"]
+            "value": ["NEM1", "NEM1~withdrawn", "FLJ35371"]
+          },
+          {
+            "type": "Extension",
+            "name": "hgnc_locus_type",
+            "value": "gene with protein product"
+          },
+          {
+            "type": "Extension",
+            "name": "ncbi_gene_type",
+            "value": "protein-coding"
+          },
+          {
+            "type": "Extension",
+            "name": "ensembl_biotype",
+            "value": "protein_coding"
           }
         ],
         "gene_id": "hgnc:12012",
         "gene": null
       },
-      "component_genomic_start": {
+
+      "element_genomic_start": {
         "id": "fusor.location_descriptor:NC_000001.11",
         "type": "LocationDescriptor",
         "label": "NC_000001.11",
@@ -188,7 +227,7 @@
           }
         }
       },
-      "component_genomic_end": {
+      "element_genomic_end": {
         "id": "fusor.location_descriptor:NC_000001.11",
         "type": "LocationDescriptor",
         "label": "NC_000001.11",
@@ -210,16 +249,20 @@
       }
     },
     {
-      "type": "GeneComponent",
+      "type": "GeneElement",
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
         "type": "GeneDescriptor",
         "label": "ALK",
         "description": null,
         "xrefs": ["ensembl:ENSG00000171094", "ncbigene:238"],
-        "alternate_labels": ["CD246", "ALK1", "NBLST3"],
+        "alternate_labels": ["NBLST3", "CD246", "ALK1"],
         "extensions": [
-          { "type": "Extension", "name": "symbol_status", "value": "approved" },
+          {
+            "type": "Extension",
+            "name": "symbol_status",
+            "value": "approved"
+          },
           {
             "type": "Extension",
             "name": "approved_name",
@@ -229,8 +272,8 @@
             "type": "Extension",
             "name": "chromosome_location",
             "value": {
-              "type": "ChromosomeLocation",
               "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
+              "type": "ChromosomeLocation",
               "species_id": "taxonomy:9606",
               "chr": "2",
               "interval": {
@@ -244,20 +287,35 @@
             "type": "Extension",
             "name": "associated_with",
             "value": [
-              "vega:OTTHUMG00000152034",
-              "refseq:NM_004304",
-              "ccds:CCDS86828",
-              "iuphar:1839",
-              "orphanet:160020",
               "ccds:CCDS33172",
-              "omim:105590",
-              "ucsc:uc002rmy.4",
-              "uniprot:Q9UM73",
-              "cosmic:ALK",
-              "ena.embl:D45915",
               "pubmed:8122112",
-              "hcdmdb:CD246"
+              "orphanet:160020",
+              "ccds:CCDS86828",
+              "cosmic:ALK",
+              "uniprot:Q9UM73",
+              "omim:105590",
+              "iuphar:1839",
+              "hcdmdb:CD246",
+              "vega:OTTHUMG00000152034",
+              "ena.embl:D45915",
+              "refseq:NM_004304",
+              "ucsc:uc002rmy.4"
             ]
+          },
+          {
+            "type": "Extension",
+            "name": "hgnc_locus_type",
+            "value": "gene with protein product"
+          },
+          {
+            "type": "Extension",
+            "name": "ncbi_gene_type",
+            "value": "protein-coding"
+          },
+          {
+            "type": "Extension",
+            "name": "ensembl_biotype",
+            "value": "protein_coding"
           }
         ],
         "gene_id": "hgnc:427",
@@ -265,7 +323,7 @@
       }
     },
     {
-      "type": "LinkerSequenceComponent",
+      "type": "LinkerSequenceElement",
       "linker_sequence": {
         "id": "fusor.sequence:ACGT",
         "type": "SequenceDescriptor",
@@ -280,7 +338,7 @@
       }
     },
     {
-      "type": "TemplatedSequenceComponent",
+      "type": "TemplatedSequenceElement",
       "region": {
         "id": "fusor.location_descriptor:NC_000023.11",
         "type": "LocationDescriptor",
@@ -303,7 +361,7 @@
       },
       "strand": "+"
     },
-    { "type": "AnyGeneComponent" }
+    { "type": "MultiplePossibleGenesElement" }
   ],
   "regulatory_elements": [
     {
@@ -315,9 +373,20 @@
         "label": "BRAF",
         "description": null,
         "xrefs": ["ensembl:ENSG00000157764", "ncbigene:673"],
-        "alternate_labels": ["BRAF1", "B-RAF1", "B-raf", "NS7", "RAFB1"],
+        "alternate_labels": [
+          "BRAF1",
+          "BRAF-1",
+          "NS7",
+          "B-raf",
+          "B-RAF1",
+          "RAFB1"
+        ],
         "extensions": [
-          { "type": "Extension", "name": "symbol_status", "value": "approved" },
+          {
+            "type": "Extension",
+            "name": "symbol_status",
+            "value": "approved"
+          },
           {
             "type": "Extension",
             "name": "approved_name",
@@ -327,8 +396,8 @@
             "type": "Extension",
             "name": "chromosome_location",
             "value": {
-              "type": "ChromosomeLocation",
               "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
+              "type": "ChromosomeLocation",
               "species_id": "taxonomy:9606",
               "chr": "7",
               "interval": {
@@ -342,20 +411,35 @@
             "type": "Extension",
             "name": "associated_with",
             "value": [
-              "refseq:NM_004333",
-              "ccds:CCDS87555",
-              "cosmic:BRAF",
-              "orphanet:119066",
-              "uniprot:P15056",
               "pubmed:2284096",
-              "ccds:CCDS5863",
+              "refseq:NM_004333",
+              "iuphar:1943",
+              "orphanet:119066",
+              "cosmic:BRAF",
               "ena.embl:M95712",
+              "ccds:CCDS87555",
+              "ucsc:uc003vwc.5",
               "pubmed:1565476",
               "vega:OTTHUMG00000157457",
-              "iuphar:1943",
-              "ucsc:uc003vwc.5",
+              "uniprot:P15056",
+              "ccds:CCDS5863",
               "omim:164757"
             ]
+          },
+          {
+            "type": "Extension",
+            "name": "hgnc_locus_type",
+            "value": "gene with protein product"
+          },
+          {
+            "type": "Extension",
+            "name": "ncbi_gene_type",
+            "value": "protein-coding"
+          },
+          {
+            "type": "Extension",
+            "name": "ensembl_biotype",
+            "value": "protein_coding"
           }
         ],
         "gene_id": "hgnc:1097",

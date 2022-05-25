@@ -1,7 +1,7 @@
 {
   "type": "CategoricalFusion",
   "r_frame_preserved": true,
-  "functional_domains": [
+  "critical_functional_domains": [
     {
       "type": "FunctionalDomain",
       "id": "interpro:IPR020635",
@@ -34,9 +34,9 @@
       }
     }
   ],
-  "structural_components": [
+  "structural_elements": [
     {
-      "type": "TranscriptSegmentComponent",
+      "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_152263.3",
       "exon_start": 1,
       "exon_start_offset": 0,
@@ -48,7 +48,7 @@
         "label": "TPM3",
         "gene_id": "hgnc:12012"
       },
-      "component_genomic_start": {
+      "element_genomic_start": {
         "id": "fusor.location_descriptor:NC_000001.11",
         "type": "LocationDescriptor",
         "label": "NC_000001.11",
@@ -68,7 +68,7 @@
           }
         }
       },
-      "component_genomic_end": {
+      "element_genomic_end": {
         "id": "fusor.location_descriptor:NC_000001.11",
         "type": "LocationDescriptor",
         "label": "NC_000001.11",
@@ -90,7 +90,7 @@
       }
     },
     {
-      "type": "GeneComponent",
+      "type": "GeneElement",
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
         "type": "GeneDescriptor",
@@ -99,7 +99,7 @@
       }
     },
     {
-      "type": "LinkerSequenceComponent",
+      "type": "LinkerSequenceElement",
       "linker_sequence": {
         "id": "fusor.sequence:ACGT",
         "type": "SequenceDescriptor",
@@ -108,7 +108,7 @@
       }
     },
     {
-      "type": "TemplatedSequenceComponent",
+      "type": "TemplatedSequenceElement",
       "region": {
         "id": "fusor.location_descriptor:NC_000023.11",
         "type": "LocationDescriptor",
@@ -132,7 +132,7 @@
       "strand": "+"
     },
     {
-      "type": "AnyGeneComponent"
+      "type": "MultiplePossibleGenesElement"
     }
   ],
   "regulatory_elements": [

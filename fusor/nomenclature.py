@@ -1,10 +1,10 @@
-"""Provide fusion nomenclature generation methods."""
+"""Provide helper methods for fusion nomenclature generation."""
 from biocommons.seqrepo.seqrepo import SeqRepo
 from ga4gh.vrsatile.pydantic.vrs_models import SequenceLocation
 from fusor.exceptions import IDTranslationException
 
-from fusor.models import GeneComponent, RegulatoryElement, \
-    TemplatedSequenceComponent, TranscriptSegmentComponent
+from fusor.models import GeneElement, RegulatoryElement, \
+    TemplatedSequenceElement, TranscriptSegmentElement
 from fusor.tools import translate_identifier
 
 
@@ -49,38 +49,38 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
     return nm_type_string + nm_string
 
 
-def tx_segment_nomenclature(component: TranscriptSegmentComponent,
+def tx_segment_nomenclature(element: TranscriptSegmentElement,
                             first: bool,
                             last: bool) -> str:
-    """Return fusion nomenclature for transcript segment component
-    :param TranscriptSegmentComponent component: a tx segment component
-    :param bool first: True if first component in sequence
-    :param bool last: True if last component in sequence
-    :return: component nomenclature representation
+    """Return fusion nomenclature for transcript segment element
+    :param TranscriptSegmentElement element: a tx segment element
+    :param bool first: True if first element in sequence
+    :param bool last: True if last element in sequence
+    :return: element nomenclature representation
     """
-    prefix = f"{component.transcript}({component.gene_descriptor.label})"
+    prefix = f"{element.transcript}({element.gene_descriptor.label})"
     start, start_offset, end, end_offset = "", "", "", ""
     if not first:
-        start = component.exon_start
-        if component.exon_start_offset:
-            start_offset = component.exon_start_offset
+        start = element.exon_start
+        if element.exon_start_offset:
+            start_offset = element.exon_start_offset
     if not last:
-        end = component.exon_end
-        if component.exon_end_offset:
-            end_offset = component.exon_end_offset
+        end = element.exon_end
+        if element.exon_end_offset:
+            end_offset = element.exon_end_offset
     return f"{prefix}:e.{start}{start_offset}_{end}{end_offset}"
 
 
-def templated_seq_nomenclature(component: TemplatedSequenceComponent,
+def templated_seq_nomenclature(element: TemplatedSequenceElement,
                                sr: SeqRepo) -> str:
-    """Return fusion nomenclature for templated sequence component.
-    :param TemplatedSequenceComponent component: a templated sequence component
-    :return: component nomenclature representation
+    """Return fusion nomenclature for templated sequence element.
+    :param TemplatedSequenceElement element: a templated sequence element
+    :return: element nomenclature representation
     :raises ValueError: if location isn't a SequenceLocation or if unable
     to retrieve region or location
     """
-    if component.region and component.region.location:
-        location = component.region.location
+    if element.region and element.region.location:
+        location = element.region.location
         if isinstance(location, SequenceLocation):
             sequence_id = str(location.sequence_id)
             refseq_id = translate_identifier(sr, sequence_id, "refseq")
@@ -92,27 +92,27 @@ def templated_seq_nomenclature(component: TemplatedSequenceComponent,
                 ).split(":")[1]
             except IDTranslationException:
                 raise ValueError
-            return f"{refseq_id}(chr {chr}):g.{start}_{end}({component.strand.value})"  # noqa: E501
+            return f"{refseq_id}(chr {chr}):g.{start}_{end}({element.strand.value})"
         else:
             raise ValueError
     else:
         raise ValueError
 
 
-def gene_nomenclature(component: GeneComponent) -> str:
-    """Return fusion nomenclature for gene component.
-    :param GeneComponent component: a gene component object
-    :return: component nomenclature representation
+def gene_nomenclature(element: GeneElement) -> str:
+    """Return fusion nomenclature for gene element.
+    :param GeneElement element: a gene element object
+    :return: element nomenclature representation
     :raises ValueError: if unable to retrieve gene ID
     """
-    if component.gene_descriptor.gene_id:
-        gene_id = gene_id = component.gene_descriptor.gene_id
+    if element.gene_descriptor.gene_id:
+        gene_id = gene_id = element.gene_descriptor.gene_id
 
-    if component.gene_descriptor.gene_id:
-        gene_id = component.gene_descriptor.gene_id
-    elif component.gene_descriptor.gene \
-            and component.gene_descriptor.gene.gene_id:
-        gene_id = component.gene_descriptor.gene.gene_id
+    if element.gene_descriptor.gene_id:
+        gene_id = element.gene_descriptor.gene_id
+    elif element.gene_descriptor.gene \
+            and element.gene_descriptor.gene.gene_id:
+        gene_id = element.gene_descriptor.gene.gene_id
     else:
         raise ValueError
-    return f"{component.gene_descriptor.label}({gene_id})"
+    return f"{element.gene_descriptor.label}({gene_id})"

@@ -1,8 +1,8 @@
 {
   "type": "AssayedFusion",
-  "structural_components": [
+  "structural_elements": [
     {
-      "type": "GeneComponent",
+      "type": "GeneElement",
       "gene_descriptor": {
         "type": "GeneDescriptor",
         "id": "normalize.gene:EWSR1",
@@ -11,7 +11,7 @@
       }
     },
     {
-      "type": "UnknownGeneComponent"
+      "type": "UnknownGeneElement"
     }
   ],
   "causative_event": "rearrangement",

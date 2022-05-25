@@ -1,7 +1,8 @@
 {
   "type": "CategoricalFusion",
-  "functional_domains": [
+  "critical_functional_domains": [
     {
+      "type": "FunctionalDomain",
       "id": "interpro:IPR017441",
       "name": "Protein kinase, ATP binding site",
       "status": "preserved",
@@ -32,9 +33,9 @@
       }
     }
   ],
-  "structural_components": [
+  "structural_elements": [
     {
-      "type": "GeneComponent",
+      "type": "GeneElement",
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
         "type": "GeneDescriptor",
@@ -43,7 +44,7 @@
       }
     },
     {
-      "type": "AnyGeneComponent"
+      "type": "MultiplePossibleGenesElement"
     }
   ]
 }

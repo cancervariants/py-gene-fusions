@@ -11,9 +11,9 @@ from tests.conftest import EXAMPLES_DIR
 def igh_myc():
     """Provide IGH-MYC fusion fixture"""
     return CategoricalFusion(**{
-        "structural_components": [
+        "structural_elements": [
             {
-                "type": "GeneComponent",
+                "type": "GeneElement",
                 "gene_descriptor": {
                     "type": "GeneDescriptor",
                     "gene_id": "hgnc:5477",
@@ -22,7 +22,7 @@ def igh_myc():
                 }
             },
             {
-                "type": "GeneComponent",
+                "type": "GeneElement",
                 "gene_descriptor": {
                     "type": "GeneDescriptor",
                     "gene_id": "hgnc:7553",

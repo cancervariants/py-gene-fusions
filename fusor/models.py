@@ -24,12 +24,12 @@ class FUSORTypes(str, Enum):
     """Define FUSOR object type values."""
 
     FUNCTIONAL_DOMAIN = "FunctionalDomain"
-    TRANSCRIPT_SEGMENT_COMPONENT = "TranscriptSegmentComponent"
-    TEMPLATED_SEQUENCE_COMPONENT = "TemplatedSequenceComponent"
-    LINKER_SEQUENCE_COMPONENT = "LinkerSequenceComponent"
-    GENE_COMPONENT = "GeneComponent"
-    UNKNOWN_GENE_COMPONENT = "UnknownGeneComponent"
-    ANY_GENE_COMPONENT = "AnyGeneComponent"
+    TRANSCRIPT_SEGMENT_ELEMENT = "TranscriptSegmentElement"
+    TEMPLATED_SEQUENCE_ELEMENT = "TemplatedSequenceElement"
+    LINKER_SEQUENCE_ELEMENT = "LinkerSequenceElement"
+    GENE_ELEMENT = "GeneElement"
+    UNKNOWN_GENE_ELEMENT = "UnknownGeneElement"
+    MULTIPLE_POSSIBLE_GENES_ELEMENT = "MultiplePossibleGenesElement"
     REGULATORY_ELEMENT = "RegulatoryElement"
     CATEGORICAL_FUSION = "CategoricalFusion"
     ASSAYED_FUSION = "AssayedFusion"
@@ -104,40 +104,40 @@ class FunctionalDomain(BaseModel):
             }
 
 
-class ComponentType(str, Enum):
-    """Define possible component type values."""
+class ElementType(str, Enum):
+    """Define possible element type values."""
 
-    TRANSCRIPT_SEGMENT_COMPONENT = FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT.value  # noqa: E501
-    TEMPLATED_SEQUENCE_COMPONENT = FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT.value  # noqa: E501
-    LINKER_SEQUENCE_COMPONENT = FUSORTypes.LINKER_SEQUENCE_COMPONENT.value
-    GENE_COMPONENT = FUSORTypes.GENE_COMPONENT.value
-    UNKNOWN_GENE_COMPONENT = FUSORTypes.UNKNOWN_GENE_COMPONENT.value
-    ANY_GENE_COMPONENT = FUSORTypes.ANY_GENE_COMPONENT.value
-
-
-class Component(ABC, BaseModel):
-    """Define base component class."""
-
-    type: ComponentType
+    TRANSCRIPT_SEGMENT_ELEMENT = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT.value
+    TEMPLATED_SEQUENCE_ELEMENT = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT.value
+    LINKER_SEQUENCE_ELEMENT = FUSORTypes.LINKER_SEQUENCE_ELEMENT.value
+    GENE_ELEMENT = FUSORTypes.GENE_ELEMENT.value
+    UNKNOWN_GENE_ELEMENT = FUSORTypes.UNKNOWN_GENE_ELEMENT.value
+    MULTIPLE_POSSIBLE_GENES_ELEMENT = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT.value
 
 
-class TranscriptSegmentComponent(Component):
+class BaseElement(ABC, BaseModel):
+    """Define base element class."""
+
+    type: ElementType
+
+
+class TranscriptSegmentElement(BaseElement):
     """Define TranscriptSegment class"""
 
-    type: Literal[FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT] = FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT  # noqa: E501
+    type: Literal[FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT] = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT  # noqa: E501
     transcript: CURIE
     exon_start: Optional[StrictInt]
     exon_start_offset: Optional[StrictInt] = 0
     exon_end: Optional[StrictInt]
     exon_end_offset: Optional[StrictInt] = 0
     gene_descriptor: GeneDescriptor
-    component_genomic_start: Optional[LocationDescriptor]
-    component_genomic_end: Optional[LocationDescriptor]
+    element_genomic_start: Optional[LocationDescriptor]
+    element_genomic_end: Optional[LocationDescriptor]
 
     @root_validator(pre=True)
     def check_exons(cls, values):
         """Check that at least one of {`exon_start`, `exon_end`} is set.
-        If set, check that the corresponding `component_genomic` field is set.
+        If set, check that the corresponding `element_genomic` field is set.
         If not set, set corresponding offset to `None`
 
         """
@@ -147,14 +147,14 @@ class TranscriptSegmentComponent(Component):
         assert exon_start or exon_end, msg
 
         if exon_start:
-            msg = "Must give `component_genomic_start` if `exon_start` is given"  # noqa: E501
-            assert values.get("component_genomic_start"), msg
+            msg = "Must give `element_genomic_start` if `exon_start` is given"  # noqa: E501
+            assert values.get("element_genomic_start"), msg
         else:
             values["exon_start_offset"] = None
 
         if exon_end:
-            msg = "Must give `component_genomic_end` if `exon_end` is given"
-            assert values.get("component_genomic_end"), msg
+            msg = "Must give `element_genomic_end` if `exon_end` is given"
+            assert values.get("element_genomic_end"), msg
         else:
             values["exon_end_offset"] = None
         return values
@@ -172,7 +172,7 @@ class TranscriptSegmentComponent(Component):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "type": "TranscriptSegmentComponent",
+                "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
                 "exon_start": 1,
                 "exon_start_offset": 0,
@@ -185,7 +185,7 @@ class TranscriptSegmentComponent(Component):
                     "type": "GeneDescriptor",
                     "label": "TPM3",
                 },
-                "component_genomic_start": {
+                "element_genomic_start": {
                     "id": "TPM3:exon1",
                     "type": "LocationDescriptor",
                     "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",  # noqa: E501
@@ -205,7 +205,7 @@ class TranscriptSegmentComponent(Component):
                         }
                     }
                 },
-                "component_genomic_end": {
+                "element_genomic_end": {
                     "id": "TPM3:exon8",
                     "type": "LocationDescriptor",
                     "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",  # noqa: E501
@@ -228,10 +228,10 @@ class TranscriptSegmentComponent(Component):
             }
 
 
-class LinkerComponent(Component):
+class LinkerElement(BaseElement):
     """Define Linker class (linker sequence)"""
 
-    type: Literal[FUSORTypes.LINKER_SEQUENCE_COMPONENT] = FUSORTypes.LINKER_SEQUENCE_COMPONENT  # noqa: E501
+    type: Literal[FUSORTypes.LINKER_SEQUENCE_ELEMENT] = FUSORTypes.LINKER_SEQUENCE_ELEMENT  # noqa: E501
     linker_sequence: SequenceDescriptor
 
     @validator("linker_sequence", pre=True)
@@ -267,7 +267,7 @@ class LinkerComponent(Component):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "type": "LinkerSequenceComponent",
+                "type": "LinkerSequenceElement",
                 "linker_sequence": {
                     "id": "sequence:ACGT",
                     "type": "SequenceDescriptor",
@@ -284,13 +284,13 @@ class Strand(str, Enum):
     NEGATIVE = "-"
 
 
-class TemplatedSequenceComponent(Component):
-    """Define Templated Sequence Component class.
+class TemplatedSequenceElement(BaseElement):
+    """Define Templated Sequence Element class.
     A templated sequence is a contiguous genomic sequence found in the gene
     product.
     """
 
-    type: Literal[FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT] = FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT  # noqa: E501
+    type: Literal[FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT] = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT  # noqa: E501
     region: LocationDescriptor
     strand: Strand
 
@@ -305,7 +305,7 @@ class TemplatedSequenceComponent(Component):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "type": "TemplatedSequenceComponent",
+                "type": "TemplatedSequenceElement",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
                     "type": "LocationDescriptor",
@@ -325,10 +325,10 @@ class TemplatedSequenceComponent(Component):
             }
 
 
-class GeneComponent(Component):
-    """Define Gene component class."""
+class GeneElement(BaseElement):
+    """Define Gene Element class."""
 
-    type: Literal[FUSORTypes.GENE_COMPONENT] = FUSORTypes.GENE_COMPONENT
+    type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
     gene_descriptor: GeneDescriptor
 
     class Config(BaseModelForbidExtra.Config):
@@ -342,7 +342,7 @@ class GeneComponent(Component):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "type": "GeneComponent",
+                "type": "GeneElement",
                 "gene_descriptor": {
                     "id": "gene:BRAF",
                     "gene_id": "hgnc:1097",
@@ -352,17 +352,17 @@ class GeneComponent(Component):
             }
 
 
-class UnknownGeneComponent(Component):
+class UnknownGeneElement(BaseElement):
     """Define UnknownGene class. This is primarily intended to represent a
     partner in the result of a fusion partner-agnostic assay, which identifies
     the absence of an expected gene. For example, a FISH break-apart probe may
     indicate rearrangement of an MLL gene, but by design, the test cannot
     provide the identity of the new partner. In this case, we would associate
     any clinical observations from this patient with the fusion of MLL with
-    an UnknownGene component.
+    an UnknownGene element.
     """
 
-    type: Literal[FUSORTypes.UNKNOWN_GENE_COMPONENT] = FUSORTypes.UNKNOWN_GENE_COMPONENT  # noqa: E501
+    type: Literal[FUSORTypes.UNKNOWN_GENE_ELEMENT] = FUSORTypes.UNKNOWN_GENE_ELEMENT  # noqa: E501
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -375,22 +375,22 @@ class UnknownGeneComponent(Component):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "type": "UnknownGeneComponent"
+                "type": "UnknownGeneElement"
             }
 
 
-class AnyGeneComponent(Component):
-    """Define AnyGene class. This is primarily intended to represent a partner
-    in a categorical fusion, typifying generalizable characteristics of a class
-    of fusions such as retained or lost regulatory elements and/or functional
-    domains, often curated from biomedical literature for use in genomic
-    knowledgebases. For example, EWSR1 rearrangements are often found in Ewing
+class MultiplePossibleGenesElement(BaseElement):
+    """Define MultiplePossibleGenesElement class. This is primarily intended to
+    represent a partner in a categorical fusion, typifying generalizable
+    characteristics of a class of fusions such as retained or lost regulatory elements
+    and/or functional domains, often curated from biomedical literature for use in
+    genomic knowledgebases. For example, EWSR1 rearrangements are often found in Ewing
     and Ewing-like small round cell sarcomas, regardless of the partner gene.
-    We would associate this assertion with the fusion of EWSR1 with an
-    AnyGene component.
+    We would associate this assertion with the fusion of EWSR1 with a
+    MultiplePossibleGenesElement.
     """
 
-    type: Literal[FUSORTypes.ANY_GENE_COMPONENT] = FUSORTypes.ANY_GENE_COMPONENT  # noqa: E501
+    type: Literal[FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT  # noqa: E501
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -403,7 +403,7 @@ class AnyGeneComponent(Component):
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
             schema["example"] = {
-                "type": "AnyGeneComponent"
+                "type": "MultiplePossibleGenesElement"
             }
 
 
@@ -516,7 +516,7 @@ class AbstractFusion(BaseModel, ABC):
 
     type: FusionType
     regulatory_elements: Optional[List[RegulatoryElement]]
-    structural_components: List[Component]
+    structural_elements: List[BaseElement]
 
     @root_validator(pre=True)
     def enforce_abc(cls, values):
@@ -525,40 +525,50 @@ class AbstractFusion(BaseModel, ABC):
             raise ValueError("Cannot instantiate Fusion abstract class")
         return values
 
-    @validator("structural_components")
-    def check_components_length(cls, v):
-        """Ensure >=2 structural components"""
-        if len(v) < 2:
-            raise ValueError("Fusions require >= 2 structural components")
-        else:
-            return v
+    @root_validator
+    def enforce_elements_length(cls, values):
+        """Ensure minimum # of elements."""
+        error_msg = (
+            "Fusions must contain >= 2 structural elements, or 1 structural element "
+            "and >= 1 regulatory element"
+        )
+        structural_elements = values.get("structural_elements", [])
+        if not structural_elements:
+            raise ValueError(error_msg)
+        num_structural_elements = len(structural_elements)
+        if num_structural_elements < 2:
+            reg_elements = values.get("regulatory_elements")
+            if not reg_elements or num_structural_elements == 0 or \
+                    len(values.get("regulatory_elements", [])) == 0:
+                raise ValueError(error_msg)
+        return values
 
     @root_validator(skip_on_failure=True)
-    def structural_components_ends(cls, values):
-        """Ensure start/end components are of legal types and have fields
+    def structural_elements_ends(cls, values):
+        """Ensure start/end elements are of legal types and have fields
         required by their position.
         """
-        components = values.get("structural_components")
-        if isinstance(components[0], TranscriptSegmentComponent):
-            if components[0].exon_end is None and not values["regulatory_elements"]:  # noqa: E501
+        elements = values.get("structural_elements", [])
+        if isinstance(elements[0], TranscriptSegmentElement):
+            if elements[0].exon_end is None and not values["regulatory_elements"]:
                 raise ValueError(
-                    "5' TranscriptSegmentComponent fusion partner must "
+                    "5' TranscriptSegmentElement fusion partner must "
                     "contain ending exon position"
                 )
-        elif isinstance(components[0], LinkerComponent):
+        elif isinstance(elements[0], LinkerElement):
             raise ValueError(
-                "First structural component cannot be LinkerSequence")
+                "First structural element cannot be LinkerSequence")
 
-        if len(components) > 2:
-            for component in components[1:-1]:
-                if isinstance(component, TranscriptSegmentComponent):
-                    if component.exon_start is None or component.exon_end is None:  # noqa: E501
+        if len(elements) > 2:
+            for element in elements[1:-1]:
+                if isinstance(element, TranscriptSegmentElement):
+                    if element.exon_start is None or element.exon_end is None:
                         raise ValueError(
-                            "Connective TranscriptSegmentComponents must "
+                            "Connective TranscriptSegmentElement must "
                             "include both start and end positions"
                         )
-        if isinstance(components[-1], TranscriptSegmentComponent):
-            if components[-1].exon_start is None:
+        if isinstance(elements[-1], TranscriptSegmentElement):
+            if elements[-1].exon_start is None:
                 raise ValueError("3' fusion partner junction must include "
                                  "starting position")
         return values
@@ -580,7 +590,7 @@ class MolecularAssay(BaseModelForbidExtra):
     method_uri: Optional[CURIE] = None
 
     _get_eco_id_val = validator("eco_id", allow_reuse=True)(return_value)
-    _get_method_id_val = validator("method_uri", allow_reuse=True)(return_value)  # noqa: E501
+    _get_method_id_val = validator("method_uri", allow_reuse=True)(return_value)
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -596,17 +606,16 @@ class MolecularAssay(BaseModelForbidExtra):
             }
 
 
-AssayedFusionComponents = List[Union[TranscriptSegmentComponent, GeneComponent,
-                                     TemplatedSequenceComponent,
-                                     LinkerComponent, UnknownGeneComponent]]
+AssayedFusionElements = List[Union[TranscriptSegmentElement, GeneElement,
+                                   TemplatedSequenceElement,
+                                   LinkerElement, UnknownGeneElement]]
 
 
 class AssayedFusion(AbstractFusion):
-    """Assayed gene fusions from biological specimens are directly detected
-    using RNA-based gene fusion assays, or alternatively may be inferred from
-    genomic rearrangements detected by whole genome sequencing or by
-    coarser-scale cytogenomic assays. Example: an EWSR1 fusion inferred
-    from a breakapart FISH assay.
+    """Assayed gene fusions from biological specimens are directly detected using
+    RNA-based gene fusion assays, or alternatively may be inferred from genomic
+    rearrangements detected by whole genome sequencing or by coarser-scale cytogenomic
+    assays. Example: an EWSR1 fusion inferred from a breakapart FISH assay.
     """
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
@@ -614,7 +623,7 @@ class AssayedFusion(AbstractFusion):
     event_description: Optional[StrictStr] = None
     fusion_evidence: Optional[Evidence] = None
     molecular_assay: Optional[MolecularAssay] = None
-    structural_components: AssayedFusionComponents
+    structural_elements: AssayedFusionElements
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -632,9 +641,9 @@ class AssayedFusion(AbstractFusion):
                 "fusion_evidence": "observed",
                 "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
                 "molecular_assay": '{"ECO_id": "ECO:0007159"}',
-                "structural_components": [
+                "structural_elements": [
                     {
-                        "component_type": "gene",
+                        "element_type": "gene",
                         "gene_descriptor": {
                             "id": "gene:EWSR1",
                             "gene_id": "hgnc:3058",
@@ -643,17 +652,17 @@ class AssayedFusion(AbstractFusion):
                         }
                     },
                     {
-                        "component_type": "UnknownGene"
+                        "element_type": "UnknownGene"
                     }
                 ]
             }
 
 
-CategoricalFusionComponents = List[Union[TranscriptSegmentComponent,
-                                         GeneComponent,
-                                         TemplatedSequenceComponent,
-                                         LinkerComponent,
-                                         AnyGeneComponent]]
+CategoricalFusionElements = List[Union[TranscriptSegmentElement,
+                                       GeneElement,
+                                       TemplatedSequenceElement,
+                                       LinkerElement,
+                                       MultiplePossibleGenesElement]]
 
 
 class CategoricalFusion(AbstractFusion):
@@ -665,8 +674,8 @@ class CategoricalFusion(AbstractFusion):
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION  # noqa: E501
     r_frame_preserved: Optional[StrictBool]
-    functional_domains: Optional[List[FunctionalDomain]]
-    structural_components: CategoricalFusionComponents
+    critical_functional_domains: Optional[List[FunctionalDomain]]
+    structural_elements: CategoricalFusionElements
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -694,9 +703,9 @@ class CategoricalFusion(AbstractFusion):
                         }
                     }
                 ],
-                "structural_components": [
+                "structural_elements": [
                     {
-                        "component_type": "TranscriptSegment",
+                        "type": "TranscriptSegmentElement",
                         "transcript": "refseq:NM_152263.3",
                         "exon_start": 1,
                         "exon_start_offset": 0,
@@ -708,7 +717,7 @@ class CategoricalFusion(AbstractFusion):
                             "type": "GeneDescriptor",
                             "label": "TPM3",
                         },
-                        "component_genomic_start": {
+                        "element_genomic_start": {
                             "id": "TPM3:exon1",
                             "type": "LocationDescriptor",
                             "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",  # noqa: E501
@@ -728,7 +737,7 @@ class CategoricalFusion(AbstractFusion):
                                 }
                             }
                         },
-                        "component_genomic_end": {
+                        "element_genomic_end": {
                             "id": "TPM3:exon8",
                             "type": "LocationDescriptor",
                             "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",  # noqa: E501
@@ -750,7 +759,7 @@ class CategoricalFusion(AbstractFusion):
                         }
                     },
                     {
-                        "component_type": "gene",
+                        "type": "GeneElement",
                         "gene": {
                             "id": "gene:ALK",
                             "type": "GeneDescriptor",
@@ -762,7 +771,7 @@ class CategoricalFusion(AbstractFusion):
                 "regulatory_elements": [
                     {
                         "element_type": "promoter",
-                        "gene": {
+                        "associated_gene": {
                             "id": "gene:BRAF",
                             "type": "GeneDescriptor",
                             "gene_id": "hgnc:1097",
