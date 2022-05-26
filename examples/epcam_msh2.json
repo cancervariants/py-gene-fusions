@@ -1,9 +1,9 @@
 {
   "type": "CategoricalFusion",
-  "functional_domains": [],
-  "structural_components": [
+  "critical_functional_domains": [],
+  "structural_elements": [
     {
-      "type": "TranscriptSegmentComponent",
+      "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_002354.2",
       "exon_end": 5,
       "exon_end_offset": 0,
@@ -13,7 +13,7 @@
         "label": "EPCAM",
         "gene_id": "hgnc:11529"
       },
-      "component_genomic_end": {
+      "element_genomic_end": {
         "id": "fusor.location_descriptor:NC_000002.12",
         "type": "LocationDescriptor",
         "label": "NC_000002.12",
@@ -35,7 +35,7 @@
       }
     },
     {
-      "type": "LinkerSequenceComponent",
+      "type": "LinkerSequenceElement",
       "linker_sequence": {
         "id": "fusor.sequence:AGGCTCCCTTGG",
         "type": "SequenceDescriptor",
@@ -44,7 +44,7 @@
       }
     },
     {
-      "type": "TranscriptSegmentComponent",
+      "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_000251.2",
       "exon_start": 2,
       "exon_start_offset": 0,
@@ -54,7 +54,7 @@
         "label": "MSH2",
         "gene_id": "hgnc:7325"
       },
-      "component_genomic_start": {
+      "element_genomic_start": {
         "id": "fusor.location_descriptor:NC_000002.12",
         "type": "LocationDescriptor",
         "label": "NC_000002.12",

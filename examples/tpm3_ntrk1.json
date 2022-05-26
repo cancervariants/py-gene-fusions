@@ -1,8 +1,8 @@
 {
   "type": "AssayedFusion",
-  "structural_components": [
+  "structural_elements": [
     {
-      "type": "TranscriptSegmentComponent",
+      "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_152263.3",
       "exon_end": 8,
       "exon_end_offset": 0,
@@ -12,7 +12,7 @@
         "label": "TPM3",
         "gene_id": "hgnc:12012"
       },
-      "component_genomic_end": {
+      "element_genomic_end": {
         "id": "fusor.location_descriptor:NC_000001.11",
         "type": "LocationDescriptor",
         "label": "NC_000001.11",
@@ -34,7 +34,7 @@
       }
     },
     {
-      "type": "TranscriptSegmentComponent",
+      "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_002529.3",
       "exon_start": 10,
       "exon_start_offset": 0,
@@ -44,7 +44,7 @@
         "label": "NTRK1",
         "gene_id": "hgnc:8031"
       },
-      "component_genomic_start": {
+      "element_genomic_start": {
         "id": "fusor.location_descriptor:NC_000001.11",
         "type": "LocationDescriptor",
         "label": "NC_000001.11",

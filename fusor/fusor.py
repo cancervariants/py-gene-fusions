@@ -16,11 +16,11 @@ from uta_tools.schemas import ResidueMode
 from gene.query import QueryHandler
 
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
-from fusor.models import AssayedFusion, AssayedFusionComponents, \
-    CategoricalFusion, CategoricalFusionComponents, Component, ComponentType, \
-    Event, Evidence, Fusion, MolecularAssay, TemplatedSequenceComponent, \
-    AdditionalFields, TranscriptSegmentComponent, GeneComponent, \
-    LinkerComponent, UnknownGeneComponent, AnyGeneComponent, \
+from fusor.models import AssayedFusion, AssayedFusionElements, \
+    CategoricalFusion, CategoricalFusionElements, BaseStructuralElement, \
+    StructuralElementType, Event, Evidence, Fusion, MolecularAssay, \
+    TemplatedSequenceElement, AdditionalFields, TranscriptSegmentElement, \
+    GeneElement, LinkerElement, UnknownGeneElement, MultiplePossibleGenesElement, \
     RegulatoryElement, DomainStatus, FunctionalDomain, Strand, \
     RegulatoryElementType, FusionType
 from fusor.nomenclature import reg_element_nomenclature, \
@@ -53,30 +53,30 @@ class FUSOR:
         self.uta_tools = UTATools(db_url=db_url, db_pwd=db_pwd)
 
     @staticmethod
-    def _contains_component_type(kwargs: Dict,
-                                 comp_type: ComponentType) -> bool:
-        """Check if fusion contains component of a specific type. Helper method
+    def _contains_element_type(kwargs: Dict, elm_type: StructuralElementType) -> bool:
+        """Check if fusion contains element of a specific type. Helper method
         for inferring fusion type.
         :param Dict kwargs: keyword args given to fusion method
-        :param ComponentType comp_type: component type to match
-        :return: True if at least one component of given type is found,
+        :param ElementType elm_type: element type to match
+        :return: True if at least one element of given type is found,
         False otherwise.
         """
-        for c in kwargs["structural_components"]:
-            if isinstance(c, Dict) and c.get("type") == comp_type:
+        for c in kwargs["structural_elements"]:
+            if isinstance(c, Dict) and c.get("type") == elm_type:
                 return True
-            elif isinstance(c, Component) and c.type == comp_type:
+            elif isinstance(c, BaseStructuralElement) and c.type == elm_type:
                 return True
         return False
 
     def fusion(self, fusion_type: Optional[FusionType] = None,
                **kwargs) -> Tuple[Optional[Fusion], Optional[str]]:
         """Construct fusion object.
-        :param Optional[FusionType] fusion_type: explicitly specify fusion
-        type. Unecessary if providing fusion object in keyword args that
-        includes `type` attribute.
-        :return: Tuple containing optional Fusion if construction successful,
-        and any relevant warnings
+
+        :param Optional[FusionType] fusion_type: explicitly specify fusion type.
+            Unecessary if providing fusion object in keyword args that includes `type`
+            attribute.
+        :return: Tuple containing optional Fusion if construction successful, and any
+            relevant warnings
         """
         # try explicit type param
         explicit_type = kwargs.get("type")
@@ -96,18 +96,19 @@ class FUSOR:
 
         # try to infer from provided attributes
         categorical_attributes = any([
-            "functional_domains" in kwargs,
+            "critical_functional_domains" in kwargs,
             "r_frame_preserved" in kwargs,
-            self._contains_component_type(kwargs,
-                                          ComponentType.ANY_GENE_COMPONENT)
+            self._contains_element_type(
+                kwargs, StructuralElementType.MULTIPLE_POSSIBLE_GENES_ELEMENT
+            )
         ])
         assayed_attributes = any([
             "causative_event" in kwargs,
             "event_description" in kwargs,
             "fusion_evidence" in kwargs,
             "molecular_assay" in kwargs,
-            self._contains_component_type(kwargs,
-                                          ComponentType.UNKNOWN_GENE_COMPONENT)
+            self._contains_element_type(kwargs,
+                                        StructuralElementType.UNKNOWN_GENE_ELEMENT)
         ])
         if categorical_attributes and not assayed_attributes:
             return self.categorical_fusion(**kwargs)
@@ -120,13 +121,13 @@ class FUSOR:
 
     @staticmethod
     def categorical_fusion(
-        structural_components: CategoricalFusionComponents,
+        structural_elements: CategoricalFusionElements,
         regulatory_elements: Optional[List[RegulatoryElement]] = None,
-        functional_domains: Optional[List[FunctionalDomain]] = None,
+        critical_functional_domains: Optional[List[FunctionalDomain]] = None,
         r_frame_preserved: Optional[bool] = None
     ) -> Tuple[Optional[CategoricalFusion], Optional[str]]:
         """Construct a categorical fusion object
-        :param CategoricalFusionComponents structural_components: components
+        :param CategoricalFusionElements structural_elements: elements
             constituting the fusion
         :param Optional[RegulatoryElement] regulatory_elements: affected
             regulatory elements
@@ -139,8 +140,8 @@ class FUSOR:
         """
         try:
             fusion = CategoricalFusion(
-                structural_components=structural_components,
-                functional_domains=functional_domains,
+                structural_elements=structural_elements,
+                critical_functional_domains=critical_functional_domains,
                 r_frame_preserved=r_frame_preserved,
                 regulatory_elements=regulatory_elements
             )
@@ -150,29 +151,28 @@ class FUSOR:
 
     @staticmethod
     def assayed_fusion(
-        structural_components: AssayedFusionComponents,
+        structural_elements: AssayedFusionElements,
         regulatory_elements: Optional[List[RegulatoryElement]] = None,
         causative_event: Optional[Event] = None,
         fusion_evidence: Optional[Evidence] = None,
         molecular_assay: Optional[MolecularAssay] = None,
     ) -> Tuple[Optional[AssayedFusion], Optional[str]]:
         """Construct an assayed fusion object
-        :param AssayedFusionComponents structural_components: components
-            constituting the fusion
-        :param Optional[RegulatoryElement] regulatory_elements: affected
-            regulatory elements
-        :param Optional[Event] causative_event: event causing the fusion,
-            if known
-        :param Optional[Evidence] fusion_evidence: whether the fusion is
-            inferred or directly observed
-        :param Optional[MolecularAssay] molecular_assay: how knowledge of
-            the fusion was obtained
-        :return: Tuple containing optional AssayedFusion if construction
-        successful, and any relevant validation warnings
+        :param AssayedFusionElements structural_elements: elements constituting the
+            fusion
+        :param Optional[RegulatoryElement] regulatory_elements: affected regulatory
+            elements
+        :param Optional[Event] causative_event: event causing the fusion, if known
+        :param Optional[Evidence] fusion_evidence: whether the fusion is inferred or
+            directly observed
+        :param Optional[MolecularAssay] molecular_assay: how knowledge of the fusion
+            was obtained
+        :return: Tuple containing optional AssayedFusion if construction successful,
+            and any relevant validation warnings
         """
         try:
             fusion = AssayedFusion(
-                structural_components=structural_components,
+                structural_elements=structural_elements,
                 regulatory_elements=regulatory_elements,
                 causative_event=causative_event,
                 fusion_evidence=fusion_evidence,
@@ -182,13 +182,13 @@ class FUSOR:
             return None, str(e)
         return fusion, None
 
-    async def transcript_segment_component(
+    async def transcript_segment_element(
             self, tx_to_genomic_coords: bool = True,
             use_minimal_gene_descr: bool = True,
             seq_id_target_namespace: Optional[str] = None,
             **kwargs
-    ) -> Tuple[Optional[TranscriptSegmentComponent], Optional[List[str]]]:
-        """Create transcript segment component
+    ) -> Tuple[Optional[TranscriptSegmentElement], Optional[List[str]]]:
+        """Create transcript segment element
 
         :param bool tx_to_genomic_coords: `True` if going from transcript
             to genomic coordinates. `False` if going from genomic to
@@ -213,7 +213,7 @@ class FUSOR:
                 end: Optional[int] = None, strand: Optional[int] = None,
                 transcript: Optional[str] = None, gene: Optional[str] = None,
                 residue_mode: ResidueMode = ResidueMode.RESIDUE
-        :return: Transcript Segment Component, warning
+        :return: Transcript Segment Element, warning
         """
         if tx_to_genomic_coords:
             data = await self.uta_tools.transcript_to_genomic_coordinates(**kwargs)  # noqa: E501
@@ -243,49 +243,49 @@ class FUSOR:
         if not normalized_gene_response[0] and normalized_gene_response[1]:
             return None, [normalized_gene_response[1]]
 
-        return TranscriptSegmentComponent(
+        return TranscriptSegmentElement(
             transcript=genomic_data.transcript,
             exon_start=genomic_data.exon_start,
             exon_start_offset=genomic_data.exon_start_offset,
             exon_end=genomic_data.exon_end,
             exon_end_offset=genomic_data.exon_end_offset,
             gene_descriptor=normalized_gene_response[0],
-            component_genomic_start=self._location_descriptor(
+            element_genomic_start=self._location_descriptor(
                 genomic_data.start, genomic_data.start + 1, genomic_data.chr,
                 label=genomic_data.chr,
                 seq_id_target_namespace=seq_id_target_namespace) if genomic_data.start else None,  # noqa: E501
-            component_genomic_end=self._location_descriptor(
+            element_genomic_end=self._location_descriptor(
                 genomic_data.end, genomic_data.end + 1, genomic_data.chr,
                 label=genomic_data.chr,
                 seq_id_target_namespace=seq_id_target_namespace) if genomic_data.end else None,  # noqa: E501
         ), None
 
-    def gene_component(
+    def gene_element(
             self, gene: str,
             use_minimal_gene_descr: bool = True
-    ) -> Tuple[Optional[GeneComponent], Optional[str]]:
-        """Create gene component
+    ) -> Tuple[Optional[GeneElement], Optional[str]]:
+        """Create gene element
 
         :param str gene: Gene
         :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
             (`id`, `gene_id`, `label`) will be used. `False` if
             gene-normalizer's gene descriptor will be used
-        :return: GeneComponent, warning
+        :return: GeneElement, warning
         """
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
         if not gene_descr:
             return None, warning
         else:
-            return GeneComponent(gene_descriptor=gene_descr), None
+            return GeneElement(gene_descriptor=gene_descr), None
 
-    def templated_sequence_component(
+    def templated_sequence_element(
             self, start: int, end: int, sequence_id: str, strand: Strand,
             label: Optional[str] = None, add_location_id: bool = False,
             residue_mode: ResidueMode = ResidueMode.RESIDUE,
             seq_id_target_namespace: Optional[str] = None
-    ) -> TemplatedSequenceComponent:
-        """Create templated sequence component
+    ) -> TemplatedSequenceElement:
+        """Create templated sequence element
 
         :param int start: Genomic start
         :param int end: Genomic end
@@ -299,7 +299,7 @@ class FUSOR:
         :param Optional[str] seq_id_target_namespace: If want to use digest for
             `sequence_id`, set this to the namespace you want the digest for.
             Otherwise, leave as `None`.
-        :return: Templated Sequence Component
+        :return: Templated Sequence Element
         """
         if residue_mode == ResidueMode.RESIDUE:
             start -= 1
@@ -312,19 +312,19 @@ class FUSOR:
             location_id = self._location_id(region.location.dict())
             region.location_id = location_id
 
-        return TemplatedSequenceComponent(region=region, strand=strand)
+        return TemplatedSequenceElement(region=region, strand=strand)
 
     @staticmethod
-    def linker_component(
+    def linker_element(
         sequence: str,
         residue_type: CURIE = "SO:0000348"  # type: ignore
-    ) -> Tuple[Optional[LinkerComponent], Optional[str]]:
-        """Create linker component
+    ) -> Tuple[Optional[LinkerElement], Optional[str]]:
+        """Create linker element
 
         :param str sequence: Sequence
         :param CURIE residue_type: Sequence Ontology code for residue type of
             `sequence`
-        :return: Tuple containing a complete Linker component and None if
+        :return: Tuple containing a complete Linker element and None if
             successful, or a None value and warning message if unsuccessful
         """
         try:
@@ -336,27 +336,27 @@ class FUSOR:
                     "residue_type": residue_type
                 }
             }
-            return LinkerComponent(**params), None
+            return LinkerElement(**params), None
         except ValidationError as e:
             msg = str(e)
             logger.warning(msg)
             return None, msg
 
     @staticmethod
-    def any_gene_component() -> AnyGeneComponent:
-        """Create an any gene component.
+    def multiple_possible_genes_element() -> MultiplePossibleGenesElement:
+        """Create a MultiplePossibleGenesElement.
 
-        :return: Any gene component
+        :return: MultiplePossibleGenesElement
         """
-        return AnyGeneComponent()
+        return MultiplePossibleGenesElement()
 
     @staticmethod
-    def unknown_gene_component() -> UnknownGeneComponent:
-        """Create unknown gene component
+    def unknown_gene_element() -> UnknownGeneElement:
+        """Create unknown gene element
 
-        :return: Unknown Gene Component
+        :return: Unknown Gene element
         """
-        return UnknownGeneComponent()
+        return UnknownGeneElement()
 
     def functional_domain(
             self, status: DomainStatus, name: str,
@@ -427,12 +427,10 @@ class FUSOR:
         use_minimal_gene_descr: bool = True
     ) -> Tuple[Optional[RegulatoryElement], Optional[str]]:
         """Create RegulatoryElement
-        :param RegulatoryElementType element_type: one of {"promoter",
-            "enhancer"}
+        :param RegulatoryElementType element_type: one of {"promoter", "enhancer"}
         :param str gene: gene term to fetch normalized descriptor for
-        :return: Tuple with RegulatoryElement instance and None value for
-            warnings if successful, or a None value and warning message if
-            unsuccessful
+        :return: Tuple with RegulatoryElement instance and None value for warnings if
+            successful, or a None value and warning message if unsuccessful
         """
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
@@ -460,16 +458,15 @@ class FUSOR:
         :param int start: Start position
         :param int end: End position
         :param str sequence_id: Accession for sequence
-        :param str label: label for location. If `None`, `sequence_id`
-            will be used as Location Descriptor's `id`
-            Else, label will be used as Location Descriptor's `id`.
-        :param str seq_id_target_namespace: If want to use digest for
-            `sequence_id`, set this to the namespace you want the digest for.
-            Otherwise, leave as `None`.
-        :param bool use_location_id: Takes precedence over
-            `label` or `sequence_id` becoming Location Descriptor's id.
-            `True` if  use ga4gh digest as Location Descriptor's id.
-            `False`, use default of `label` > `sequence_id`
+        :param str label: label for location. If `None`, `sequence_id` will be used as
+            Location Descriptor's `id` Else, label will be used as Location
+            Descriptor's `id`.
+        :param str seq_id_target_namespace: If want to use digest for `sequence_id`,
+            set this to the namespace you want the digest for. Otherwise, leave as
+            `None`.
+        :param bool use_location_id: Takes precedence over `label` or `sequence_id`
+            becoming Location Descriptor's id. `True` if  use ga4gh digest as Location
+            Descriptor's id. `False`, use default of `label` > `sequence_id`
         """
         seq_id_input = sequence_id
         try:
@@ -552,23 +549,23 @@ class FUSOR:
         :param Fusion fusion: A valid Fusion object.
         :return: Updated fusion with `location_id` fields set
         """
-        for structural_component in fusion.structural_components:
-            if isinstance(structural_component, TemplatedSequenceComponent):
-                location = structural_component.region.location
+        for structural_element in fusion.structural_elements:
+            if isinstance(structural_element, TemplatedSequenceElement):
+                location = structural_element.region.location
                 location_id = self._location_id(location.dict())
-                structural_component.region.location_id = location_id
-            elif isinstance(structural_component, TranscriptSegmentComponent):
-                for component_genomic in [
-                    structural_component.component_genomic_start,
-                    structural_component.component_genomic_end
+                structural_element.region.location_id = location_id
+            elif isinstance(structural_element, TranscriptSegmentElement):
+                for element_genomic in [
+                    structural_element.element_genomic_start,
+                    structural_element.element_genomic_end
                 ]:
-                    if component_genomic:
-                        location = component_genomic.location
+                    if element_genomic:
+                        location = element_genomic.location
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                             location_id = self._location_id(location.dict())
-                            component_genomic.location_id = location_id
-        if isinstance(fusion, CategoricalFusion) and fusion.functional_domains:
-            for domain in fusion.functional_domains:
+                            element_genomic.location_id = location_id
+        if isinstance(fusion, CategoricalFusion) and fusion.critical_functional_domains:
+            for domain in fusion.critical_functional_domains:
                 location = domain.location_descriptor.location
                 location_id = self._location_id(location.dict())
                 domain.location_descriptor.location_id = location_id
@@ -598,9 +595,9 @@ class FUSOR:
         :param str target_namespace: ID namespace to translate sequence IDs to
         :return: Updated fusion with `sequence_id` fields set
         """
-        for component in fusion.structural_components:
-            if isinstance(component, TemplatedSequenceComponent):
-                location = component.region.location
+        for element in fusion.structural_elements:
+            if isinstance(element, TemplatedSequenceElement):
+                location = element.region.location
                 if location.type == VRSTypes.SEQUENCE_LOCATION.value:
                     try:
                         new_id = translate_identifier(
@@ -610,11 +607,11 @@ class FUSOR:
                     except IDTranslationException:
                         pass
                     else:
-                        component.region.location.sequence_id = new_id
-            elif isinstance(component, TranscriptSegmentComponent):
+                        element.region.location.sequence_id = new_id
+            elif isinstance(element, TranscriptSegmentElement):
                 for loc_descr in [
-                    component.component_genomic_start,
-                    component.component_genomic_end
+                    element.element_genomic_start,
+                    element.element_genomic_end
                 ]:
                     if loc_descr:
                         location = loc_descr.location
@@ -627,8 +624,8 @@ class FUSOR:
                             except IDTranslationException:
                                 continue
                             loc_descr.location.sequence_id = new_id
-        if fusion.functional_domains:
-            for domain in fusion.functional_domains:
+        if fusion.type == "CategoricalFusion" and fusion.critical_functional_domains:
+            for domain in fusion.critical_functional_domains:
                 if (
                     domain.location_descriptor
                     and domain.location_descriptor.location
@@ -653,11 +650,11 @@ class FUSOR:
         :return: Updated fusion with additional fields set in `gene_descriptor`
         """
         fields = [
-            (fusion.structural_components, "gene_descriptor"),
+            (fusion.structural_elements, "gene_descriptor"),
             (fusion.regulatory_elements, "associated_gene")
         ]
         if fusion.type == FusionType.CATEGORICAL_FUSION:
-            fields.append((fusion.functional_domains, "gene_descriptor"))
+            fields.append((fusion.critical_functional_domains, "gene_descriptor"))
         for (property, field_name) in fields:
             for obj in property:
                 if field_name in obj.__fields__.keys():
@@ -710,28 +707,28 @@ class FUSOR:
                     element_genes.append(element.associated_gene.label)
         else:
             num_reg_elements = 0
-        for i, component in enumerate(fusion.structural_components):
-            if isinstance(component, AnyGeneComponent):
+        for i, element in enumerate(fusion.structural_elements):
+            if isinstance(element, MultiplePossibleGenesElement):
                 parts.append("v")
-            elif isinstance(component, UnknownGeneComponent):
+            elif isinstance(element, UnknownGeneElement):
                 parts.append("?")
-            elif isinstance(component, LinkerComponent):
-                parts.append(component.linker_sequence.sequence)
-            elif isinstance(component, TranscriptSegmentComponent):
-                if not any([gene == component.gene_descriptor.label
+            elif isinstance(element, LinkerElement):
+                parts.append(element.linker_sequence.sequence)
+            elif isinstance(element, TranscriptSegmentElement):
+                if not any([gene == element.gene_descriptor.label
                             for gene in element_genes]):
                     parts.append(tx_segment_nomenclature(
-                        component,
+                        element,
                         first=(i + num_reg_elements == 0),
-                        last=(i + 1 == len(fusion.structural_components))
+                        last=(i + 1 == len(fusion.structural_elements))
                     ))
-            elif isinstance(component, TemplatedSequenceComponent):
-                parts.append(templated_seq_nomenclature(component,
+            elif isinstance(element, TemplatedSequenceElement):
+                parts.append(templated_seq_nomenclature(element,
                                                         self.seqrepo))
-            elif isinstance(component, GeneComponent):
-                if not any([gene == component.gene_descriptor.label
+            elif isinstance(element, GeneElement):
+                if not any([gene == element.gene_descriptor.label
                             for gene in element_genes]):
-                    parts.append(gene_nomenclature(component))
+                    parts.append(gene_nomenclature(element))
             else:
                 raise ValueError
         return "::".join(parts)
