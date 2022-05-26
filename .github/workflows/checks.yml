@@ -19,7 +19,6 @@ jobs:
                   python-version: 3.8
             - name: Install dependencies
               run: |
-                  python3 -m pip install -e .
                   python3 -m pip install pipenv
                   pipenv install --dev
             - run: pipenv run flake8
