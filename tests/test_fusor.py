@@ -8,7 +8,7 @@ from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
 from fusor.models import AssayedFusion, CategoricalFusion, \
     MultiplePossibleGenesElement, TemplatedSequenceElement, TranscriptSegmentElement, \
     LinkerElement, UnknownGeneElement, FunctionalDomain, GeneElement, \
-    RegulatoryElement, RegulatoryElementType
+    RegulatoryElement, RegulatoryClass
 
 
 @pytest.fixture(scope="module")
@@ -215,7 +215,7 @@ def regulatory_element(braf_gene_descr):
     """Create regulatory element test fixture."""
     params = {
         "type": "RegulatoryElement",
-        "element_type": "promoter",
+        "regulatory_class": "promoter",
         "associated_gene": braf_gene_descr
     }
     return RegulatoryElement(**params)
@@ -225,7 +225,7 @@ def regulatory_element(braf_gene_descr):
 def regulatory_element_min(braf_gene_descr_min):
     """Create regulatory element test fixture with minimal gene descriptor."""
     params = {
-        "element_type": "promoter",
+        "regulatory_class": "promoter",
         "associated_gene": braf_gene_descr_min
     }
     return RegulatoryElement(**params)
@@ -963,10 +963,10 @@ def test_regulatory_element(fusor, regulatory_element, regulatory_element_min):
         assert actual["type"] == expected["type"]
         compare_gene_descriptor(actual["associated_gene"], expected["associated_gene"])
 
-    re = fusor.regulatory_element(RegulatoryElementType.PROMOTER, "BRAF")
+    re = fusor.regulatory_element(RegulatoryClass.PROMOTER, "BRAF")
     compare_re(re, regulatory_element_min)
 
-    re = fusor.regulatory_element(RegulatoryElementType.PROMOTER, "BRAF", False)
+    re = fusor.regulatory_element(RegulatoryClass.PROMOTER, "BRAF", False)
     compare_re(re, regulatory_element)
 
 

@@ -416,10 +416,9 @@ class Event(str, Enum):
     POST_TRANSCRIPTIONAL = "post-transcriptional"
 
 
-class RegulatoryElementType(str, Enum):
-    """Define possible types of Regulatory Elements. Options are the possible
-    values for /regulatory_class value property in the INSDC controlled
-    vocabulary.
+class RegulatoryClass(str, Enum):
+    """Define possible classes of Regulatory Elements. Options are the possible values
+    for /regulatory_class value property in the INSDC controlled vocabulary:
     https://www.insdc.org/controlled-vocabulary-regulatoryclass
     """
 
@@ -448,22 +447,22 @@ class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class"""
 
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT  # noqa: E501
-    element_type: RegulatoryElementType
-    element_reference: Optional[CURIE] = None
+    regulatory_class: RegulatoryClass
+    feature_id: Optional[CURIE] = None
     associated_gene: Optional[GeneDescriptor] = None
     genomic_location: Optional[LocationDescriptor] = None
 
-    _get_ref_id_val = validator("element_reference", allow_reuse=True)(return_value)  # noqa: E501
+    _get_ref_id_val = validator("feature_id", allow_reuse=True)(return_value)  # noqa: E501
 
     @root_validator(pre=True)
     def ensure_min_values(cls, values):
-        """Ensure one of {`element_reference`, `associated_gene`,
-        `genomic_location`} is set.
+        """Ensure that one of {`feature_id`, `associated_gene`, `genomic_location`} is
+        set.
         """
-        if not any([values.get("element_reference"),
+        if not any([values.get("feature_id"),
                     values.get("associated_gene"),
                     values.get("genomic_location")]):  # noqa: E501
-            raise ValueError("Must set >=1 of {`element_reference`, `associated_gene`, `genomic_location`}")  # noqa: E501
+            raise ValueError("Must set >=1 of {`feature_id`, `associated_gene`, `genomic_location`}")  # noqa: E501
         return values
 
     class Config(BaseModelForbidExtra.Config):
@@ -478,7 +477,7 @@ class RegulatoryElement(BaseModel):
                 prop.pop("title", None)
             schema["example"] = {
                 "type": "RegulatoryElement",
-                "element_type": "Promoter",
+                "regulatory_class": "Promoter",
                 "genomic_location": {
                     "type": "LocationDescriptor",
                     "location": {
@@ -771,7 +770,8 @@ class CategoricalFusion(AbstractFusion):
                 ],
                 "regulatory_elements": [
                     {
-                        "element_type": "promoter",
+                        "type": "RegulatoryElement",
+                        "regulatory_class": "promoter",
                         "associated_gene": {
                             "id": "gene:BRAF",
                             "type": "GeneDescriptor",

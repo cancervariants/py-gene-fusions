@@ -34,7 +34,7 @@ def igh_myc():
         "regulatory_elements": [
             {
                 "type": "RegulatoryElement",
-                "element_type": "promoter",
+                "regulatory_class": "promoter",
                 "associated_gene": {
                     "type": "GeneDescriptor",
                     "gene_id": "hgnc:5477",

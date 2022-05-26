@@ -17,10 +17,10 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
         or if missing element reference ID, genomic location, and associated
         gene
     """
-    nm_type_string = f"reg_{element.element_type.value}"
+    nm_type_string = f"reg_{element.regulatory_class.value}"
     nm_string = ""
-    if element.element_reference:
-        nm_string += f"_{element.element_reference}"
+    if element.feature_id:
+        nm_string += f"_{element.feature_id}"
     elif element.genomic_location:
         start = element.genomic_location
         sequence_id = start.location.sequence_id
