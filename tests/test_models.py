@@ -319,7 +319,7 @@ def regulatory_elements(gene_descriptors):
     """Provide possible regulatory_element input data."""
     return [
         {
-            "element_type": "promoter",
+            "regulatory_class": "promoter",
             "associated_gene": gene_descriptors[0]
         }
     ]
@@ -707,7 +707,7 @@ def test_event():
 def test_regulatory_element(regulatory_elements, gene_descriptors):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
-    assert test_reg_elmt.element_type.value == "promoter"
+    assert test_reg_elmt.regulatory_class.value == "promoter"
     assert test_reg_elmt.associated_gene.id == "gene:G1"
     assert test_reg_elmt.associated_gene.gene.gene_id == "hgnc:9339"
     assert test_reg_elmt.associated_gene.label == "G1"
@@ -715,7 +715,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
     # check type constraint
     with pytest.raises(ValidationError) as exc_info:
         RegulatoryElement(**{
-            "element_type": "notpromoter",
+            "regulatory_class": "notpromoter",
             "associated_gene": gene_descriptors[0]
         })
     assert exc_info.value.errors()[0]["msg"].startswith(
@@ -725,9 +725,9 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
     # require minimum input
     with pytest.raises(ValidationError) as exc_info:
         RegulatoryElement(**{
-            "element_type": "enhancer",
+            "regulatory_class": "enhancer",
         })
-    assert exc_info.value.errors()[0]["msg"] == "Must set >=1 of {`element_reference`, `associated_gene`, `genomic_location`}"  # noqa: E501
+    assert exc_info.value.errors()[0]["msg"] == "Must set >=1 of {`feature_id`, `associated_gene`, `genomic_location`}"  # noqa: E501
 
 
 def test_fusion(functional_domains, transcript_segments,

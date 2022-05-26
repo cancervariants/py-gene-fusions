@@ -164,7 +164,7 @@ def fusion():
         "regulatory_elements": [
             {
                 "type": "RegulatoryElement",
-                "element_type": "promoter",
+                "regulatory_class": "promoter",
                 "associated_gene": {
                     "id": "gene:BRAF",
                     "type": "GeneDescriptor",

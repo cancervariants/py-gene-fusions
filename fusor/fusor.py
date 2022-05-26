@@ -22,7 +22,7 @@ from fusor.models import AssayedFusion, AssayedFusionElements, \
     TemplatedSequenceElement, AdditionalFields, TranscriptSegmentElement, \
     GeneElement, LinkerElement, UnknownGeneElement, MultiplePossibleGenesElement, \
     RegulatoryElement, DomainStatus, FunctionalDomain, Strand, \
-    RegulatoryElementType, FusionType
+    RegulatoryClass, FusionType
 from fusor.nomenclature import reg_element_nomenclature, \
     tx_segment_nomenclature, templated_seq_nomenclature, gene_nomenclature
 from fusor.exceptions import IDTranslationException
@@ -57,7 +57,7 @@ class FUSOR:
         """Check if fusion contains element of a specific type. Helper method
         for inferring fusion type.
         :param Dict kwargs: keyword args given to fusion method
-        :param ElementType elm_type: element type to match
+        :param StructuralElementType elm_type: element type to match
         :return: True if at least one element of given type is found,
         False otherwise.
         """
@@ -423,11 +423,11 @@ class FUSOR:
             return None, msg
 
     def regulatory_element(
-        self, element_type: RegulatoryElementType, gene: str,
+        self, regulatory_class: RegulatoryClass, gene: str,
         use_minimal_gene_descr: bool = True
     ) -> Tuple[Optional[RegulatoryElement], Optional[str]]:
         """Create RegulatoryElement
-        :param RegulatoryElementType element_type: one of {"promoter", "enhancer"}
+        :param RegulatoryClass regulatory_class: one of {"promoter", "enhancer"}
         :param str gene: gene term to fetch normalized descriptor for
         :return: Tuple with RegulatoryElement instance and None value for warnings if
             successful, or a None value and warning message if unsuccessful
@@ -439,7 +439,7 @@ class FUSOR:
 
         try:
             return RegulatoryElement(
-                element_type=element_type,
+                regulatory_class=regulatory_class,
                 associated_gene=gene_descr
             ), None
         except ValidationError as e:
