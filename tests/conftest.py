@@ -32,7 +32,7 @@ def fusion():
     return {
         "type": "CategoricalFusion",
         "r_frame_preserved": True,
-        "functional_domains": [
+        "critical_functional_domains": [
             {
                 "status": "lost",
                 "name": "Tyrosine-protein kinase, catalytic domain",
@@ -62,9 +62,9 @@ def fusion():
                 }
             }
         ],
-        "structural_components": [
+        "structural_elements": [
             {
-                "type": "TranscriptSegmentComponent",
+                "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
                 "exon_start": 1,
                 "exon_start_offset": 0,
@@ -76,7 +76,7 @@ def fusion():
                     "type": "GeneDescriptor",
                     "label": "TPM3"
                 },
-                "component_genomic_start": {
+                "element_genomic_start": {
                     "id": "refseq:NM_152263.3_exon1",
                     "type": "LocationDescriptor",
                     "location": {
@@ -95,7 +95,7 @@ def fusion():
                         }
                     }
                 },
-                "component_genomic_end": {
+                "element_genomic_end": {
                     "id": "refseq:NM_152263.3_exon8",
                     "type": "LocationDescriptor",
                     "location": {
@@ -116,7 +116,7 @@ def fusion():
                 }
             },
             {
-                "type": "GeneComponent",
+                "type": "GeneElement",
                 "gene_descriptor": {
                     "id": "gene:ALK",
                     "type": "GeneDescriptor",
@@ -125,7 +125,7 @@ def fusion():
                 }
             },
             {
-                "type": "LinkerSequenceComponent",
+                "type": "LinkerSequenceElement",
                 "linker_sequence": {
                     "id": "sequence:ACGT",
                     "type": "SequenceDescriptor",
@@ -134,7 +134,7 @@ def fusion():
                 }
             },
             {
-                "type": "TemplatedSequenceComponent",
+                "type": "TemplatedSequenceElement",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
                     "type": "LocationDescriptor",
@@ -158,13 +158,13 @@ def fusion():
                 "strand": "+"
             },
             {
-                "type": "AnyGeneComponent"
+                "type": "MultiplePossibleGenesElement"
             }
         ],
         "regulatory_elements": [
             {
                 "type": "RegulatoryElement",
-                "element_type": "promoter",
+                "regulatory_class": "promoter",
                 "associated_gene": {
                     "id": "gene:BRAF",
                     "type": "GeneDescriptor",

@@ -3,9 +3,9 @@ from pydantic import ValidationError
 import pytest
 import json
 from fusor.models import AbstractFusion, AssayedFusion, CategoricalFusion, \
-    TranscriptSegmentComponent, TemplatedSequenceComponent, \
-    UnknownGeneComponent, GeneComponent,  AnyGeneComponent, LinkerComponent, \
-    FunctionalDomain, Event, RegulatoryElement
+    TranscriptSegmentElement, TemplatedSequenceElement, UnknownGeneElement, \
+    GeneElement,  MultiplePossibleGenesElement, LinkerElement, FunctionalDomain, \
+    Event, RegulatoryElement
 import copy
 from tests.conftest import EXAMPLES_DIR
 
@@ -210,60 +210,60 @@ def transcript_segments(location_descriptors, gene_descriptors):
             "exon_end": 8,
             "exon_end_offset": 7,
             "gene_descriptor": gene_descriptors[0],
-            "component_genomic_start": location_descriptors[2],
-            "component_genomic_end": location_descriptors[3]
+            "element_genomic_start": location_descriptors[2],
+            "element_genomic_end": location_descriptors[3]
         },
         {
-            "type": "TranscriptSegmentComponent",
+            "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_034348.3",
             "exon_start": 1,
             "exon_end": 8,
             "gene_descriptor": gene_descriptors[3],
-            "component_genomic_start": location_descriptors[0],
-            "component_genomic_end": location_descriptors[1]
+            "element_genomic_start": location_descriptors[0],
+            "element_genomic_end": location_descriptors[1]
         },
         {
-            "type": "TranscriptSegmentComponent",
+            "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_938439.4",
             "exon_start": 7,
             "exon_end": 14,
             "exon_end_offset": -5,
             "gene_descriptor": gene_descriptors[4],
-            "component_genomic_start": location_descriptors[0],
-            "component_genomic_end": location_descriptors[1]
+            "element_genomic_start": location_descriptors[0],
+            "element_genomic_end": location_descriptors[1]
         },
         {
-            "type": "TranscriptSegmentComponent",
+            "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_938439.4",
             "exon_start": 7,
             "gene_descriptor": gene_descriptors[4],
-            "component_genomic_start": location_descriptors[0]
+            "element_genomic_start": location_descriptors[0]
         }
     ]
 
 
 @pytest.fixture(scope="module")
-def gene_components(gene_descriptors):
-    """Provide possible gene component input data."""
+def gene_elements(gene_descriptors):
+    """Provide possible gene element input data."""
     return [
         {
-            "type": "GeneComponent",
+            "type": "GeneElement",
             "gene_descriptor": gene_descriptors[1],
         }
     ]
 
 
 @pytest.fixture(scope="module")
-def templated_sequence_components(location_descriptors):
-    """Provide possible templated sequence component input data."""
+def templated_sequence_elements(location_descriptors):
+    """Provide possible templated sequence element input data."""
     return [
         {
-            "type": "TemplatedSequenceComponent",
+            "type": "TemplatedSequenceElement",
             "strand": "+",
             "region": location_descriptors[5]
         },
         {
-            "type": "TemplatedSequenceComponent",
+            "type": "TemplatedSequenceElement",
             "strand": "-",
             "region": location_descriptors[4]
         }
@@ -297,18 +297,18 @@ def sequence_descriptors():
 
 @pytest.fixture(scope="module")
 def linkers(sequence_descriptors):
-    """Provide possible linker component input data."""
+    """Provide possible linker element input data."""
     return [
         {
-            "type": "LinkerSequenceComponent",
+            "type": "LinkerSequenceElement",
             "linker_sequence": sequence_descriptors[0]
         },
         {
-            "type": "LinkerSequenceComponent",
+            "type": "LinkerSequenceElement",
             "linker_sequence": sequence_descriptors[1]
         },
         {
-            "type": "LinkerSequenceComponent",
+            "type": "LinkerSequenceElement",
             "linker_sequence": sequence_descriptors[2]
         }
     ]
@@ -319,7 +319,7 @@ def regulatory_elements(gene_descriptors):
     """Provide possible regulatory_element input data."""
     return [
         {
-            "element_type": "promoter",
+            "regulatory_class": "promoter",
             "associated_gene": gene_descriptors[0]
         }
     ]
@@ -394,40 +394,40 @@ def test_functional_domain(functional_domains, gene_descriptors):
     check_validation_error(exc_info, msg)
 
 
-def test_transcript_segment_component(transcript_segments):
-    """Test TranscriptSegmentComponent object initializes correctly"""
-    test_component = TranscriptSegmentComponent(**transcript_segments[0])
-    assert test_component.transcript == "refseq:NM_152263.3"
-    assert test_component.exon_start == 1
-    assert test_component.exon_start_offset == -9
-    assert test_component.exon_end == 8
-    assert test_component.exon_end_offset == 7
-    assert test_component.gene_descriptor.id == "gene:G1"
-    assert test_component.gene_descriptor.label == "G1"
-    assert test_component.gene_descriptor.gene.gene_id == "hgnc:9339"
-    test_region_start = test_component.component_genomic_start
+def test_transcript_segment_element(transcript_segments):
+    """Test TranscriptSegmentElement object initializes correctly"""
+    test_element = TranscriptSegmentElement(**transcript_segments[0])
+    assert test_element.transcript == "refseq:NM_152263.3"
+    assert test_element.exon_start == 1
+    assert test_element.exon_start_offset == -9
+    assert test_element.exon_end == 8
+    assert test_element.exon_end_offset == 7
+    assert test_element.gene_descriptor.id == "gene:G1"
+    assert test_element.gene_descriptor.label == "G1"
+    assert test_element.gene_descriptor.gene.gene_id == "hgnc:9339"
+    test_region_start = test_element.element_genomic_start
     assert test_region_start.location.species_id == "taxonomy:9606"
     assert test_region_start.location.type == "ChromosomeLocation"
     assert test_region_start.location.chr == "12"
     assert test_region_start.location.interval.start == "p12.1"
     assert test_region_start.location.interval.end == "p12.1"
-    test_region_end = test_component.component_genomic_end
+    test_region_end = test_element.element_genomic_end
     assert test_region_end.location.species_id == "taxonomy:9606"
     assert test_region_end.location.type == "ChromosomeLocation"
     assert test_region_end.location.chr == "12"
     assert test_region_end.location.interval.start == "p12.2"
     assert test_region_end.location.interval.end == "p12.2"
 
-    test_component = TranscriptSegmentComponent(**transcript_segments[3])
-    assert test_component.transcript == "refseq:NM_938439.4"
-    assert test_component.exon_start == 7
-    assert test_component.exon_start_offset == 0
-    assert test_component.exon_end is None
-    assert test_component.exon_end_offset is None
+    test_element = TranscriptSegmentElement(**transcript_segments[3])
+    assert test_element.transcript == "refseq:NM_938439.4"
+    assert test_element.exon_start == 7
+    assert test_element.exon_start_offset == 0
+    assert test_element.exon_end is None
+    assert test_element.exon_end_offset is None
 
     # check CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
-        TranscriptSegmentComponent(**{
+        TranscriptSegmentElement(**{
             "transcript": "NM_152263.3",
             "exon_start": "1",
             "exon_start_offset": "-9",
@@ -438,13 +438,13 @@ def test_transcript_segment_component(transcript_segments):
                 "gene": {"id": "hgnc:1"},
                 "label": "G1"
             },
-            "component_genomic_start": {
+            "element_genomic_start": {
                 "location": {
                     "species_id": "taxonomy:9606", "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.1"},
                 }
             },
-            "component_genomic_end": {
+            "element_genomic_end": {
                 "location": {
                     "species_id": "taxonomy:9606", "chr": "12",
                     "interval": {"start": "p12.2", "end": "p12.2"},
@@ -456,8 +456,8 @@ def test_transcript_segment_component(transcript_segments):
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert TranscriptSegmentComponent(**{
-            "type": "TemplatedSequenceComponent",
+        assert TranscriptSegmentElement(**{
+            "type": "TemplatedSequenceElement",
             "transcript": "NM_152263.3",
             "exon_start": "1",
             "exon_start_offset": "-9",
@@ -468,26 +468,26 @@ def test_transcript_segment_component(transcript_segments):
                 "gene": {"id": "hgnc:1"},
                 "label": "G1"
             },
-            "component_genomic_start": {
+            "element_genomic_start": {
                 "location": {
                     "species_id": "taxonomy:9606", "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.2"},
                 }
             },
-            "component_genomic_end": {
+            "element_genomic_end": {
                 "location": {
                     "species_id": "taxonomy:9606", "chr": "12",
                     "interval": {"start": "p12.2", "end": "p12.2"},
                 }
             }
         })
-    msg = "unexpected value; permitted: <FUSORTypes.TRANSCRIPT_SEGMENT_COMPONENT: 'TranscriptSegmentComponent'>"  # noqa: E501
+    msg = "unexpected value; permitted: <FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT: 'TranscriptSegmentElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
-    # test component required
+    # test element required
     with pytest.raises(ValidationError) as exc_info:
-        assert TranscriptSegmentComponent(**{
-            "component_type": "templated_sequence",
+        assert TranscriptSegmentElement(**{
+            "element_type": "templated_sequence",
             "transcript": "NM_152263.3",
             "exon_start": "1",
             "exon_start_offset": "-9",
@@ -497,13 +497,13 @@ def test_transcript_segment_component(transcript_segments):
                 "label": "G1"
             }
         })
-    msg = "Must give `component_genomic_start` if `exon_start` is given"
+    msg = "Must give `element_genomic_start` if `exon_start` is given"
     check_validation_error(exc_info, msg)
 
     # Neither exon_start or exon_end given
     with pytest.raises(ValidationError) as exc_info:
-        assert TranscriptSegmentComponent(**{
-            "type": "TranscriptSegmentComponent",
+        assert TranscriptSegmentElement(**{
+            "type": "TranscriptSegmentElement",
             "transcript": "NM_152263.3",
             "exon_start_offset": "-9",
             "exon_end_offset": "7",
@@ -512,13 +512,13 @@ def test_transcript_segment_component(transcript_segments):
                 "gene": {"id": "hgnc:1"},
                 "label": "G1"
             },
-            "component_genomic_start": {
+            "element_genomic_start": {
                 "location": {
                     "species_id": "taxonomy:9606", "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.2"},
                 }
             },
-            "component_genomic_end": {
+            "element_genomic_end": {
                 "location": {
                     "species_id": "taxonomy:9606", "chr": "12",
                     "interval": {"start": "p12.2", "end": "p12.2"},
@@ -529,23 +529,23 @@ def test_transcript_segment_component(transcript_segments):
     check_validation_error(exc_info, msg)
 
 
-def test_linker_component(linkers):
+def test_linker_element(linkers):
     """Test Linker object initializes correctly"""
     def check_linker(actual, expected_id, expected_sequence):
-        assert actual.type == "LinkerSequenceComponent"
+        assert actual.type == "LinkerSequenceElement"
         assert actual.linker_sequence.id == expected_id
         assert actual.linker_sequence.sequence == expected_sequence
         assert actual.linker_sequence.type == "SequenceDescriptor"
         assert actual.linker_sequence.residue_type == "SO:0000348"
 
-    for args in ((LinkerComponent(**linkers[0]), "sequence:ACGT", "ACGT"),
-                 (LinkerComponent(**linkers[1]), "sequence:T", "T"),
-                 (LinkerComponent(**linkers[2]), "sequence:actgu", "ACTGU")):
+    for args in ((LinkerElement(**linkers[0]), "sequence:ACGT", "ACGT"),
+                 (LinkerElement(**linkers[1]), "sequence:T", "T"),
+                 (LinkerElement(**linkers[2]), "sequence:actgu", "ACTGU")):
         check_linker(*args)
 
     # check base validation
     with pytest.raises(ValidationError) as exc_info:
-        LinkerComponent(**{
+        LinkerElement(**{
             "linker_sequence":
             {
                 "id": "sequence:ACT1",
@@ -557,21 +557,21 @@ def test_linker_component(linkers):
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert LinkerComponent(**{
-            "type": "TemplatedSequenceComponent",
+        assert LinkerElement(**{
+            "type": "TemplatedSequenceElement",
             "linker_sequence":
             {
                 "id": "sequence:ATG",
                 "sequence": "ATG"
             }
         })
-    msg = "unexpected value; permitted: <FUSORTypes.LINKER_SEQUENCE_COMPONENT: 'LinkerSequenceComponent'>"  # noqa: E501
+    msg = "unexpected value; permitted: <FUSORTypes.LINKER_SEQUENCE_ELEMENT: 'LinkerSequenceElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
     # test no extras
     with pytest.raises(ValidationError) as exc_info:
-        assert LinkerComponent(**{
-            "type": "LinkerSequenceComponent",
+        assert LinkerElement(**{
+            "type": "LinkerSequenceElement",
             "linker_sequence": {
                 "id": "sequence:G",
                 "sequence": "G"
@@ -582,14 +582,13 @@ def test_linker_component(linkers):
     check_validation_error(exc_info, msg)
 
 
-def test_genomic_region_component(templated_sequence_components,
-                                  location_descriptors):
-    """Test that TemplatedSequenceComponent initializes correctly."""
-    def assert_genomic_region_test_component(test):
-        """Assert that test templated_sequence_components[0] data matches
+def test_genomic_region_element(templated_sequence_elements, location_descriptors):
+    """Test that TemplatedSequenceElement initializes correctly."""
+    def assert_genomic_region_test_element(test):
+        """Assert that test templated_sequence_elements[0] data matches
         expected values.
         """
-        assert test.type == "TemplatedSequenceComponent"
+        assert test.type == "TemplatedSequenceElement"
         assert test.strand.value == "+"
         assert test.region.id == "chr12:p12.1-p12.2"
         assert test.region.type == "LocationDescriptor"
@@ -599,26 +598,26 @@ def test_genomic_region_component(templated_sequence_components,
         assert test.region.location.interval.end == "p12.2"
         assert test.region.label == "chr12:p12.1-p12.2"
 
-    test_component = \
-        TemplatedSequenceComponent(**templated_sequence_components[0])
-    assert_genomic_region_test_component(test_component)
+    test_element = \
+        TemplatedSequenceElement(**templated_sequence_elements[0])
+    assert_genomic_region_test_element(test_element)
 
-    genomic_region_components_cpy = \
-        copy.deepcopy(templated_sequence_components[0])
-    genomic_region_components_cpy["region"]["location"]["_id"] = "location:1"
-    test_component = \
-        TemplatedSequenceComponent(**genomic_region_components_cpy)
-    assert_genomic_region_test_component(test_component)
+    genomic_region_elements_cpy = \
+        copy.deepcopy(templated_sequence_elements[0])
+    genomic_region_elements_cpy["region"]["location"]["_id"] = "location:1"
+    test_element = \
+        TemplatedSequenceElement(**genomic_region_elements_cpy)
+    assert_genomic_region_test_element(test_element)
 
-    genomic_region_components_cpy = \
-        copy.deepcopy(templated_sequence_components[0])
-    genomic_region_components_cpy["region"]["location_id"] = "location:1"
-    test_component = \
-        TemplatedSequenceComponent(**genomic_region_components_cpy)
-    assert_genomic_region_test_component(test_component)
+    genomic_region_elements_cpy = \
+        copy.deepcopy(templated_sequence_elements[0])
+    genomic_region_elements_cpy["region"]["location_id"] = "location:1"
+    test_element = \
+        TemplatedSequenceElement(**genomic_region_elements_cpy)
+    assert_genomic_region_test_element(test_element)
 
     with pytest.raises(ValidationError) as exc_info:
-        TemplatedSequenceComponent(**{
+        TemplatedSequenceElement(**{
             "region": {
                 "interval": {
                     "start": 39408,
@@ -632,26 +631,26 @@ def test_genomic_region_component(templated_sequence_components,
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert TemplatedSequenceComponent(**{
-            "type": "GeneComponent",
+        assert TemplatedSequenceElement(**{
+            "type": "GeneElement",
             "region": location_descriptors[0],
             "strand": "+"
         })
-    msg = "unexpected value; permitted: <FUSORTypes.TEMPLATED_SEQUENCE_COMPONENT: 'TemplatedSequenceComponent'>"  # noqa: E501
+    msg = "unexpected value; permitted: <FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT: 'TemplatedSequenceElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
-def test_gene_component(gene_descriptors):
-    """Test that Gene component initializes correctly."""
-    test_component = GeneComponent(**{"gene_descriptor": gene_descriptors[0]})
-    assert test_component.type == "GeneComponent"
-    assert test_component.gene_descriptor.id == "gene:G1"
-    assert test_component.gene_descriptor.label == "G1"
-    assert test_component.gene_descriptor.gene.gene_id == "hgnc:9339"
+def test_gene_element(gene_descriptors):
+    """Test that Gene Element initializes correctly."""
+    test_element = GeneElement(**{"gene_descriptor": gene_descriptors[0]})
+    assert test_element.type == "GeneElement"
+    assert test_element.gene_descriptor.id == "gene:G1"
+    assert test_element.gene_descriptor.label == "G1"
+    assert test_element.gene_descriptor.gene.gene_id == "hgnc:9339"
 
     # test CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
-        GeneComponent(**{
+        GeneElement(**{
             "gene_descriptor": {
                 "id": "G1",
                 "gene": {"gene_id": "hgnc:9339"},
@@ -663,35 +662,35 @@ def test_gene_component(gene_descriptors):
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert GeneComponent(**{
-            "type": "UnknownGeneComponent",
+        assert GeneElement(**{
+            "type": "UnknownGeneElement",
             "gene_descriptor": gene_descriptors[0]
         })
-    msg = "unexpected value; permitted: <FUSORTypes.GENE_COMPONENT: 'GeneComponent'>"  # noqa: E501
+    msg = "unexpected value; permitted: <FUSORTypes.GENE_ELEMENT: 'GeneElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
-def test_unknown_gene_component():
-    """Test that unknown_gene component initializes correctly."""
-    test_component = UnknownGeneComponent()
-    assert test_component.type == "UnknownGeneComponent"
+def test_unknown_gene_element():
+    """Test that unknown_gene element initializes correctly."""
+    test_element = UnknownGeneElement()
+    assert test_element.type == "UnknownGeneElement"
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert UnknownGeneComponent(type="gene")
-    msg = "unexpected value; permitted: <FUSORTypes.UNKNOWN_GENE_COMPONENT: 'UnknownGeneComponent'>"  # noqa: E501
+        assert UnknownGeneElement(type="gene")
+    msg = "unexpected value; permitted: <FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
-def test_any_gene_component():
-    """Test that any_gene component initializes correctly."""
-    test_component = AnyGeneComponent()
-    assert test_component.type == "AnyGeneComponent"
+def test_mult_gene_element():
+    """Test that mult_gene_element initializes correctly."""
+    test_element = MultiplePossibleGenesElement()
+    assert test_element.type == "MultiplePossibleGenesElement"
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert AnyGeneComponent(type="unknown_gene")
-    msg = "unexpected value; permitted: <FUSORTypes.ANY_GENE_COMPONENT: 'AnyGeneComponent'>"  # noqa: E501
+        assert MultiplePossibleGenesElement(type="unknown_gene")
+    msg = "unexpected value; permitted: <FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT: 'MultiplePossibleGenesElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
@@ -708,7 +707,7 @@ def test_event():
 def test_regulatory_element(regulatory_elements, gene_descriptors):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
-    assert test_reg_elmt.element_type.value == "promoter"
+    assert test_reg_elmt.regulatory_class.value == "promoter"
     assert test_reg_elmt.associated_gene.id == "gene:G1"
     assert test_reg_elmt.associated_gene.gene.gene_id == "hgnc:9339"
     assert test_reg_elmt.associated_gene.label == "G1"
@@ -716,7 +715,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
     # check type constraint
     with pytest.raises(ValidationError) as exc_info:
         RegulatoryElement(**{
-            "element_type": "notpromoter",
+            "regulatory_class": "notpromoter",
             "associated_gene": gene_descriptors[0]
         })
     assert exc_info.value.errors()[0]["msg"].startswith(
@@ -726,36 +725,36 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
     # require minimum input
     with pytest.raises(ValidationError) as exc_info:
         RegulatoryElement(**{
-            "element_type": "enhancer",
+            "regulatory_class": "enhancer",
         })
-    assert exc_info.value.errors()[0]["msg"] == "Must set >=1 of {`element_reference`, `associated_gene`, `genomic_location`}"  # noqa: E501
+    assert exc_info.value.errors()[0]["msg"] == "Must set >=1 of {`feature_id`, `associated_gene`, `genomic_location`}"  # noqa: E501
 
 
 def test_fusion(functional_domains, transcript_segments,
-                templated_sequence_components, linkers, gene_components,
+                templated_sequence_elements, linkers, gene_elements,
                 regulatory_elements):
     """Test that Fusion object initializes correctly"""
-    unknown_component = {
-        "type": "UnknownGeneComponent",
+    unknown_element = {
+        "type": "UnknownGeneElement",
     }
 
     # test valid object
     fusion = CategoricalFusion(**{
         "r_frame_preserved": True,
-        "functional_domains": [functional_domains[0]],
-        "structural_components": [
+        "critical_functional_domains": [functional_domains[0]],
+        "structural_elements": [
             transcript_segments[1], transcript_segments[2]
         ],
         "regulatory_elements": [regulatory_elements[0]]
     })
 
-    assert fusion.structural_components[0].transcript == "refseq:NM_034348.3"
+    assert fusion.structural_elements[0].transcript == "refseq:NM_034348.3"
 
     # check correct parsing of nested items
     fusion = CategoricalFusion(**{
-        "structural_components": [
+        "structural_elements": [
             {
-                "type": "GeneComponent",
+                "type": "GeneElement",
                 "gene_descriptor": {
                     "type": "GeneDescriptor",
                     "id": "gene:NTRK1",
@@ -764,7 +763,7 @@ def test_fusion(functional_domains, transcript_segments,
                 }
             },
             {
-                "type": "GeneComponent",
+                "type": "GeneElement",
                 "gene_descriptor": {
                     "type": "GeneDescriptor",
                     "id": "gene:ABL1",
@@ -775,35 +774,35 @@ def test_fusion(functional_domains, transcript_segments,
         ],
         "regulatory_elements": []
     })
-    assert fusion.structural_components[0].type == "GeneComponent"
-    assert fusion.structural_components[0].gene_descriptor.id == "gene:NTRK1"
-    assert fusion.structural_components[1].type == "GeneComponent"
-    assert fusion.structural_components[1].gene_descriptor.type == "GeneDescriptor"  # noqa: E501
+    assert fusion.structural_elements[0].type == "GeneElement"
+    assert fusion.structural_elements[0].gene_descriptor.id == "gene:NTRK1"
+    assert fusion.structural_elements[1].type == "GeneElement"
+    assert fusion.structural_elements[1].gene_descriptor.type == "GeneDescriptor"  # noqa: E501
 
-    # test that non-component properties are optional
+    # test that non-element properties are optional
     assert CategoricalFusion(**{
-        "structural_components": [
+        "structural_elements": [
             transcript_segments[1], transcript_segments[2]
         ]
     })
 
-    # test variety of component types
+    # test variety of element types
     assert AssayedFusion(**{
         "type": "AssayedFusion",
-        "structural_components": [
-            unknown_component,
-            gene_components[0],
+        "structural_elements": [
+            unknown_element,
+            gene_elements[0],
             transcript_segments[2],
-            templated_sequence_components[1],
+            templated_sequence_elements[1],
             linkers[0],
         ]
     })
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(**{
             "type": "CategoricalFusion",
-            "structural_components": [
+            "structural_elements": [
                 {
-                    "type": "LinkerSequenceComponent",
+                    "type": "LinkerSequenceElement",
                     "linker_sequence": {
                         "id": "a:b",
                         "type": "SequenceDescriptor",
@@ -812,7 +811,7 @@ def test_fusion(functional_domains, transcript_segments,
                     }
                 },
                 {
-                    "type": "LinkerSequenceComponent",
+                    "type": "LinkerSequenceElement",
                     "linker_sequence": {
                         "id": "a:b",
                         "type": "SequenceDescriptor",
@@ -822,10 +821,10 @@ def test_fusion(functional_domains, transcript_segments,
                 }
             ]
         })
-    msg = "First structural component cannot be LinkerSequence"
+    msg = "First structural element cannot be LinkerSequence"
     check_validation_error(exc_info, msg)
 
-    # components are mandatory
+    # elements are mandatory
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(**{
             "functional_domains": [functional_domains[1]],
@@ -834,23 +833,25 @@ def test_fusion(functional_domains, transcript_segments,
         })
     check_validation_error(exc_info, "field required")
 
-    # must have >= 2 components + regulatory elements
+    # must have >= 2 elements + regulatory elements
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(**{
-            "structural_components": [unknown_component]
+            "structural_elements": [unknown_element]
         })
-    msg = "Provided fusion contains an insufficient number of structural components and regulatory elements."  # noqa: E501
+    msg = (
+        "Fusions must contain >= 2 structural elements, or 1 structural element "
+        "and >= 1 regulatory element"
+    )
     check_validation_error(exc_info, msg)
     assert AssayedFusion(**{
         "regulatory_elements": [regulatory_elements[0]],
-        "structural_components": [transcript_segments[0]]
+        "structural_elements": [transcript_segments[0]]
     })
 
     # can't create base fusion
     with pytest.raises(ValidationError) as exc_info:
         assert AbstractFusion(**{
-            "structural_components": [transcript_segments[2],
-                                      linkers[0]]
+            "structural_elements": [transcript_segments[2], linkers[0]]
         })
     check_validation_error(exc_info,
                            "Cannot instantiate Fusion abstract class")
