@@ -33,6 +33,7 @@ class FUSORTypes(str, Enum):
     REGULATORY_ELEMENT = "RegulatoryElement"
     CATEGORICAL_FUSION = "CategoricalFusion"
     ASSAYED_FUSION = "AssayedFusion"
+    CAUSATIVE_EVENT = "CausativeEvent"
 
 
 class AdditionalFields(str, Enum):
@@ -54,11 +55,11 @@ class FunctionalDomain(BaseModel):
     """Define FunctionalDomain class"""
 
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
-    id: CURIE
-    name: StrictStr
     status: DomainStatus
-    gene_descriptor: GeneDescriptor
-    location_descriptor: LocationDescriptor
+    associated_gene: GeneDescriptor
+    id: Optional[CURIE]
+    label: Optional[StrictStr]
+    sequence_location: Optional[LocationDescriptor]
 
     _get_id_val = validator("id", allow_reuse=True)(return_value)
 
@@ -75,15 +76,15 @@ class FunctionalDomain(BaseModel):
             schema["example"] = {
                 "type": "FunctionalDomain",
                 "status": "lost",
-                "name": "Tyrosine-protein kinase, catalytic domain",
+                "label": "Tyrosine-protein kinase, catalytic domain",
                 "id": "interpro:IPR020635",
-                "gene_descriptor": {
+                "associated_gene": {
                     "id": "gene:NTRK1",
                     "gene_id": "hgnc:8031",
                     "label": "8031",
                     "type": "GeneDescriptor",
                 },
-                "location_descriptor": {
+                "sequence_location": {
                     "id": "fusor.location_descriptor:NP_002520.2",
                     "type": "LocationDescriptor",
                     "location": {
@@ -407,15 +408,6 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
             }
 
 
-class Event(str, Enum):
-    """Permissible values for describing the underlying causative event driving an
-    assayed fusion.
-    """
-
-    REARRANGEMENT = "rearrangement"
-    POST_TRANSCRIPTIONAL = "post-transcriptional"
-
-
 class RegulatoryClass(str, Enum):
     """Define possible classes of Regulatory Elements. Options are the possible values
     for /regulatory_class value property in the INSDC controlled vocabulary:
@@ -477,7 +469,7 @@ class RegulatoryElement(BaseModel):
                 prop.pop("title", None)
             schema["example"] = {
                 "type": "RegulatoryElement",
-                "regulatory_class": "Promoter",
+                "regulatory_class": "promoter",
                 "genomic_location": {
                     "type": "LocationDescriptor",
                     "location": {
@@ -584,13 +576,12 @@ class Evidence(str, Enum):
 class MolecularAssay(BaseModelForbidExtra):
     """Information pertaining to the assay used in identifying the fusion."""
 
-    assay_name: Optional[StrictStr] = None
-    eco_id: Optional[CURIE] = None
-    eco_label: Optional[StrictStr] = None
-    method_uri: Optional[CURIE] = None
+    assay_name: StrictStr
+    assay_id: CURIE
+    method_uri: CURIE
 
-    _get_eco_id_val = validator("eco_id", allow_reuse=True)(return_value)
-    _get_method_id_val = validator("method_uri", allow_reuse=True)(return_value)
+    _get_assay_id_val = validator("assay_id", allow_reuse=True)(return_value)
+    _get_method_uri_val = validator("method_uri", allow_reuse=True)(return_value)
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -599,16 +590,52 @@ class MolecularAssay(BaseModelForbidExtra):
         def schema_extra(schema, _):
             """Provide example"""
             schema["example"] = {
-                "method_uri": "pmid:34974290",
-                "eco_id": "ECO:0005629",
-                "eco_label": "DNA affinity chromatography evidence used in manual assertion",  # noqa: E501
-                "assay_name": "Breakapart FISH probe"
+                "method_uri": "pmid:33576979",
+                "assay_id": "obi:OBI_0003094",
+                "assay_name": "fluorescence in-situ hybridization assay"
             }
 
 
 AssayedFusionElements = List[Union[TranscriptSegmentElement, GeneElement,
                                    TemplatedSequenceElement,
                                    LinkerElement, UnknownGeneElement]]
+
+
+class EventType(str, Enum):
+    """Permissible values for describing the underlying causative event driving an
+    assayed fusion.
+    """
+
+    REARRANGEMENT = "rearrangement"
+    READ_THROUGH = "read-through"
+    TRANS_SPLICING = "trans-splicing"
+
+
+class CausativeEvent(BaseModelForbidExtra):
+    """The evaluation of a fusion may be influenced by the underlying mechanism that
+    generated the fusion. Often this will be a DNA rearrangement, but it could also be
+    a read-through or trans-splicing event.
+    """
+
+    type: Literal[FUSORTypes.CAUSATIVE_EVENT] = FUSORTypes.CAUSATIVE_EVENT
+    event_type: EventType
+    event_description: Optional[StrictStr]
+
+    class Config(BaseModelForbidExtra.Config):
+        """Configure class"""
+
+        @staticmethod
+        def schema_extra(schema, _):
+            """Provide schema"""
+            if "title" in schema.keys():
+                schema.pop("title", None)
+            for prop in schema.get("properties", {}).values():
+                prop.pop("title", None)
+            schema["example"] = {
+                "type": "CausativeEvent",
+                "event_type": "rearrangement",
+                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+            }
 
 
 class AssayedFusion(AbstractFusion):
@@ -619,11 +646,10 @@ class AssayedFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
-    causative_event: Optional[Event] = None
-    event_description: Optional[StrictStr] = None
+    structural_elements: AssayedFusionElements
+    causative_event: Optional[CausativeEvent]
     fusion_evidence: Optional[Evidence] = None
     molecular_assay: Optional[MolecularAssay] = None
-    structural_elements: AssayedFusionElements
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -637,10 +663,17 @@ class AssayedFusion(AbstractFusion):
                 prop.pop("title", None)
             schema["example"] = {
                 "type": "AssayedFusion",
-                "causative_event": "rearrangement",
+                "causative_event": {
+                    "type": "CausativeEvent",
+                    "event_type": "rearrangement",
+                    "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+                },
                 "fusion_evidence": "observed",
-                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
-                "molecular_assay": '{"ECO_id": "ECO:0007159"}',
+                "molecular_assay": {
+                    "method_uri": "pmid:33576979",
+                    "assay_id": "obi:OBI_0003094",
+                    "assay_name": "fluorescence in-situ hybridization assay"
+                },
                 "structural_elements": [
                     {
                         "element_type": "gene",

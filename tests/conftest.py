@@ -35,14 +35,14 @@ def fusion():
         "critical_functional_domains": [
             {
                 "status": "lost",
-                "name": "Tyrosine-protein kinase, catalytic domain",
+                "label": "Tyrosine-protein kinase, catalytic domain",
                 "id": "interpro:IPR020635",
-                "gene_descriptor": {
+                "associated_gene": {
                     "id": "gene:ALK",
                     "gene_id": "hgnc:1837",
                     "label": "ALK"
                 },
-                "location_descriptor": {
+                "sequence_location": {
                     "id": "fusor.location_descriptor:NP_002520.2",
                     "type": "LocationDescriptor",
                     "location": {

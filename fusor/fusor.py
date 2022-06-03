@@ -18,7 +18,7 @@ from gene.query import QueryHandler
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.models import AssayedFusion, AssayedFusionElements, \
     CategoricalFusion, CategoricalFusionElements, BaseStructuralElement, \
-    StructuralElementType, Event, Evidence, Fusion, MolecularAssay, \
+    StructuralElementType, CausativeEvent, Evidence, Fusion, MolecularAssay, \
     TemplatedSequenceElement, AdditionalFields, TranscriptSegmentElement, \
     GeneElement, LinkerElement, UnknownGeneElement, MultiplePossibleGenesElement, \
     RegulatoryElement, DomainStatus, FunctionalDomain, Strand, \
@@ -153,7 +153,7 @@ class FUSOR:
     def assayed_fusion(
         structural_elements: AssayedFusionElements,
         regulatory_elements: Optional[List[RegulatoryElement]] = None,
-        causative_event: Optional[Event] = None,
+        causative_event: Optional[CausativeEvent] = None,
         fusion_evidence: Optional[Evidence] = None,
         molecular_assay: Optional[MolecularAssay] = None,
     ) -> Tuple[Optional[AssayedFusion], Optional[str]]:
@@ -392,12 +392,12 @@ class FUSOR:
             logger.warning(msg)
             return None, msg
 
-        valid = self.uta_tools.seqrepo_access.is_valid_input_sequence(
+        seq, warning = self.uta_tools.seqrepo_access.get_reference_sequence(
             sequence_id, start, end
         )
 
-        if not valid[0]:
-            return None, valid[1]
+        if len(seq) == 0:
+            return None, warning
 
         gene_descr, warning = self._normalized_gene_descriptor(
             gene, use_minimal_gene_descr=use_minimal_gene_descr)
@@ -412,10 +412,10 @@ class FUSOR:
         try:
             return FunctionalDomain(
                 id=functional_domain_id,
-                name=name,
+                label=name,
                 status=status,
-                gene_descriptor=gene_descr,
-                location_descriptor=loc_descr
+                associated_gene=gene_descr,
+                sequence_location=loc_descr
             ), None
         except ValidationError as e:
             msg = str(e)
@@ -566,9 +566,9 @@ class FUSOR:
                             element_genomic.location_id = location_id
         if isinstance(fusion, CategoricalFusion) and fusion.critical_functional_domains:
             for domain in fusion.critical_functional_domains:
-                location = domain.location_descriptor.location
+                location = domain.sequence_location.location
                 location_id = self._location_id(location.dict())
-                domain.location_descriptor.location_id = location_id
+                domain.sequence_location.location_id = location_id
         if fusion.regulatory_elements:
             for element in fusion.regulatory_elements:
                 if element.genomic_location:
@@ -627,20 +627,20 @@ class FUSOR:
         if fusion.type == "CategoricalFusion" and fusion.critical_functional_domains:
             for domain in fusion.critical_functional_domains:
                 if (
-                    domain.location_descriptor
-                    and domain.location_descriptor.location
-                    and (domain.location_descriptor.location.type ==
+                    domain.sequence_location
+                    and domain.sequence_location.location
+                    and (domain.sequence_location.location.type ==
                          "SequenceLocation")
                 ):
                     try:
                         new_id = translate_identifier(
                             self.seqrepo,
-                            domain.location_descriptor.location.sequence_id,
+                            domain.sequence_location.location.sequence_id,
                             target_namespace
                         )
                     except IDTranslationException:
                         continue
-                    domain.location_descriptor.location.sequence_id = new_id
+                    domain.sequence_location.location.sequence_id = new_id
         return fusion
 
     def add_gene_descriptor(self, fusion: Fusion) -> Fusion:
