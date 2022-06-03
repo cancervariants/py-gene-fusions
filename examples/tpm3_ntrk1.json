@@ -66,6 +66,9 @@
       }
     }
   ],
-  "causative_event": "rearrangement",
+  "causative_event": {
+    "type": "CausativeEvent",
+    "event_type": "rearrangement"
+  },
   "regulatory_elements": []
 }

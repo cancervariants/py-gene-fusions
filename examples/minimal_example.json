@@ -4,16 +4,16 @@
   "critical_functional_domains": [
     {
       "type": "FunctionalDomain",
-      "id": "interpro:IPR020635",
-      "name": "Tyrosine-protein kinase, catalytic domain",
+      "_id": "interpro:IPR020635",
+      "label": "Tyrosine-protein kinase, catalytic domain",
       "status": "lost",
-      "gene_descriptor": {
+      "associated_gene": {
         "id": "normalize.gene:hgnc%3A427",
         "type": "GeneDescriptor",
         "label": "ALK",
         "gene_id": "hgnc:427"
       },
-      "location_descriptor": {
+      "sequence_location": {
         "id": "fusor.location_descriptor:NP_004295.2",
         "type": "LocationDescriptor",
         "location": {

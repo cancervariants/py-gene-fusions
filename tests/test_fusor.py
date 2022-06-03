@@ -175,10 +175,10 @@ def functional_domain_min(braf_gene_descr_min,
     """Create functional domain test fixture."""
     params = {
         "status": "preserved",
-        "name": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
+        "label": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "id": "interpro:IPR001245",
-        "gene_descriptor": braf_gene_descr_min,
-        "location_descriptor": location_descriptor_braf_domain
+        "associated_gene": braf_gene_descr_min,
+        "sequence_location": location_descriptor_braf_domain
     }
     return FunctionalDomain(**params)
 
@@ -188,10 +188,10 @@ def functional_domain(braf_gene_descr, location_descriptor_braf_domain):
     """Create functional domain test fixture."""
     params = {
         "status": "preserved",
-        "name": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
+        "label": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "id": "interpro:IPR001245",
-        "gene_descriptor": braf_gene_descr,
-        "location_descriptor": location_descriptor_braf_domain
+        "associated_gene": braf_gene_descr,
+        "sequence_location": location_descriptor_braf_domain
     }
     return FunctionalDomain(**params)
 
@@ -202,10 +202,10 @@ def functional_domain_seq_id(braf_gene_descr_min,
     """Create functional domain test fixture."""
     params = {
         "status": "preserved",
-        "name": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
+        "label": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "id": "interpro:IPR001245",
-        "gene_descriptor": braf_gene_descr_min,
-        "location_descriptor": location_descriptor_braf_domain_seq_id
+        "associated_gene": braf_gene_descr_min,
+        "sequence_location": location_descriptor_braf_domain_seq_id
     }
     return FunctionalDomain(**params)
 
@@ -484,8 +484,8 @@ def test_add_additional_fields(fusor, fusion_example, fusion,
     fusion = CategoricalFusion(**fusion_example)
 
     expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.critical_functional_domains[0].location_descriptor.location_id = "ga4gh:VSL.2CWYzSpOJfZq7KW4VIUKeP5SJtepRar0"  # type: ignore # noqa: E501
-    expected_fusion.critical_functional_domains[0].location_descriptor.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
+    expected_fusion.critical_functional_domains[0].sequence_location.location_id = "ga4gh:VSL.2CWYzSpOJfZq7KW4VIUKeP5SJtepRar0"  # type: ignore # noqa: E501
+    expected_fusion.critical_functional_domains[0].sequence_location.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
     expected_fusion.structural_elements[0].element_genomic_start.location_id = "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW"  # type: ignore # noqa: E501
     expected_fusion.structural_elements[0].element_genomic_start.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
     expected_fusion.structural_elements[0].element_genomic_end.location_id = "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq"  # type: ignore # noqa: E501
@@ -509,7 +509,7 @@ def test_add_translated_sequence_id(fusor, fusion_example):
     fusion = CategoricalFusion(**fusion_example)
 
     expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.critical_functional_domains[0].location_descriptor.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
+    expected_fusion.critical_functional_domains[0].sequence_location.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
     expected_fusion.structural_elements[0].element_genomic_start.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
     expected_fusion.structural_elements[0].element_genomic_end.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
     expected_fusion.structural_elements[3].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
@@ -523,7 +523,7 @@ def test_add_location_id(fusor, fusion_example, exhaustive_example):
     fusion = fusor.add_location_id(CategoricalFusion(**fusion_example))
     actual = CategoricalFusion(**exhaustive_example)
 
-    assert fusion.critical_functional_domains[0].location_descriptor.location_id == actual.critical_functional_domains[0].location_descriptor.location_id  # noqa: E501
+    assert fusion.critical_functional_domains[0].sequence_location.location_id == actual.critical_functional_domains[0].sequence_location.location_id  # noqa: E501
     assert fusion.structural_elements[0].element_genomic_start.location_id == actual.structural_elements[0].element_genomic_start.location_id  # noqa: E501
     assert fusion.structural_elements[0].element_genomic_end.location_id == actual.structural_elements[0].element_genomic_end.location_id  # noqa: E501
     assert fusion.structural_elements[3].region.location_id == actual.structural_elements[3].region.location_id  # noqa: E501
@@ -861,11 +861,11 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
         expected = expected.dict()
         assert actual.keys() == expected.keys()
         for key in expected.keys():
-            if key == "gene_descriptor":
+            if key == "associated_gene":
                 compare_gene_descriptor(actual[key], expected[key])
-            elif key == "location_descriptor":
-                act_ld = actual["location_descriptor"]
-                exp_ld = expected["location_descriptor"]
+            elif key == "sequence_location":
+                act_ld = actual["sequence_location"]
+                exp_ld = expected["sequence_location"]
                 assert act_ld["id"] == exp_ld["id"]
                 assert act_ld["type"] == exp_ld["type"]
                 assert act_ld["location"]["type"] == exp_ld["location"]["type"]
