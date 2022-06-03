@@ -9,6 +9,7 @@ from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
     LocationDescriptor, SequenceDescriptor, CURIE
 from ga4gh.vrsatile.pydantic.vrs_models import Sequence
+from pydantic.fields import Field
 
 
 class BaseModelForbidExtra(BaseModel):
@@ -57,7 +58,7 @@ class FunctionalDomain(BaseModel):
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
     associated_gene: GeneDescriptor
-    id: Optional[CURIE]
+    id: Optional[CURIE] = Field(alias="_id")
     label: Optional[StrictStr]
     sequence_location: Optional[LocationDescriptor]
 
@@ -65,6 +66,8 @@ class FunctionalDomain(BaseModel):
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
+
+        allow_population_by_field_name = True
 
         @staticmethod
         def schema_extra(schema, _):
@@ -77,7 +80,7 @@ class FunctionalDomain(BaseModel):
                 "type": "FunctionalDomain",
                 "status": "lost",
                 "label": "Tyrosine-protein kinase, catalytic domain",
-                "id": "interpro:IPR020635",
+                "_id": "interpro:IPR020635",
                 "associated_gene": {
                     "id": "gene:NTRK1",
                     "gene_id": "hgnc:8031",
