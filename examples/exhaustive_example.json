@@ -3,7 +3,7 @@
   "critical_functional_domains": [
     {
       "type": "FunctionalDomain",
-      "id": "interpro:IPR020635",
+      "_id": "interpro:IPR020635",
       "label": "Tyrosine-protein kinase, catalytic domain",
       "status": "lost",
       "associated_gene": {

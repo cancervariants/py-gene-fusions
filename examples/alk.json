@@ -3,7 +3,7 @@
   "critical_functional_domains": [
     {
       "type": "FunctionalDomain",
-      "id": "interpro:IPR017441",
+      "_id": "interpro:IPR017441",
       "label": "Protein kinase, ATP binding site",
       "status": "preserved",
       "associated_gene": {

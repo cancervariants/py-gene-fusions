@@ -396,7 +396,7 @@ class FUSOR:
             sequence_id, start, end
         )
 
-        if len(seq) == 0:
+        if not seq:
             return None, warning
 
         gene_descr, warning = self._normalized_gene_descriptor(
@@ -411,7 +411,7 @@ class FUSOR:
 
         try:
             return FunctionalDomain(
-                id=functional_domain_id,
+                _id=functional_domain_id,
                 label=name,
                 status=status,
                 associated_gene=gene_descr,

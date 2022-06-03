@@ -185,14 +185,14 @@ def functional_domains(gene_descriptors, location_descriptors):
             "type": "FunctionalDomain",
             "status": "preserved",
             "label": "WW domain",
-            "id": "interpro:IPR001202",
+            "_id": "interpro:IPR001202",
             "associated_gene": gene_descriptors[5],
             "sequence_location": location_descriptors[6]
         },
         {
             "status": "lost",
             "label": "Tyrosine-protein kinase, catalytic domain",
-            "id": "interpro:IPR020635",
+            "_id": "interpro:IPR020635",
             "associated_gene": gene_descriptors[3],
             "sequence_location": location_descriptors[7],
         }
