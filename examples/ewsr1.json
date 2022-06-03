@@ -14,11 +14,14 @@
       "type": "UnknownGeneElement"
     }
   ],
-  "causative_event": "rearrangement",
+  "causative_event": {
+    "type": "CausativeEvent",
+    "event_type": "rearrangement"
+  },
   "fusion_evidence": "inferred",
   "molecular_assay": {
-    "assay_name": "Fluorescence in-situ hybridization (FISH)",
-    "eco_id": "ECO:0001828",
-    "eco_label": "inference of sequence features from visual inspection used in manual assertion"
+    "method_uri": "pmid:33576979",
+    "assay_id": "obi:OBI_0003094",
+    "assay_name": "fluorescence in-situ hybridization assay"
   }
 }

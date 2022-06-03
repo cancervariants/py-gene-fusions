@@ -9,7 +9,7 @@ pydantic = "*"
 "ga4gh.vrs" = {version = ">=0.7.2", extras = ["extras"]}
 "biocommons.seqrepo" = "*"
 gene-normalizer = ">=0.1.27"
-uta-tools = ">=0.0.17"
+uta-tools = ">=0.1.0"
 
 [dev-packages]
 fusor = {editable = true, path = "."}

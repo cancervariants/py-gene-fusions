@@ -2,10 +2,10 @@
 from pydantic import ValidationError
 import pytest
 import json
-from fusor.models import AbstractFusion, AssayedFusion, CategoricalFusion, \
+from fusor.models import AbstractFusion, AssayedFusion, CategoricalFusion, EventType, \
     TranscriptSegmentElement, TemplatedSequenceElement, UnknownGeneElement, \
     GeneElement,  MultiplePossibleGenesElement, LinkerElement, FunctionalDomain, \
-    Event, RegulatoryElement
+    CausativeEvent, RegulatoryElement
 import copy
 from tests.conftest import EXAMPLES_DIR
 
@@ -184,17 +184,17 @@ def functional_domains(gene_descriptors, location_descriptors):
         {
             "type": "FunctionalDomain",
             "status": "preserved",
-            "name": "WW domain",
-            "id": "interpro:IPR001202",
-            "gene_descriptor": gene_descriptors[5],
-            "location_descriptor": location_descriptors[6]
+            "label": "WW domain",
+            "_id": "interpro:IPR001202",
+            "associated_gene": gene_descriptors[5],
+            "sequence_location": location_descriptors[6]
         },
         {
             "status": "lost",
-            "name": "Tyrosine-protein kinase, catalytic domain",
-            "id": "interpro:IPR020635",
-            "gene_descriptor": gene_descriptors[3],
-            "location_descriptor": location_descriptors[7],
+            "label": "Tyrosine-protein kinase, catalytic domain",
+            "_id": "interpro:IPR020635",
+            "associated_gene": gene_descriptors[3],
+            "sequence_location": location_descriptors[7],
         }
     ]
 
@@ -342,12 +342,12 @@ def test_functional_domain(functional_domains, gene_descriptors):
     test_domain = FunctionalDomain(**functional_domains[0])
     assert test_domain.type == "FunctionalDomain"
     assert test_domain.status == "preserved"
-    assert test_domain.name == "WW domain"
+    assert test_domain.label == "WW domain"
     assert test_domain.id == "interpro:IPR001202"
-    assert test_domain.gene_descriptor.id == "gene:YAP1"
-    assert test_domain.gene_descriptor.gene_id == "hgnc:16262"
-    assert test_domain.gene_descriptor.label == "YAP1"
-    test_loc = test_domain.location_descriptor
+    assert test_domain.associated_gene.id == "gene:YAP1"
+    assert test_domain.associated_gene.gene_id == "hgnc:16262"
+    assert test_domain.associated_gene.label == "YAP1"
+    test_loc = test_domain.sequence_location
     assert test_loc.id == "fusor.location_descriptor:NP_001123617.1"
     assert test_loc.type == "LocationDescriptor"
     assert test_loc.location.sequence_id == "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7"  # noqa: E501
@@ -358,12 +358,12 @@ def test_functional_domain(functional_domains, gene_descriptors):
     test_domain = FunctionalDomain(**functional_domains[1])
     assert test_domain.type == "FunctionalDomain"
     assert test_domain.status == "lost"
-    assert test_domain.name == "Tyrosine-protein kinase, catalytic domain"
+    assert test_domain.label == "Tyrosine-protein kinase, catalytic domain"
     assert test_domain.id == "interpro:IPR020635"
-    assert test_domain.gene_descriptor.id == "gene:NTRK1"
-    assert test_domain.gene_descriptor.gene_id == "hgnc:8031"
-    assert test_domain.gene_descriptor.label == "NTRK1"
-    test_loc = test_domain.location_descriptor
+    assert test_domain.associated_gene.id == "gene:NTRK1"
+    assert test_domain.associated_gene.gene_id == "hgnc:8031"
+    assert test_domain.associated_gene.label == "NTRK1"
+    test_loc = test_domain.sequence_location
     assert test_loc.id == "fusor.location_descriptor:NP_002520.2"
     assert test_loc.type == "LocationDescriptor"
     assert test_loc.location.sequence_id == "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6"  # noqa: E501
@@ -377,7 +377,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
             "status": "gained",
             "name": "tyrosine kinase catalytic domain",
             "id": "interpro:IPR020635",
-            "gene_descriptor": gene_descriptors[0]
+            "associated_gene": gene_descriptors[0]
         })
     msg = "value is not a valid enumeration member; permitted: 'lost', 'preserved'"  # noqa: E501
     check_validation_error(exc_info, msg)
@@ -386,9 +386,9 @@ def test_functional_domain(functional_domains, gene_descriptors):
     with pytest.raises(ValidationError) as exc_info:
         FunctionalDomain(**{
             "status": "lost",
-            "name": "tyrosine kinase catalytic domain",
+            "label": "tyrosine kinase catalytic domain",
             "id": "interpro_IPR020635",
-            "gene_descriptor": gene_descriptors[0]
+            "associated_gene": gene_descriptors[0]
         })
     msg = "string does not match regex \"^\w[^:]*:.+$\""  # noqa: W605, Q003
     check_validation_error(exc_info, msg)
@@ -696,12 +696,12 @@ def test_mult_gene_element():
 
 def test_event():
     """Test Event object initializes correctly"""
-    rearrangement = "rearrangement"
-    test_event = Event(rearrangement)
-    assert test_event.value == rearrangement
+    rearrangement = EventType.REARRANGEMENT
+    test_event = CausativeEvent(event_type=rearrangement, event_description=None)
+    assert test_event.event_type == rearrangement
 
     with pytest.raises(ValueError):
-        Event("combination")
+        CausativeEvent(event_type="combination")
 
 
 def test_regulatory_element(regulatory_elements, gene_descriptors):
