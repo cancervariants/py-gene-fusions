@@ -4,6 +4,7 @@ import copy
 import pytest
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
     LocationDescriptor
+from fusor.exceptions import FUSORParametersException
 
 from fusor.models import AssayedFusion, CategoricalFusion, \
     MultiplePossibleGenesElement, TemplatedSequenceElement, TranscriptSegmentElement, \
@@ -582,38 +583,48 @@ def test_fusion(fusor, linker_element, templated_sequence_element,
         "structural_elements": [
             templated_sequence_element, linker_element,
             UnknownGeneElement()
-        ]
+        ],
+        "causative_event": {
+            "type": "CausativeEvent",
+            "event_type": "rearrangement",
+            "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+        },
+        "assay": {
+            "type": "Assay",
+            "method_uri": "pmid:33576979",
+            "assay_id": "obi:OBI_0003094",
+            "assay_name": "fluorescence in-situ hybridization assay",
+            "fusion_detection": "inferred"
+        },
     })
-    assert isinstance(f[0], AssayedFusion)
-    assert f[1] is None
+    assert isinstance(f, AssayedFusion)
     f = fusor.fusion(**{
         "structural_elements": [
             transcript_segment_element, MultiplePossibleGenesElement()
         ],
         "critical_functional_domains": [functional_domain]
     })
-    assert isinstance(f[0], CategoricalFusion)
-    assert f[1] is None
+    assert isinstance(f, CategoricalFusion)
 
     # catch conflicting property args
-    f = fusor.fusion(**{
-        "structural_elements": [
-            transcript_segment_element, UnknownGeneElement()
-        ],
-        "causative_event": "rearrangement",
-        "critical_functional_domains": [functional_domain]
-    })
-    assert f[0] is None
-    assert "Received conflicting attributes" in f[1]
+    with pytest.raises(FUSORParametersException) as excinfo:
+        f = fusor.fusion(**{
+            "structural_elements": [
+                transcript_segment_element, UnknownGeneElement()
+            ],
+            "causative_event": "rearrangement",
+            "critical_functional_domains": [functional_domain]
+        })
+    assert str(excinfo.value) == "Received conflicting attributes"
 
     # handle indeterminate type
-    f = fusor.fusion(**{
-        "structural_elements": [
-            transcript_segment_element, templated_sequence_element
-        ],
-    })
-    assert f[0] is None
-    assert "Unable to determine fusion type" in f[1]
+    with pytest.raises(FUSORParametersException) as excinfo:
+        f = fusor.fusion(**{
+            "structural_elements": [
+                transcript_segment_element, templated_sequence_element
+            ],
+        })
+    assert str(excinfo.value) == "Unable to determine fusion type"
 
     # handle both type parameter options
     f = fusor.fusion(
@@ -623,25 +634,34 @@ def test_fusion(fusor, linker_element, templated_sequence_element,
                 templated_sequence_element,
                 linker_element,
                 UnknownGeneElement()
-            ]
+            ],
+            "causative_event": {
+                "type": "CausativeEvent",
+                "event_type": "rearrangement",
+            },
+            "assay": {
+                "type": "Assay",
+                "method_uri": "pmid:33576979",
+                "assay_id": "obi:OBI_0003094",
+                "assay_name": "fluorescence in-situ hybridization assay",
+                "fusion_detection": "inferred"
+            },
         }
     )
-    assert isinstance(f[0], AssayedFusion)
-    assert f[1] is None
+    assert isinstance(f, AssayedFusion)
     f = fusor.fusion(**{
         "type": "CategoricalFusion",
         "structural_elements": [transcript_segment_element,
                                 MultiplePossibleGenesElement()],
         "critical_functional_domains": [functional_domain]
     })
-    assert isinstance(f[0], CategoricalFusion)
-    assert f[1] is None
+    assert isinstance(f, CategoricalFusion)
 
     # catch and pass on validation errors
-    f = fusor.fusion(fusion_type="CategoricalFusion",
-                     structural_elements=[linker_element])
-    assert f[0] is None
-    assert "Fusions must contain >= 2 structural elements, or 1 structural element and >= 1 regulatory element" in f[1]  # noqa: E501
+    with pytest.raises(FUSORParametersException) as excinfo:
+        f = fusor.fusion(fusion_type="CategoricalFusion",
+                         structural_elements=[linker_element])
+    assert "Fusions must contain >= 2 structural elements, or 1 structural element and >= 1 regulatory element" in str(excinfo.value)  # noqa: E501
 
 
 @pytest.mark.asyncio

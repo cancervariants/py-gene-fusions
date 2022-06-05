@@ -18,14 +18,14 @@ from gene.query import QueryHandler
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.models import AssayedFusion, AssayedFusionElements, \
     CategoricalFusion, CategoricalFusionElements, BaseStructuralElement, \
-    StructuralElementType, CausativeEvent, Evidence, Fusion, MolecularAssay, \
+    StructuralElementType, CausativeEvent, Fusion, Assay, \
     TemplatedSequenceElement, AdditionalFields, TranscriptSegmentElement, \
     GeneElement, LinkerElement, UnknownGeneElement, MultiplePossibleGenesElement, \
     RegulatoryElement, DomainStatus, FunctionalDomain, Strand, \
     RegulatoryClass, FusionType
 from fusor.nomenclature import reg_element_nomenclature, \
     tx_segment_nomenclature, templated_seq_nomenclature, gene_nomenclature
-from fusor.exceptions import IDTranslationException
+from fusor.exceptions import FUSORParametersException, IDTranslationException
 from fusor.tools import translate_identifier
 
 
@@ -69,14 +69,15 @@ class FUSOR:
         return False
 
     def fusion(self, fusion_type: Optional[FusionType] = None,
-               **kwargs) -> Tuple[Optional[Fusion], Optional[str]]:
+               **kwargs) -> Fusion:
         """Construct fusion object.
 
         :param Optional[FusionType] fusion_type: explicitly specify fusion type.
             Unecessary if providing fusion object in keyword args that includes `type`
             attribute.
-        :return: Tuple containing optional Fusion if construction successful, and any
-            relevant warnings
+        :return: constructed fusion object if successful
+        :raise: FUSORParametersException if fusion type unable to be determined,
+            or if incorrect fusion parameters are provided
         """
         # try explicit type param
         explicit_type = kwargs.get("type")
@@ -85,39 +86,48 @@ class FUSOR:
                 fusion_type = explicit_type
                 kwargs.pop("type")
             else:
-                return (None, f"Invalid type parameter: {explicit_type}")
+                raise FUSORParametersException(
+                    f"Invalid type parameter: {explicit_type}"
+                )
+        fusion_fn = None
         if fusion_type:
             if fusion_type == FusionType.CATEGORICAL_FUSION:
-                return self.categorical_fusion(**kwargs)
+                fusion_fn = self.categorical_fusion
             elif fusion_type == FusionType.ASSAYED_FUSION:
-                return self.assayed_fusion(**kwargs)
+                fusion_fn = self.assayed_fusion
             else:
-                return (None, f"Invalid fusion_type parameter: {fusion_type}")
-
-        # try to infer from provided attributes
-        categorical_attributes = any([
-            "critical_functional_domains" in kwargs,
-            "r_frame_preserved" in kwargs,
-            self._contains_element_type(
-                kwargs, StructuralElementType.MULTIPLE_POSSIBLE_GENES_ELEMENT
-            )
-        ])
-        assayed_attributes = any([
-            "causative_event" in kwargs,
-            "event_description" in kwargs,
-            "fusion_evidence" in kwargs,
-            "molecular_assay" in kwargs,
-            self._contains_element_type(kwargs,
-                                        StructuralElementType.UNKNOWN_GENE_ELEMENT)
-        ])
-        if categorical_attributes and not assayed_attributes:
-            return self.categorical_fusion(**kwargs)
-        elif assayed_attributes and not categorical_attributes:
-            return self.assayed_fusion(**kwargs)
-        if categorical_attributes and assayed_attributes:
-            return None, "Received conflicting attributes"
+                raise FUSORParametersException(
+                    f"Invalid fusion_type parameter: {fusion_type}"
+                )
         else:
-            return None, "Unable to determine fusion type"
+            # try to infer from provided attributes
+            categorical_attributes = any([
+                "critical_functional_domains" in kwargs,
+                "r_frame_preserved" in kwargs,
+                self._contains_element_type(
+                    kwargs, StructuralElementType.MULTIPLE_POSSIBLE_GENES_ELEMENT
+                )
+            ])
+            assayed_attributes = any([
+                "causative_event" in kwargs,
+                "assay" in kwargs,
+                self._contains_element_type(kwargs,
+                                            StructuralElementType.UNKNOWN_GENE_ELEMENT)
+            ])
+            if categorical_attributes and assayed_attributes:
+                raise FUSORParametersException("Received conflicting attributes")
+            elif categorical_attributes and not assayed_attributes:
+                fusion_fn = self.categorical_fusion
+            elif assayed_attributes and not categorical_attributes:
+                fusion_fn = self.assayed_fusion
+        if fusion_fn is None:
+            raise FUSORParametersException("Unable to determine fusion type")
+        try:
+            return fusion_fn(**kwargs)
+        except TypeError as e:
+            raise FUSORParametersException(
+                f"Unable to construct fusion with provided args: {e}"
+            )
 
     @staticmethod
     def categorical_fusion(
@@ -125,7 +135,7 @@ class FUSOR:
         regulatory_elements: Optional[List[RegulatoryElement]] = None,
         critical_functional_domains: Optional[List[FunctionalDomain]] = None,
         r_frame_preserved: Optional[bool] = None
-    ) -> Tuple[Optional[CategoricalFusion], Optional[str]]:
+    ) -> CategoricalFusion:
         """Construct a categorical fusion object
         :param CategoricalFusionElements structural_elements: elements
             constituting the fusion
@@ -135,8 +145,8 @@ class FUSOR:
             functional domains
         :param Optional[bool] r_frame_preserved: `True` if reading frame is
             preserved.  `False` otherwise
-        :return: Tuple containing optional CategoricalFusion if construction
-        successful, and any relevant validation warnings
+        :return: CategoricalFusion if construction successful
+        :raise: FUSORParametersException if given incorrect fusion properties
         """
         try:
             fusion = CategoricalFusion(
@@ -146,27 +156,23 @@ class FUSOR:
                 regulatory_elements=regulatory_elements
             )
         except ValidationError as e:
-            return None, str(e)
-        return fusion, None
+            raise FUSORParametersException(str(e))
+        return fusion
 
     @staticmethod
     def assayed_fusion(
         structural_elements: AssayedFusionElements,
+        causative_event: CausativeEvent,
+        assay: Assay,
         regulatory_elements: Optional[List[RegulatoryElement]] = None,
-        causative_event: Optional[CausativeEvent] = None,
-        fusion_evidence: Optional[Evidence] = None,
-        molecular_assay: Optional[MolecularAssay] = None,
-    ) -> Tuple[Optional[AssayedFusion], Optional[str]]:
+    ) -> AssayedFusion:
         """Construct an assayed fusion object
         :param AssayedFusionElements structural_elements: elements constituting the
             fusion
+        :param Event causative_event: event causing the fusion
+        :param Assay assay: how knowledge of the fusion was obtained
         :param Optional[RegulatoryElement] regulatory_elements: affected regulatory
             elements
-        :param Optional[Event] causative_event: event causing the fusion, if known
-        :param Optional[Evidence] fusion_evidence: whether the fusion is inferred or
-            directly observed
-        :param Optional[MolecularAssay] molecular_assay: how knowledge of the fusion
-            was obtained
         :return: Tuple containing optional AssayedFusion if construction successful,
             and any relevant validation warnings
         """
@@ -175,12 +181,11 @@ class FUSOR:
                 structural_elements=structural_elements,
                 regulatory_elements=regulatory_elements,
                 causative_event=causative_event,
-                fusion_evidence=fusion_evidence,
-                molecular_assay=molecular_assay
+                assay=assay
             )
         except ValidationError as e:
-            return None, str(e)
-        return fusion, None
+            raise FUSORParametersException(str(e))
+        return fusion
 
     async def transcript_segment_element(
             self, tx_to_genomic_coords: bool = True,
