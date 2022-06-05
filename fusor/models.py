@@ -475,6 +475,7 @@ class RegulatoryElement(BaseModel):
                 "regulatory_class": "promoter",
                 "genomic_location": {
                     "type": "LocationDescriptor",
+                    "id": "fusor.location_descriptor:NC_000001.11",
                     "location": {
                         "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",  # noqa: E501
                         "type": "SequenceLocation",
@@ -576,12 +577,14 @@ class Evidence(str, Enum):
     INFERRED = "inferred"
 
 
-class MolecularAssay(BaseModelForbidExtra):
+class Assay(BaseModelForbidExtra):
     """Information pertaining to the assay used in identifying the fusion."""
 
+    type: Literal["Assay"] = "Assay"
     assay_name: StrictStr
     assay_id: CURIE
     method_uri: CURIE
+    fusion_detection: Evidence
 
     _get_assay_id_val = validator("assay_id", allow_reuse=True)(return_value)
     _get_method_uri_val = validator("method_uri", allow_reuse=True)(return_value)
@@ -595,7 +598,8 @@ class MolecularAssay(BaseModelForbidExtra):
             schema["example"] = {
                 "method_uri": "pmid:33576979",
                 "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay"
+                "assay_name": "fluorescence in-situ hybridization assay",
+                "fusion_detection": "inferred"
             }
 
 
@@ -650,9 +654,8 @@ class AssayedFusion(AbstractFusion):
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
     structural_elements: AssayedFusionElements
-    causative_event: Optional[CausativeEvent]
-    fusion_evidence: Optional[Evidence] = None
-    molecular_assay: Optional[MolecularAssay] = None
+    causative_event: CausativeEvent
+    assay: Assay
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -671,15 +674,16 @@ class AssayedFusion(AbstractFusion):
                     "event_type": "rearrangement",
                     "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
                 },
-                "fusion_evidence": "observed",
-                "molecular_assay": {
+                "assay": {
+                    "type": "Assay",
                     "method_uri": "pmid:33576979",
                     "assay_id": "obi:OBI_0003094",
-                    "assay_name": "fluorescence in-situ hybridization assay"
+                    "assay_name": "fluorescence in-situ hybridization assay",
+                    "fusion_detection": "inferred"
                 },
                 "structural_elements": [
                     {
-                        "element_type": "gene",
+                        "type": "GeneElement",
                         "gene_descriptor": {
                             "id": "gene:EWSR1",
                             "gene_id": "hgnc:3058",
@@ -688,7 +692,7 @@ class AssayedFusion(AbstractFusion):
                         }
                     },
                     {
-                        "element_type": "UnknownGene"
+                        "type": "UnknownGeneElement"
                     }
                 ]
             }
@@ -726,12 +730,13 @@ class CategoricalFusion(AbstractFusion):
             schema["example"] = {
                 "type": "CategoricalFusion",
                 "r_frame_preserved": True,
-                "functional_domains": [
+                "critical_functional_domains": [
                     {
+                        "type": "FunctionalDomain",
                         "status": "lost",
-                        "name": "cystatin domain",
+                        "label": "cystatin domain",
                         "id": "interpro:IPR000010",
-                        "gene": {
+                        "associated_gene": {
                             "id": "gene:CST1",
                             "gene_id": "hgnc:2743",
                             "label": "CST1",
@@ -747,7 +752,7 @@ class CategoricalFusion(AbstractFusion):
                         "exon_start_offset": 0,
                         "exon_end": 8,
                         "exon_end_offset": 0,
-                        "gene": {
+                        "gene_descriptor": {
                             "id": "gene:TPM3",
                             "gene_id": "hgnc:12012",
                             "type": "GeneDescriptor",
@@ -796,7 +801,7 @@ class CategoricalFusion(AbstractFusion):
                     },
                     {
                         "type": "GeneElement",
-                        "gene": {
+                        "gene_descriptor": {
                             "id": "gene:ALK",
                             "type": "GeneDescriptor",
                             "gene_id": "hgnc:427",
