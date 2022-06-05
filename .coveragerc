@@ -1,7 +1,7 @@
 [run]
 source =
     fusor/
-    unit_tests/
 omit =
     setup.py
-    docs/*
+    fusor/version.py
+    tests/
