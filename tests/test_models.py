@@ -5,7 +5,7 @@ import json
 from fusor.models import AbstractFusion, AssayedFusion, CategoricalFusion, EventType, \
     TranscriptSegmentElement, TemplatedSequenceElement, UnknownGeneElement, \
     GeneElement,  MultiplePossibleGenesElement, LinkerElement, FunctionalDomain, \
-    CausativeEvent, RegulatoryElement
+    CausativeEvent, RegulatoryElement, Assay
 import copy
 from tests.conftest import EXAMPLES_DIR
 
@@ -795,7 +795,19 @@ def test_fusion(functional_domains, transcript_segments,
             transcript_segments[2],
             templated_sequence_elements[1],
             linkers[0],
-        ]
+        ],
+        "causative_event": {
+            "type": "CausativeEvent",
+            "event_type": "rearrangement",
+            "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+        },
+        "assay": {
+            "type": "Assay",
+            "method_uri": "pmid:33576979",
+            "assay_id": "obi:OBI_0003094",
+            "assay_name": "fluorescence in-situ hybridization assay",
+            "fusion_detection": "inferred"
+        },
     })
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(**{
@@ -836,17 +848,25 @@ def test_fusion(functional_domains, transcript_segments,
     # must have >= 2 elements + regulatory elements
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(**{
-            "structural_elements": [unknown_element]
+            "structural_elements": [unknown_element],
+            "causative_event": {
+                "type": "CausativeEvent",
+                "event_type": "rearrangement",
+                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+            },
+            "assay": {
+                "type": "Assay",
+                "method_uri": "pmid:33576979",
+                "assay_id": "obi:OBI_0003094",
+                "assay_name": "fluorescence in-situ hybridization assay",
+                "fusion_detection": "inferred"
+            },
         })
     msg = (
         "Fusions must contain >= 2 structural elements, or 1 structural element "
         "and >= 1 regulatory element"
     )
     check_validation_error(exc_info, msg)
-    assert AssayedFusion(**{
-        "regulatory_elements": [regulatory_elements[0]],
-        "structural_elements": [transcript_segments[0]]
-    })
 
     # can't create base fusion
     with pytest.raises(ValidationError) as exc_info:
@@ -857,7 +877,7 @@ def test_fusion(functional_domains, transcript_segments,
                            "Cannot instantiate Fusion abstract class")
 
 
-def test_examples(exhaustive_example, fusion_example):
+def test_file_examples(exhaustive_example, fusion_example):
     """Test example JSON files."""
     assert CategoricalFusion(**exhaustive_example)
 
@@ -877,3 +897,18 @@ def test_examples(exhaustive_example, fusion_example):
 
     with open(EXAMPLES_DIR / "ewsr1.json", "r") as ewsr1_file:
         assert AssayedFusion(**json.load(ewsr1_file))
+
+
+def test_model_examples():
+    """Test example objects as provided in Pydantic config classes"""
+    models = [
+        FunctionalDomain, TranscriptSegmentElement, LinkerElement,
+        TemplatedSequenceElement, GeneElement, UnknownGeneElement,
+        MultiplePossibleGenesElement, RegulatoryElement, Assay, CausativeEvent,
+        AssayedFusion, CategoricalFusion
+    ]
+    for model in models:
+        schema = {}
+        model.__config__.schema_extra(schema, None)
+        if "example" in schema:
+            model(**schema["example"])

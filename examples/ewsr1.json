@@ -18,10 +18,11 @@
     "type": "CausativeEvent",
     "event_type": "rearrangement"
   },
-  "fusion_evidence": "inferred",
-  "molecular_assay": {
+  "assay": {
+    "type": "Assay",
     "method_uri": "pmid:33576979",
     "assay_id": "obi:OBI_0003094",
-    "assay_name": "fluorescence in-situ hybridization assay"
+    "assay_name": "fluorescence in-situ hybridization assay",
+    "fusion_detection": "inferred"
   }
 }

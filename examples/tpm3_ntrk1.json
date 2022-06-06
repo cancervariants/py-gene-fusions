@@ -70,5 +70,12 @@
     "type": "CausativeEvent",
     "event_type": "rearrangement"
   },
+  "assay": {
+    "type": "Assay",
+    "assay_name": "fluorescence in-situ hybridization assay",
+    "assay_id": "obi:OBI_0003094",
+    "fusion_detection": "inferred",
+    "method_uri": "pmid:33576979"
+  },
   "regulatory_elements": []
 }
