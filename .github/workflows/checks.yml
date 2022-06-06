@@ -1,4 +1,4 @@
-name: github-actions
+name: run checks
 on: [push, pull_request]
 jobs:
     test:
