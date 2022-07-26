@@ -68,7 +68,7 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement,
         end = element.exon_end
         if element.exon_end_offset:
             end_offset = element.exon_end_offset
-    return f"{prefix}:e.{start}{start_offset}_{end}{end_offset}"
+    return f"{prefix}:e.{start}{start_offset}{'_' if start and end else ''}{end}{end_offset}"  # noqa: E501
 
 
 def templated_seq_nomenclature(element: TemplatedSequenceElement,
