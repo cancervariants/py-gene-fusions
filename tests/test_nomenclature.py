@@ -68,17 +68,17 @@ def test_generate_nomenclature(fusor, fusion, fusion_example,
     with open(EXAMPLES_DIR / "epcam_msh2.json", "r") as epcam_file:
         fusion = CategoricalFusion(**json.load(epcam_file))
     nm = fusor.generate_nomenclature(fusion)
-    assert nm == "refseq:NM_002354.2(EPCAM):e._5::AGGCTCCCTTGG::refseq:NM_000251.2(MSH2):e.2_"  # noqa: E501
+    assert nm == "refseq:NM_002354.2(EPCAM):e.5::AGGCTCCCTTGG::refseq:NM_000251.2(MSH2):e.2"  # noqa: E501
 
     with open(EXAMPLES_DIR / "tpm3_ntrk1.json", "r") as ntrk_file:
         fusion = AssayedFusion(**json.load(ntrk_file))
     nm = fusor.generate_nomenclature(fusion)
-    assert nm == "refseq:NM_152263.3(TPM3):e._8::refseq:NM_002529.3(NTRK1):e.10_"  # noqa: E501
+    assert nm == "refseq:NM_152263.3(TPM3):e.8::refseq:NM_002529.3(NTRK1):e.10"  # noqa: E501
 
     with open(EXAMPLES_DIR / "tpm3_pdgfrb.json", "r") as pdgfrb_file:
         fusion = CategoricalFusion(**json.load(pdgfrb_file))
     nm = fusor.generate_nomenclature(fusion)
-    assert nm == "refseq:NM_152263.3(TPM3):e._8::refseq:NM_002609.3(PDGFRB):e.11_"  # noqa: E501
+    assert nm == "refseq:NM_152263.3(TPM3):e.8::refseq:NM_002609.3(PDGFRB):e.11"  # noqa: E501
 
     with open(EXAMPLES_DIR / "ewsr1.json", "r") as ewsr1_file:
         fusion = AssayedFusion(**json.load(ewsr1_file))
