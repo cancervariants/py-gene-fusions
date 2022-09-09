@@ -1,0 +1,80 @@
+{
+  "type": "AssayedFusion",
+  "structural_elements": [
+    {
+      "type": "TranscriptSegmentElement",
+      "transcript": "refseq:NM_152263.3",
+      "exon_end": 8,
+      "exon_end_offset": 0,
+      "gene_descriptor": {
+        "id": "normalize.gene:TPM3",
+        "type": "GeneDescriptor",
+        "label": "TPM3",
+        "gene_id": "hgnc:12012"
+      },
+      "element_genomic_end": {
+        "id": "fusor.location_descriptor:NC_000001.11",
+        "type": "LocationDescriptor",
+        "label": "NC_000001.11",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NC_000001.11",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 154170399
+            },
+            "end": {
+              "type": "Number",
+              "value": 154170400
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "TranscriptSegmentElement",
+      "transcript": "refseq:NM_002529.3",
+      "exon_start": 10,
+      "exon_start_offset": 0,
+      "gene_descriptor": {
+        "id": "normalize.gene:NTRK1",
+        "type": "GeneDescriptor",
+        "label": "NTRK1",
+        "gene_id": "hgnc:8031"
+      },
+      "element_genomic_start": {
+        "id": "fusor.location_descriptor:NC_000001.11",
+        "type": "LocationDescriptor",
+        "label": "NC_000001.11",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NC_000001.11",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 156874626
+            },
+            "end": {
+              "type": "Number",
+              "value": 156874627
+            }
+          }
+        }
+      }
+    }
+  ],
+  "causative_event": {
+    "type": "CausativeEvent",
+    "event_type": "rearrangement"
+  },
+  "assay": {
+    "type": "Assay",
+    "assay_name": "fluorescence in-situ hybridization assay",
+    "assay_id": "obi:OBI_0003094",
+    "fusion_detection": "inferred",
+    "method_uri": "pmid:33576979"
+  }
+}
