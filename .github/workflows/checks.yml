@@ -24,7 +24,3 @@ jobs:
                   pipenv install --dev
 
             - run: pipenv run flake8
-
-            - uses: creyD/prettier_action@v4.2
-              with:
-                prettier_options: **/*.json
