@@ -17,13 +17,14 @@ jobs:
               uses: actions/setup-python@v1
               with:
                   python-version: 3.8
+
             - name: Install dependencies
               run: |
                   python3 -m pip install pipenv
                   pipenv install --dev
+
             - run: pipenv run flake8
-#            - name: Build local DynamoDB
-#              run: |
-#                chmod +x ./tests/data/dynamodb_local_latest/dynamodb_build.bash
-#                ./tests/data/dynamodb_local_latest/dynamodb_build.bash
-#            - run: pipenv run pytest tests/
+
+            - uses: creyD/prettier_action@v4.2
+              with:
+                prettier_options: **/*.json
