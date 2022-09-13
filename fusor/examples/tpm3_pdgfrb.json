@@ -73,8 +73,8 @@
     "fusion_detection": "observed",
     "method_uri": "pmid:24034314"
   },
-    "causative_event": {
-        "type": "CausativeEvent",
-        "event_type": "rearrangement"
-    }
+  "causative_event": {
+    "type": "CausativeEvent",
+    "event_type": "rearrangement"
+  }
 }

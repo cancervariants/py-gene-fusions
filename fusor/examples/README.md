@@ -1,6 +1,6 @@
 # Examples
 
-* `bcr_abl1.json`: Example BCR-ABL1 categorical fusion drawn from [COSF1780](https://cancer.sanger.ac.uk/cosmic/fusion/summary?id=1780). Demonstrates structure of junction components, a linker sequence segment, critical functional domains, and reading frame preservation. Represented in nomenclature as `refseq:NM_004327.3(BCR):e.2::ACTAAAGCG::refseq:NM_005157.5(ABL1):e.2`.
+* `bcr_abl1.json`: Example BCR-ABL1 categorical fusion drawn from [COSF1780](https://cancer.sanger.ac.uk/cosmic/fusion/summary?id=1780). Demonstrates structure of junction components, a linker sequence segment, critical functional domains, and reading frame preservation. Represented in nomenclature as `refseq:NM_004327.3(BCR):e.2+182::ACTAAAGCG::refseq:NM_005157.5(ABL1):e.2-173`.
 * `bcr_abl1_expanded.json`: Equivalent fusion to the above, but with expanded descriptions of genes, locations, and sequences provided by SeqRepo and the VICC Gene Normalizer.
 * `alk.json`: Example of an ALK fusion, demonstrating use of a categorical "multiple possible gene" component, retrieved from a human-curated database like [CIViC](https://civicdb.org/variants/499/summary). Represented in nomenclature as `ALK(hgnc:427)::v`.
 * `ewsr1.json`: An EWSR1 assayed fusion, demonstrating an assay description object and use of the "unknown gene" partner. Represented in nomenclature as `EWSR1(hgnc:3508)::?`.
