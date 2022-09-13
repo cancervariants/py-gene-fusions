@@ -183,20 +183,20 @@ class TranscriptSegmentElement(BaseStructuralElement):
                 "exon_end": 8,
                 "exon_end_offset": 0,
                 "gene_descriptor": {
-                    "type": "GeneDescriptor",
-                    "id": "gene:TPM3",
-                    "gene_id": "hgnc:12012",
+                    "id": "normalize.gene:TPM3",
                     "type": "GeneDescriptor",
                     "label": "TPM3",
+                    "gene_id": "hgnc:12012"
                 },
                 "element_genomic_start": {
-                    "id": "TPM3:exon1",
+                    "id": "fusor.location_descriptor:NC_000001.11",
                     "type": "LocationDescriptor",
-                    "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",  # noqa: E501
+                    "label": "NC_000001.11",
                     "location": {
-                        "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
                         "type": "SequenceLocation",
+                        "sequence_id": "refseq:NC_000001.11",
                         "interval": {
+                            "type": "SequenceInterval",
                             "start": {
                                 "type": "Number",
                                 "value": 154192135
@@ -204,28 +204,27 @@ class TranscriptSegmentElement(BaseStructuralElement):
                             "end": {
                                 "type": "Number",
                                 "value": 154192136
-                            },
-                            "type": "SequenceInterval"
+                            }
                         }
                     }
                 },
                 "element_genomic_end": {
-                    "id": "TPM3:exon8",
+                    "id": "fusor.location_descriptor:NC_000001.11",
                     "type": "LocationDescriptor",
-                    "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",  # noqa: E501
+                    "label": "NC_000001.11",
                     "location": {
-                        "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
                         "type": "SequenceLocation",
+                        "sequence_id": "refseq:NC_000001.11",
                         "interval": {
+                            "type": "SequenceInterval",
                             "start": {
-                                "type": "Number",
-                                "value": 154170398
-                            },
-                            "end": {
                                 "type": "Number",
                                 "value": 154170399
                             },
-                            "type": "SequenceInterval"
+                            "end": {
+                                "type": "Number",
+                                "value": 154170400
+                            }
                         }
                     }
                 }
@@ -439,25 +438,30 @@ class RegulatoryClass(str, Enum):
 
 
 class RegulatoryElement(BaseModel):
-    """Define RegulatoryElement class"""
+    """Define RegulatoryElement class.
+
+    `feature_id` would ideally be constrained as a CURIE, but Encode, our preferred
+    feature ID source, doesn't currently have a registered CURIE structure for EH_
+    identifiers. Consequently, we permit any kind of free text.
+    """
 
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT  # noqa: E501
     regulatory_class: RegulatoryClass
-    feature_id: Optional[CURIE] = None
+    feature_id: Optional[str] = None
     associated_gene: Optional[GeneDescriptor] = None
-    genomic_location: Optional[LocationDescriptor] = None
+    feature_location: Optional[LocationDescriptor] = None
 
-    _get_ref_id_val = validator("feature_id", allow_reuse=True)(return_value)  # noqa: E501
+    _get_ref_id_val = validator("feature_id", allow_reuse=True)(return_value)
 
     @root_validator(pre=True)
     def ensure_min_values(cls, values):
-        """Ensure that one of {`feature_id`, `associated_gene`, `genomic_location`} is
-        set.
+        """Ensure that one of {`feature_id`, `feature_location`}, and/or
+        `associated_gene` is set.
         """
-        if not any([values.get("feature_id"),
-                    values.get("associated_gene"),
-                    values.get("genomic_location")]):  # noqa: E501
-            raise ValueError("Must set >=1 of {`feature_id`, `associated_gene`, `genomic_location`}")  # noqa: E501
+        if not (
+            bool(values.get("feature_id")) ^ bool(values.get("feature_location"))
+        ) and not (values.get("associated_gene")):
+            raise ValueError("Must set 1 of {`feature_id`, `associated_gene`} and/or `genomic_location`")  # noqa: E501
         return values
 
     class Config(BaseModelForbidExtra.Config):
@@ -473,7 +477,7 @@ class RegulatoryElement(BaseModel):
             schema["example"] = {
                 "type": "RegulatoryElement",
                 "regulatory_class": "promoter",
-                "genomic_location": {
+                "feature_location": {
                     "type": "LocationDescriptor",
                     "id": "fusor.location_descriptor:NC_000001.11",
                     "location": {
@@ -511,7 +515,7 @@ class AbstractFusion(BaseModel, ABC):
     """Define Fusion class"""
 
     type: FusionType
-    regulatory_elements: Optional[List[RegulatoryElement]]
+    regulatory_element: Optional[RegulatoryElement] = None
     structural_elements: List[BaseStructuralElement]
 
     @root_validator(pre=True)
@@ -521,22 +525,19 @@ class AbstractFusion(BaseModel, ABC):
             raise ValueError("Cannot instantiate Fusion abstract class")
         return values
 
-    @root_validator
+    @root_validator(pre=True)
     def enforce_elements_length(cls, values):
         """Ensure minimum # of elements."""
         error_msg = (
-            "Fusions must contain >= 2 structural elements, or 1 structural element "
-            "and >= 1 regulatory element"
+            "Fusions must contain >= 2 structural elements, or >=1 structural element "
+            "and a regulatory element"
         )
         structural_elements = values.get("structural_elements", [])
         if not structural_elements:
             raise ValueError(error_msg)
         num_structural_elements = len(structural_elements)
-        if num_structural_elements < 2:
-            reg_elements = values.get("regulatory_elements")
-            if not reg_elements or num_structural_elements == 0 or \
-                    len(values.get("regulatory_elements", [])) == 0:
-                raise ValueError(error_msg)
+        if (num_structural_elements + bool(values.get("regulatory_element"))) < 2:
+            raise ValueError(error_msg)
         return values
 
     @root_validator(skip_on_failure=True)
@@ -546,7 +547,7 @@ class AbstractFusion(BaseModel, ABC):
         """
         elements = values.get("structural_elements", [])
         if isinstance(elements[0], TranscriptSegmentElement):
-            if elements[0].exon_end is None and not values["regulatory_elements"]:
+            if elements[0].exon_end is None and not values["regulatory_element"]:
                 raise ValueError(
                     "5' TranscriptSegmentElement fusion partner must "
                     "contain ending exon position"
@@ -809,18 +810,16 @@ class CategoricalFusion(AbstractFusion):
                         }
                     }
                 ],
-                "regulatory_elements": [
-                    {
-                        "type": "RegulatoryElement",
-                        "regulatory_class": "promoter",
-                        "associated_gene": {
-                            "id": "gene:BRAF",
-                            "type": "GeneDescriptor",
-                            "gene_id": "hgnc:1097",
-                            "label": "BRAF"
-                        }
+                "regulatory_element": {
+                    "type": "RegulatoryElement",
+                    "regulatory_class": "promoter",
+                    "associated_gene": {
+                        "id": "gene:BRAF",
+                        "type": "GeneDescriptor",
+                        "gene_id": "hgnc:1097",
+                        "label": "BRAF"
                     }
-                ]
+                }
             }
 
 

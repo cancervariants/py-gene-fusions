@@ -132,15 +132,15 @@ class FUSOR:
     @staticmethod
     def categorical_fusion(
         structural_elements: CategoricalFusionElements,
-        regulatory_elements: Optional[List[RegulatoryElement]] = None,
+        regulatory_element: Optional[RegulatoryElement] = None,
         critical_functional_domains: Optional[List[FunctionalDomain]] = None,
         r_frame_preserved: Optional[bool] = None
     ) -> CategoricalFusion:
         """Construct a categorical fusion object
         :param CategoricalFusionElements structural_elements: elements
             constituting the fusion
-        :param Optional[RegulatoryElement] regulatory_elements: affected
-            regulatory elements
+        :param Optional[RegulatoryElement] regulatory_element: affected
+            regulatory element
         :param Optional[List[FunctionalDomain]] domains: lost or preserved
             functional domains
         :param Optional[bool] r_frame_preserved: `True` if reading frame is
@@ -153,7 +153,7 @@ class FUSOR:
                 structural_elements=structural_elements,
                 critical_functional_domains=critical_functional_domains,
                 r_frame_preserved=r_frame_preserved,
-                regulatory_elements=regulatory_elements
+                regulatory_element=regulatory_element
             )
         except ValidationError as e:
             raise FUSORParametersException(str(e))
@@ -164,14 +164,14 @@ class FUSOR:
         structural_elements: AssayedFusionElements,
         causative_event: CausativeEvent,
         assay: Assay,
-        regulatory_elements: Optional[List[RegulatoryElement]] = None,
+        regulatory_element: Optional[RegulatoryElement] = None,
     ) -> AssayedFusion:
         """Construct an assayed fusion object
         :param AssayedFusionElements structural_elements: elements constituting the
             fusion
         :param Event causative_event: event causing the fusion
         :param Assay assay: how knowledge of the fusion was obtained
-        :param Optional[RegulatoryElement] regulatory_elements: affected regulatory
+        :param Optional[RegulatoryElement] regulatory_element: affected regulatory
             elements
         :return: Tuple containing optional AssayedFusion if construction successful,
             and any relevant validation warnings
@@ -179,7 +179,7 @@ class FUSOR:
         try:
             fusion = AssayedFusion(
                 structural_elements=structural_elements,
-                regulatory_elements=regulatory_elements,
+                regulatory_element=regulatory_element,
                 causative_event=causative_event,
                 assay=assay
             )
@@ -574,13 +574,13 @@ class FUSOR:
                 location = domain.sequence_location.location
                 location_id = self._location_id(location.dict())
                 domain.sequence_location.location_id = location_id
-        if fusion.regulatory_elements:
-            for element in fusion.regulatory_elements:
-                if element.genomic_location:
-                    location = element.genomic_location
-                    if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                        location_id = self._location_id(location.dict())
-                        element.genomic_location.location_id = location_id
+        if fusion.regulatory_element:
+            element = fusion.regulatory_element
+            if element.feature_location:
+                location = element.feature_location
+                if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                    location_id = self._location_id(location.dict())
+                    element.feature_location.location_id = location_id
         return fusion
 
     @staticmethod
@@ -654,20 +654,28 @@ class FUSOR:
         :param Fusion fusion: A valid Fusion object
         :return: Updated fusion with additional fields set in `gene_descriptor`
         """
-        fields = [
-            (fusion.structural_elements, "gene_descriptor"),
-            (fusion.regulatory_elements, "associated_gene")
-        ]
+        properties = [fusion.structural_elements]
         if fusion.type == FusionType.CATEGORICAL_FUSION:
-            fields.append((fusion.critical_functional_domains, "gene_descriptor"))
-        for (property, field_name) in fields:
+            properties.append(fusion.critical_functional_domains)
+
+        for property in properties:
             for obj in property:
-                if field_name in obj.__fields__.keys():
-                    label = obj.__getattribute__(field_name).label
+                if "gene_descriptor" in obj.__fields__.keys():
+                    label = obj.gene_descriptor.label
                     norm_gene_descr, _ = self._normalized_gene_descriptor(
-                        label, use_minimal_gene_descr=False)
+                        label, use_minimal_gene_descr=False
+                    )
                     if norm_gene_descr:
-                        obj.__setattr__(field_name, norm_gene_descr)
+                        obj.gene_descriptor = norm_gene_descr
+        if fusion.regulatory_element and \
+                fusion.regulatory_element.associated_gene:
+            re = fusion.regulatory_element
+            label = re.associated_gene.label
+            norm_gene_descr, _ = self._normalized_gene_descriptor(
+                label, use_minimal_gene_descr=False
+            )
+            if norm_gene_descr:
+                re.associated_gene = norm_gene_descr
         return fusion
 
     def _normalized_gene_descriptor(
@@ -704,14 +712,12 @@ class FUSOR:
         """
         parts = []
         element_genes = []
-        if fusion.regulatory_elements:
-            num_reg_elements = len(fusion.regulatory_elements)
-            for element in fusion.regulatory_elements:
-                parts.append(reg_element_nomenclature(element, self.seqrepo))
-                if element.associated_gene:
-                    element_genes.append(element.associated_gene.label)
-        else:
-            num_reg_elements = 0
+        if fusion.regulatory_element:
+            parts.append(
+                reg_element_nomenclature(
+                    fusion.regulatory_element, self.seqrepo
+                )
+            )
         for i, element in enumerate(fusion.structural_elements):
             if isinstance(element, MultiplePossibleGenesElement):
                 parts.append("v")
@@ -724,7 +730,7 @@ class FUSOR:
                             for gene in element_genes]):
                     parts.append(tx_segment_nomenclature(
                         element,
-                        first=(i + num_reg_elements == 0),
+                        first=(i + int(bool(fusion.regulatory_element)) == 0),
                         last=(i + 1 == len(fusion.structural_elements))
                     ))
             elif isinstance(element, TemplatedSequenceElement):

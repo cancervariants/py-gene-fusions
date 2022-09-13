@@ -1,5 +1,6 @@
 """Module for testing the FUSOR class."""
 import copy
+from typing import Dict
 
 import pytest
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
@@ -439,12 +440,12 @@ def fusion_ensg_sequence_id(templated_sequence_element_ensg):
             {"type": "MultiplePossibleGenesElement"}
         ],
         "r_frame_preserved": True,
-        "regulatory_elements": []
+        "regulatory_element": None
     }
     return CategoricalFusion(**params)
 
 
-def compare_gene_descriptor(actual, expected):
+def compare_gene_descriptor(actual: Dict, expected: Dict):
     """Test that actual and expected gene descriptors match."""
     assert actual["id"] == expected["id"]
     assert actual["type"] == expected["type"]
@@ -479,8 +480,7 @@ def compare_gene_descriptor(actual, expected):
             "number of correct extensions"
 
 
-def test_add_additional_fields(fusor, fusion_example, fusion,
-                               fusion_ensg_sequence_id):
+def test_add_additional_fields(fusor_instance, fusion_example, fusion_ensg_sequence_id):
     """Test that add_additional_fields method works correctly."""
     fusion = CategoricalFusion(**fusion_example)
 
@@ -494,18 +494,18 @@ def test_add_additional_fields(fusor, fusion_example, fusion,
     expected_fusion.structural_elements[3].region.location_id = "ga4gh:VSL.zd12pX_ju2gLq9a9UOYgM8AtbkuhnyUu"  # type: ignore # noqa: E501
     expected_fusion.structural_elements[3].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
 
-    actual_fusion = fusor.add_additional_fields(fusion)
+    actual_fusion = fusor_instance.add_additional_fields(fusion)
     assert actual_fusion.dict() == expected_fusion.dict()
 
     # test handling of unrecognized sequence IDs
     expected_fusion = copy.deepcopy(fusion_ensg_sequence_id)
-    fusion = fusor.add_additional_fields(fusion_ensg_sequence_id)
+    fusion = fusor_instance.add_additional_fields(fusion_ensg_sequence_id)
     ts_reg = fusion.structural_elements[0].region
     assert ts_reg.location.sequence_id == "ensembl:ENSG00000157764"
     assert ts_reg.location_id == "ga4gh:VSL.dUll0TA05efQf0TsmcP03mtdGcpP9jPH"
 
 
-def test_add_translated_sequence_id(fusor, fusion_example):
+def test_add_translated_sequence_id(fusor_instance, fusion_example):
     """Test that add_translated_sequence_id method works correctly."""
     fusion = CategoricalFusion(**fusion_example)
 
@@ -515,13 +515,13 @@ def test_add_translated_sequence_id(fusor, fusion_example):
     expected_fusion.structural_elements[0].element_genomic_end.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
     expected_fusion.structural_elements[3].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
 
-    actual_fusion = fusor.add_translated_sequence_id(fusion)
+    actual_fusion = fusor_instance.add_translated_sequence_id(fusion)
     assert actual_fusion.dict() == expected_fusion.dict()
 
 
-def test_add_location_id(fusor, fusion_example, exhaustive_example):
+def test_add_location_id(fusor_instance, fusion_example, exhaustive_example):
     """Test that add_location_id method works correctly."""
-    fusion = fusor.add_location_id(CategoricalFusion(**fusion_example))
+    fusion = fusor_instance.add_location_id(CategoricalFusion(**fusion_example))
     actual = CategoricalFusion(**exhaustive_example)
 
     assert fusion.critical_functional_domains[0].sequence_location.location_id == actual.critical_functional_domains[0].sequence_location.location_id  # noqa: E501
@@ -530,35 +530,33 @@ def test_add_location_id(fusor, fusion_example, exhaustive_example):
     assert fusion.structural_elements[3].region.location_id == actual.structural_elements[3].region.location_id  # noqa: E501
 
 
-def test__normalized_gene_descriptor(fusor):
+def test__normalized_gene_descriptor(fusor_instance):
     """Test that _normalized_gene_descriptor works correctly."""
     # Actual response is tested in test_add_gene_descriptor
-    resp = fusor._normalized_gene_descriptor("BRAF")
+    resp = fusor_instance._normalized_gene_descriptor("BRAF")
     assert resp[0]
     assert resp[1] is None
     assert isinstance(resp[0], GeneDescriptor)
 
-    resp = fusor._normalized_gene_descriptor("B R A F")
+    resp = fusor_instance._normalized_gene_descriptor("B R A F")
     assert resp[0] is None
     assert resp[1] == "gene-normalizer unable to normalize B R A F"
 
 
-def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
+def test_add_gene_descriptor(fusor_instance, exhaustive_example, fusion_example):
     """Test that add_gene_descriptor method works correctly."""
     expected_fusion = CategoricalFusion(**exhaustive_example)
-    actual = CategoricalFusion(**fusion)
-    fusor.add_translated_sequence_id(actual)
-    fusor.add_location_id(actual)
-    fusor.add_gene_descriptor(actual)
+    actual = CategoricalFusion(**fusion_example)
+    fusor_instance.add_translated_sequence_id(actual)
+    fusor_instance.add_location_id(actual)
+    fusor_instance.add_gene_descriptor(actual)
 
     e_gds = set()
     t_gds = set()
     for e_field in [expected_fusion.critical_functional_domains,
-                    expected_fusion.structural_elements,
-                    expected_fusion.regulatory_elements]:
+                    expected_fusion.structural_elements]:
         for t_field in [actual.critical_functional_domains,
-                        actual.structural_elements,
-                        actual.regulatory_elements]:
+                        actual.structural_elements]:
             for e_obj in e_field:
                 for t_obj in t_field:
                     if "gene_descriptor" in e_obj.__fields__.keys():
@@ -574,12 +572,17 @@ def test_add_gene_descriptor(fusor, exhaustive_example, fusion):
                                 )
     assert t_gds == e_gds
 
+    compare_gene_descriptor(
+        actual.regulatory_element.associated_gene.dict(),
+        expected_fusion.regulatory_element.associated_gene.dict()
+    )
 
-def test_fusion(fusor, linker_element, templated_sequence_element,
+
+def test_fusion(fusor_instance, linker_element, templated_sequence_element,
                 transcript_segment_element, functional_domain):
     """Test that fusion methods work correctly."""
     # infer type from properties
-    f = fusor.fusion(**{
+    f = fusor_instance.fusion(**{
         "structural_elements": [
             templated_sequence_element, linker_element,
             UnknownGeneElement()
@@ -598,7 +601,7 @@ def test_fusion(fusor, linker_element, templated_sequence_element,
         },
     })
     assert isinstance(f, AssayedFusion)
-    f = fusor.fusion(**{
+    f = fusor_instance.fusion(**{
         "structural_elements": [
             transcript_segment_element, MultiplePossibleGenesElement()
         ],
@@ -608,7 +611,7 @@ def test_fusion(fusor, linker_element, templated_sequence_element,
 
     # catch conflicting property args
     with pytest.raises(FUSORParametersException) as excinfo:
-        f = fusor.fusion(**{
+        f = fusor_instance.fusion(**{
             "structural_elements": [
                 transcript_segment_element, UnknownGeneElement()
             ],
@@ -619,7 +622,7 @@ def test_fusion(fusor, linker_element, templated_sequence_element,
 
     # handle indeterminate type
     with pytest.raises(FUSORParametersException) as excinfo:
-        f = fusor.fusion(**{
+        f = fusor_instance.fusion(**{
             "structural_elements": [
                 transcript_segment_element, templated_sequence_element
             ],
@@ -627,7 +630,7 @@ def test_fusion(fusor, linker_element, templated_sequence_element,
     assert str(excinfo.value) == "Unable to determine fusion type"
 
     # handle both type parameter options
-    f = fusor.fusion(
+    f = fusor_instance.fusion(
         fusion_type="AssayedFusion",
         **{
             "structural_elements": [
@@ -649,7 +652,7 @@ def test_fusion(fusor, linker_element, templated_sequence_element,
         }
     )
     assert isinstance(f, AssayedFusion)
-    f = fusor.fusion(**{
+    f = fusor_instance.fusion(**{
         "type": "CategoricalFusion",
         "structural_elements": [transcript_segment_element,
                                 MultiplePossibleGenesElement()],
@@ -659,17 +662,18 @@ def test_fusion(fusor, linker_element, templated_sequence_element,
 
     # catch and pass on validation errors
     with pytest.raises(FUSORParametersException) as excinfo:
-        f = fusor.fusion(fusion_type="CategoricalFusion",
-                         structural_elements=[linker_element])
-    assert "Fusions must contain >= 2 structural elements, or 1 structural element and >= 1 regulatory element" in str(excinfo.value)  # noqa: E501
+        f = fusor_instance.fusion(fusion_type="CategoricalFusion",
+                                  structural_elements=[linker_element])
+    msg = "Fusions must contain >= 2 structural elements, or >=1 structural element and a regulatory element"  # noqa: E501
+    assert msg in str(excinfo.value)  # noqa: E501
 
 
 @pytest.mark.asyncio
-async def test_transcript_segment_element(fusor, transcript_segment_element,
+async def test_transcript_segment_element(fusor_instance, transcript_segment_element,
                                           mane_transcript_segment_element):
     """Test that transcript_segment_element method works correctly"""
     # Transcript Input
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", exon_start=1, exon_end=8,
         tx_to_genomic_coords=True)
     assert tsg[0]
@@ -677,7 +681,7 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
     assert tsg[0].dict() == transcript_segment_element.dict()
 
     # Genomic input, residue
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", start=154192136, end=154170399,
         chromosome="NC_000001.11", tx_to_genomic_coords=False
     )
@@ -686,7 +690,7 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
     assert tsg[0].dict() == transcript_segment_element.dict()
 
     # Genomic input, inter-residue
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", start=154192135, end=154170399,
         chromosome="NC_000001.11", tx_to_genomic_coords=False,
         residue_mode="inter-residue"
@@ -696,7 +700,7 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
     assert tsg[0].dict() == transcript_segment_element.dict()
 
     # Transcript Input
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", exon_start=1, exon_end=8, gene="TPM3",
         tx_to_genomic_coords=True)
     assert tsg[0]
@@ -710,7 +714,7 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
         expected.element_genomic_start.location.sequence_id
 
     # Transcript Input
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", exon_start=1, exon_end=8,
         tx_to_genomic_coords=True, seq_id_target_namespace="ga4gh")
     assert tsg[0]
@@ -718,7 +722,7 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
     assert tsg[0].dict() == expected.dict()
 
     # Genomic input
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", start=154192136, end=154170399,
         chromosome="NC_000001.11", tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh")
@@ -731,7 +735,7 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
     expected.element_genomic_end.location.interval.end.value = 154170405
 
     # Transcript Input
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", exon_start=1, exon_end=8, exon_end_offset=-5,
         tx_to_genomic_coords=True, seq_id_target_namespace="ga4gh")
     assert tsg[0]
@@ -739,7 +743,7 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
     assert tsg[0].dict() == expected.dict()
 
     # Genomic Input
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", start=154192136, end=154170404,
         chromosome="NC_000001.11", tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh")
@@ -752,7 +756,7 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
     expected.element_genomic_end = None
 
     # Transcript Input
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", exon_start=1,
         tx_to_genomic_coords=True, seq_id_target_namespace="ga4gh")
     assert tsg[0]
@@ -760,7 +764,7 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
     assert tsg[0].dict() == expected.dict()
 
     # Genomic Input
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", start=154192136,
         chromosome="NC_000001.11", tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh")
@@ -769,7 +773,7 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
     assert tsg[0].dict() == expected.dict()
 
     # MANE
-    tsg = await fusor.transcript_segment_element(
+    tsg = await fusor_instance.transcript_segment_element(
         tx_to_genomic_coords=False, chromosome="NC_000011.10",
         start=9576094, gene="WEE1")
     assert tsg[0]
@@ -777,37 +781,37 @@ async def test_transcript_segment_element(fusor, transcript_segment_element,
     assert tsg[0].dict() == mane_transcript_segment_element.dict()
 
 
-def test_gene_element(fusor, braf_gene_descr_min, braf_gene_descr):
+def test_gene_element(fusor_instance, braf_gene_descr_min, braf_gene_descr):
     """Test that gene_element works correctly."""
-    gc = fusor.gene_element("BRAF", use_minimal_gene_descr=True)
+    gc = fusor_instance.gene_element("BRAF", use_minimal_gene_descr=True)
     assert gc[0]
     assert gc[1] is None
     assert isinstance(gc[0], GeneElement)
     compare_gene_descriptor(gc[0].gene_descriptor.dict(),
                             braf_gene_descr_min.dict())
 
-    gc = fusor.gene_element("BRAF", use_minimal_gene_descr=False)
+    gc = fusor_instance.gene_element("BRAF", use_minimal_gene_descr=False)
     assert gc[0]
     assert gc[1] is None
     assert isinstance(gc[0], GeneElement)
     compare_gene_descriptor(gc[0].gene_descriptor.dict(),
                             braf_gene_descr.dict())
 
-    gc = fusor.gene_element("BRA F", use_minimal_gene_descr=True)
+    gc = fusor_instance.gene_element("BRA F", use_minimal_gene_descr=True)
     assert gc[0] is None
     assert gc[1] == "gene-normalizer unable to normalize BRA F"
 
 
-def test_templated_sequence_element(fusor, templated_sequence_element,
+def test_templated_sequence_element(fusor_instance, templated_sequence_element,
                                     templated_sequence_element_ensg,
                                     templated_sequence_element_custom_id):
     """Test that templated sequence element works correctly"""
-    tsg = fusor.templated_sequence_element(
+    tsg = fusor_instance.templated_sequence_element(
         100, 150, "NC_000001.11", "+", residue_mode="residue"
     )
     assert tsg.dict() == templated_sequence_element.dict()
 
-    tsg = fusor.templated_sequence_element(
+    tsg = fusor_instance.templated_sequence_element(
         99, 150, "NC_000001.11", "+", residue_mode="inter-residue"
     )
     assert tsg.dict() == templated_sequence_element.dict()
@@ -815,13 +819,13 @@ def test_templated_sequence_element(fusor, templated_sequence_element,
     expected = copy.deepcopy(templated_sequence_element.dict())
     expected["region"]["location"]["sequence_id"] = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # noqa: E501
     expected["region"]["location_id"] = "ga4gh:VSL.bL1N-PQfp4dGlEz6PEd34fGxdxo82Zkb"  # noqa: E501
-    tsg = fusor.templated_sequence_element(
+    tsg = fusor_instance.templated_sequence_element(
         100, 150, "NC_000001.11", "+", add_location_id=True,
         seq_id_target_namespace="ga4gh"
     )
     assert tsg.dict() == expected
 
-    tsg = fusor.templated_sequence_element(
+    tsg = fusor_instance.templated_sequence_element(
         140719329, 140719400, "ENSG00000157764", "-"
     )
     assert tsg.dict() == templated_sequence_element_ensg.dict()
@@ -829,7 +833,7 @@ def test_templated_sequence_element(fusor, templated_sequence_element,
     # test untranslateable sequence ID
     # adds "ensembl" namespace but unable to translate to ga4gh digest ID
     expected = copy.deepcopy(templated_sequence_element_ensg.dict())
-    tsg = fusor.templated_sequence_element(
+    tsg = fusor_instance.templated_sequence_element(
         140719329, 140719400, "ENSG00000157764", "-",
         seq_id_target_namespace="ga4gh"
     )
@@ -838,38 +842,38 @@ def test_templated_sequence_element(fusor, templated_sequence_element,
     # test in-house/bespoke sequence ID
     # can't coerce namespace or translate to ga4gh ID
     expected = copy.deepcopy(templated_sequence_element_custom_id.dict())
-    tsg = fusor.templated_sequence_element(
+    tsg = fusor_instance.templated_sequence_element(
         200, 300, "custom_ID__1", "+", residue_mode="inter-residue",
         seq_id_target_namespace="ga4gh"
     )
     assert tsg.dict() == expected
 
 
-def test_linker_element(fusor, linker_element):
+def test_linker_element(fusor_instance, linker_element):
     """Test that linker_element method works correctly."""
-    lc = fusor.linker_element("act")
+    lc = fusor_instance.linker_element("act")
     assert lc[0]
     assert lc[1] is None
     assert lc[0].dict() == linker_element.dict()
 
-    lc = fusor.linker_element("bob!")
+    lc = fusor_instance.linker_element("bob!")
     assert lc[0] is None
     assert "sequence does not match regex '^[A-Za-z*\\-]*$'" in lc[1]
 
 
-def test_unknown_gene_element(fusor):
+def test_unknown_gene_element(fusor_instance):
     """Test that unknown_gene_element method works correctly."""
-    unknown_gc = fusor.unknown_gene_element()
+    unknown_gc = fusor_instance.unknown_gene_element()
     assert unknown_gc.dict() == UnknownGeneElement().dict()
 
 
-def test_multiple_possible_genes_element(fusor):
+def test_multiple_possible_genes_element(fusor_instance):
     """Test that test_multiple_possible_genes_element method works correctly."""
-    mult_gene = fusor.multiple_possible_genes_element()
+    mult_gene = fusor_instance.multiple_possible_genes_element()
     assert mult_gene.dict() == MultiplePossibleGenesElement().dict()
 
 
-def test_functional_domain(fusor, functional_domain, functional_domain_min,
+def test_functional_domain(fusor_instance, functional_domain, functional_domain_min,
                            functional_domain_seq_id):
     """Test that functional_domain method works correctly"""
 
@@ -901,21 +905,21 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
             else:
                 assert actual[key] == expected[key]
 
-    cd = fusor.functional_domain(
+    cd = fusor_instance.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
         use_minimal_gene_descr=False)
     compare_domains(cd, functional_domain)
 
-    cd = fusor.functional_domain(
+    cd = fusor_instance.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
         use_minimal_gene_descr=True)
     compare_domains(cd, functional_domain_min)
 
-    cd = fusor.functional_domain(
+    cd = fusor_instance.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
@@ -923,7 +927,7 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
         use_minimal_gene_descr=True)
     compare_domains(cd, functional_domain_seq_id)
 
-    cd = fusor.functional_domain(
+    cd = fusor_instance.functional_domain(
         "preserveded",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NP_004324.2", 458, 712,
@@ -934,7 +938,7 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
         "'lost', 'preserved'" in cd[1]
 
     # check for protein accession
-    cd = fusor.functional_domain(
+    cd = fusor_instance.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF", "NM_004333.4", 458, 712,
@@ -945,7 +949,7 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
 
     # check for recognized protein accession
     accession = "NP_9999.999"
-    cd = fusor.functional_domain(
+    cd = fusor_instance.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF",
@@ -957,7 +961,7 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
     assert f"Accession, {accession}, not found in SeqRepo" in cd[1]
 
     # check that coordinates exist on sequence
-    cd = fusor.functional_domain(
+    cd = fusor_instance.functional_domain(
         "preserved",
         "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "interpro:IPR001245", "BRAF",
@@ -970,7 +974,7 @@ def test_functional_domain(fusor, functional_domain, functional_domain_min,
         "NP_004324.2" in cd[1]
 
 
-def test_regulatory_element(fusor, regulatory_element, regulatory_element_min):
+def test_regulatory_element(fusor_instance, regulatory_element, regulatory_element_min):
     """Test regulatory_element method."""
 
     def compare_re(actual, expected):
@@ -983,37 +987,38 @@ def test_regulatory_element(fusor, regulatory_element, regulatory_element_min):
         assert actual["type"] == expected["type"]
         compare_gene_descriptor(actual["associated_gene"], expected["associated_gene"])
 
-    re = fusor.regulatory_element(RegulatoryClass.PROMOTER, "BRAF")
+    re = fusor_instance.regulatory_element(RegulatoryClass.PROMOTER, "BRAF")
     compare_re(re, regulatory_element_min)
 
-    re = fusor.regulatory_element(RegulatoryClass.PROMOTER, "BRAF", False)
+    re = fusor_instance.regulatory_element(RegulatoryClass.PROMOTER, "BRAF", False)
     compare_re(re, regulatory_element)
 
 
-def test__location_descriptor(fusor, location_descriptor_tpm3):
+def test__location_descriptor(fusor_instance, location_descriptor_tpm3):
     """Test that _location_descriptor method works correctly."""
-    ld = fusor._location_descriptor(154170398, 154170399, "NM_152263.3")
+    ld = fusor_instance._location_descriptor(154170398, 154170399, "NM_152263.3")
     assert ld.dict() == location_descriptor_tpm3.dict()
 
     expected = copy.deepcopy(location_descriptor_tpm3)
     expected.location.sequence_id = "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT"
-    ld = fusor._location_descriptor(154170398, 154170399, "NM_152263.3",
-                                    seq_id_target_namespace="ga4gh")
+    ld = fusor_instance._location_descriptor(154170398, 154170399,
+                                             "NM_152263.3",
+                                             seq_id_target_namespace="ga4gh")
     assert ld.dict() == expected.dict()
 
     expected.id = "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa"
-    ld = fusor._location_descriptor(154170398, 154170399, "NM_152263.3",
-                                    seq_id_target_namespace="ga4gh",
-                                    use_location_id=True)
+    ld = fusor_instance._location_descriptor(154170398, 154170399, "NM_152263.3",
+                                             seq_id_target_namespace="ga4gh",
+                                             use_location_id=True)
     assert ld.dict() == expected.dict()
 
     expected.location.sequence_id = "refseq:NM_152263.3"
     expected.id = "fusor.location_descriptor:refseq%3ANM_152263.3"
-    ld = fusor._location_descriptor(154170398, 154170399, "refseq:NM_152263.3")
+    ld = fusor_instance._location_descriptor(154170398, 154170399, "refseq:NM_152263.3")
     assert ld.dict() == expected.dict()
 
     expected.id = "fusor.location_descriptor:example_label"
     expected.label = "example_label"
-    ld = fusor._location_descriptor(154170398, 154170399, "refseq:NM_152263.3",
-                                    label="example_label")
+    ld = fusor_instance._location_descriptor(154170398, 154170399, "refseq:NM_152263.3",
+                                             label="example_label")
     assert ld.dict() == expected.dict()
