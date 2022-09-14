@@ -1,6 +1,5 @@
 {
-  "type": "CategoricalFusion",
-  "critical_functional_domains": [],
+  "type": "AssayedFusion",
   "structural_elements": [
     {
       "type": "TranscriptSegmentElement",
@@ -36,36 +35,46 @@
     },
     {
       "type": "TranscriptSegmentElement",
-      "transcript": "refseq:NM_002609.3",
-      "exon_start": 11,
+      "transcript": "refseq:NM_002529.3",
+      "exon_start": 10,
       "exon_start_offset": 0,
       "gene_descriptor": {
-        "id": "normalize.gene:PDGFRB",
+        "id": "normalize.gene:NTRK1",
         "type": "GeneDescriptor",
-        "label": "PDGFRB",
-        "gene_id": "hgnc:8804"
+        "label": "NTRK1",
+        "gene_id": "hgnc:8031"
       },
       "element_genomic_start": {
-        "id": "fusor.location_descriptor:NC_000005.10",
+        "id": "fusor.location_descriptor:NC_000001.11",
         "type": "LocationDescriptor",
-        "label": "NC_000005.10",
+        "label": "NC_000001.11",
         "location": {
           "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000005.10",
+          "sequence_id": "refseq:NC_000001.11",
           "interval": {
             "type": "SequenceInterval",
             "start": {
               "type": "Number",
-              "value": 150125577
+              "value": 156874626
             },
             "end": {
               "type": "Number",
-              "value": 150125578
+              "value": 156874627
             }
           }
         }
       }
     }
   ],
-  "regulatory_elements": []
+  "causative_event": {
+    "type": "CausativeEvent",
+    "event_type": "rearrangement"
+  },
+  "assay": {
+    "type": "Assay",
+    "assay_name": "fluorescence in-situ hybridization assay",
+    "assay_id": "obi:OBI_0003094",
+    "fusion_detection": "inferred",
+    "method_uri": "pmid:33576979"
+  }
 }

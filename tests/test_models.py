@@ -1,13 +1,11 @@
 """Module for testing the fusion model."""
 from pydantic import ValidationError
 import pytest
-import json
 from fusor.models import AbstractFusion, AssayedFusion, CategoricalFusion, EventType, \
     TranscriptSegmentElement, TemplatedSequenceElement, UnknownGeneElement, \
     GeneElement,  MultiplePossibleGenesElement, LinkerElement, FunctionalDomain, \
     CausativeEvent, RegulatoryElement, Assay
 import copy
-from tests.conftest import EXAMPLES_DIR
 
 
 @pytest.fixture(scope="module")
@@ -727,7 +725,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
         RegulatoryElement(**{
             "regulatory_class": "enhancer",
         })
-    assert exc_info.value.errors()[0]["msg"] == "Must set >=1 of {`feature_id`, `associated_gene`, `genomic_location`}"  # noqa: E501
+    assert exc_info.value.errors()[0]["msg"] == "Must set 1 of {`feature_id`, `associated_gene`} and/or `genomic_location`"  # noqa: E501
 
 
 def test_fusion(functional_domains, transcript_segments,
@@ -745,7 +743,7 @@ def test_fusion(functional_domains, transcript_segments,
         "structural_elements": [
             transcript_segments[1], transcript_segments[2]
         ],
-        "regulatory_elements": [regulatory_elements[0]]
+        "regulatory_element": regulatory_elements[0]
     })
 
     assert fusion.structural_elements[0].transcript == "refseq:NM_034348.3"
@@ -772,7 +770,7 @@ def test_fusion(functional_domains, transcript_segments,
                 }
             }
         ],
-        "regulatory_elements": []
+        "regulatory_element": None
     })
     assert fusion.structural_elements[0].type == "GeneElement"
     assert fusion.structural_elements[0].gene_descriptor.id == "gene:NTRK1"
@@ -843,7 +841,11 @@ def test_fusion(functional_domains, transcript_segments,
             "causative_event": "rearrangement",
             "regulatory_elements": [regulatory_elements[0]]
         })
-    check_validation_error(exc_info, "field required")
+    element_ct_msg = (
+        "Fusions must contain >= 2 structural elements, or >=1 structural element "
+        "and a regulatory element"
+    )
+    check_validation_error(exc_info, element_ct_msg)
 
     # must have >= 2 elements + regulatory elements
     with pytest.raises(ValidationError) as exc_info:
@@ -862,11 +864,7 @@ def test_fusion(functional_domains, transcript_segments,
                 "fusion_detection": "inferred"
             },
         })
-    msg = (
-        "Fusions must contain >= 2 structural elements, or 1 structural element "
-        "and >= 1 regulatory element"
-    )
-    check_validation_error(exc_info, msg)
+    check_validation_error(exc_info, element_ct_msg)
 
     # can't create base fusion
     with pytest.raises(ValidationError) as exc_info:
@@ -877,26 +875,10 @@ def test_fusion(functional_domains, transcript_segments,
                            "Cannot instantiate Fusion abstract class")
 
 
-def test_file_examples(exhaustive_example, fusion_example):
+def test_file_examples():
     """Test example JSON files."""
-    assert CategoricalFusion(**exhaustive_example)
-
-    assert CategoricalFusion(**fusion_example)
-
-    with open(EXAMPLES_DIR / "alk.json", "r") as alk_file:
-        assert CategoricalFusion(**json.load(alk_file))
-
-    with open(EXAMPLES_DIR / "epcam_msh2.json", "r") as epcam_file:
-        assert CategoricalFusion(**json.load(epcam_file))
-
-    with open(EXAMPLES_DIR / "tpm3_ntrk1.json", "r") as ntrk_file:
-        assert AssayedFusion(**json.load(ntrk_file))
-
-    with open(EXAMPLES_DIR / "tpm3_pdgfrb.json", "r") as pdgfrb_file:
-        assert CategoricalFusion(**json.load(pdgfrb_file))
-
-    with open(EXAMPLES_DIR / "ewsr1.json", "r") as ewsr1_file:
-        assert AssayedFusion(**json.load(ewsr1_file))
+    # if this loads, then Pydantic validation was successful
+    import fusor.examples  # noqa: F401
 
 
 def test_model_examples():

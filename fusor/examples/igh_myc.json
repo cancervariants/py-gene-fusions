@@ -1,0 +1,25 @@
+{
+  "type": "CategoricalFusion",
+  "regulatory_element": {
+    "type": "RegulatoryElement",
+    "regulatory_class": "enhancer",
+    "associated_gene": {
+      "type": "GeneDescriptor",
+      "label": "IGH",
+      "gene_id": "hgnc:5477",
+      "id": "normalize.gene:IGH"
+    },
+    "feature_id": "EH38E3121735"
+  },
+  "structural_elements": [
+    {
+      "type": "GeneElement",
+      "gene_descriptor": {
+        "type": "GeneDescriptor",
+        "label": "MYC",
+        "gene_id": "hgnc:7553",
+        "id": "normalize.gene:MYC"
+      }
+    }
+  ]
+}

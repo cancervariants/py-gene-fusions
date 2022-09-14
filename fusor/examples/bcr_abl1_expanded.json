@@ -1,0 +1,159 @@
+{
+  "type": "CategoricalFusion",
+  "regulatory_element": null,
+  "structural_elements": [
+    {
+      "type": "TranscriptSegmentElement",
+      "transcript": "refseq:NM_004327.3",
+      "exon_start": null,
+      "exon_start_offset": null,
+      "exon_end": 2,
+      "exon_end_offset": 182,
+      "gene_descriptor": {
+        "id": "normalize.gene:BCR",
+        "type": "GeneDescriptor",
+        "label": "BCR",
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "gene_id": "hgnc:1014",
+        "gene": null
+      },
+      "element_genomic_start": null,
+      "element_genomic_end": {
+        "id": "fusor.location_descriptor:NC_000022.11",
+        "type": "LocationDescriptor",
+        "label": "NC_000022.11",
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "location_id": "ga4gh:VSL.ZTj-QLP67Hy3fGiKeMaEFNxNXtxuHZmf",
+        "location": {
+          "id": null,
+          "type": "SequenceLocation",
+          "sequence_id": "ga4gh:SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 23253980
+            },
+            "end": {
+              "type": "Number",
+              "value": 23253981
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "LinkerSequenceElement",
+      "linker_sequence": {
+        "id": "sequence:ACTAAAGCG",
+        "type": "SequenceDescriptor",
+        "label": null,
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "sequence_id": null,
+        "sequence": "ACTAAAGCG",
+        "residue_type": "SO:0000348"
+      }
+    },
+    {
+      "type": "TranscriptSegmentElement",
+      "transcript": "refseq:NM_005157.5",
+      "exon_start": 2,
+      "exon_start_offset": -173,
+      "exon_end": null,
+      "exon_end_offset": null,
+      "gene_descriptor": {
+        "id": "normalize.gene:ABL1",
+        "type": "GeneDescriptor",
+        "label": "ABL1",
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "gene_id": "hgnc:76",
+        "gene": null
+      },
+      "element_genomic_start": {
+        "id": "fusor.location_descriptor:NC_000009.12",
+        "type": "LocationDescriptor",
+        "label": "NC_000009.12",
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "location_id": "ga4gh:VSL.k4CwU2y9HyAyeloODZj7jly02KMMEzUl",
+        "location": {
+          "id": null,
+          "type": "SequenceLocation",
+          "sequence_id": "ga4gh:SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 130854064
+            },
+            "end": {
+              "type": "Number",
+              "value": 130854065
+            }
+          }
+        }
+      },
+      "element_genomic_end": null
+    }
+  ],
+  "r_frame_preserved": true,
+  "critical_functional_domains": [
+    {
+      "type": "FunctionalDomain",
+      "status": "preserved",
+      "associated_gene": {
+        "id": "normalize.gene:hgnc%3A76",
+        "type": "GeneDescriptor",
+        "label": "ABL1",
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "gene_id": "hgnc:76",
+        "gene": null
+      },
+      "id": "interpro:IPR000980",
+      "label": "SH2 domain",
+      "sequence_location": {
+        "id": "fusor.location_descriptor:NP_005148.2",
+        "type": "LocationDescriptor",
+        "label": null,
+        "description": null,
+        "xrefs": null,
+        "alternate_labels": null,
+        "extensions": null,
+        "location_id": "ga4gh:VSL.qRY4R0LrYDKItXVfM80vS9p-d9pzuyQp",
+        "location": {
+          "id": null,
+          "type": "SequenceLocation",
+          "sequence_id": "ga4gh:SQ.dmFigTG-0fY6I54swb7PoDuxCeT6O3Wg",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 127
+            },
+            "end": {
+              "type": "Number",
+              "value": 202
+            }
+          }
+        }
+      }
+    }
+  ]
+}

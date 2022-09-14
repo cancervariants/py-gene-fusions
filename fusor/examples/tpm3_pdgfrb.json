@@ -35,47 +35,46 @@
     },
     {
       "type": "TranscriptSegmentElement",
-      "transcript": "refseq:NM_002529.3",
-      "exon_start": 10,
+      "transcript": "refseq:NM_002609.3",
+      "exon_start": 11,
       "exon_start_offset": 0,
       "gene_descriptor": {
-        "id": "normalize.gene:NTRK1",
+        "id": "normalize.gene:PDGFRB",
         "type": "GeneDescriptor",
-        "label": "NTRK1",
-        "gene_id": "hgnc:8031"
+        "label": "PDGFRB",
+        "gene_id": "hgnc:8804"
       },
       "element_genomic_start": {
-        "id": "fusor.location_descriptor:NC_000001.11",
+        "id": "fusor.location_descriptor:NC_000005.10",
         "type": "LocationDescriptor",
-        "label": "NC_000001.11",
+        "label": "NC_000005.10",
         "location": {
           "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000001.11",
+          "sequence_id": "refseq:NC_000005.10",
           "interval": {
             "type": "SequenceInterval",
             "start": {
               "type": "Number",
-              "value": 156874626
+              "value": 150125577
             },
             "end": {
               "type": "Number",
-              "value": 156874627
+              "value": 150125578
             }
           }
         }
       }
     }
   ],
+  "assay": {
+    "type": "Assay",
+    "assay_name": "RT-PCR",
+    "assay_id": "obi:OBI_0000552",
+    "fusion_detection": "observed",
+    "method_uri": "pmid:24034314"
+  },
   "causative_event": {
     "type": "CausativeEvent",
     "event_type": "rearrangement"
-  },
-  "assay": {
-    "type": "Assay",
-    "assay_name": "fluorescence in-situ hybridization assay",
-    "assay_id": "obi:OBI_0003094",
-    "fusion_detection": "inferred",
-    "method_uri": "pmid:33576979"
-  },
-  "regulatory_elements": []
+  }
 }

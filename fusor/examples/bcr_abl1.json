@@ -1,0 +1,112 @@
+{
+  "type": "CategoricalFusion",
+  "structural_elements": [
+    {
+      "type": "TranscriptSegmentElement",
+      "transcript": "refseq:NM_004327.3",
+      "gene_descriptor": {
+        "type": "GeneDescriptor",
+        "id": "normalize.gene:BCR",
+        "gene_id": "hgnc:1014",
+        "label": "BCR"
+      },
+      "element_genomic_end": {
+        "id": "fusor.location_descriptor:NC_000022.11",
+        "type": "LocationDescriptor",
+        "label": "NC_000022.11",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NC_000022.11",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 23253980
+            },
+            "end": {
+              "type": "Number",
+              "value": 23253981
+            }
+          }
+        }
+      },
+      "exon_end": 2,
+      "exon_end_offset": 182
+    },
+    {
+      "type": "LinkerSequenceElement",
+      "linker_sequence": {
+        "id": "sequence:ACTAAAGCG",
+        "type": "SequenceDescriptor",
+        "sequence": "ACTAAAGCG",
+        "residue_type": "SO:0000348"
+      }
+    },
+    {
+      "type": "TranscriptSegmentElement",
+      "transcript": "refseq:NM_005157.5",
+      "exon_start": 2,
+      "exon_start_offset": -173,
+      "gene_descriptor": {
+        "id": "normalize.gene:ABL1",
+        "type": "GeneDescriptor",
+        "label": "ABL1",
+        "gene_id": "hgnc:76"
+      },
+      "element_genomic_start": {
+        "id": "fusor.location_descriptor:NC_000009.12",
+        "type": "LocationDescriptor",
+        "label": "NC_000009.12",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NC_000009.12",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 130854064
+            },
+            "end": {
+              "type": "Number",
+              "value": 130854065
+            }
+          }
+        }
+      }
+    }
+  ],
+  "r_frame_preserved": true,
+  "critical_functional_domains": [
+    {
+      "type": "FunctionalDomain",
+      "status": "preserved",
+      "associated_gene": {
+        "id": "normalize.gene:hgnc%3A76",
+        "type": "GeneDescriptor",
+        "label": "ABL1",
+        "gene_id": "hgnc:76"
+      },
+      "_id": "interpro:IPR000980",
+      "label": "SH2 domain",
+      "sequence_location": {
+        "id": "fusor.location_descriptor:NP_005148.2",
+        "type": "LocationDescriptor",
+        "location": {
+          "type": "SequenceLocation",
+          "sequence_id": "refseq:NP_005148.2",
+          "interval": {
+            "type": "SequenceInterval",
+            "start": {
+              "type": "Number",
+              "value": 127
+            },
+            "end": {
+              "type": "Number",
+              "value": 202
+            }
+          }
+        }
+      }
+    }
+  ]
+}

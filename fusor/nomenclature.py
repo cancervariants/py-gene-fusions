@@ -4,7 +4,7 @@ from ga4gh.vrsatile.pydantic.vrs_models import SequenceLocation
 from fusor.exceptions import IDTranslationException
 
 from fusor.models import GeneElement, RegulatoryElement, \
-    TemplatedSequenceElement, TranscriptSegmentElement
+    TemplatedSequenceElement, TranscriptSegmentElement, RegulatoryClass
 from fusor.tools import translate_identifier
 
 
@@ -17,12 +17,18 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
         or if missing element reference ID, genomic location, and associated
         gene
     """
-    nm_type_string = f"reg_{element.regulatory_class.value}"
-    nm_string = ""
+    element_class = element.regulatory_class.value
+    if element_class == RegulatoryClass.ENHANCER:
+        type_string = "e"
+    elif element_class == RegulatoryClass.PROMOTER:
+        type_string = "p"
+    else:
+        type_string = f"reg_{element.regulatory_class.value}"
+    feature_string = ""
     if element.feature_id:
-        nm_string += f"_{element.feature_id}"
-    elif element.genomic_location:
-        start = element.genomic_location
+        feature_string += f"_{element.feature_id}"
+    elif element.feature_location:
+        start = element.feature_location
         sequence_id = start.location.sequence_id
         refseq_id = translate_identifier(sr, sequence_id, "refseq")
         try:
@@ -31,7 +37,7 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
             ).split(":")[1]
         except IDTranslationException:
             raise ValueError
-        nm_string += f"_{refseq_id}(chr {chr}):g.{start.location.interval.start.value}_{start.location.interval.end.value}"  # noqa: E501
+        feature_string += f"_{refseq_id}(chr {chr}):g.{start.location.interval.start.value}_{start.location.interval.end.value}"  # noqa: E501
     if element.associated_gene:
         if element.associated_gene.gene_id:
             gene_id = gene_id = element.associated_gene.gene_id
@@ -43,10 +49,10 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
             gene_id = element.associated_gene.gene.gene_id
         else:
             raise ValueError
-        nm_string += f"@{element.associated_gene.label}({gene_id})"
-    if not nm_string:
+        feature_string += f"@{element.associated_gene.label}({gene_id})"
+    if not feature_string:
         raise ValueError
-    return nm_type_string + nm_string
+    return f"reg_{type_string}{feature_string}"
 
 
 def tx_segment_nomenclature(element: TranscriptSegmentElement,
@@ -63,11 +69,17 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement,
     if not first:
         start = element.exon_start
         if element.exon_start_offset:
-            start_offset = element.exon_start_offset
+            if element.exon_start_offset > 0:
+                start_offset = f"+{element.exon_start_offset}"
+            else:
+                start_offset = str(element.exon_start_offset)
     if not last:
         end = element.exon_end
         if element.exon_end_offset:
-            end_offset = element.exon_end_offset
+            if element.exon_end_offset > 0:
+                end_offset = f"+{element.exon_end_offset}"
+            else:
+                end_offset = str(element.exon_end_offset)
     return f"{prefix}:e.{start}{start_offset}{'_' if start and end else ''}{end}{end_offset}"  # noqa: E501
 
 
