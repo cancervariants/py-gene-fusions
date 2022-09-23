@@ -177,16 +177,16 @@ def test_generate_nomenclature(
 
     nm = fusor_instance.generate_nomenclature(examples.tpm3_ntrk1)
     assert (
-        nm == "refseq:NM_152263.3(TPM3):e.8::refseq:NM_002529.3(NTRK1):e.10"
-    )  # noqa: E501
+        nm == "refseq:NM_152263.3(TPM3):e.8(::)refseq:NM_002529.3(NTRK1):e.10"
+    )
 
     nm = fusor_instance.generate_nomenclature(examples.tpm3_pdgfrb)
     assert (
         nm == "refseq:NM_152263.3(TPM3):e.8::refseq:NM_002609.3(PDGFRB):e.11"
-    )  # noqa: E501
+    )
 
     nm = fusor_instance.generate_nomenclature(examples.ewsr1)
-    assert nm == "EWSR1(hgnc:3508)::?"
+    assert nm == "EWSR1(hgnc:3508)(::)?"
 
     nm = fusor_instance.generate_nomenclature(examples.igh_myc)
     assert nm == "reg_e_EH38E3121735@IGH(hgnc:5477)::MYC(hgnc:7553)"
