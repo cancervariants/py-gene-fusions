@@ -23,7 +23,7 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
     elif element_class == RegulatoryClass.PROMOTER:
         type_string = "p"
     else:
-        type_string = f"reg_{element.regulatory_class.value}"
+        type_string = f"{element.regulatory_class.value}"
     feature_string = ""
     if element.feature_id:
         feature_string += f"_{element.feature_id}"

@@ -725,7 +725,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
         RegulatoryElement(**{
             "regulatory_class": "enhancer",
         })
-    assert exc_info.value.errors()[0]["msg"] == "Must set 1 of {`feature_id`, `associated_gene`} and/or `genomic_location`"  # noqa: E501
+    assert exc_info.value.errors()[0]["msg"] == "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"  # noqa: E501
 
 
 def test_fusion(functional_domains, transcript_segments,
