@@ -461,7 +461,7 @@ class RegulatoryElement(BaseModel):
         if not (
             bool(values.get("feature_id")) ^ bool(values.get("feature_location"))
         ) and not (values.get("associated_gene")):
-            raise ValueError("Must set 1 of {`feature_id`, `associated_gene`} and/or `genomic_location`")  # noqa: E501
+            raise ValueError("Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`")  # noqa: E501
         return values
 
     class Config(BaseModelForbidExtra.Config):

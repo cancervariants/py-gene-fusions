@@ -22,7 +22,7 @@ from fusor.models import AssayedFusion, AssayedFusionElements, \
     TemplatedSequenceElement, AdditionalFields, TranscriptSegmentElement, \
     GeneElement, LinkerElement, UnknownGeneElement, MultiplePossibleGenesElement, \
     RegulatoryElement, DomainStatus, FunctionalDomain, Strand, \
-    RegulatoryClass, FusionType
+    RegulatoryClass, FusionType, Evidence
 from fusor.nomenclature import reg_element_nomenclature, \
     tx_segment_nomenclature, templated_seq_nomenclature, gene_nomenclature
 from fusor.exceptions import FUSORParametersException, IDTranslationException
@@ -742,4 +742,9 @@ class FUSOR:
                     parts.append(gene_nomenclature(element))
             else:
                 raise ValueError
-        return "::".join(parts)
+        if isinstance(fusion, AssayedFusion) and \
+                fusion.assay.fusion_detection == Evidence.INFERRED:
+            divider = "(::)"
+        else:
+            divider = "::"
+        return divider.join(parts)
