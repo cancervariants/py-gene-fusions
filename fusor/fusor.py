@@ -718,7 +718,7 @@ class FUSOR:
                     fusion.regulatory_element, self.seqrepo
                 )
             )
-        for i, element in enumerate(fusion.structural_elements):
+        for element in fusion.structural_elements:
             if isinstance(element, MultiplePossibleGenesElement):
                 parts.append("v")
             elif isinstance(element, UnknownGeneElement):
@@ -728,11 +728,7 @@ class FUSOR:
             elif isinstance(element, TranscriptSegmentElement):
                 if not any([gene == element.gene_descriptor.label
                             for gene in element_genes]):
-                    parts.append(tx_segment_nomenclature(
-                        element,
-                        first=(i + int(bool(fusion.regulatory_element)) == 0),
-                        last=(i + 1 == len(fusion.structural_elements))
-                    ))
+                    parts.append(tx_segment_nomenclature(element))
             elif isinstance(element, TemplatedSequenceElement):
                 parts.append(templated_seq_nomenclature(element,
                                                         self.seqrepo))
