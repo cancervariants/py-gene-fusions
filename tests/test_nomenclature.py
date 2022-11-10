@@ -1,7 +1,8 @@
 """Test nomenclature generation."""
 import pytest
 
-from fusor.models import CategoricalFusion, AssayedFusion
+from fusor.models import CategoricalFusion, AssayedFusion, TranscriptSegmentElement
+from fusor.nomenclature import tx_segment_nomenclature
 
 
 @pytest.fixture(scope="module")
@@ -149,6 +150,88 @@ def exon_offset_example():
     )
 
 
+@pytest.fixture(scope="module")
+def tx_seg_example():
+    """Provide example of transcript segment element."""
+    return TranscriptSegmentElement(
+        **{
+            "type": "TranscriptSegmentElement",
+            "transcript": "refseq:NM_152263.3",
+            "exon_start": 1,
+            "exon_start_offset": 0,
+            "exon_end": 8,
+            "exon_end_offset": 0,
+            "gene_descriptor": {
+                "id": "normalize.gene:TPM3",
+                "type": "GeneDescriptor",
+                "label": "TPM3",
+                "gene_id": "hgnc:12012",
+            },
+            "element_genomic_start": {
+                "id": "fusor.location_descriptor:NC_000001.11",
+                "type": "LocationDescriptor",
+                "label": "NC_000001.11",
+                "location": {
+                    "type": "SequenceLocation",
+                    "sequence_id": "refseq:NC_000001.11",
+                    "interval": {
+                        "type": "SequenceInterval",
+                        "start": {"type": "Number", "value": 154192135},
+                        "end": {"type": "Number", "value": 154192136},
+                    },
+                },
+            },
+            "element_genomic_end": {
+                "id": "fusor.location_descriptor:NC_000001.11",
+                "type": "LocationDescriptor",
+                "label": "NC_000001.11",
+                "location": {
+                    "type": "SequenceLocation",
+                    "sequence_id": "refseq:NC_000001.11",
+                    "interval": {
+                        "type": "SequenceInterval",
+                        "start": {"type": "Number", "value": 154170399},
+                        "end": {"type": "Number", "value": 154170400},
+                    },
+                },
+            },
+        }
+    )
+
+
+@pytest.fixture(scope="module")
+def junction_example():
+    """Provide example of junction element."""
+    return TranscriptSegmentElement(
+        **{
+            "type": "TranscriptSegmentElement",
+            "transcript": "refseq:NM_152263.3",
+            "exon_end": 8,
+            "exon_end_offset": 0,
+            "gene_descriptor": {
+                "id": "normalize.gene:TPM3",
+                "type": "GeneDescriptor",
+                "label": "TPM3",
+                "gene_id": "hgnc:12012",
+            },
+            "element_genomic_end": {
+                "id": "fusor.location_descriptor:NC_000001.11",
+                "type": "LocationDescriptor",
+                "label": "NC_000001.11",
+                "location": {
+                    "type": "SequenceLocation",
+                    "sequence_id": "refseq:NC_000001.11",
+                    "interval": {
+                        "type": "SequenceInterval",
+                        "start": {"type": "Number", "value": 154170399},
+                        "end": {"type": "Number", "value": 154170400},
+                    },
+                },
+            },
+        }
+    )
+
+
 def test_generate_nomenclature(
     fusor_instance,
     fusion_example,
@@ -182,7 +265,7 @@ def test_generate_nomenclature(
 
     nm = fusor_instance.generate_nomenclature(examples.tpm3_pdgfrb)
     assert (
-        nm == "refseq:NM_152263.3(TPM3):e.8::refseq:NM_002609.3(PDGFRB):e.11"
+        nm == "refseq:NM_152263.3(TPM3):e.1_8::refseq:NM_002609.3(PDGFRB):e.11_22"
     )
 
     nm = fusor_instance.generate_nomenclature(examples.ewsr1)
@@ -202,3 +285,12 @@ def test_generate_nomenclature(
 
     nm = fusor_instance.generate_nomenclature(exon_offset_example)
     assert nm == "BRAF(hgnc:1097)::refseq:NM_002529.3(NTRK1):e.2+20"
+
+
+def test_component_nomenclature(tx_seg_example, junction_example):
+    """Test that individual object nomenclature generators are correct."""
+    nm = tx_segment_nomenclature(tx_seg_example)
+    assert nm == "refseq:NM_152263.3(TPM3):e.1_8"
+
+    nm = tx_segment_nomenclature(junction_example)
+    assert nm == "refseq:NM_152263.3(TPM3):e.8"

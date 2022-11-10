@@ -55,31 +55,29 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
     return f"reg_{type_string}{feature_string}"
 
 
-def tx_segment_nomenclature(element: TranscriptSegmentElement,
-                            first: bool,
-                            last: bool) -> str:
+def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
     """Return fusion nomenclature for transcript segment element
-    :param TranscriptSegmentElement element: a tx segment element
-    :param bool first: True if first element in sequence
-    :param bool last: True if last element in sequence
+    :param TranscriptSegmentElement element: a tx segment element. Treated as
+    a junction component if only one end is provided.
     :return: element nomenclature representation
     """
     prefix = f"{element.transcript}({element.gene_descriptor.label})"
-    start, start_offset, end, end_offset = "", "", "", ""
-    if not first:
-        start = element.exon_start
-        if element.exon_start_offset:
-            if element.exon_start_offset > 0:
-                start_offset = f"+{element.exon_start_offset}"
-            else:
-                start_offset = str(element.exon_start_offset)
-    if not last:
-        end = element.exon_end
-        if element.exon_end_offset:
-            if element.exon_end_offset > 0:
-                end_offset = f"+{element.exon_end_offset}"
-            else:
-                end_offset = str(element.exon_end_offset)
+    start = element.exon_start if element.exon_start else ""
+    if element.exon_start_offset:
+        if element.exon_start_offset > 0:
+            start_offset = f"+{element.exon_start_offset}"
+        else:
+            start_offset = str(element.exon_start_offset)
+    else:
+        start_offset = ""
+    end = element.exon_end if element.exon_end else ""
+    if element.exon_end_offset:
+        if element.exon_end_offset > 0:
+            end_offset = f"+{element.exon_end_offset}"
+        else:
+            end_offset = str(element.exon_end_offset)
+    else:
+        end_offset = ""
     return f"{prefix}:e.{start}{start_offset}{'_' if start and end else ''}{end}{end_offset}"  # noqa: E501
 
 
