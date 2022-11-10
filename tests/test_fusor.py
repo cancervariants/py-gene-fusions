@@ -24,88 +24,9 @@ def braf_gene_descr_min():
 
 
 @pytest.fixture(scope="module")
-def braf_gene_descr():
-    """Create gene descriptor for BRAF."""
-    params = {
-        "id": "normalize.gene:BRAF",
-        "type": "GeneDescriptor",
-        "label": "BRAF",
-        "xrefs": [
-            "ensembl:ENSG00000157764",
-            "ncbigene:673"
-        ],
-        "alternate_labels": [
-            "BRAF1",
-            "BRAF-1",
-            "NS7",
-            "B-raf",
-            "B-RAF1",
-            "RAFB1"
-        ],
-        "extensions": [
-            {
-                "type": "Extension",
-                "name": "symbol_status",
-                "value": "approved"
-            },
-            {
-                "type": "Extension",
-                "name": "approved_name",
-                "value": "B-Raf proto-oncogene, serine/threonine kinase"
-            },
-            {
-                "type": "Extension",
-                "name": "chromosome_location",
-                "value": {
-                    "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
-                    "type": "ChromosomeLocation",
-                    "species_id": "taxonomy:9606",
-                    "chr": "7",
-                    "interval": {
-                        "type": "CytobandInterval",
-                        "start": "q34",
-                        "end": "q34"
-                    }
-                }
-            },
-            {
-                "type": "Extension",
-                "name": "associated_with",
-                "value": [
-                    "pubmed:2284096",
-                    "refseq:NM_004333",
-                    "iuphar:1943",
-                    "orphanet:119066",
-                    "cosmic:BRAF",
-                    "ena.embl:M95712",
-                    "ccds:CCDS87555",
-                    "ucsc:uc003vwc.5",
-                    "pubmed:1565476",
-                    "vega:OTTHUMG00000157457",
-                    "uniprot:P15056",
-                    "ccds:CCDS5863",
-                    "omim:164757"
-                ]
-            },
-            {
-                "type": "Extension",
-                "name": "hgnc_locus_type",
-                "value": "gene with protein product"
-            },
-            {
-                "type": "Extension",
-                "name": "ncbi_gene_type",
-                "value": "protein-coding"
-            },
-            {
-                "type": "Extension",
-                "name": "ensembl_biotype",
-                "value": "protein_coding"
-            }
-        ],
-        "gene_id": "hgnc:1097",
-    }
-    return GeneDescriptor(**params)
+def braf_gene_descr(braf_gene_descriptor):
+    """Create gene descriptor object for braf"""
+    return GeneDescriptor(**braf_gene_descriptor)
 
 
 @pytest.fixture(scope="module")
@@ -469,7 +390,7 @@ def compare_gene_descriptor(actual: Dict, expected: Dict):
                 if actual_ext["name"] == expected_ext["name"]:
                     assert isinstance(actual_ext["value"],
                                       type(expected_ext["value"]))
-                    if isinstance(expected_ext["value"], list):
+                    if isinstance(expected_ext["value"], list) and not isinstance(expected_ext["value"][0], dict):  # noqa: E501
                         assert set(actual_ext["value"]) == \
                             set(expected_ext["value"]), f"{expected_ext['value']} value"  # noqa: E501
                     else:

@@ -11,8 +11,8 @@ from ga4gh.vrsatile.pydantic.vrs_models import CURIE, VRSTypes, \
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor,\
     LocationDescriptor
 from pydantic.error_wrappers import ValidationError
-from uta_tools.uta_tools import UTATools
-from uta_tools.schemas import ResidueMode
+from cool_seq_tool.cool_seq_tool import CoolSeqTool
+from cool_seq_tool.schemas import ResidueMode
 from gene.query import QueryHandler
 
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
@@ -50,7 +50,7 @@ class FUSOR:
         self.seqrepo = SeqRepo(seqrepo_data_path)
         self.gene_normalizer = QueryHandler(
             db_url=dynamodb_url, db_region=dynamodb_region)
-        self.uta_tools = UTATools(db_url=db_url, db_pwd=db_pwd)
+        self.cool_seq_tool = CoolSeqTool(db_url=db_url, db_pwd=db_pwd)
 
     @staticmethod
     def _contains_element_type(kwargs: Dict, elm_type: StructuralElementType) -> bool:
@@ -206,14 +206,14 @@ class FUSOR:
             Otherwise, leave as `None`.
         :param kwargs:
             If `tx_to_genomic_coords`, possible key word arguments:
-                (From uta_tools.transcript_to_genomic_coords)
+                (From cool_seq_tool.transcript_to_genomic_coords)
                 gene: Optional[str] = None, transcript: str = None,
                 exon_start: Optional[int] = None,
                 exon_start_offset: Optional[int] = 0,
                 exon_end: Optional[int] = None,
                 exon_end_offset: Optional[int] = 0
             else:
-                (From uta_tools.genomic_to_transcript_exon_coordinates)
+                (From cool_seq_tool.genomic_to_transcript_exon_coordinates)
                 chromosome: Union[str, int], start: Optional[int] = None,
                 end: Optional[int] = None, strand: Optional[int] = None,
                 transcript: Optional[str] = None, gene: Optional[str] = None,
@@ -221,7 +221,7 @@ class FUSOR:
         :return: Transcript Segment Element, warning
         """
         if tx_to_genomic_coords:
-            data = await self.uta_tools.transcript_to_genomic_coordinates(**kwargs)  # noqa: E501
+            data = await self.cool_seq_tool.transcript_to_genomic_coordinates(**kwargs)  # noqa: E501
         else:
             if "chromosome" in kwargs and kwargs.get("chromosome") is None:
                 msg = "`chromosome` is required when going from genomic to" \
@@ -229,12 +229,12 @@ class FUSOR:
                 logger.warning(msg)
                 return None, [msg]
             residue_mode = kwargs.get("residue_mode")
-            # TODO: Remove once fixed in uta_tools
+            # TODO: Remove once fixed in cool_seq_tool
             if residue_mode != ResidueMode.INTER_RESIDUE:
                 start = kwargs.get("start")
                 kwargs["start"] = start - 1 if start is not None else None
                 kwargs["residue_mode"] = "inter-residue"
-            data = await self.uta_tools.genomic_to_transcript_exon_coordinates(**kwargs)  # noqa: E501
+            data = await self.cool_seq_tool.genomic_to_transcript_exon_coordinates(**kwargs)  # noqa: E501
 
         if data.genomic_data is None:
             return None, data.warnings
@@ -397,7 +397,7 @@ class FUSOR:
             logger.warning(msg)
             return None, msg
 
-        seq, warning = self.uta_tools.seqrepo_access.get_reference_sequence(
+        seq, warning = self.cool_seq_tool.seqrepo_access.get_reference_sequence(
             sequence_id, start, end
         )
 
