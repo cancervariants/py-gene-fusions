@@ -1,7 +1,7 @@
 """Fusion package"""
-from pathlib import Path
-from os import environ
 import logging
+from os import environ
+from pathlib import Path
 
 from .version import __version__  # noqa: F401
 

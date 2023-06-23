@@ -1,7 +1,7 @@
 """Test nomenclature generation."""
 import pytest
 
-from fusor.models import CategoricalFusion, AssayedFusion, TranscriptSegmentElement
+from fusor.models import AssayedFusion, CategoricalFusion, TranscriptSegmentElement
 from fusor.nomenclature import tx_segment_nomenclature
 
 

@@ -3,14 +3,22 @@ import copy
 from typing import Dict
 
 import pytest
-from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
-    LocationDescriptor
-from fusor.exceptions import FUSORParametersException
+from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, LocationDescriptor
 
-from fusor.models import AssayedFusion, CategoricalFusion, \
-    MultiplePossibleGenesElement, TemplatedSequenceElement, TranscriptSegmentElement, \
-    LinkerElement, UnknownGeneElement, FunctionalDomain, GeneElement, \
-    RegulatoryElement, RegulatoryClass
+from fusor.exceptions import FUSORParametersException
+from fusor.models import (
+    AssayedFusion,
+    CategoricalFusion,
+    FunctionalDomain,
+    GeneElement,
+    LinkerElement,
+    MultiplePossibleGenesElement,
+    RegulatoryClass,
+    RegulatoryElement,
+    TemplatedSequenceElement,
+    TranscriptSegmentElement,
+    UnknownGeneElement,
+)
 
 
 @pytest.fixture(scope="module")

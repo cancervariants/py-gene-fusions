@@ -1,7 +1,7 @@
 name: run checks
 on: [push, pull_request]
 jobs:
-    test:
+    lint:
         runs-on: ubuntu-latest
         env:
           SEQREPO_DATA_PATH: ./tests/data/seqrepo/latest
@@ -10,17 +10,18 @@ jobs:
           AWS_DEFAULT_REGION: us-east-2
           AWS_DEFAULT_OUTPUT: text
           GENE_NORM_DB_URL: http://localhost:8000
+        strategy:
+          matrix:
+            python-version: ['3.8', '3.9', '3.10', '3.11']
         steps:
             - uses: actions/checkout@v3
 
-            - name: Setup Python
+            - name: Set up Python
               uses: actions/setup-python@v4
               with:
-                  python-version: 3.8
+                  python-version: {{ matrix.python-version }}
 
             - name: Install dependencies
-              run: |
-                  python3 -m pip install pipenv
-                  pipenv install --dev
+              run: python3 -m pip install ".[dev]"
 
-            - run: pipenv run flake8
+            - run: ruff check fusor/ tests/

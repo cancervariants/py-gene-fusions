@@ -1,14 +1,26 @@
 """Model for fusion class"""
-from typing import Optional, List, Union, Literal, Set
-from enum import Enum
 from abc import ABC
+from enum import Enum
+from typing import List, Literal, Optional, Set, Union
 
-from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
-    Extra, ValidationError, root_validator
 from ga4gh.vrsatile.pydantic import return_value
-from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
-    LocationDescriptor, SequenceDescriptor, CURIE
 from ga4gh.vrsatile.pydantic.vrs_models import Sequence
+from ga4gh.vrsatile.pydantic.vrsatile_models import (
+    CURIE,
+    GeneDescriptor,
+    LocationDescriptor,
+    SequenceDescriptor,
+)
+from pydantic import (
+    BaseModel,
+    Extra,
+    StrictBool,
+    StrictInt,
+    StrictStr,
+    ValidationError,
+    root_validator,
+    validator,
+)
 from pydantic.fields import Field
 
 

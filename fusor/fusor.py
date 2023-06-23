@@ -1,32 +1,59 @@
 """Module for modifying fusion objects."""
-from typing import Optional, List, Tuple, Dict
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import quote
 
 from biocommons.seqrepo import SeqRepo
 from bioutils.accessions import coerce_namespace
-from ga4gh.core import ga4gh_identify
-from ga4gh.vrs import models
-from ga4gh.vrsatile.pydantic.vrs_models import CURIE, VRSTypes, \
-    SequenceLocation, Number, SequenceInterval
-from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor,\
-    LocationDescriptor
-from pydantic.error_wrappers import ValidationError
 from cool_seq_tool.cool_seq_tool import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
+from ga4gh.core import ga4gh_identify
+from ga4gh.vrs import models
+from ga4gh.vrsatile.pydantic.vrs_models import (
+    CURIE,
+    Number,
+    SequenceInterval,
+    SequenceLocation,
+    VRSTypes,
+)
+from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, LocationDescriptor
+from gene.database import AbstractDatabase as GeneDatabase
+from gene.database import create_db
 from gene.query import QueryHandler
-from gene.database import create_db, AbstractDatabase as GeneDatabase
+from pydantic.error_wrappers import ValidationError
 
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
-from fusor.models import AssayedFusion, AssayedFusionElements, \
-    CategoricalFusion, CategoricalFusionElements, BaseStructuralElement, \
-    StructuralElementType, CausativeEvent, Fusion, Assay, \
-    TemplatedSequenceElement, AdditionalFields, TranscriptSegmentElement, \
-    GeneElement, LinkerElement, UnknownGeneElement, MultiplePossibleGenesElement, \
-    RegulatoryElement, DomainStatus, FunctionalDomain, Strand, \
-    RegulatoryClass, FusionType, Evidence
-from fusor.nomenclature import reg_element_nomenclature, \
-    tx_segment_nomenclature, templated_seq_nomenclature, gene_nomenclature
 from fusor.exceptions import FUSORParametersException, IDTranslationException
+from fusor.models import (
+    AdditionalFields,
+    Assay,
+    AssayedFusion,
+    AssayedFusionElements,
+    BaseStructuralElement,
+    CategoricalFusion,
+    CategoricalFusionElements,
+    CausativeEvent,
+    DomainStatus,
+    Evidence,
+    FunctionalDomain,
+    Fusion,
+    FusionType,
+    GeneElement,
+    LinkerElement,
+    MultiplePossibleGenesElement,
+    RegulatoryClass,
+    RegulatoryElement,
+    Strand,
+    StructuralElementType,
+    TemplatedSequenceElement,
+    TranscriptSegmentElement,
+    UnknownGeneElement,
+)
+from fusor.nomenclature import (
+    gene_nomenclature,
+    reg_element_nomenclature,
+    templated_seq_nomenclature,
+    tx_segment_nomenclature,
+)
 from fusor.tools import translate_identifier
 
 

@@ -1,11 +1,25 @@
 """Module for testing the fusion model."""
-from pydantic import ValidationError
-import pytest
-from fusor.models import AbstractFusion, AssayedFusion, CategoricalFusion, EventType, \
-    TranscriptSegmentElement, TemplatedSequenceElement, UnknownGeneElement, \
-    GeneElement,  MultiplePossibleGenesElement, LinkerElement, FunctionalDomain, \
-    CausativeEvent, RegulatoryElement, Assay
 import copy
+
+import pytest
+from pydantic import ValidationError
+
+from fusor.models import (
+    AbstractFusion,
+    Assay,
+    AssayedFusion,
+    CategoricalFusion,
+    CausativeEvent,
+    EventType,
+    FunctionalDomain,
+    GeneElement,
+    LinkerElement,
+    MultiplePossibleGenesElement,
+    RegulatoryElement,
+    TemplatedSequenceElement,
+    TranscriptSegmentElement,
+    UnknownGeneElement,
+)
 
 
 @pytest.fixture(scope="module")
