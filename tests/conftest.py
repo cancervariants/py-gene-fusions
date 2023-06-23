@@ -116,6 +116,8 @@ def braf_gene_descriptor():
                     "vega:OTTHUMG00000157457",
                     "uniprot:P15056",
                     "ccds:CCDS5863",
+                    "ccds:CCDS94218",
+                    "ccds:CCDS94219",
                     "omim:164757"
                 ]
             },
@@ -328,6 +330,8 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                         "NEM1",
                         "hscp30",
                         "HEL-189",
+                        "CMYP4A",
+                        "CMYP4B"
                     ],
                     "extensions": [
                         {
@@ -409,6 +413,8 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                                 "ccds:CCDS1060",
                                 "ccds:CCDS41402",
                                 "ccds:CCDS41401",
+                                "ccds:CCDS91060",
+                                "ccds:CCDS91061",
                                 "pubmed:25369766",
                                 "cosmic:TPM3",
                                 "refseq:NM_152263",
