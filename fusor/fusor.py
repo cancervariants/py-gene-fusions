@@ -14,6 +14,7 @@ from pydantic.error_wrappers import ValidationError
 from cool_seq_tool.cool_seq_tool import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
 from gene.query import QueryHandler
+from gene.database import create_db, AbstractDatabase as GeneDatabase
 
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.models import AssayedFusion, AssayedFusionElements, \
@@ -34,23 +35,21 @@ class FUSOR:
 
     def __init__(self,
                  seqrepo_data_path: str = SEQREPO_DATA_PATH,
-                 dynamodb_url: str = "",
-                 dynamodb_region: str = "us-east-2",
-                 db_url: str = UTA_DB_URL, db_pwd: str = "",
+                 gene_database: Optional[GeneDatabase] = None,
+                 uta_db_url: str = UTA_DB_URL, uta_db_pwd: str = "",
                  ) -> None:
         """Initialize FUSOR class.
 
-        :param str seqrepo_data_path: Path to SeqRepo data directory
-        :param str dynamodb_url: URL to gene-normalizer database source.
-            Can also set environment variable `GENE_NORM_DB_URL`.
-        :param str dynamodb_region: AWS default region for gene-normalizer.
-        :param str db_url: Postgres URL for UTA
-        :param str db_pwd: Postgres database password
+        :param seqrepo_data_path: Path to SeqRepo data directory
+        :param gene_database: gene normalizer database instance
+        :param db_url: Postgres URL for UTA
+        :param db_pwd: Postgres database password
         """
         self.seqrepo = SeqRepo(seqrepo_data_path)
-        self.gene_normalizer = QueryHandler(
-            db_url=dynamodb_url, db_region=dynamodb_region)
-        self.cool_seq_tool = CoolSeqTool(db_url=db_url, db_pwd=db_pwd)
+        if not gene_database:
+            gene_database = create_db()
+        self.gene_normalizer = QueryHandler(gene_database)
+        self.cool_seq_tool = CoolSeqTool(db_url=uta_db_url, db_pwd=uta_db_pwd)
 
     @staticmethod
     def _contains_element_type(kwargs: Dict, elm_type: StructuralElementType) -> bool:
