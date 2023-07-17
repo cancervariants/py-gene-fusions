@@ -30,7 +30,7 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
     elif element.feature_location:
         start = element.feature_location
         sequence_id = start.location.sequence_id
-        refseq_id = translate_identifier(sr, sequence_id, "refseq")
+        refseq_id = str(translate_identifier(sr, sequence_id, "refseq")).split(":")[1]
         try:
             chr = str(
                 translate_identifier(sr, sequence_id, "GRCh38")
@@ -61,7 +61,11 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
     a junction component if only one end is provided.
     :return: element nomenclature representation
     """
-    prefix = f"{element.transcript}({element.gene_descriptor.label})"
+    transcript = str(element.transcript)
+    if ":" in transcript:
+        transcript = transcript.split(":")[1]
+
+    prefix = f"{transcript}({element.gene_descriptor.label})"
     start = element.exon_start if element.exon_start else ""
     if element.exon_start_offset:
         if element.exon_start_offset > 0:
@@ -93,7 +97,7 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement,
         location = element.region.location
         if isinstance(location, SequenceLocation):
             sequence_id = str(location.sequence_id)
-            refseq_id = translate_identifier(sr, sequence_id, "refseq")
+            refseq_id = str(translate_identifier(sr, sequence_id, "refseq"))
             start = location.interval.start.value
             end = location.interval.end.value
             try:
@@ -102,7 +106,7 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement,
                 ).split(":")[1]
             except IDTranslationException:
                 raise ValueError
-            return f"{refseq_id}(chr {chr}):g.{start}_{end}({element.strand.value})"
+            return f"{refseq_id.split(':')[1]}(chr {chr}):g.{start}_{end}({element.strand.value})"  # noqa: E501
         else:
             raise ValueError
     else:
