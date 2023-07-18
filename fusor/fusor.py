@@ -49,7 +49,10 @@ class FUSOR:
         if not gene_database:
             gene_database = create_db()
         self.gene_normalizer = QueryHandler(gene_database)
-        self.cool_seq_tool = CoolSeqTool(db_url=uta_db_url, db_pwd=uta_db_pwd)
+        self.cool_seq_tool = CoolSeqTool(
+            db_url=uta_db_url, db_pwd=uta_db_pwd,
+            gene_query_handler=self.gene_normalizer
+        )
 
     @staticmethod
     def _contains_element_type(kwargs: Dict, elm_type: StructuralElementType) -> bool:
