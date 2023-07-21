@@ -11,7 +11,7 @@ from ga4gh.vrsatile.pydantic.vrs_models import CURIE, VRSTypes, \
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor,\
     LocationDescriptor
 from pydantic.error_wrappers import ValidationError
-from cool_seq_tool.cool_seq_tool import CoolSeqTool
+from cool_seq_tool import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
 from gene.query import QueryHandler
 from gene.database import create_db, AbstractDatabase as GeneDatabase
@@ -36,7 +36,7 @@ class FUSOR:
     def __init__(self,
                  seqrepo_data_path: str = SEQREPO_DATA_PATH,
                  gene_database: Optional[GeneDatabase] = None,
-                 uta_db_url: str = UTA_DB_URL, uta_db_pwd: str = "",
+                 uta_db_url: str = UTA_DB_URL,
                  ) -> None:
         """Initialize FUSOR class.
 
@@ -50,7 +50,7 @@ class FUSOR:
             gene_database = create_db()
         self.gene_normalizer = QueryHandler(gene_database)
         self.cool_seq_tool = CoolSeqTool(
-            db_url=uta_db_url, db_pwd=uta_db_pwd,
+            db_url=uta_db_url,
             gene_query_handler=self.gene_normalizer
         )
 
