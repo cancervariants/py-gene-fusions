@@ -43,7 +43,6 @@ class FUSOR:
         :param seqrepo_data_path: Path to SeqRepo data directory
         :param gene_database: gene normalizer database instance
         :param db_url: Postgres URL for UTA
-        :param db_pwd: Postgres database password
         """
         self.seqrepo = SeqRepo(seqrepo_data_path)
         if not gene_database:
