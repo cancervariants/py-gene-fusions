@@ -35,6 +35,9 @@
   ],
   "structural_elements": [
     {
+      "type": "MultiplePossibleGenesElement"
+    },
+    {
       "type": "GeneElement",
       "gene_descriptor": {
         "id": "normalize.gene:ALK",
@@ -42,9 +45,6 @@
         "label": "ALK",
         "gene_id": "hgnc:427"
       }
-    },
-    {
-      "type": "MultiplePossibleGenesElement"
     }
   ]
 }
