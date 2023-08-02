@@ -254,9 +254,7 @@ class FUSOR:
         :return: Transcript Segment Element, warning
         """
         if tx_to_genomic_coords:
-            data = await self.cool_seq_tool.transcript_to_genomic_coordinates(
-                **kwargs
-            )  # noqa: E501
+            data = await self.cool_seq_tool.transcript_to_genomic_coordinates(**kwargs)
         else:
             if "chromosome" in kwargs and kwargs.get("chromosome") is None:
                 msg = (
@@ -273,7 +271,7 @@ class FUSOR:
                 kwargs["residue_mode"] = "inter-residue"
             data = await self.cool_seq_tool.genomic_to_transcript_exon_coordinates(
                 **kwargs
-            )  # noqa: E501
+            )
 
         if data.genomic_data is None:
             return None, data.warnings
@@ -303,7 +301,7 @@ class FUSOR:
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
                 if genomic_data.start
-                else None,  # noqa: E501
+                else None,
                 element_genomic_end=self._location_descriptor(
                     genomic_data.end,
                     genomic_data.end + 1,
@@ -312,7 +310,7 @@ class FUSOR:
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
                 if genomic_data.end
-                else None,  # noqa: E501
+                else None,
             ),
             None,
         )

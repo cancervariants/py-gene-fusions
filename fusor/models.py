@@ -103,7 +103,7 @@ class FunctionalDomain(BaseModel):
                     "id": "fusor.location_descriptor:NP_002520.2",
                     "type": "LocationDescriptor",
                     "location": {
-                        "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",  # noqa: E501
+                        "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
                         "type": "SequenceLocation",
                         "interval": {
                             "start": {"type": "Number", "value": 510},
@@ -136,7 +136,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
 
     type: Literal[
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
-    ] = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT  # noqa: E501
+    ] = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     transcript: CURIE
     exon_start: Optional[StrictInt]
     exon_start_offset: Optional[StrictInt] = 0
@@ -159,7 +159,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
         assert exon_start or exon_end, msg
 
         if exon_start:
-            msg = "Must give `element_genomic_start` if `exon_start` is given"  # noqa: E501
+            msg = "Must give `element_genomic_start` if `exon_start` is given"
             assert values.get("element_genomic_start"), msg
         else:
             values["exon_start_offset"] = None
@@ -171,9 +171,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
             values["exon_end_offset"] = None
         return values
 
-    _get_transcript_val = validator("transcript", allow_reuse=True)(
-        return_value
-    )  # noqa: E501
+    _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -234,7 +232,7 @@ class LinkerElement(BaseStructuralElement):
 
     type: Literal[
         FUSORTypes.LINKER_SEQUENCE_ELEMENT
-    ] = FUSORTypes.LINKER_SEQUENCE_ELEMENT  # noqa: E501
+    ] = FUSORTypes.LINKER_SEQUENCE_ELEMENT
     linker_sequence: SequenceDescriptor
 
     @validator("linker_sequence", pre=True)
@@ -255,9 +253,7 @@ class LinkerElement(BaseStructuralElement):
         try:
             Sequence(__root__=seq)
         except ValidationError:
-            raise AssertionError(
-                "sequence does not match regex '^[A-Za-z*\\-]*$'"
-            )  # noqa: E501
+            raise AssertionError("sequence does not match regex '^[A-Za-z*\\-]*$'")
 
         return v
 
@@ -297,7 +293,7 @@ class TemplatedSequenceElement(BaseStructuralElement):
 
     type: Literal[
         FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT
-    ] = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT  # noqa: E501
+    ] = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT
     region: LocationDescriptor
     strand: Strand
 
@@ -316,10 +312,10 @@ class TemplatedSequenceElement(BaseStructuralElement):
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
                     "type": "LocationDescriptor",
-                    "location_id": "ga4gh:VSL.AG54ZRBhg6pwpPLafF4KgaAHpdFio6l5",  # noqa: E501
+                    "location_id": "ga4gh:VSL.AG54ZRBhg6pwpPLafF4KgaAHpdFio6l5",
                     "location": {
                         "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",  # noqa: E501
+                        "sequence_id": "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
                         "interval": {
                             "type": "SequenceInterval",
                             "start": {"type": "Number", "value": 44908821},
@@ -369,9 +365,7 @@ class UnknownGeneElement(BaseStructuralElement):
     an UnknownGene element.
     """
 
-    type: Literal[
-        FUSORTypes.UNKNOWN_GENE_ELEMENT
-    ] = FUSORTypes.UNKNOWN_GENE_ELEMENT  # noqa: E501
+    type: Literal[FUSORTypes.UNKNOWN_GENE_ELEMENT] = FUSORTypes.UNKNOWN_GENE_ELEMENT
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -399,7 +393,7 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
 
     type: Literal[
         FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
-    ] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT  # noqa: E501
+    ] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -449,9 +443,7 @@ class RegulatoryElement(BaseModel):
     identifiers. Consequently, we permit any kind of free text.
     """
 
-    type: Literal[
-        FUSORTypes.REGULATORY_ELEMENT
-    ] = FUSORTypes.REGULATORY_ELEMENT  # noqa: E501
+    type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT
     regulatory_class: RegulatoryClass
     feature_id: Optional[str] = None
     associated_gene: Optional[GeneDescriptor] = None
@@ -469,7 +461,7 @@ class RegulatoryElement(BaseModel):
         ) and not (values.get("associated_gene")):
             raise ValueError(
                 "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
-            )  # noqa: E501
+            )
         return values
 
     class Config(BaseModelForbidExtra.Config):
@@ -489,7 +481,7 @@ class RegulatoryElement(BaseModel):
                     "type": "LocationDescriptor",
                     "id": "fusor.location_descriptor:NC_000001.11",
                     "location": {
-                        "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",  # noqa: E501
+                        "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                         "type": "SequenceLocation",
                         "interval": {
                             "type": "SequenceInterval",
@@ -723,9 +715,7 @@ class CategoricalFusion(AbstractFusion):
     biomedical literature for use in genomic knowledgebases.
     """
 
-    type: Literal[
-        FUSORTypes.CATEGORICAL_FUSION
-    ] = FUSORTypes.CATEGORICAL_FUSION  # noqa: E501
+    type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
     r_frame_preserved: Optional[StrictBool]
     critical_functional_domains: Optional[List[FunctionalDomain]]
     structural_elements: CategoricalFusionElements
@@ -774,7 +764,7 @@ class CategoricalFusion(AbstractFusion):
                         "element_genomic_start": {
                             "id": "TPM3:exon1",
                             "type": "LocationDescriptor",
-                            "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",  # noqa: E501
+                            "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",
                             "location": {
                                 "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
                                 "type": "SequenceLocation",
@@ -788,7 +778,7 @@ class CategoricalFusion(AbstractFusion):
                         "element_genomic_end": {
                             "id": "TPM3:exon8",
                             "type": "LocationDescriptor",
-                            "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",  # noqa: E501
+                            "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",
                             "location": {
                                 "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
                                 "type": "SequenceLocation",
