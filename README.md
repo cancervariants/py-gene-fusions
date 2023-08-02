@@ -90,13 +90,13 @@ Code style is managed by [Ruff](https://github.com/astral-sh/ruff) and [Black](h
 
 We use [pre-commit](https://pre-commit.com/#usage) to run conformance tests.
 
-This ensures:
+This performs checks for:
 
-* Check code style
-* Fix file endings
-* Check for added large files
-* Detect AWS credentials
-* Detect private keys
+* Code style
+* File endings
+* Added large files
+* AWS credentials
+* Private keys
 
 Before first commit run:
 
