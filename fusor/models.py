@@ -1,14 +1,26 @@
 """Model for fusion class"""
-from typing import Optional, List, Union, Literal, Set
-from enum import Enum
 from abc import ABC
+from enum import Enum
+from typing import List, Literal, Optional, Set, Union
 
-from pydantic import BaseModel, validator, StrictInt, StrictBool, StrictStr, \
-    Extra, ValidationError, root_validator
 from ga4gh.vrsatile.pydantic import return_value
-from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, \
-    LocationDescriptor, SequenceDescriptor, CURIE
 from ga4gh.vrsatile.pydantic.vrs_models import Sequence
+from ga4gh.vrsatile.pydantic.vrsatile_models import (
+    CURIE,
+    GeneDescriptor,
+    LocationDescriptor,
+    SequenceDescriptor,
+)
+from pydantic import (
+    BaseModel,
+    Extra,
+    StrictBool,
+    StrictInt,
+    StrictStr,
+    ValidationError,
+    root_validator,
+    validator,
+)
 from pydantic.fields import Field
 
 
@@ -94,17 +106,11 @@ class FunctionalDomain(BaseModel):
                         "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",  # noqa: E501
                         "type": "SequenceLocation",
                         "interval": {
-                            "start": {
-                                "type": "Number",
-                                "value": 510
-                            },
-                            "end": {
-                                "type": "Number",
-                                "value": 781
-                            }
-                        }
-                    }
-                }
+                            "start": {"type": "Number", "value": 510},
+                            "end": {"type": "Number", "value": 781},
+                        },
+                    },
+                },
             }
 
 
@@ -128,7 +134,9 @@ class BaseStructuralElement(ABC, BaseModel):
 class TranscriptSegmentElement(BaseStructuralElement):
     """Define TranscriptSegment class"""
 
-    type: Literal[FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT] = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT  # noqa: E501
+    type: Literal[
+        FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
+    ] = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT  # noqa: E501
     transcript: CURIE
     exon_start: Optional[StrictInt]
     exon_start_offset: Optional[StrictInt] = 0
@@ -163,7 +171,9 @@ class TranscriptSegmentElement(BaseStructuralElement):
             values["exon_end_offset"] = None
         return values
 
-    _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)  # noqa: E501
+    _get_transcript_val = validator("transcript", allow_reuse=True)(
+        return_value
+    )  # noqa: E501
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -186,7 +196,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     "id": "normalize.gene:TPM3",
                     "type": "GeneDescriptor",
                     "label": "TPM3",
-                    "gene_id": "hgnc:12012"
+                    "gene_id": "hgnc:12012",
                 },
                 "element_genomic_start": {
                     "id": "fusor.location_descriptor:NC_000001.11",
@@ -197,16 +207,10 @@ class TranscriptSegmentElement(BaseStructuralElement):
                         "sequence_id": "refseq:NC_000001.11",
                         "interval": {
                             "type": "SequenceInterval",
-                            "start": {
-                                "type": "Number",
-                                "value": 154192135
-                            },
-                            "end": {
-                                "type": "Number",
-                                "value": 154192136
-                            }
-                        }
-                    }
+                            "start": {"type": "Number", "value": 154192135},
+                            "end": {"type": "Number", "value": 154192136},
+                        },
+                    },
                 },
                 "element_genomic_end": {
                     "id": "fusor.location_descriptor:NC_000001.11",
@@ -217,24 +221,20 @@ class TranscriptSegmentElement(BaseStructuralElement):
                         "sequence_id": "refseq:NC_000001.11",
                         "interval": {
                             "type": "SequenceInterval",
-                            "start": {
-                                "type": "Number",
-                                "value": 154170399
-                            },
-                            "end": {
-                                "type": "Number",
-                                "value": 154170400
-                            }
-                        }
-                    }
-                }
+                            "start": {"type": "Number", "value": 154170399},
+                            "end": {"type": "Number", "value": 154170400},
+                        },
+                    },
+                },
             }
 
 
 class LinkerElement(BaseStructuralElement):
     """Define Linker class (linker sequence)"""
 
-    type: Literal[FUSORTypes.LINKER_SEQUENCE_ELEMENT] = FUSORTypes.LINKER_SEQUENCE_ELEMENT  # noqa: E501
+    type: Literal[
+        FUSORTypes.LINKER_SEQUENCE_ELEMENT
+    ] = FUSORTypes.LINKER_SEQUENCE_ELEMENT  # noqa: E501
     linker_sequence: SequenceDescriptor
 
     @validator("linker_sequence", pre=True)
@@ -255,7 +255,9 @@ class LinkerElement(BaseStructuralElement):
         try:
             Sequence(__root__=seq)
         except ValidationError:
-            raise AssertionError("sequence does not match regex '^[A-Za-z*\\-]*$'")  # noqa: E501
+            raise AssertionError(
+                "sequence does not match regex '^[A-Za-z*\\-]*$'"
+            )  # noqa: E501
 
         return v
 
@@ -275,8 +277,8 @@ class LinkerElement(BaseStructuralElement):
                     "id": "sequence:ACGT",
                     "type": "SequenceDescriptor",
                     "sequence": "ACGT",
-                    "residue_type": "SO:0000348"
-                }
+                    "residue_type": "SO:0000348",
+                },
             }
 
 
@@ -293,7 +295,9 @@ class TemplatedSequenceElement(BaseStructuralElement):
     product.
     """
 
-    type: Literal[FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT] = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT  # noqa: E501
+    type: Literal[
+        FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT
+    ] = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT  # noqa: E501
     region: LocationDescriptor
     strand: Strand
 
@@ -319,12 +323,12 @@ class TemplatedSequenceElement(BaseStructuralElement):
                         "interval": {
                             "type": "SequenceInterval",
                             "start": {"type": "Number", "value": 44908821},
-                            "end": {"type": "Number", "value": 44908822}
+                            "end": {"type": "Number", "value": 44908822},
                         },
                     },
-                    "label": "chr12:44908821-44908822(+)"
+                    "label": "chr12:44908821-44908822(+)",
                 },
-                "strand": "+"
+                "strand": "+",
             }
 
 
@@ -351,7 +355,7 @@ class GeneElement(BaseStructuralElement):
                     "gene_id": "hgnc:1097",
                     "label": "BRAF",
                     "type": "GeneDescriptor",
-                }
+                },
             }
 
 
@@ -365,7 +369,9 @@ class UnknownGeneElement(BaseStructuralElement):
     an UnknownGene element.
     """
 
-    type: Literal[FUSORTypes.UNKNOWN_GENE_ELEMENT] = FUSORTypes.UNKNOWN_GENE_ELEMENT  # noqa: E501
+    type: Literal[
+        FUSORTypes.UNKNOWN_GENE_ELEMENT
+    ] = FUSORTypes.UNKNOWN_GENE_ELEMENT  # noqa: E501
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -377,9 +383,7 @@ class UnknownGeneElement(BaseStructuralElement):
                 schema.pop("title", None)
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
-            schema["example"] = {
-                "type": "UnknownGeneElement"
-            }
+            schema["example"] = {"type": "UnknownGeneElement"}
 
 
 class MultiplePossibleGenesElement(BaseStructuralElement):
@@ -393,7 +397,9 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
     MultiplePossibleGenesElement.
     """
 
-    type: Literal[FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT  # noqa: E501
+    type: Literal[
+        FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
+    ] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT  # noqa: E501
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
@@ -405,9 +411,7 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
                 schema.pop("title", None)
             for prop in schema.get("properties", {}).values():
                 prop.pop("title", None)
-            schema["example"] = {
-                "type": "MultiplePossibleGenesElement"
-            }
+            schema["example"] = {"type": "MultiplePossibleGenesElement"}
 
 
 class RegulatoryClass(str, Enum):
@@ -445,7 +449,9 @@ class RegulatoryElement(BaseModel):
     identifiers. Consequently, we permit any kind of free text.
     """
 
-    type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT  # noqa: E501
+    type: Literal[
+        FUSORTypes.REGULATORY_ELEMENT
+    ] = FUSORTypes.REGULATORY_ELEMENT  # noqa: E501
     regulatory_class: RegulatoryClass
     feature_id: Optional[str] = None
     associated_gene: Optional[GeneDescriptor] = None
@@ -461,7 +467,9 @@ class RegulatoryElement(BaseModel):
         if not (
             bool(values.get("feature_id")) ^ bool(values.get("feature_location"))
         ) and not (values.get("associated_gene")):
-            raise ValueError("Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`")  # noqa: E501
+            raise ValueError(
+                "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
+            )  # noqa: E501
         return values
 
     class Config(BaseModelForbidExtra.Config):
@@ -485,17 +493,11 @@ class RegulatoryElement(BaseModel):
                         "type": "SequenceLocation",
                         "interval": {
                             "type": "SequenceInterval",
-                            "start": {
-                                "type": "Number",
-                                "value": 155593
-                            },
-                            "end": {
-                                "type": "Number",
-                                "value": 155610
-                            }
-                        }
-                    }
-                }
+                            "start": {"type": "Number", "value": 155593},
+                            "end": {"type": "Number", "value": 155610},
+                        },
+                    },
+                },
             }
 
 
@@ -553,8 +555,7 @@ class AbstractFusion(BaseModel, ABC):
                     "contain ending exon position"
                 )
         elif isinstance(elements[0], LinkerElement):
-            raise ValueError(
-                "First structural element cannot be LinkerSequence")
+            raise ValueError("First structural element cannot be LinkerSequence")
 
         if len(elements) > 2:
             for element in elements[1:-1]:
@@ -566,8 +567,9 @@ class AbstractFusion(BaseModel, ABC):
                         )
         if isinstance(elements[-1], TranscriptSegmentElement):
             if elements[-1].exon_start is None:
-                raise ValueError("3' fusion partner junction must include "
-                                 "starting position")
+                raise ValueError(
+                    "3' fusion partner junction must include " "starting position"
+                )
         return values
 
 
@@ -600,13 +602,19 @@ class Assay(BaseModelForbidExtra):
                 "method_uri": "pmid:33576979",
                 "assay_id": "obi:OBI_0003094",
                 "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred"
+                "fusion_detection": "inferred",
             }
 
 
-AssayedFusionElements = List[Union[TranscriptSegmentElement, GeneElement,
-                                   TemplatedSequenceElement,
-                                   LinkerElement, UnknownGeneElement]]
+AssayedFusionElements = List[
+    Union[
+        TranscriptSegmentElement,
+        GeneElement,
+        TemplatedSequenceElement,
+        LinkerElement,
+        UnknownGeneElement,
+    ]
+]
 
 
 class EventType(str, Enum):
@@ -680,7 +688,7 @@ class AssayedFusion(AbstractFusion):
                     "method_uri": "pmid:33576979",
                     "assay_id": "obi:OBI_0003094",
                     "assay_name": "fluorescence in-situ hybridization assay",
-                    "fusion_detection": "inferred"
+                    "fusion_detection": "inferred",
                 },
                 "structural_elements": [
                     {
@@ -690,20 +698,22 @@ class AssayedFusion(AbstractFusion):
                             "gene_id": "hgnc:3058",
                             "label": "EWSR1",
                             "type": "GeneDescriptor",
-                        }
+                        },
                     },
-                    {
-                        "type": "UnknownGeneElement"
-                    }
-                ]
+                    {"type": "UnknownGeneElement"},
+                ],
             }
 
 
-CategoricalFusionElements = List[Union[TranscriptSegmentElement,
-                                       GeneElement,
-                                       TemplatedSequenceElement,
-                                       LinkerElement,
-                                       MultiplePossibleGenesElement]]
+CategoricalFusionElements = List[
+    Union[
+        TranscriptSegmentElement,
+        GeneElement,
+        TemplatedSequenceElement,
+        LinkerElement,
+        MultiplePossibleGenesElement,
+    ]
+]
 
 
 class CategoricalFusion(AbstractFusion):
@@ -713,7 +723,9 @@ class CategoricalFusion(AbstractFusion):
     biomedical literature for use in genomic knowledgebases.
     """
 
-    type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION  # noqa: E501
+    type: Literal[
+        FUSORTypes.CATEGORICAL_FUSION
+    ] = FUSORTypes.CATEGORICAL_FUSION  # noqa: E501
     r_frame_preserved: Optional[StrictBool]
     critical_functional_domains: Optional[List[FunctionalDomain]]
     structural_elements: CategoricalFusionElements
@@ -742,7 +754,7 @@ class CategoricalFusion(AbstractFusion):
                             "gene_id": "hgnc:2743",
                             "label": "CST1",
                             "type": "GeneDescriptor",
-                        }
+                        },
                     }
                 ],
                 "structural_elements": [
@@ -767,17 +779,11 @@ class CategoricalFusion(AbstractFusion):
                                 "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
                                 "type": "SequenceLocation",
                                 "interval": {
-                                    "start": {
-                                        "type": "Number",
-                                        "value": 154192135
-                                    },
-                                    "end": {
-                                        "type": "Number",
-                                        "value": 154192136
-                                    },
-                                    "type": "SequenceInterval"
-                                }
-                            }
+                                    "start": {"type": "Number", "value": 154192135},
+                                    "end": {"type": "Number", "value": 154192136},
+                                    "type": "SequenceInterval",
+                                },
+                            },
                         },
                         "element_genomic_end": {
                             "id": "TPM3:exon8",
@@ -787,18 +793,12 @@ class CategoricalFusion(AbstractFusion):
                                 "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
                                 "type": "SequenceLocation",
                                 "interval": {
-                                    "start": {
-                                        "type": "Number",
-                                        "value": 154170398
-                                    },
-                                    "end": {
-                                        "type": "Number",
-                                        "value": 154170399
-                                    },
-                                    "type": "SequenceInterval"
-                                }
-                            }
-                        }
+                                    "start": {"type": "Number", "value": 154170398},
+                                    "end": {"type": "Number", "value": 154170399},
+                                    "type": "SequenceInterval",
+                                },
+                            },
+                        },
                     },
                     {
                         "type": "GeneElement",
@@ -806,9 +806,9 @@ class CategoricalFusion(AbstractFusion):
                             "id": "gene:ALK",
                             "type": "GeneDescriptor",
                             "gene_id": "hgnc:427",
-                            "label": "ALK"
-                        }
-                    }
+                            "label": "ALK",
+                        },
+                    },
                 ],
                 "regulatory_element": {
                     "type": "RegulatoryElement",
@@ -817,9 +817,9 @@ class CategoricalFusion(AbstractFusion):
                         "id": "gene:BRAF",
                         "type": "GeneDescriptor",
                         "gene_id": "hgnc:1097",
-                        "label": "BRAF"
-                    }
-                }
+                        "label": "BRAF",
+                    },
+                },
             }
 
 
