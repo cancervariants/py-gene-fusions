@@ -350,7 +350,7 @@ def compare_gene_descriptor(actual: Dict, expected: Dict):
     if expected["alternate_labels"]:
         assert set(actual["alternate_labels"]) == set(
             expected["alternate_labels"]
-        ), "alt labels"  # noqa: E501
+        ), "alt labels"
     else:
         assert actual["alternate_labels"] == expected["alternate_labels"]
     assert "extensions" in actual.keys() and "extensions" in expected.keys()
@@ -365,10 +365,10 @@ def compare_gene_descriptor(actual: Dict, expected: Dict):
                     assert isinstance(actual_ext["value"], type(expected_ext["value"]))
                     if isinstance(expected_ext["value"], list) and not isinstance(
                         expected_ext["value"][0], dict
-                    ):  # noqa: E501
+                    ):
                         assert set(actual_ext["value"]) == set(
                             expected_ext["value"]
-                        ), f"{expected_ext['value']} value"  # noqa: E501
+                        ), f"{expected_ext['value']} value"
                     else:
                         assert actual_ext["value"] == expected_ext["value"]
                     assert actual_ext["type"] == expected_ext["type"]
@@ -425,19 +425,19 @@ def test_add_location_id(fusor_instance, fusion_example, exhaustive_example):
     assert (
         fusion.critical_functional_domains[0].sequence_location.location_id
         == actual.critical_functional_domains[0].sequence_location.location_id
-    )  # noqa: E501
+    )
     assert (
         fusion.structural_elements[0].element_genomic_start.location_id
         == actual.structural_elements[0].element_genomic_start.location_id
-    )  # noqa: E501
+    )
     assert (
         fusion.structural_elements[0].element_genomic_end.location_id
         == actual.structural_elements[0].element_genomic_end.location_id
-    )  # noqa: E501
+    )
     assert (
         fusion.structural_elements[3].region.location_id
         == actual.structural_elements[3].region.location_id
-    )  # noqa: E501
+    )
 
 
 def test__normalized_gene_descriptor(fusor_instance):
@@ -598,7 +598,7 @@ def test_fusion(
             fusion_type="CategoricalFusion", structural_elements=[linker_element]
         )
     msg = "Fusions must contain >= 2 structural elements, or >=1 structural element and a regulatory element"  # noqa: E501
-    assert msg in str(excinfo.value)  # noqa: E501
+    assert msg in str(excinfo.value)
 
 
 @pytest.mark.asyncio
@@ -792,10 +792,8 @@ def test_templated_sequence_element(
     expected = copy.deepcopy(templated_sequence_element.dict())
     expected["region"]["location"][
         "sequence_id"
-    ] = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # noqa: E501
-    expected["region"][
-        "location_id"
-    ] = "ga4gh:VSL.bL1N-PQfp4dGlEz6PEd34fGxdxo82Zkb"  # noqa: E501
+    ] = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+    expected["region"]["location_id"] = "ga4gh:VSL.bL1N-PQfp4dGlEz6PEd34fGxdxo82Zkb"
     tsg = fusor_instance.templated_sequence_element(
         100,
         150,

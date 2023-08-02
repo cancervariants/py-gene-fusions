@@ -297,9 +297,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
     test_loc = test_domain.sequence_location
     assert test_loc.id == "fusor.location_descriptor:NP_001123617.1"
     assert test_loc.type == "LocationDescriptor"
-    assert (
-        test_loc.location.sequence_id == "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7"
-    )  # noqa: E501
+    assert test_loc.location.sequence_id == "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7"
     assert test_loc.location.interval.type == "SequenceInterval"
     assert test_loc.location.interval.start.value == 171
     assert test_loc.location.interval.end.value == 204
@@ -315,9 +313,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
     test_loc = test_domain.sequence_location
     assert test_loc.id == "fusor.location_descriptor:NP_002520.2"
     assert test_loc.type == "LocationDescriptor"
-    assert (
-        test_loc.location.sequence_id == "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6"
-    )  # noqa: E501
+    assert test_loc.location.sequence_id == "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6"
     assert test_loc.location.interval.type == "SequenceInterval"
     assert test_loc.location.interval.start.value == 510
     assert test_loc.location.interval.end.value == 781
@@ -332,7 +328,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
                 "associated_gene": gene_descriptors[0],
             }
         )
-    msg = "value is not a valid enumeration member; permitted: 'lost', 'preserved'"  # noqa: E501
+    msg = "value is not a valid enumeration member; permitted: 'lost', 'preserved'"
     check_validation_error(exc_info, msg)
 
     # test domain ID CURIE requirement
@@ -623,7 +619,7 @@ def test_gene_element(gene_descriptors):
         assert GeneElement(
             **{"type": "UnknownGeneElement", "gene_descriptor": gene_descriptors[0]}
         )
-    msg = "unexpected value; permitted: <FUSORTypes.GENE_ELEMENT: 'GeneElement'>"  # noqa: E501
+    msg = "unexpected value; permitted: <FUSORTypes.GENE_ELEMENT: 'GeneElement'>"
     check_validation_error(exc_info, msg)
 
 
@@ -635,7 +631,7 @@ def test_unknown_gene_element():
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert UnknownGeneElement(type="gene")
-    msg = "unexpected value; permitted: <FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>"  # noqa: E501
+    msg = "unexpected value; permitted: <FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>"
     check_validation_error(exc_info, msg)
 
 
@@ -691,7 +687,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
     assert (
         exc_info.value.errors()[0]["msg"]
         == "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
-    )  # noqa: E501
+    )
 
 
 def test_fusion(
@@ -748,9 +744,7 @@ def test_fusion(
     assert fusion.structural_elements[0].type == "GeneElement"
     assert fusion.structural_elements[0].gene_descriptor.id == "gene:NTRK1"
     assert fusion.structural_elements[1].type == "GeneElement"
-    assert (
-        fusion.structural_elements[1].gene_descriptor.type == "GeneDescriptor"
-    )  # noqa: E501
+    assert fusion.structural_elements[1].gene_descriptor.type == "GeneDescriptor"
 
     # test that non-element properties are optional
     assert CategoricalFusion(

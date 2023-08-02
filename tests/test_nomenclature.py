@@ -250,14 +250,10 @@ def test_generate_nomenclature(
     from fusor import examples
 
     nm = fusor_instance.generate_nomenclature(examples.bcr_abl1)
-    assert (
-        nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
-    )  # noqa: E501
+    assert nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
 
     nm = fusor_instance.generate_nomenclature(examples.bcr_abl1_expanded)
-    assert (
-        nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
-    )  # noqa: E501
+    assert nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
 
     nm = fusor_instance.generate_nomenclature(examples.alk)
     assert nm == "ALK(hgnc:427)::v"
