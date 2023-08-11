@@ -17,28 +17,14 @@ def braf_gene_descriptor():
         "id": "normalize.gene:BRAF",
         "type": "GeneDescriptor",
         "label": "BRAF",
-        "xrefs": [
-            "ensembl:ENSG00000157764",
-            "ncbigene:673"
-        ],
-        "alternate_labels": [
-            "BRAF1",
-            "BRAF-1",
-            "NS7",
-            "B-raf",
-            "B-RAF1",
-            "RAFB1"
-        ],
+        "xrefs": ["ensembl:ENSG00000157764", "ncbigene:673"],
+        "alternate_labels": ["BRAF1", "BRAF-1", "NS7", "B-raf", "B-RAF1", "RAFB1"],
         "extensions": [
-            {
-                "type": "Extension",
-                "name": "symbol_status",
-                "value": "approved"
-            },
+            {"type": "Extension", "name": "symbol_status", "value": "approved"},
             {
                 "type": "Extension",
                 "name": "approved_name",
-                "value": "B-Raf proto-oncogene, serine/threonine kinase"
+                "value": "B-Raf proto-oncogene, serine/threonine kinase",
             },
             {
                 "type": "Extension",
@@ -52,10 +38,10 @@ def braf_gene_descriptor():
                         "interval": {
                             "end": "q34",
                             "start": "q34",
-                            "type": "CytobandInterval"
-                        }
+                            "type": "CytobandInterval",
+                        },
                     }
-                ]
+                ],
             },
             {
                 "type": "Extension",
@@ -68,10 +54,10 @@ def braf_gene_descriptor():
                         "interval": {
                             "start": {"type": "Number", "value": 140719326},
                             "end": {"type": "Number", "value": 140924929},
-                            "type": "SequenceInterval"
-                        }
+                            "type": "SequenceInterval",
+                        },
                     }
-                ]
+                ],
             },
             {
                 "type": "Extension",
@@ -85,8 +71,8 @@ def braf_gene_descriptor():
                         "interval": {
                             "end": "q34",
                             "start": "q34",
-                            "type": "CytobandInterval"
-                        }
+                            "type": "CytobandInterval",
+                        },
                     },
                     {
                         "_id": "ga4gh:VSL.xZU3kL8F6t2ca6WH_26CWKfNW9-owhR4",
@@ -95,10 +81,10 @@ def braf_gene_descriptor():
                         "interval": {
                             "start": {"type": "Number", "value": 140713327},
                             "end": {"type": "Number", "value": 140924929},
-                            "type": "SequenceInterval"
-                        }
-                    }
-                ]
+                            "type": "SequenceInterval",
+                        },
+                    },
+                ],
             },
             {
                 "type": "Extension",
@@ -118,24 +104,16 @@ def braf_gene_descriptor():
                     "ccds:CCDS5863",
                     "ccds:CCDS94218",
                     "ccds:CCDS94219",
-                    "omim:164757"
-                ]
+                    "omim:164757",
+                ],
             },
             {
                 "type": "Extension",
                 "name": "hgnc_locus_type",
-                "value": "gene with protein product"
+                "value": "gene with protein product",
             },
-            {
-                "type": "Extension",
-                "name": "ncbi_gene_type",
-                "value": "protein-coding"
-            },
-            {
-                "type": "Extension",
-                "name": "ensembl_biotype",
-                "value": "protein_coding"
-            }
+            {"type": "Extension", "name": "ncbi_gene_type", "value": "protein-coding"},
+            {"type": "Extension", "name": "ensembl_biotype", "value": "protein_coding"},
         ],
         "gene_id": "hgnc:1097",
     }
@@ -174,10 +152,10 @@ def alk_gene_descriptor():
                         "interval": {
                             "end": "p23.1",
                             "start": "p23.2",
-                            "type": "CytobandInterval"
-                        }
+                            "type": "CytobandInterval",
+                        },
                     }
-                ]
+                ],
             },
             {
                 "type": "Extension",
@@ -190,10 +168,10 @@ def alk_gene_descriptor():
                         "interval": {
                             "start": {"type": "Number", "value": 29192773},
                             "end": {"type": "Number", "value": 29921586},
-                            "type": "SequenceInterval"
-                        }
+                            "type": "SequenceInterval",
+                        },
                     }
-                ]
+                ],
             },
             {
                 "type": "Extension",
@@ -207,8 +185,8 @@ def alk_gene_descriptor():
                         "interval": {
                             "end": "p23.1",
                             "start": "p23.2",
-                            "type": "CytobandInterval"
-                        }
+                            "type": "CytobandInterval",
+                        },
                     },
                     {
                         "_id": "ga4gh:VSL.-k3kxW3qMyV-oBTvTffVZojkJBLs0flu",
@@ -217,10 +195,10 @@ def alk_gene_descriptor():
                         "interval": {
                             "start": {"type": "Number", "value": 29192773},
                             "end": {"type": "Number", "value": 29921586},
-                            "type": "SequenceInterval"
-                        }
-                    }
-                ]
+                            "type": "SequenceInterval",
+                        },
+                    },
+                ],
             },
             {
                 "type": "Extension",
@@ -331,7 +309,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                         "hscp30",
                         "HEL-189",
                         "CMYP4A",
-                        "CMYP4B"
+                        "CMYP4B",
                     ],
                     "extensions": [
                         {
@@ -356,10 +334,10 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                                     "interval": {
                                         "end": "q21.3",
                                         "start": "q21.3",
-                                        "type": "CytobandInterval"
-                                    }
+                                        "type": "CytobandInterval",
+                                    },
                                 }
-                            ]
+                            ],
                         },
                         {
                             "type": "Extension",
@@ -372,10 +350,10 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                                     "interval": {
                                         "start": {"type": "Number", "value": 154155307},
                                         "end": {"type": "Number", "value": 154194648},
-                                        "type": "SequenceInterval"
-                                    }
+                                        "type": "SequenceInterval",
+                                    },
                                 }
-                            ]
+                            ],
                         },
                         {
                             "type": "Extension",
@@ -389,8 +367,8 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                                     "interval": {
                                         "end": "q21.3",
                                         "start": "q21.3",
-                                        "type": "CytobandInterval"
-                                    }
+                                        "type": "CytobandInterval",
+                                    },
                                 },
                                 {
                                     "_id": "ga4gh:VSL.sGJqQhhTg3BYlndAP7nFzN7KoKID1yP_",
@@ -399,10 +377,10 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                                     "interval": {
                                         "start": {"type": "Number", "value": 154155307},
                                         "end": {"type": "Number", "value": 154192100},
-                                        "type": "SequenceInterval"
-                                    }
-                                }
-                            ]
+                                        "type": "SequenceInterval",
+                                    },
+                                },
+                            ],
                         },
                         {
                             "type": "Extension",
@@ -543,7 +521,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
         "regulatory_element": {
             "type": "RegulatoryElement",
             "regulatory_class": "promoter",
-            "associated_gene": braf_gene_descriptor
+            "associated_gene": braf_gene_descriptor,
         },
     }
 

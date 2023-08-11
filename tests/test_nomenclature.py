@@ -1,7 +1,7 @@
 """Test nomenclature generation."""
 import pytest
 
-from fusor.models import CategoricalFusion, AssayedFusion, TranscriptSegmentElement
+from fusor.models import AssayedFusion, CategoricalFusion, TranscriptSegmentElement
 from fusor.nomenclature import tx_segment_nomenclature
 
 
@@ -250,23 +250,19 @@ def test_generate_nomenclature(
     from fusor import examples
 
     nm = fusor_instance.generate_nomenclature(examples.bcr_abl1)
-    assert (nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173")  # noqa: E501
+    assert nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
 
     nm = fusor_instance.generate_nomenclature(examples.bcr_abl1_expanded)
-    assert (nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173")  # noqa: E501
+    assert nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
 
     nm = fusor_instance.generate_nomenclature(examples.alk)
     assert nm == "ALK(hgnc:427)::v"
 
     nm = fusor_instance.generate_nomenclature(examples.tpm3_ntrk1)
-    assert (
-        nm == "NM_152263.3(TPM3):e.8(::)NM_002529.3(NTRK1):e.10"
-    )
+    assert nm == "NM_152263.3(TPM3):e.8(::)NM_002529.3(NTRK1):e.10"
 
     nm = fusor_instance.generate_nomenclature(examples.tpm3_pdgfrb)
-    assert (
-        nm == "NM_152263.3(TPM3):e.1_8::NM_002609.3(PDGFRB):e.11_22"
-    )
+    assert nm == "NM_152263.3(TPM3):e.1_8::NM_002609.3(PDGFRB):e.11_22"
 
     nm = fusor_instance.generate_nomenclature(examples.ewsr1)
     assert nm == "EWSR1(hgnc:3508)(::)?"
