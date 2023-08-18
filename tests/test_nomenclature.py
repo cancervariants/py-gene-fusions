@@ -256,7 +256,7 @@ def test_generate_nomenclature(
     assert nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
 
     nm = fusor_instance.generate_nomenclature(examples.alk)
-    assert nm == "ALK(hgnc:427)::v"
+    assert nm == "v::ALK(hgnc:427)"
 
     nm = fusor_instance.generate_nomenclature(examples.tpm3_ntrk1)
     assert nm == "NM_152263.3(TPM3):e.8(::)NM_002529.3(NTRK1):e.10"
