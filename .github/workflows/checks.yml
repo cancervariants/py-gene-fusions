@@ -1,26 +1,13 @@
 name: run checks
 on: [push, pull_request]
 jobs:
-    test:
-        runs-on: ubuntu-latest
-        env:
-          SEQREPO_DATA_PATH: ./tests/data/seqrepo/latest
-          AWS_ACCESS_KEY_ID: ${{ secrets.DUMMY_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.DUMMY_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-2
-          AWS_DEFAULT_OUTPUT: text
-          GENE_NORM_DB_URL: http://localhost:8000
-        steps:
-            - uses: actions/checkout@v3
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
 
-            - name: Setup Python
-              uses: actions/setup-python@v4
-              with:
-                  python-version: 3.8
+      - name: black
+        uses: psf/black@stable
 
-            - name: Install dependencies
-              run: |
-                  python3 -m pip install pipenv
-                  pipenv install --dev
-
-            - run: pipenv run flake8
+      - name: ruff
+        uses: chartboost/ruff-action@v1

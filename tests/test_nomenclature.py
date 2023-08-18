@@ -1,7 +1,7 @@
 """Test nomenclature generation."""
 import pytest
 
-from fusor.models import CategoricalFusion, AssayedFusion, TranscriptSegmentElement
+from fusor.models import AssayedFusion, CategoricalFusion, TranscriptSegmentElement
 from fusor.nomenclature import tx_segment_nomenclature
 
 
@@ -241,7 +241,7 @@ def test_generate_nomenclature(
     exon_offset_example,
 ):
     """Test that nomenclature generation is correct."""
-    fixture_nomenclature = "reg_p@BRAF(hgnc:1097)::refseq:NM_152263.3(TPM3):e.1_8::ALK(hgnc:427)::ACGT::refseq:NC_000023.11(chr X):g.44908820_44908822(+)::v"  # noqa: E501
+    fixture_nomenclature = "reg_p@BRAF(hgnc:1097)::NM_152263.3(TPM3):e.1_8::ALK(hgnc:427)::ACGT::NC_000023.11(chr X):g.44908820_44908822(+)::v"  # noqa: E501
     nm = fusor_instance.generate_nomenclature(CategoricalFusion(**fusion_example))
     assert nm == fixture_nomenclature
     nm = fusor_instance.generate_nomenclature(CategoricalFusion(**exhaustive_example))
@@ -250,23 +250,19 @@ def test_generate_nomenclature(
     from fusor import examples
 
     nm = fusor_instance.generate_nomenclature(examples.bcr_abl1)
-    assert (nm == "refseq:NM_004327.3(BCR):e.2+182::ACTAAAGCG::refseq:NM_005157.5(ABL1):e.2-173")  # noqa: E501
+    assert nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
 
     nm = fusor_instance.generate_nomenclature(examples.bcr_abl1_expanded)
-    assert (nm == "refseq:NM_004327.3(BCR):e.2+182::ACTAAAGCG::refseq:NM_005157.5(ABL1):e.2-173")  # noqa: E501
+    assert nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
 
     nm = fusor_instance.generate_nomenclature(examples.alk)
     assert nm == "v::ALK(hgnc:427)"
 
     nm = fusor_instance.generate_nomenclature(examples.tpm3_ntrk1)
-    assert (
-        nm == "refseq:NM_152263.3(TPM3):e.8(::)refseq:NM_002529.3(NTRK1):e.10"
-    )
+    assert nm == "NM_152263.3(TPM3):e.8(::)NM_002529.3(NTRK1):e.10"
 
     nm = fusor_instance.generate_nomenclature(examples.tpm3_pdgfrb)
-    assert (
-        nm == "refseq:NM_152263.3(TPM3):e.1_8::refseq:NM_002609.3(PDGFRB):e.11_22"
-    )
+    assert nm == "NM_152263.3(TPM3):e.1_8::NM_002609.3(PDGFRB):e.11_22"
 
     nm = fusor_instance.generate_nomenclature(examples.ewsr1)
     assert nm == "EWSR1(hgnc:3508)(::)?"
@@ -280,17 +276,17 @@ def test_generate_nomenclature(
     nm = fusor_instance.generate_nomenclature(reg_location_example)
     assert (
         nm
-        == "reg_p_refseq:NC_000023.11(chr X):g.1462581_1534182@P2RY8(hgnc:15524)::SOX5(hgnc:11201)"  # noqa: E501
+        == "reg_p_NC_000023.11(chr X):g.1462581_1534182@P2RY8(hgnc:15524)::SOX5(hgnc:11201)"  # noqa: E501
     )
 
     nm = fusor_instance.generate_nomenclature(exon_offset_example)
-    assert nm == "BRAF(hgnc:1097)::refseq:NM_002529.3(NTRK1):e.2+20"
+    assert nm == "BRAF(hgnc:1097)::NM_002529.3(NTRK1):e.2+20"
 
 
 def test_component_nomenclature(tx_seg_example, junction_example):
     """Test that individual object nomenclature generators are correct."""
     nm = tx_segment_nomenclature(tx_seg_example)
-    assert nm == "refseq:NM_152263.3(TPM3):e.1_8"
+    assert nm == "NM_152263.3(TPM3):e.1_8"
 
     nm = tx_segment_nomenclature(junction_example)
-    assert nm == "refseq:NM_152263.3(TPM3):e.8"
+    assert nm == "NM_152263.3(TPM3):e.8"

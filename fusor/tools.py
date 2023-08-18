@@ -6,8 +6,9 @@ from fusor import logger
 from fusor.exceptions import IDTranslationException
 
 
-def translate_identifier(seqrepo: SeqRepo, ac: str,
-                         target_namespace: str = "ga4gh") -> CURIE:
+def translate_identifier(
+    seqrepo: SeqRepo, ac: str, target_namespace: str = "ga4gh"
+) -> CURIE:
     """Return `target_namespace` identifier for accession provided.
 
     :param str ac: Identifier accession
@@ -18,7 +19,8 @@ def translate_identifier(seqrepo: SeqRepo, ac: str,
     """
     try:
         target_ids = seqrepo.translate_identifier(
-            ac, target_namespaces=target_namespace)
+            ac, target_namespaces=target_namespace
+        )
     except KeyError as e:
         logger.warning(f"Unable to get translated identifier: {e}")
         raise IDTranslationException

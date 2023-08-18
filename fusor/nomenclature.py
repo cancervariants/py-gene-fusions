@@ -1,10 +1,15 @@
 """Provide helper methods for fusion nomenclature generation."""
 from biocommons.seqrepo.seqrepo import SeqRepo
 from ga4gh.vrsatile.pydantic.vrs_models import SequenceLocation
-from fusor.exceptions import IDTranslationException
 
-from fusor.models import GeneElement, RegulatoryElement, \
-    TemplatedSequenceElement, TranscriptSegmentElement, RegulatoryClass
+from fusor.exceptions import IDTranslationException
+from fusor.models import (
+    GeneElement,
+    RegulatoryClass,
+    RegulatoryElement,
+    TemplatedSequenceElement,
+    TranscriptSegmentElement,
+)
 from fusor.tools import translate_identifier
 
 
@@ -30,11 +35,9 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
     elif element.feature_location:
         start = element.feature_location
         sequence_id = start.location.sequence_id
-        refseq_id = translate_identifier(sr, sequence_id, "refseq")
+        refseq_id = str(translate_identifier(sr, sequence_id, "refseq")).split(":")[1]
         try:
-            chr = str(
-                translate_identifier(sr, sequence_id, "GRCh38")
-            ).split(":")[1]
+            chr = str(translate_identifier(sr, sequence_id, "GRCh38")).split(":")[1]
         except IDTranslationException:
             raise ValueError
         feature_string += f"_{refseq_id}(chr {chr}):g.{start.location.interval.start.value}_{start.location.interval.end.value}"  # noqa: E501
@@ -44,8 +47,7 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
 
         if element.associated_gene.gene_id:
             gene_id = element.associated_gene.gene_id
-        elif element.associated_gene.gene and \
-                element.associated_gene.gene.gene_id:
+        elif element.associated_gene.gene and element.associated_gene.gene.gene_id:
             gene_id = element.associated_gene.gene.gene_id
         else:
             raise ValueError
@@ -61,7 +63,11 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
     a junction component if only one end is provided.
     :return: element nomenclature representation
     """
-    prefix = f"{element.transcript}({element.gene_descriptor.label})"
+    transcript = str(element.transcript)
+    if ":" in transcript:
+        transcript = transcript.split(":")[1]
+
+    prefix = f"{transcript}({element.gene_descriptor.label})"
     start = element.exon_start if element.exon_start else ""
     if element.exon_start_offset:
         if element.exon_start_offset > 0:
@@ -81,8 +87,7 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
     return f"{prefix}:e.{start}{start_offset}{'_' if start and end else ''}{end}{end_offset}"  # noqa: E501
 
 
-def templated_seq_nomenclature(element: TemplatedSequenceElement,
-                               sr: SeqRepo) -> str:
+def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -> str:
     """Return fusion nomenclature for templated sequence element.
     :param TemplatedSequenceElement element: a templated sequence element
     :return: element nomenclature representation
@@ -93,16 +98,14 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement,
         location = element.region.location
         if isinstance(location, SequenceLocation):
             sequence_id = str(location.sequence_id)
-            refseq_id = translate_identifier(sr, sequence_id, "refseq")
+            refseq_id = str(translate_identifier(sr, sequence_id, "refseq"))
             start = location.interval.start.value
             end = location.interval.end.value
             try:
-                chr = str(
-                    translate_identifier(sr, sequence_id, "GRCh38")
-                ).split(":")[1]
+                chr = str(translate_identifier(sr, sequence_id, "GRCh38")).split(":")[1]
             except IDTranslationException:
                 raise ValueError
-            return f"{refseq_id}(chr {chr}):g.{start}_{end}({element.strand.value})"
+            return f"{refseq_id.split(':')[1]}(chr {chr}):g.{start}_{end}({element.strand.value})"  # noqa: E501
         else:
             raise ValueError
     else:
@@ -120,8 +123,7 @@ def gene_nomenclature(element: GeneElement) -> str:
 
     if element.gene_descriptor.gene_id:
         gene_id = element.gene_descriptor.gene_id
-    elif element.gene_descriptor.gene \
-            and element.gene_descriptor.gene.gene_id:
+    elif element.gene_descriptor.gene and element.gene_descriptor.gene.gene_id:
         gene_id = element.gene_descriptor.gene.gene_id
     else:
         raise ValueError

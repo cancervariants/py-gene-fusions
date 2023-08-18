@@ -1,13 +1,14 @@
 """Fusion package"""
-from pathlib import Path
-from os import environ
 import logging
+from os import environ
+from pathlib import Path
 
 from .version import __version__  # noqa: F401
 
 logging.basicConfig(
     filename="fusor.log",
-    format="[%(asctime)s] - %(name)s - %(levelname)s : %(message)s")
+    format="[%(asctime)s] - %(name)s - %(levelname)s : %(message)s",
+)
 logger = logging.getLogger("fusor")
 logger.setLevel(logging.DEBUG)
 
@@ -25,9 +26,7 @@ else:
 logging.getLogger("boto3").setLevel(logging.INFO)
 logging.getLogger("botocore").setLevel(logging.INFO)
 logging.getLogger("nose").setLevel(logging.INFO)
-logging.getLogger(
-    "python_jsonschema_objects.classbuilder"
-).setLevel(logging.INFO)
+logging.getLogger("python_jsonschema_objects.classbuilder").setLevel(logging.INFO)
 logging.getLogger("urllib3").setLevel(logging.INFO)
 
 from fusor.fusor import FUSOR  # noqa: E402, F401

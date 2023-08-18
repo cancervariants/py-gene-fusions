@@ -16,9 +16,7 @@ def test_translate_identifier(fusor_instance):
 
     # test non-default target
     identifier = translate_identifier(
-        fusor_instance.seqrepo,
-        "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
-        "refseq"
+        fusor_instance.seqrepo, "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT", "refseq"
     )
     assert identifier == "refseq:NM_152263.3"
 
@@ -28,5 +26,6 @@ def test_translate_identifier(fusor_instance):
 
     # test unrecognized namespace
     with pytest.raises(IDTranslationException):
-        identifier = translate_identifier(fusor_instance.seqrepo,
-                                          "fake_namespace:NM_152263.3")
+        identifier = translate_identifier(
+            fusor_instance.seqrepo, "fake_namespace:NM_152263.3"
+        )
