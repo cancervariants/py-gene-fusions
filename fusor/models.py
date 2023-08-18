@@ -520,18 +520,36 @@ class AbstractFusion(BaseModel, ABC):
         return values
 
     @root_validator(pre=True)
-    def enforce_elements_length(cls, values):
-        """Ensure minimum # of elements."""
-        error_msg = (
+    def enforce_elements_qt(cls, values):
+        """Ensure minimum # of elements, and require > 1 unique genes."""
+        qt_error_msg = (
             "Fusions must contain >= 2 structural elements, or >=1 structural element "
             "and a regulatory element"
         )
         structural_elements = values.get("structural_elements", [])
         if not structural_elements:
-            raise ValueError(error_msg)
+            raise ValueError(qt_error_msg)
         num_structural_elements = len(structural_elements)
-        if (num_structural_elements + bool(values.get("regulatory_element"))) < 2:
-            raise ValueError(error_msg)
+        reg_element = values.get("regulatory_element")
+        if (num_structural_elements + bool(reg_element)) < 2:
+            raise ValueError(qt_error_msg)
+
+        uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
+        gene_ids = []
+        if reg_element:
+            reg_element_gene = reg_element.get("associated_gene", {}).get("gene_id")
+            if reg_element_gene:
+                gene_ids.append(reg_element_gene)
+
+        for element in structural_elements:
+            gene_id = element.get("gene_descriptor", {}).get("gene_id")
+            if gene_id:
+                gene_ids.append(gene_id)
+
+        unique_gene_ids = set(gene_ids)
+        if len(gene_ids) > len(unique_gene_ids):  # TODO
+            raise ValueError(uq_gene_msg)
+
         return values
 
     @root_validator(skip_on_failure=True)
