@@ -1,7 +1,7 @@
 """Model for fusion class"""
 from abc import ABC
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Self, Set, Union
+from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrs_models import Sequence
@@ -514,7 +514,7 @@ class AbstractFusion(BaseModel, ABC):
 
     @classmethod
     def _access_object_attr(
-        cls: Self, obj: Union[Dict, BaseModel], attr_name: str
+        cls, obj: Union[Dict, BaseModel], attr_name: str  # noqa: ANN102
     ) -> Optional[Any]:  # noqa: ANN401
         """Help enable safe access of object properties while performing
         validation for Pydantic class objects. Because the validator could be handling either
@@ -538,6 +538,24 @@ class AbstractFusion(BaseModel, ABC):
             raise ValueError(
                 "Unrecognized type, should only pass entities with properties"
             )
+
+    @classmethod
+    def _fetch_gene_id(
+        cls, obj: Union[Dict, BaseModel], gene_descriptor_field: str  # noqa: ANN102
+    ) -> Optional[str]:
+        """Get gene ID if element includes a gene annotation.
+
+        :param obj: element to fetch gene from. Might not contain a gene (e.g. it's a
+            TemplatedSequenceElement) so we have to use safe checks to fetch.
+        :param gene_descriptor_field: name of gene_descriptor field
+        :return: gene ID if gene is defined
+        """
+        gene_descriptor = cls._access_object_attr(obj, gene_descriptor_field)
+        if gene_descriptor:
+            gene = cls._access_object_attr(gene_descriptor, "gene")
+            if gene:
+                gene_id = cls._access_object_attr(gene, "gene_id")
+                return gene_id
 
     @root_validator(pre=True)
     def enforce_abc(cls, values):
@@ -570,21 +588,14 @@ class AbstractFusion(BaseModel, ABC):
         uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
         gene_ids = []
         if reg_element:
-            gene_descriptor = cls._access_object_attr(reg_element, "associated_gene")
-            if gene_descriptor:
-                gene = cls._access_object_attr(gene_descriptor, "gene")
-                if gene:
-                    gene_id = cls._access_object_attr(gene, "gene_id")
-                    if gene_id:
-                        gene_ids.append(gene_id)
+            gene_id = cls._fetch_gene_id(reg_element, "associated_gene")
+            if gene_id:
+                gene_ids.append(gene_id)
 
         for element in structural_elements:
-            gene_descriptor = cls._access_object_attr(element, "gene_descriptor")
-            if gene_descriptor:
-                gene = cls._access_object_attr(gene_descriptor, "gene")
-                if gene:
-                    gene_id = cls._access_object_attr(gene, "gene_id")
-                    gene_ids.append(gene_id)
+            gene_id = cls._fetch_gene_id(element, "gene_descriptor")
+            if gene_id:
+                gene_ids.append(gene_id)
 
         unique_gene_ids = set(gene_ids)
         if len(unique_gene_ids) == 1 and len(gene_ids) == (
