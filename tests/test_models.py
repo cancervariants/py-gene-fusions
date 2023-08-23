@@ -834,6 +834,7 @@ def test_fusion_element_count(
     )
     check_validation_error(exc_info, element_ct_msg)
 
+    # must have >= 2 elements + regulatory elements
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
             **{
