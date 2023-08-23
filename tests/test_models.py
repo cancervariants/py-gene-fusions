@@ -211,7 +211,8 @@ def gene_elements(gene_descriptors):
         {
             "type": "GeneElement",
             "gene_descriptor": gene_descriptors[1],
-        }
+        },
+        {"type": "GeneElement", "gene_descriptor": gene_descriptors[0]},
     ]
 
 
@@ -856,35 +857,28 @@ def test_fusion_element_count(
     # unique gene requirements
     uq_gene_error_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
     with pytest.raises(ValidationError) as exc_info:
-        assert AssayedFusion(
-            **{
-                "causative_event": "rearrangement",
-                "structural_elements": [gene_elements[0], gene_elements[0]],
-            }
+        assert CategoricalFusion(
+            **{"structural_elements": [gene_elements[0], gene_elements[0]]}
         )
     check_validation_error(exc_info, uq_gene_error_msg)
 
     with pytest.raises(ValidationError) as exc_info:
-        assert AssayedFusion(
-            **{
-                "causative_event": "rearrangement",
-                "structural_elements": [gene_elements[0], transcript_segments[0]],
-            }
+        assert CategoricalFusion(
+            **{"structural_elements": [gene_elements[1], transcript_segments[0]]}
         )
     check_validation_error(exc_info, uq_gene_error_msg)
 
     with pytest.raises(ValidationError) as exc_info:
-        assert AssayedFusion(
+        assert CategoricalFusion(
             **{
-                "causative_event": "rearrangement",
-                "regulatory_element": [regulatory_elements[0]],
-                "structural_elements": [gene_elements[0]],
+                "regulatory_element": regulatory_elements[0],
+                "structural_elements": [transcript_segments[0]],
             }
         )
     check_validation_error(exc_info, uq_gene_error_msg)
 
 
-def test_fusion_abstraction_validator():
+def test_fusion_abstraction_validator(transcript_segments, linkers):
     """Test that instantiation of abstract fusion fails."""
     # can't create base fusion
     with pytest.raises(ValidationError) as exc_info:
