@@ -347,35 +347,35 @@ def compare_gene_descriptor(actual: Dict, expected: Dict):
         assert set(actual["xrefs"]) == set(expected["xrefs"]), "xrefs"
     else:
         assert actual["xrefs"] == expected["xrefs"]
-    # if expected["alternate_labels"]:
-    #     assert set(actual["alternate_labels"]) == set(
-    #         expected["alternate_labels"]
-    #     ), "alt labels"
-    # else:
-    #     assert actual["alternate_labels"] == expected["alternate_labels"]
-    # assert "extensions" in actual.keys() and "extensions" in expected.keys()
-    # if expected["extensions"]:
-    #     assert len(actual["extensions"]) == len(
-    #         expected["extensions"]
-    #     ), "len of extensions"
-    #     n_ext_correct = 0
-    #     for expected_ext in expected["extensions"]:
-    #         for actual_ext in actual["extensions"]:
-    #             if actual_ext["name"] == expected_ext["name"]:
-    #                 assert isinstance(actual_ext["value"], type(expected_ext["value"]))
-    #                 if isinstance(expected_ext["value"], list) and not isinstance(
-    #                     expected_ext["value"][0], dict
-    #                 ):
-    #                     assert set(actual_ext["value"]) == set(
-    #                         expected_ext["value"]
-    #                     ), f"{expected_ext['value']} value"
-    #                 else:
-    #                     assert actual_ext["value"] == expected_ext["value"]
-    #                 assert actual_ext["type"] == expected_ext["type"]
-    #                 n_ext_correct += 1
-    #     assert n_ext_correct == len(
-    #         expected["extensions"]
-    #     ), "number of correct extensions"
+    if expected["alternate_labels"]:
+        assert set(actual["alternate_labels"]) == set(
+            expected["alternate_labels"]
+        ), "alt labels"
+    else:
+        assert actual["alternate_labels"] == expected["alternate_labels"]
+    assert "extensions" in actual.keys() and "extensions" in expected.keys()
+    if expected["extensions"]:
+        assert len(actual["extensions"]) == len(
+            expected["extensions"]
+        ), "len of extensions"
+        n_ext_correct = 0
+        for expected_ext in expected["extensions"]:
+            for actual_ext in actual["extensions"]:
+                if actual_ext["name"] == expected_ext["name"]:
+                    assert isinstance(actual_ext["value"], type(expected_ext["value"]))
+                    if isinstance(expected_ext["value"], list) and not isinstance(
+                        expected_ext["value"][0], dict
+                    ):
+                        assert set(actual_ext["value"]) == set(
+                            expected_ext["value"]
+                        ), f"{expected_ext['value']} value"
+                    else:
+                        assert actual_ext["value"] == expected_ext["value"]
+                    assert actual_ext["type"] == expected_ext["type"]
+                    n_ext_correct += 1
+        assert n_ext_correct == len(
+            expected["extensions"]
+        ), "number of correct extensions"
 
 
 def test_add_additional_fields(fusor_instance, fusion_example, fusion_ensg_sequence_id):
