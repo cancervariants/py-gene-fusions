@@ -211,7 +211,8 @@ def gene_elements(gene_descriptors):
         {
             "type": "GeneElement",
             "gene_descriptor": gene_descriptors[1],
-        }
+        },
+        {"type": "GeneElement", "gene_descriptor": gene_descriptors[0]},
     ]
 
 
@@ -268,6 +269,12 @@ def linkers(sequence_descriptors):
 
 
 @pytest.fixture(scope="module")
+def unknown_element():
+    """Provide UnknownGene element."""
+    return {"type": "UnknownGeneElement"}
+
+
+@pytest.fixture(scope="module")
 def regulatory_elements(gene_descriptors):
     """Provide possible regulatory_element input data."""
     return [{"regulatory_class": "promoter", "associated_gene": gene_descriptors[0]}]
@@ -275,6 +282,7 @@ def regulatory_elements(gene_descriptors):
 
 def check_validation_error(exc_info, expected_msg: str, index: int = 0):
     """Check ValidationError instance for expected message.
+
     :param ExceptionInfo exc_info: ValidationError instance raised and captured
     by pytest.
     :param str expected_msg: message expected to be provided by error
@@ -697,12 +705,9 @@ def test_fusion(
     linkers,
     gene_elements,
     regulatory_elements,
+    unknown_element,
 ):
     """Test that Fusion object initializes correctly"""
-    unknown_element = {
-        "type": "UnknownGeneElement",
-    }
-
     # test valid object
     fusion = CategoricalFusion(
         **{
@@ -805,6 +810,15 @@ def test_fusion(
     msg = "First structural element cannot be LinkerSequence"
     check_validation_error(exc_info, msg)
 
+
+def test_fusion_element_count(
+    functional_domains,
+    regulatory_elements,
+    unknown_element,
+    gene_elements,
+    transcript_segments,
+):
+    """Test fusion element count requirements."""
     # elements are mandatory
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
@@ -841,6 +855,32 @@ def test_fusion(
         )
     check_validation_error(exc_info, element_ct_msg)
 
+    # unique gene requirements
+    uq_gene_error_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
+    with pytest.raises(ValidationError) as exc_info:
+        assert CategoricalFusion(
+            **{"structural_elements": [gene_elements[0], gene_elements[0]]}
+        )
+    check_validation_error(exc_info, uq_gene_error_msg)
+
+    with pytest.raises(ValidationError) as exc_info:
+        assert CategoricalFusion(
+            **{"structural_elements": [gene_elements[1], transcript_segments[0]]}
+        )
+    check_validation_error(exc_info, uq_gene_error_msg)
+
+    with pytest.raises(ValidationError) as exc_info:
+        assert CategoricalFusion(
+            **{
+                "regulatory_element": regulatory_elements[0],
+                "structural_elements": [transcript_segments[0]],
+            }
+        )
+    check_validation_error(exc_info, uq_gene_error_msg)
+
+
+def test_fusion_abstraction_validator(transcript_segments, linkers):
+    """Test that instantiation of abstract fusion fails."""
     # can't create base fusion
     with pytest.raises(ValidationError) as exc_info:
         assert AbstractFusion(
@@ -852,7 +892,7 @@ def test_fusion(
 def test_file_examples():
     """Test example JSON files."""
     # if this loads, then Pydantic validation was successful
-    import fusor.examples  # noqa: F401
+    import fusor.examples as _  # noqa: F401 I001
 
 
 def test_model_examples():
