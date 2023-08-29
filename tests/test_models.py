@@ -36,6 +36,13 @@ def gene_descriptors():
             "label": "ALK",
         },
         {"id": "gene:YAP1", "gene_id": "hgnc:16262", "label": "YAP1"},
+        # alternate structure
+        {
+            "id": "normalize.gene:BRAF",
+            "type": "GeneDescriptor",
+            "label": "BRAF",
+            "gene_id": "hgnc:1097",
+        },
     ]
 
 
@@ -213,6 +220,7 @@ def gene_elements(gene_descriptors):
             "gene_descriptor": gene_descriptors[1],
         },
         {"type": "GeneElement", "gene_descriptor": gene_descriptors[0]},
+        {"type"},
     ]
 
 
@@ -817,6 +825,7 @@ def test_fusion_element_count(
     unknown_element,
     gene_elements,
     transcript_segments,
+    gene_descriptors,
 ):
     """Test fusion element count requirements."""
     # elements are mandatory
@@ -877,6 +886,55 @@ def test_fusion_element_count(
             }
         )
     check_validation_error(exc_info, uq_gene_error_msg)
+
+    # use alternate gene descriptor structure
+    with pytest.raises(ValidationError) as exc_info:
+        assert AssayedFusion(
+            **{
+                "type": "AssayedFusion",
+                "structural_elements": [
+                    {"type": "GeneElement", "gene_descriptor": gene_descriptors[6]},
+                    {"type": "GeneElement", "gene_descriptor": gene_descriptors[6]},
+                ],
+                "causative_event": {
+                    "type": "CausativeEvent",
+                    "event_type": "read-through",
+                },
+                "assay": {
+                    "type": "Assay",
+                    "method_uri": "pmid:33576979",
+                    "assay_id": "obi:OBI_0003094",
+                    "assay_name": "fluorescence in-situ hybridization assay",
+                    "fusion_detection": "inferred",
+                },
+            }
+        )
+    with pytest.raises(ValidationError) as exc_info:
+        assert AssayedFusion(
+            **{
+                "type": "AssayedFusion",
+                "structural_elements": [
+                    {"type": "GeneElement", "gene_descriptor": gene_descriptors[6]},
+                ],
+                "regulatory_element": {
+                    "type": "RegulatoryElement",
+                    "regulatory_class": "enhancer",
+                    "feature_id": "EH111111111",
+                    "associated_gene": gene_descriptors[6],
+                },
+                "causative_event": {
+                    "type": "CausativeEvent",
+                    "event_type": "read-through",
+                },
+                "assay": {
+                    "type": "Assay",
+                    "method_uri": "pmid:33576979",
+                    "assay_id": "obi:OBI_0003094",
+                    "assay_name": "fluorescence in-situ hybridization assay",
+                    "fusion_detection": "inferred",
+                },
+            }
+        )
 
 
 def test_fusion_abstraction_validator(transcript_segments, linkers):
