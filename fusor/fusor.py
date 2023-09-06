@@ -194,15 +194,15 @@ class FUSOR:
     @staticmethod
     def assayed_fusion(
         structural_elements: AssayedFusionElements,
-        causative_event: CausativeEvent,
-        assay: Assay,
+        causative_event: Optional[CausativeEvent] = None,
+        assay: Optional[Assay] = None,
         regulatory_element: Optional[RegulatoryElement] = None,
     ) -> AssayedFusion:
         """Construct an assayed fusion object
         :param AssayedFusionElements structural_elements: elements constituting the
             fusion
-        :param Event causative_event: event causing the fusion
-        :param Assay assay: how knowledge of the fusion was obtained
+        :param Optional[Event] causative_event: event causing the fusion
+        :param Optional[Assay] assay: how knowledge of the fusion was obtained
         :param Optional[RegulatoryElement] regulatory_element: affected regulatory
             elements
         :return: Tuple containing optional AssayedFusion if construction successful,

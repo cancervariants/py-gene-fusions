@@ -725,8 +725,8 @@ class AssayedFusion(AbstractFusion):
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
     structural_elements: AssayedFusionElements
-    causative_event: CausativeEvent
-    assay: Assay
+    causative_event: Optional[CausativeEvent] = None
+    assay: Optional[Assay] = None
 
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
