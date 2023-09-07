@@ -552,10 +552,15 @@ class AbstractFusion(BaseModel, ABC):
         """
         gene_descriptor = cls._access_object_attr(obj, gene_descriptor_field)
         if gene_descriptor:
-            gene = cls._access_object_attr(gene_descriptor, "gene")
-            if gene:
-                gene_id = cls._access_object_attr(gene, "gene_id")
+            gene_value = cls._access_object_attr(gene_descriptor, "gene")
+            if gene_value:
+                gene_id = cls._access_object_attr(gene_value, "gene_id")
+                if gene_id:
+                    return gene_id
+            gene_id = cls._access_object_attr(gene_descriptor, "gene_id")
+            if gene_id:
                 return gene_id
+        return None
 
     @root_validator(pre=True)
     def enforce_abc(cls, values):
