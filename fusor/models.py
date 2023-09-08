@@ -646,10 +646,10 @@ class Assay(BaseModelForbidExtra):
     """Information pertaining to the assay used in identifying the fusion."""
 
     type: Literal["Assay"] = "Assay"
-    assay_name: StrictStr
-    assay_id: CURIE
-    method_uri: CURIE
-    fusion_detection: Evidence
+    assay_name: Optional[StrictStr]
+    assay_id: Optional[CURIE]
+    method_uri: Optional[CURIE]
+    fusion_detection: Optional[Evidence]
 
     _get_assay_id_val = validator("assay_id", allow_reuse=True)(return_value)
     _get_method_uri_val = validator("method_uri", allow_reuse=True)(return_value)
