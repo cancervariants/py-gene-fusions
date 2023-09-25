@@ -1,0 +1,21 @@
+{
+  "type": "AssayedFusion",
+  "structural_elements": [
+    {
+      "type": "GeneElement",
+      "gene_descriptor": {
+        "type": "GeneDescriptor",
+        "id": "normalize.gene:EWSR1",
+        "label": "EWSR1",
+        "gene_id": "hgnc:3508"
+      }
+    },
+    {
+      "type": "UnknownGeneElement"
+    }
+  ],
+  "causative_event": {
+    "type": "CausativeEvent",
+    "event_type": "rearrangement"
+  }
+}
