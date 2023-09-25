@@ -808,7 +808,8 @@ class FUSOR:
             else:
                 raise ValueError
         if (
-            isinstance(fusion, AssayedFusion) and fusion.assay
+            isinstance(fusion, AssayedFusion)
+            and fusion.assay
             and fusion.assay.fusion_detection == Evidence.INFERRED
         ):
             divider = "(::)"
