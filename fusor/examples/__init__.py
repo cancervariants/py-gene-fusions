@@ -18,6 +18,15 @@ with open(EXAMPLES_DIR / "bcr_abl1_expanded.json") as f:
 with open(EXAMPLES_DIR / "ewsr1.json") as f:
     ewsr1 = AssayedFusion(**json.load(f))
 
+with open(EXAMPLES_DIR / "ewsr1_no_assay.json") as f:
+    ewsr1_no_assay = AssayedFusion(**json.load(f))
+
+with open(EXAMPLES_DIR / "ewsr1_no_causative_event.json") as f:
+    ewsr1_no_causative_event = AssayedFusion(**json.load(f))
+
+with open(EXAMPLES_DIR / "ewsr1_elements_only.json") as f:
+    ewsr1_elements_only = AssayedFusion(**json.load(f))
+
 with open(EXAMPLES_DIR / "igh_myc.json") as f:
     igh_myc = CategoricalFusion(**json.load(f))
 

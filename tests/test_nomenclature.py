@@ -267,6 +267,15 @@ def test_generate_nomenclature(
     nm = fusor_instance.generate_nomenclature(examples.ewsr1)
     assert nm == "EWSR1(hgnc:3508)(::)?"
 
+    nm = fusor_instance.generate_nomenclature(examples.ewsr1_no_assay)
+    assert nm == "EWSR1(hgnc:3508)::?"
+
+    nm = fusor_instance.generate_nomenclature(examples.ewsr1_no_causative_event)
+    assert nm == "EWSR1(hgnc:3508)(::)?"
+
+    nm = fusor_instance.generate_nomenclature(examples.ewsr1_elements_only)
+    assert nm == "EWSR1(hgnc:3508)::?"
+
     nm = fusor_instance.generate_nomenclature(examples.igh_myc)
     assert nm == "reg_e_EH38E3121735@IGH(hgnc:5477)::MYC(hgnc:7553)"
 
