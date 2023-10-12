@@ -194,8 +194,8 @@ class FUSOR:
     @staticmethod
     def assayed_fusion(
         structural_elements: AssayedFusionElements,
-        causative_event: CausativeEvent,
-        assay: Assay,
+        causative_event: Optional[CausativeEvent] = None,
+        assay: Optional[Assay] = None,
         regulatory_element: Optional[RegulatoryElement] = None,
     ) -> AssayedFusion:
         """Construct an assayed fusion object
