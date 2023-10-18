@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 from ga4gh.vrsatile.pydantic import return_value
-from ga4gh.vrsatile.pydantic.vrs_models import Sequence
+from ga4gh.vrsatile.pydantic.vrs_models import LiteralSequenceExpression
 from ga4gh.vrsatile.pydantic.vrsatile_models import (
     CURIE,
     GeneDescriptor,
@@ -74,23 +74,10 @@ class FunctionalDomain(BaseModel):
 
     _get_id_val = validator("id", allow_reuse=True)(return_value)
 
-    model_config = ConfigDict(populate_by_name=True)
-
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        allow_population_by_field_name = True
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
                 "type": "FunctionalDomain",
                 "status": "lost",
                 "label": "Tyrosine-protein kinase, catalytic domain",
@@ -114,6 +101,8 @@ class FunctionalDomain(BaseModel):
                     },
                 },
             }
+        },
+    )
 
 
 class StructuralElementType(str, Enum):
@@ -174,20 +163,9 @@ class TranscriptSegmentElement(BaseStructuralElement):
         return values
 
     _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)
-
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
                 "exon_start": 1,
@@ -229,6 +207,8 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     },
                 },
             }
+        }
+    )
 
 
 class LinkerElement(BaseStructuralElement):
@@ -255,25 +235,15 @@ class LinkerElement(BaseStructuralElement):
             raise TypeError
 
         try:
-            Sequence(__root__=seq)
+            LiteralSequenceExpression(__root__=seq)
         except ValidationError:
             raise AssertionError("sequence does not match regex '^[A-Za-z*\\-]*$'")
 
         return v
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "LinkerSequenceElement",
                 "linker_sequence": {
                     "id": "sequence:ACGT",
@@ -282,6 +252,8 @@ class LinkerElement(BaseStructuralElement):
                     "residue_type": "SO:0000348",
                 },
             }
+        }
+    )
 
 
 class Strand(str, Enum):
@@ -303,19 +275,9 @@ class TemplatedSequenceElement(BaseStructuralElement):
     region: LocationDescriptor
     strand: Strand
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "TemplatedSequenceElement",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
@@ -334,6 +296,8 @@ class TemplatedSequenceElement(BaseStructuralElement):
                 },
                 "strand": "+",
             }
+        }
+    )
 
 
 class GeneElement(BaseStructuralElement):
@@ -342,19 +306,9 @@ class GeneElement(BaseStructuralElement):
     type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
     gene_descriptor: GeneDescriptor
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "GeneElement",
                 "gene_descriptor": {
                     "id": "gene:BRAF",
@@ -363,6 +317,8 @@ class GeneElement(BaseStructuralElement):
                     "type": "GeneDescriptor",
                 },
             }
+        }
+    )
 
 
 class UnknownGeneElement(BaseStructuralElement):
@@ -377,19 +333,9 @@ class UnknownGeneElement(BaseStructuralElement):
 
     type: Literal[FUSORTypes.UNKNOWN_GENE_ELEMENT] = FUSORTypes.UNKNOWN_GENE_ELEMENT
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {"type": "UnknownGeneElement"}
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"type": "UnknownGeneElement"}}
+    )
 
 
 class MultiplePossibleGenesElement(BaseStructuralElement):
@@ -407,19 +353,9 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
         FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
     ] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {"type": "MultiplePossibleGenesElement"}
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"type": "MultiplePossibleGenesElement"}}
+    )
 
 
 class RegulatoryClass(str, Enum):
@@ -478,19 +414,9 @@ class RegulatoryElement(BaseModel):
             )
         return values
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "RegulatoryElement",
                 "regulatory_class": "promoter",
                 "feature_location": {
@@ -507,6 +433,8 @@ class RegulatoryElement(BaseModel):
                     },
                 },
             }
+        }
+    )
 
 
 class FusionType(str, Enum):
@@ -622,7 +550,7 @@ class AbstractFusion(BaseModel, ABC):
             raise ValueError(uq_gene_msg)
         return values
 
-    @model_validator(skip_on_failure=True)
+    @model_validator(mode="after")
     def structural_elements_ends(cls, values):
         """Ensure start/end elements are of legal types and have fields
         required by their position.
@@ -672,20 +600,16 @@ class Assay(BaseModelForbidExtra):
     _get_assay_id_val = validator("assay_id", allow_reuse=True)(return_value)
     _get_method_uri_val = validator("method_uri", allow_reuse=True)(return_value)
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "method_uri": "pmid:33576979",
                 "assay_id": "obi:OBI_0003094",
                 "assay_name": "fluorescence in-situ hybridization assay",
                 "fusion_detection": "inferred",
             }
+        }
+    )
 
 
 AssayedFusionElements = List[
@@ -719,23 +643,15 @@ class CausativeEvent(BaseModelForbidExtra):
     event_type: EventType
     event_description: Optional[StrictStr] = None
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class"""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide schema"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "CausativeEvent",
                 "event_type": "rearrangement",
                 "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
             }
+        }
+    )
 
 
 class AssayedFusion(AbstractFusion):
@@ -750,19 +666,9 @@ class AssayedFusion(AbstractFusion):
     causative_event: Optional[CausativeEvent] = None
     assay: Optional[Assay] = None
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "AssayedFusion",
                 "causative_event": {
                     "type": "CausativeEvent",
@@ -789,6 +695,8 @@ class AssayedFusion(AbstractFusion):
                     {"type": "UnknownGeneElement"},
                 ],
             }
+        }
+    )
 
 
 CategoricalFusionElements = List[
@@ -814,19 +722,9 @@ class CategoricalFusion(AbstractFusion):
     critical_functional_domains: Optional[List[FunctionalDomain]] = None
     structural_elements: CategoricalFusionElements
 
-    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def json_schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "CategoricalFusion",
                 "r_frame_preserved": True,
                 "critical_functional_domains": [
@@ -907,6 +805,8 @@ class CategoricalFusion(AbstractFusion):
                     },
                 },
             }
+        }
+    )
 
 
 Fusion = Union[CategoricalFusion, AssayedFusion]
