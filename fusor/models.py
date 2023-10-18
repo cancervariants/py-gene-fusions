@@ -12,11 +12,14 @@ from ga4gh.vrsatile.pydantic.vrsatile_models import (
     SequenceDescriptor,
 )
 from pydantic import (
-    field_validator, model_validator, ConfigDict, BaseModel,
+    BaseModel,
+    ConfigDict,
     StrictBool,
     StrictInt,
     StrictStr,
     ValidationError,
+    field_validator,
+    model_validator,
     validator,
 )
 from pydantic.fields import Field
@@ -24,6 +27,7 @@ from pydantic.fields import Field
 
 class BaseModelForbidExtra(BaseModel):
     """Base model with extra fields forbidden."""
+
     model_config = ConfigDict(extra="forbid")
 
 
@@ -70,6 +74,8 @@ class FunctionalDomain(BaseModel):
 
     _get_id_val = validator("id", allow_reuse=True)(return_value)
 
+    model_config = ConfigDict(populate_by_name=True)
+
     # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
     # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
@@ -78,7 +84,7 @@ class FunctionalDomain(BaseModel):
         allow_population_by_field_name = True
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             if "title" in schema.keys():
                 schema.pop("title", None)
@@ -143,7 +149,6 @@ class TranscriptSegmentElement(BaseStructuralElement):
     element_genomic_end: Optional[LocationDescriptor] = None
 
     @model_validator(mode="before")
-    @classmethod
     def check_exons(cls, values):
         """Check that at least one of {`exon_start`, `exon_end`} is set.
         If set, check that the corresponding `element_genomic` field is set.
@@ -176,7 +181,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
         """Configure class."""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             if "title" in schema.keys():
                 schema.pop("title", None)
@@ -235,7 +240,6 @@ class LinkerElement(BaseStructuralElement):
     linker_sequence: SequenceDescriptor
 
     @field_validator("linker_sequence", mode="before")
-    @classmethod
     def validate_sequence(cls, v):
         """Enforce nucleotide base code requirements on sequence literals."""
         if isinstance(v, dict):
@@ -263,7 +267,7 @@ class LinkerElement(BaseStructuralElement):
         """Configure class."""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             if "title" in schema.keys():
                 schema.pop("title", None)
@@ -305,7 +309,7 @@ class TemplatedSequenceElement(BaseStructuralElement):
         """Configure class."""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             if "title" in schema.keys():
                 schema.pop("title", None)
@@ -344,7 +348,7 @@ class GeneElement(BaseStructuralElement):
         """Configure class."""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             if "title" in schema.keys():
                 schema.pop("title", None)
@@ -379,7 +383,7 @@ class UnknownGeneElement(BaseStructuralElement):
         """Configure class."""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             if "title" in schema.keys():
                 schema.pop("title", None)
@@ -409,7 +413,7 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
         """Configure class."""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             if "title" in schema.keys():
                 schema.pop("title", None)
@@ -462,7 +466,6 @@ class RegulatoryElement(BaseModel):
     _get_ref_id_val = validator("feature_id", allow_reuse=True)(return_value)
 
     @model_validator(mode="before")
-    @classmethod
     def ensure_min_values(cls, values):
         """Ensure that one of {`feature_id`, `feature_location`}, and/or
         `associated_gene` is set.
@@ -481,7 +484,7 @@ class RegulatoryElement(BaseModel):
         """Configure class."""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             if "title" in schema.keys():
                 schema.pop("title", None)
@@ -512,7 +515,6 @@ class FusionType(str, Enum):
     CATEGORICAL_FUSION = FUSORTypes.CATEGORICAL_FUSION.value
     ASSAYED_FUSION = FUSORTypes.ASSAYED_FUSION.value
 
-    @classmethod
     def values(cls) -> Set:  # noqa: ANN102
         """Provide all possible enum values."""
         return set(map(lambda c: c.value, cls))
@@ -525,7 +527,6 @@ class AbstractFusion(BaseModel, ABC):
     regulatory_element: Optional[RegulatoryElement] = None
     structural_elements: List[BaseStructuralElement]
 
-    @classmethod
     def _access_object_attr(
         cls, obj: Union[Dict, BaseModel], attr_name: str  # noqa: ANN102
     ) -> Optional[Any]:  # noqa: ANN401
@@ -552,7 +553,6 @@ class AbstractFusion(BaseModel, ABC):
                 "Unrecognized type, should only pass entities with properties"
             )
 
-    @classmethod
     def _fetch_gene_id(
         cls, obj: Union[Dict, BaseModel], gene_descriptor_field: str  # noqa: ANN102
     ) -> Optional[str]:
@@ -576,7 +576,6 @@ class AbstractFusion(BaseModel, ABC):
         return None
 
     @model_validator(mode="before")
-    @classmethod
     def enforce_abc(cls, values):
         """Ensure only subclasses can be instantiated."""
         if cls.__name__ == "AbstractFusion":
@@ -584,7 +583,6 @@ class AbstractFusion(BaseModel, ABC):
         return values
 
     @model_validator(mode="before")
-    @classmethod
     def enforce_element_quantities(cls, values):
         """Ensure minimum # of elements, and require > 1 unique genes.
 
@@ -625,7 +623,6 @@ class AbstractFusion(BaseModel, ABC):
         return values
 
     @model_validator(skip_on_failure=True)
-    @classmethod
     def structural_elements_ends(cls, values):
         """Ensure start/end elements are of legal types and have fields
         required by their position.
@@ -681,7 +678,7 @@ class Assay(BaseModelForbidExtra):
         """Configure class."""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             schema["example"] = {
                 "method_uri": "pmid:33576979",
@@ -728,7 +725,7 @@ class CausativeEvent(BaseModelForbidExtra):
         """Configure class"""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide schema"""
             if "title" in schema.keys():
                 schema.pop("title", None)
@@ -759,7 +756,7 @@ class AssayedFusion(AbstractFusion):
         """Configure class."""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             if "title" in schema.keys():
                 schema.pop("title", None)
@@ -823,7 +820,7 @@ class CategoricalFusion(AbstractFusion):
         """Configure class."""
 
         @staticmethod
-        def schema_extra(schema, _):
+        def json_schema_extra(schema, _):
             """Provide example"""
             if "title" in schema.keys():
                 schema.pop("title", None)
