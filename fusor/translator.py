@@ -18,7 +18,7 @@ from fusor.models import (
 
 class Translator:
     """Class for translating outputs from different fusion detection algorithms
-    to FUSOR assayed fusion objects
+    to FUSOR AssayedFusion objects
     """
 
     def __init__(self, fusor: FUSOR) -> None:
@@ -108,8 +108,8 @@ class Translator:
 
     def _get_causative_event(self, chrom1: str, chrom2: str) -> CausativeEvent:
         """Infer Causative Event. Currently restricted to rearrangements
-        :param chrom1: The 5' chromosome
-        :param chrom2: The 3' chromosome
+        :param chrom1: The chromosome for the 5' partner
+        :param chrom2: The chromosome for the 3' partner
         :return: A CausativeEvent object if construction is successful
         """
         return (
@@ -119,9 +119,9 @@ class Translator:
         )
 
     async def from_jaffa(self, jaffa_row: pd.DataFrame) -> AssayedFusion:
-        """Parse JAFFA fusion output to create FUSOR AssayedFusion object
+        """Parse JAFFA fusion output to create AssayedFusion object
         :param jaffa_row: A row of JAFFA output
-        :return: A FUSOR AssayedFusion object, if construction is successful
+        :return: An AssayedFusion object, if construction is successful
         """
         genes = jaffa_row["fusion genes"].split(":")
         gene_5prime = self.fusor.gene_element(gene=genes[0])
@@ -161,9 +161,9 @@ class Translator:
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_star_fusion(self, sf_row: pd.DataFrame) -> AssayedFusion:
-        """Parse STAR-Fusion output to create FUSOR AssayedFusion object
+        """Parse STAR-Fusion output to create AssayedFusion object
         :param sf_row A row of STAR-Fusion output
-        :return: A FUSOR AssayedFusion object, if construction is successful
+        :return: An AssayedFusion object, if construction is successful
         """
         gene1 = sf_row["LeftGene"].split("^")[0]
         gene2 = sf_row["RightGene"].split("^")[0]
@@ -204,9 +204,9 @@ class Translator:
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_fusion_catcher(self, fc_row: pd.DataFrame) -> AssayedFusion:
-        """Parse FusionCatcher output to create FUSOR Assayed Fusion object
+        """Parse FusionCatcher output to create AssayedFusion object
         :param fc_row: A row of FusionCatcher output
-        :return: A FUSOR AssayedFusion object, if construction is successful
+        :return: An AssayedFusion object, if construction is successful
         """
         gene1 = fc_row["Gene_1_symbol(5end_fusion_partner)"]
         gene2 = fc_row["Gene_2_symbol(3end_fusion_partner)"]
@@ -249,7 +249,7 @@ class Translator:
     async def from_fusion_map(self, fmap_row: pd.DataFrame) -> AssayedFusion:
         """Parse FusionMap output to create FUSOR AssayedFusion object
         :param fmap_row: A row of FusionMap output
-        :return: A FUSOR AssayedFusion object, if construction is successful
+        :return: An AssayedFusion object, if construction is successful
         """
         gene1 = fmap_row["KnownGene1"]
         gene2 = fmap_row["KnownGene2"]
@@ -277,4 +277,79 @@ class Translator:
         )
 
         ce = self._get_causative_event(fmap_row["Chromosome1"], fmap_row["Chromosome2"])
+        return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
+
+    async def from_arriba(self, arriba_row: pd.DataFrame) -> AssayedFusion:
+        """Parse Arriba output to create AssayedFusion object
+        :param arriba_row: A row of Arriba output:
+        :return: An AssayedFusion object, if construction is successful
+        """
+        gene1 = arriba_row["#gene1"]
+        gene2 = arriba_row["gene2"]
+
+        gene_5prime = self.fusor.gene_element(gene=gene1)
+        gene_3prime = self.fusor.gene_element(gene=gene2)
+
+        if gene_5prime[0] is None or gene_3prime[0] is None:
+            print("Unable to normalize at least one gene partner")
+            return None
+
+        breakpoint1 = arriba_row["breakpoint1"].split(":")
+        breakpoint2 = arriba_row["breakpoint2"].split(":")
+
+        tr_5prime = await self.fusor.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome=breakpoint1[0],
+            strand=1 if arriba_row["strand1(gene/fusion)"][2] == "+" else -1,
+            end=int(breakpoint1[1]),
+            gene=gene1,
+        )
+
+        tr_3prime = await self.fusor.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome=breakpoint2[0],
+            strand=1 if arriba_row["strand2(gene/fusion)"][2] == "+" else -1,
+            start=int(breakpoint2[1]),
+            gene=gene2,
+        )
+
+        ce = (
+            CausativeEvent(event_type=EventType("read-through"))
+            if "read_through" in arriba_row["type"]
+            else CausativeEvent(event_type=EventType("rearrangement"))
+        )
+        return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
+
+    async def from_cicero(self, cicero_row: pd.DataFrame) -> AssayedFusion:
+        """Parse CICERO output to create AssayedFusion object
+        :param cicero_row: A row of CICERO output:
+        :return: An AssayedFusion object, if construction is successful
+        """
+        gene1 = cicero_row["geneA"]
+        gene2 = cicero_row["geneB"]
+
+        gene_5prime = self.fusor.gene_element(gene=gene1)
+        gene_3prime = self.fusor.gene_element(gene=gene2)
+
+        if gene_5prime[0] is None or gene_3prime[0] is None:
+            print("Unable to normalize at least one gene partner")
+            return None
+
+        tr_5prime = await self.fusor.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome=cicero_row["chrA"],
+            strand=1 if cicero_row["ortA"] == "+" else -1,
+            end=int(cicero_row["posA"]),
+            gene=gene1,
+        )
+
+        tr_3prime = await self.fusor.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome=cicero_row["chrB"],
+            strand=1 if cicero_row["ortB"] == "+" else -1,
+            start=int(cicero_row["posB"]),
+            gene=gene1,
+        )
+
+        ce = self._get_causative_event(cicero_row["chrA"], cicero_row["chrB"])
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)

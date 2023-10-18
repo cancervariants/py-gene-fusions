@@ -165,3 +165,4 @@ Pipfile.lock
 fusor/*.txt
 fusor/*.csv
 fusor/*.tsv
+test_data/
