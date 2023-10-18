@@ -4,7 +4,7 @@ from urllib.parse import quote
 
 from biocommons.seqrepo import SeqRepo
 from bioutils.accessions import coerce_namespace
-from cool_seq_tool import CoolSeqTool
+from cool_seq_tool.routers import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models
@@ -76,9 +76,7 @@ class FUSOR:
         if not gene_database:
             gene_database = create_db()
         self.gene_normalizer = QueryHandler(gene_database)
-        self.cool_seq_tool = CoolSeqTool(
-            db_url=uta_db_url, gene_query_handler=self.gene_normalizer
-        )
+        self.cool_seq_tool = CoolSeqTool(db_url=uta_db_url)
 
     @staticmethod
     def _contains_element_type(kwargs: Dict, elm_type: StructuralElementType) -> bool:

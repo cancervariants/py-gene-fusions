@@ -12,13 +12,11 @@ from ga4gh.vrsatile.pydantic.vrsatile_models import (
     SequenceDescriptor,
 )
 from pydantic import (
-    BaseModel,
-    Extra,
+    field_validator, model_validator, ConfigDict, BaseModel,
     StrictBool,
     StrictInt,
     StrictStr,
     ValidationError,
-    root_validator,
     validator,
 )
 from pydantic.fields import Field
@@ -26,11 +24,7 @@ from pydantic.fields import Field
 
 class BaseModelForbidExtra(BaseModel):
     """Base model with extra fields forbidden."""
-
-    class Config:
-        """Configure class."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class FUSORTypes(str, Enum):
@@ -70,12 +64,14 @@ class FunctionalDomain(BaseModel):
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
     associated_gene: GeneDescriptor
-    id: Optional[CURIE] = Field(alias="_id")
-    label: Optional[StrictStr]
-    sequence_location: Optional[LocationDescriptor]
+    id: Optional[CURIE] = Field(None, alias="_id")
+    label: Optional[StrictStr] = None
+    sequence_location: Optional[LocationDescriptor] = None
 
     _get_id_val = validator("id", allow_reuse=True)(return_value)
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
@@ -138,15 +134,16 @@ class TranscriptSegmentElement(BaseStructuralElement):
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     ] = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     transcript: CURIE
-    exon_start: Optional[StrictInt]
+    exon_start: Optional[StrictInt] = None
     exon_start_offset: Optional[StrictInt] = 0
-    exon_end: Optional[StrictInt]
+    exon_end: Optional[StrictInt] = None
     exon_end_offset: Optional[StrictInt] = 0
     gene_descriptor: GeneDescriptor
-    element_genomic_start: Optional[LocationDescriptor]
-    element_genomic_end: Optional[LocationDescriptor]
+    element_genomic_start: Optional[LocationDescriptor] = None
+    element_genomic_end: Optional[LocationDescriptor] = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def check_exons(cls, values):
         """Check that at least one of {`exon_start`, `exon_end`} is set.
         If set, check that the corresponding `element_genomic` field is set.
@@ -173,6 +170,8 @@ class TranscriptSegmentElement(BaseStructuralElement):
 
     _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
@@ -235,7 +234,8 @@ class LinkerElement(BaseStructuralElement):
     ] = FUSORTypes.LINKER_SEQUENCE_ELEMENT
     linker_sequence: SequenceDescriptor
 
-    @validator("linker_sequence", pre=True)
+    @field_validator("linker_sequence", mode="before")
+    @classmethod
     def validate_sequence(cls, v):
         """Enforce nucleotide base code requirements on sequence literals."""
         if isinstance(v, dict):
@@ -257,6 +257,8 @@ class LinkerElement(BaseStructuralElement):
 
         return v
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
@@ -297,6 +299,8 @@ class TemplatedSequenceElement(BaseStructuralElement):
     region: LocationDescriptor
     strand: Strand
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
@@ -334,6 +338,8 @@ class GeneElement(BaseStructuralElement):
     type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
     gene_descriptor: GeneDescriptor
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
@@ -367,6 +373,8 @@ class UnknownGeneElement(BaseStructuralElement):
 
     type: Literal[FUSORTypes.UNKNOWN_GENE_ELEMENT] = FUSORTypes.UNKNOWN_GENE_ELEMENT
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
@@ -395,6 +403,8 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
         FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
     ] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
@@ -451,7 +461,8 @@ class RegulatoryElement(BaseModel):
 
     _get_ref_id_val = validator("feature_id", allow_reuse=True)(return_value)
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def ensure_min_values(cls, values):
         """Ensure that one of {`feature_id`, `feature_location`}, and/or
         `associated_gene` is set.
@@ -464,6 +475,8 @@ class RegulatoryElement(BaseModel):
             )
         return values
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
@@ -562,14 +575,16 @@ class AbstractFusion(BaseModel, ABC):
                 return gene_id
         return None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def enforce_abc(cls, values):
         """Ensure only subclasses can be instantiated."""
         if cls.__name__ == "AbstractFusion":
             raise ValueError("Cannot instantiate Fusion abstract class")
         return values
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def enforce_element_quantities(cls, values):
         """Ensure minimum # of elements, and require > 1 unique genes.
 
@@ -609,7 +624,8 @@ class AbstractFusion(BaseModel, ABC):
             raise ValueError(uq_gene_msg)
         return values
 
-    @root_validator(skip_on_failure=True)
+    @model_validator(skip_on_failure=True)
+    @classmethod
     def structural_elements_ends(cls, values):
         """Ensure start/end elements are of legal types and have fields
         required by their position.
@@ -651,14 +667,16 @@ class Assay(BaseModelForbidExtra):
     """Information pertaining to the assay used in identifying the fusion."""
 
     type: Literal["Assay"] = "Assay"
-    assay_name: Optional[StrictStr]
-    assay_id: Optional[CURIE]
-    method_uri: Optional[CURIE]
-    fusion_detection: Optional[Evidence]
+    assay_name: Optional[StrictStr] = None
+    assay_id: Optional[CURIE] = None
+    method_uri: Optional[CURIE] = None
+    fusion_detection: Optional[Evidence] = None
 
     _get_assay_id_val = validator("assay_id", allow_reuse=True)(return_value)
     _get_method_uri_val = validator("method_uri", allow_reuse=True)(return_value)
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
@@ -702,8 +720,10 @@ class CausativeEvent(BaseModelForbidExtra):
 
     type: Literal[FUSORTypes.CAUSATIVE_EVENT] = FUSORTypes.CAUSATIVE_EVENT
     event_type: EventType
-    event_description: Optional[StrictStr]
+    event_description: Optional[StrictStr] = None
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class"""
 
@@ -733,6 +753,8 @@ class AssayedFusion(AbstractFusion):
     causative_event: Optional[CausativeEvent] = None
     assay: Optional[Assay] = None
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
@@ -791,10 +813,12 @@ class CategoricalFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
-    r_frame_preserved: Optional[StrictBool]
-    critical_functional_domains: Optional[List[FunctionalDomain]]
+    r_frame_preserved: Optional[StrictBool] = None
+    critical_functional_domains: Optional[List[FunctionalDomain]] = None
     structural_elements: CategoricalFusionElements
 
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(BaseModelForbidExtra.Config):
         """Configure class."""
 
