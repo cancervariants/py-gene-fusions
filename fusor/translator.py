@@ -1,5 +1,5 @@
-"""Module for translating output from fusion detection methods to FUSOR
-assayed fusion objects
+"""Module for translating output from fusion detection methods to FUSOR AssayedFusion
+objects
 """
 
 from typing import Optional
@@ -348,8 +348,78 @@ class Translator:
             chromosome=cicero_row["chrB"],
             strand=1 if cicero_row["ortB"] == "+" else -1,
             start=int(cicero_row["posB"]),
-            gene=gene1,
+            gene=gene2,
         )
 
         ce = self._get_causative_event(cicero_row["chrA"], cicero_row["chrB"])
+        return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
+
+    async def from_mapsplice(self, mapsplice_row: pd.DataFrame) -> AssayedFusion:
+        """Parse MapSplice output to create AssayedFusion object
+        :param mapsplice_row: A row of MapSplice output
+        :retun: An AssayedFusion object, if construction is successful
+        """
+        gene1 = mapsplice_row[60].strip(",")
+        gene2 = mapsplice_row[61].strip(",")
+
+        gene_5prime = self.fusor.gene_element(gene=gene1)
+        gene_3prime = self.fusor.gene_element(gene=gene2)
+
+        if gene_5prime[0] is None or gene_3prime[0] is None:
+            print("Unable to normalize at least one gene partner")
+            return None
+
+        tr_5prime = await self.fusor.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome=mapsplice_row[0].split("~")[0],
+            strand=1 if mapsplice_row[5][0] == "+" else -1,
+            end=int(mapsplice_row[1]),
+            gene=gene1,
+        )
+
+        tr_3prime = await self.fusor.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome=mapsplice_row[0].split("~")[1],
+            strand=1 if mapsplice_row[5][1] == "+" else -1,
+            start=int(mapsplice_row[2]),
+            gene=gene2,
+        )
+
+        ce = self._get_causative_event(
+            mapsplice_row[0].split("~")[0], mapsplice_row[0].split("~")[1]
+        )
+        return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
+
+    async def from_enfusion(self, enfusion_row: pd.DataFrame) -> AssayedFusion:
+        """Parse EnFusion output to create AssayedFusion object
+        :param enfusion_row: A row of EnFusion output
+        :return: An AssayedFusion object, if construction is successful
+        """
+        gene1 = enfusion_row["Gene1"]
+        gene2 = enfusion_row["Gene2"]
+
+        gene_5prime = self.fusor.gene_element(gene=gene1)
+        gene_3prime = self.fusor.gene_element(gene=gene2)
+
+        if gene_5prime[0] is None or gene_3prime[0] is None:
+            print("Unable to normalize at least one gene partner")
+            return None
+
+        tr_5prime = await self.fusor.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome=enfusion_row["Chr1"],
+            strand=1 if enfusion_row["Strand1"] == "+" else -1,
+            end=int(enfusion_row["Break1"]),
+            gene=gene1,
+        )
+
+        tr_3prime = await self.fusor.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome=enfusion_row["Chr2"],
+            strand=1 if enfusion_row["Strand2"] == "+" else -1,
+            start=int(enfusion_row["Break2"]),
+            gene=gene2,
+        )
+
+        ce = self._get_causative_event(enfusion_row["Chr1"], enfusion_row["Chr2"])
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
