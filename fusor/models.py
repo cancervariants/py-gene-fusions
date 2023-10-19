@@ -25,12 +25,6 @@ from pydantic import (
 from pydantic.fields import Field
 
 
-class BaseModelForbidExtra(BaseModel):
-    """Base model with extra fields forbidden."""
-
-    model_config = ConfigDict(extra="forbid")
-
-
 class FUSORTypes(str, Enum):
     """Define FUSOR object type values."""
 
@@ -534,12 +528,16 @@ class AbstractFusion(BaseModel, ABC):
         uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
         gene_ids = []
         if reg_element:
-            gene_id = cls._fetch_gene_id(reg_element, "associated_gene")
+            gene_id = cls._fetch_gene_id(
+                obj=reg_element, gene_descriptor_field="associated_gene"
+            )
             if gene_id:
                 gene_ids.append(gene_id)
 
         for element in structural_elements:
-            gene_id = cls._fetch_gene_id(element, "gene_descriptor")
+            gene_id = cls._fetch_gene_id(
+                obj=element, gene_descriptor_field="gene_descriptor"
+            )
             if gene_id:
                 gene_ids.append(gene_id)
 
@@ -588,7 +586,7 @@ class Evidence(str, Enum):
     INFERRED = "inferred"
 
 
-class Assay(BaseModelForbidExtra):
+class Assay:
     """Information pertaining to the assay used in identifying the fusion."""
 
     type: Literal["Assay"] = "Assay"
@@ -633,7 +631,7 @@ class EventType(str, Enum):
     TRANS_SPLICING = "trans-splicing"
 
 
-class CausativeEvent(BaseModelForbidExtra):
+class CausativeEvent:
     """The evaluation of a fusion may be influenced by the underlying mechanism that
     generated the fusion. Often this will be a DNA rearrangement, but it could also be
     a read-through or trans-splicing event.
