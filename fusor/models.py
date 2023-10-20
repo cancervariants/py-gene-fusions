@@ -1,7 +1,7 @@
 """Model for fusion class"""
 from abc import ABC
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Set, Union
+from typing import Any, Dict, List, Literal, Optional, Set, Type, Union
 
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrs_models import LiteralSequenceExpression
@@ -23,6 +23,10 @@ from pydantic import (
     validator,
 )
 from pydantic.fields import Field
+
+
+class BaseModelForbidExtra(BaseModel, extra="forbid"):
+    """Base Pydantic model class with extra values forbidden."""
 
 
 class FUSORTypes(str, Enum):
@@ -70,6 +74,7 @@ class FunctionalDomain(BaseModel):
 
     model_config = ConfigDict(
         populate_by_name=True,
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "FunctionalDomain",
@@ -158,6 +163,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
 
     _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)
     model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "TranscriptSegmentElement",
@@ -201,7 +207,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     },
                 },
             }
-        }
+        },
     )
 
 
@@ -236,6 +242,7 @@ class LinkerElement(BaseStructuralElement):
         return v
 
     model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "LinkerSequenceElement",
@@ -246,7 +253,7 @@ class LinkerElement(BaseStructuralElement):
                     "residue_type": "SO:0000348",
                 },
             }
-        }
+        },
     )
 
 
@@ -270,6 +277,7 @@ class TemplatedSequenceElement(BaseStructuralElement):
     strand: Strand
 
     model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "TemplatedSequenceElement",
@@ -290,7 +298,7 @@ class TemplatedSequenceElement(BaseStructuralElement):
                 },
                 "strand": "+",
             }
-        }
+        },
     )
 
 
@@ -301,6 +309,7 @@ class GeneElement(BaseStructuralElement):
     gene_descriptor: GeneDescriptor
 
     model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "GeneElement",
@@ -311,7 +320,7 @@ class GeneElement(BaseStructuralElement):
                     "type": "GeneDescriptor",
                 },
             }
-        }
+        },
     )
 
 
@@ -328,7 +337,8 @@ class UnknownGeneElement(BaseStructuralElement):
     type: Literal[FUSORTypes.UNKNOWN_GENE_ELEMENT] = FUSORTypes.UNKNOWN_GENE_ELEMENT
 
     model_config = ConfigDict(
-        json_schema_extra={"example": {"type": "UnknownGeneElement"}}
+        arbitrary_types_allowed=True,
+        json_schema_extra={"example": {"type": "UnknownGeneElement"}},
     )
 
 
@@ -348,7 +358,8 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
     ] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
 
     model_config = ConfigDict(
-        json_schema_extra={"example": {"type": "MultiplePossibleGenesElement"}}
+        arbitrary_types_allowed=True,
+        json_schema_extra={"example": {"type": "MultiplePossibleGenesElement"}},
     )
 
 
@@ -409,6 +420,7 @@ class RegulatoryElement(BaseModel):
         return values
 
     model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "RegulatoryElement",
@@ -427,7 +439,7 @@ class RegulatoryElement(BaseModel):
                     },
                 },
             }
-        }
+        },
     )
 
 
@@ -437,6 +449,7 @@ class FusionType(str, Enum):
     CATEGORICAL_FUSION = FUSORTypes.CATEGORICAL_FUSION.value
     ASSAYED_FUSION = FUSORTypes.ASSAYED_FUSION.value
 
+    @classmethod
     def values(cls) -> Set:  # noqa: ANN102
         """Provide all possible enum values."""
         return set(map(lambda c: c.value, cls))
@@ -449,8 +462,11 @@ class AbstractFusion(BaseModel, ABC):
     regulatory_element: Optional[RegulatoryElement] = None
     structural_elements: List[BaseStructuralElement]
 
+    @classmethod
     def _access_object_attr(
-        cls, obj: Union[Dict, BaseModel], attr_name: str  # noqa: ANN102
+        cls: Type[FusionType],
+        obj: Union[Dict, BaseModel],
+        attr_name: str,  # noqa: ANN102
     ) -> Optional[Any]:  # noqa: ANN401
         """Help enable safe access of object properties while performing
         validation for Pydantic class objects. Because the validator could be handling either
@@ -475,8 +491,11 @@ class AbstractFusion(BaseModel, ABC):
                 "Unrecognized type, should only pass entities with properties"
             )
 
+    @classmethod
     def _fetch_gene_id(
-        cls, obj: Union[Dict, BaseModel], gene_descriptor_field: str  # noqa: ANN102
+        cls: Type[FusionType],
+        obj: Union[Dict, BaseModel],
+        gene_descriptor_field: str,  # noqa: ANN102
     ) -> Optional[str]:
         """Get gene ID if element includes a gene annotation.
 
@@ -631,7 +650,7 @@ class EventType(str, Enum):
     TRANS_SPLICING = "trans-splicing"
 
 
-class CausativeEvent:
+class CausativeEvent(BaseModelForbidExtra):
     """The evaluation of a fusion may be influenced by the underlying mechanism that
     generated the fusion. Often this will be a DNA rearrangement, but it could also be
     a read-through or trans-splicing event.
@@ -642,13 +661,14 @@ class CausativeEvent:
     event_description: Optional[StrictStr] = None
 
     model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "CausativeEvent",
                 "event_type": "rearrangement",
                 "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
             }
-        }
+        },
     )
 
 
@@ -665,6 +685,7 @@ class AssayedFusion(AbstractFusion):
     assay: Optional[Assay] = None
 
     model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "AssayedFusion",
@@ -693,7 +714,7 @@ class AssayedFusion(AbstractFusion):
                     {"type": "UnknownGeneElement"},
                 ],
             }
-        }
+        },
     )
 
 
@@ -721,6 +742,7 @@ class CategoricalFusion(AbstractFusion):
     structural_elements: CategoricalFusionElements
 
     model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "CategoricalFusion",
@@ -803,7 +825,7 @@ class CategoricalFusion(AbstractFusion):
                     },
                 },
             }
-        }
+        },
     )
 
 
