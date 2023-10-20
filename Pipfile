@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pydantic = "~=2.4.2"
+pydantic = "==2.*"
 "ga4gh.vrsatile.pydantic" = "~=0.2.0"
 "ga4gh.vrs" = "~=0.8.1"
 "biocommons.seqrepo" = "*"
