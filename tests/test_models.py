@@ -603,7 +603,7 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
         assert TemplatedSequenceElement(
             **{"type": "GeneElement", "region": location_descriptors[0], "strand": "+"}
         )
-    msg = "unexpected value; permitted: <FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT: 'TemplatedSequenceElement'>"  # noqa: E501
+    msg = "Input should be <FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT: 'TemplatedSequenceElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
