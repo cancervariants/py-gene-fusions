@@ -687,9 +687,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
                 "associated_gene": gene_descriptors[0],
             }
         )
-    assert exc_info.value.errors()[0]["msg"].startswith(
-        "value is not a valid enumeration member; permitted: "
-    )
+    assert exc_info.value.errors()[0]["msg"].startswith("Input should be")
 
     # require minimum input
     with pytest.raises(ValidationError) as exc_info:
@@ -700,7 +698,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
         )
     assert (
         exc_info.value.errors()[0]["msg"]
-        == "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
+        == "Value error, Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
     )
 
 
