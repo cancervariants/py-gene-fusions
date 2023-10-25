@@ -967,7 +967,6 @@ def test_model_examples():
         CategoricalFusion,
     ]
     for model in models:
-        schema = {}
-        model.__config__.schema_extra(schema, None)
+        schema = model.model_config["json_schema_extra"]
         if "example" in schema:
             model(**schema["example"])
