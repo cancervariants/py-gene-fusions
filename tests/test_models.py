@@ -531,7 +531,7 @@ def test_linker_element(linkers):
         LinkerElement(
             **{"linker_sequence": {"id": "sequence:ACT1", "sequence": "ACT1"}}
         )
-    msg = "sequence does not match regex '^[A-Za-z*\\-]*$'"
+    msg = "Assertion failed, sequence does not match regex '^[A-Za-z*\\-]*$'"
     check_validation_error(exc_info, msg)
 
     # test enum validation
@@ -542,7 +542,7 @@ def test_linker_element(linkers):
                 "linker_sequence": {"id": "sequence:ATG", "sequence": "ATG"},
             }
         )
-    msg = "unexpected value; permitted: <FUSORTypes.LINKER_SEQUENCE_ELEMENT: 'LinkerSequenceElement'>"  # noqa: E501
+    msg = "Input should be <FUSORTypes.LINKER_SEQUENCE_ELEMENT: 'LinkerSequenceElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
     # test no extras
@@ -554,7 +554,7 @@ def test_linker_element(linkers):
                 "bonus_value": "bonus",
             }
         )
-    msg = "extra fields not permitted"
+    msg = "Extra inputs are not permitted"
     check_validation_error(exc_info, msg)
 
 
@@ -763,7 +763,6 @@ def test_fusion(
     # test variety of element types
     assert AssayedFusion(
         **{
-            "type": "AssayedFusion",
             "structural_elements": [
                 unknown_element,
                 gene_elements[0],
@@ -811,7 +810,7 @@ def test_fusion(
                 ],
             }
         )
-    msg = "First structural element cannot be LinkerSequence"
+    msg = "Value error, First structural element cannot be LinkerSequence"
     check_validation_error(exc_info, msg)
 
 
@@ -861,7 +860,7 @@ def test_fusion_element_count(
     check_validation_error(exc_info, element_ct_msg)
 
     # unique gene requirements
-    uq_gene_error_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
+    uq_gene_error_msg = "Value error, Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(
             **{"structural_elements": [gene_elements[0], gene_elements[0]]}

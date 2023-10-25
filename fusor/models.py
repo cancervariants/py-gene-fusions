@@ -211,7 +211,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
     )
 
 
-class LinkerElement(BaseStructuralElement):
+class LinkerElement(BaseStructuralElement, extra="forbid"):
     """Define Linker class (linker sequence)"""
 
     type: Literal[
@@ -235,7 +235,7 @@ class LinkerElement(BaseStructuralElement):
             raise TypeError
 
         try:
-            LiteralSequenceExpression(__root__=seq)
+            LiteralSequenceExpression(sequence=seq)
         except ValidationError:
             raise AssertionError("sequence does not match regex '^[A-Za-z*\\-]*$'")
 
@@ -611,7 +611,7 @@ class Evidence(str, Enum):
     INFERRED = "inferred"
 
 
-class Assay:
+class Assay(BaseModelForbidExtra):
     """Information pertaining to the assay used in identifying the fusion."""
 
     type: Literal["Assay"] = "Assay"
