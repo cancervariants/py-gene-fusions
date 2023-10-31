@@ -571,13 +571,7 @@ class AbstractFusion(BaseModel, ABC):
         """Ensure start/end elements are of legal types and have fields
         required by their position.
         """
-        if isinstance(values, dict):
-            try:
-                elements = values.get("structural_elements", [])
-            except KeyError:
-                raise TypeError
-        else:
-            elements = values.structural_elements
+        elements = values.structural_elements
         if isinstance(elements[0], TranscriptSegmentElement):
             if elements[0].exon_end is None and not values["regulatory_element"]:
                 raise ValueError(
