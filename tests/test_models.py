@@ -763,6 +763,7 @@ def test_fusion(
     # test variety of element types
     assert AssayedFusion(
         **{
+            "type": "AssayedFusion",
             "structural_elements": [
                 unknown_element,
                 gene_elements[0],
