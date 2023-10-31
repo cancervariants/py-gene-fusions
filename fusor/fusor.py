@@ -71,7 +71,7 @@ class FUSOR:
 
         :param seqrepo_data_path: Path to SeqRepo data directory
         :param gene_database: gene normalizer database instance
-        :param db_url: Postgres URL for UTA
+        :param uta_db_url: UTA database url
         """
         self.seqrepo = SeqRepo(seqrepo_data_path)
         if not gene_database:
@@ -172,7 +172,7 @@ class FUSOR:
             constituting the fusion
         :param Optional[RegulatoryElement] regulatory_element: affected
             regulatory element
-        :param Optional[List[FunctionalDomain]] domains: lost or preserved
+        :param Optional[List[FunctionalDomain]] critical_functional_domains: lost or preserved
             functional domains
         :param Optional[bool] r_frame_preserved: `True` if reading frame is
             preserved.  `False` otherwise
@@ -504,6 +504,7 @@ class FUSOR:
         """Create RegulatoryElement
         :param RegulatoryClass regulatory_class: one of {"promoter", "enhancer"}
         :param str gene: gene term to fetch normalized descriptor for
+        :param bool use_minimal_gene_descr: whether to use the minimal gene descriptor
         :return: Tuple with RegulatoryElement instance and None value for warnings if
             successful, or a None value and warning message if unsuccessful
         """
@@ -511,7 +512,7 @@ class FUSOR:
             gene, use_minimal_gene_descr=use_minimal_gene_descr
         )
         if not gene_descr:
-            return (None, warning)
+            return None, warning
 
         try:
             return (
@@ -737,9 +738,9 @@ class FUSOR:
         if fusion.type == FusionType.CATEGORICAL_FUSION:
             properties.append(fusion.critical_functional_domains)
 
-        for property in properties:
-            for obj in property:
-                if "gene_descriptor" in obj.__fields__.keys():
+        for prop in properties:
+            for obj in prop:
+                if "gene_descriptor" in obj.model_fields.keys():
                     label = obj.gene_descriptor.label
                     norm_gene_descr, _ = self._normalized_gene_descriptor(
                         label, use_minimal_gene_descr=False
@@ -747,13 +748,13 @@ class FUSOR:
                     if norm_gene_descr:
                         obj.gene_descriptor = norm_gene_descr
         if fusion.regulatory_element and fusion.regulatory_element.associated_gene:
-            re = fusion.regulatory_element
-            label = re.associated_gene.label
+            reg_el = fusion.regulatory_element
+            label = reg_el.associated_gene.label
             norm_gene_descr, _ = self._normalized_gene_descriptor(
                 label, use_minimal_gene_descr=False
             )
             if norm_gene_descr:
-                re.associated_gene = norm_gene_descr
+                reg_el.associated_gene = norm_gene_descr
         return fusion
 
     def _normalized_gene_descriptor(

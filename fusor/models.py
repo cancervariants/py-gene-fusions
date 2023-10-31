@@ -20,7 +20,6 @@ from pydantic import (
     ValidationError,
     field_validator,
     model_validator,
-    validator,
 )
 from pydantic.fields import Field
 
@@ -70,7 +69,7 @@ class FunctionalDomain(BaseModel):
     label: Optional[StrictStr] = None
     sequence_location: Optional[LocationDescriptor] = None
 
-    _get_id_val = validator("id", allow_reuse=True)(return_value)
+    _get_id_val = field_validator("id")(return_value)
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -161,7 +160,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
             values["exon_end_offset"] = None
         return values
 
-    _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)
+    _get_transcript_val = field_validator("transcript")(return_value)
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         json_schema_extra={
@@ -404,7 +403,7 @@ class RegulatoryElement(BaseModel):
     associated_gene: Optional[GeneDescriptor] = None
     feature_location: Optional[LocationDescriptor] = None
 
-    _get_ref_id_val = validator("feature_id", allow_reuse=True)(return_value)
+    _get_ref_id_val = field_validator("feature_id")(return_value)
 
     @model_validator(mode="before")
     def ensure_min_values(cls, values):
@@ -620,8 +619,8 @@ class Assay(BaseModelForbidExtra):
     method_uri: Optional[CURIE] = None
     fusion_detection: Optional[Evidence] = None
 
-    _get_assay_id_val = validator("assay_id", allow_reuse=True)(return_value)
-    _get_method_uri_val = validator("method_uri", allow_reuse=True)(return_value)
+    _get_assay_id_val = field_validator("assay_id")(return_value)
+    _get_method_uri_val = field_validator("method_uri")(return_value)
 
     model_config = ConfigDict(
         json_schema_extra={
