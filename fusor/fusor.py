@@ -1,4 +1,5 @@
 """Module for modifying fusion objects."""
+import re
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import quote
 
@@ -553,9 +554,12 @@ class FUSOR:
         try:
             sequence_id = coerce_namespace(sequence_id)
         except ValueError:
-            try:
-                sequence_id = CURIE(sequence_id)
-            except ValidationError:
+            # following no longer throws validation error after v2 change??
+            # try:
+            # CURIE(sequence_id)
+            # except ValidationError:
+            #     sequence_id = f"sequence.id:{sequence_id}"
+            if not re.match(r"^\w[^:]*:.+$", sequence_id):
                 sequence_id = f"sequence.id:{sequence_id}"
 
         if seq_id_target_namespace:
