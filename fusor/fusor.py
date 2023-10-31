@@ -560,7 +560,7 @@ class FUSOR:
             # CURIE(sequence_id)
             # except ValidationError:
             #     sequence_id = f"sequence.id:{sequence_id}"
-            if not re.match(r"^\w[^:]*:.+$", sequence_id):
+            if not re.match(CURIE.__metadata__[0].pattern, sequence_id):
                 sequence_id = f"sequence.id:{sequence_id}"
 
         if seq_id_target_namespace:
