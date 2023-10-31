@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Type, Union
 
 from ga4gh.vrsatile.pydantic import return_value
-from ga4gh.vrsatile.pydantic.vrs_models import LiteralSequenceExpression
+from ga4gh.vrsatile.pydantic.vrs_models import SEQUENCE, LiteralSequenceExpression
 from ga4gh.vrsatile.pydantic.vrsatile_models import (
     CURIE,
     GeneDescriptor,
@@ -235,7 +235,7 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
             raise TypeError
 
         try:
-            LiteralSequenceExpression(sequence=seq)
+            LiteralSequenceExpression(sequence=SEQUENCE(seq))
         except ValidationError:
             raise AssertionError("sequence does not match regex '^[A-Za-z*\\-]*$'")
 

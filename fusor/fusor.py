@@ -252,7 +252,9 @@ class FUSOR:
         :return: Transcript Segment Element, warning
         """
         if tx_to_genomic_coords:
-            data = await self.cool_seq_tool.transcript_to_genomic_coordinates(**kwargs)
+            data = await self.cool_seq_tool.ex_g_coords_mapper.transcript_to_genomic_coordinates(
+                **kwargs
+            )
         else:
             if "chromosome" in kwargs and kwargs.get("chromosome") is None:
                 msg = (
@@ -267,7 +269,7 @@ class FUSOR:
                 start = kwargs.get("start")
                 kwargs["start"] = start - 1 if start is not None else None
                 kwargs["residue_mode"] = "inter-residue"
-            data = await self.cool_seq_tool.genomic_to_transcript_exon_coordinates(
+            data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_transcript_exon_coordinates(
                 **kwargs
             )
 
@@ -371,7 +373,7 @@ class FUSOR:
         )
 
         if add_location_id:
-            location_id = self._location_id(region.location.dict())
+            location_id = self._location_id(region.location.model_dump())
             region.location_id = location_id
 
         return TemplatedSequenceElement(region=region, strand=strand)
@@ -547,11 +549,12 @@ class FUSOR:
             Descriptor's id. `False`, use default of `label` > `sequence_id`
         """
         seq_id_input = sequence_id
+
         try:
             sequence_id = coerce_namespace(sequence_id)
         except ValueError:
             try:
-                CURIE(__root__=sequence_id)
+                sequence_id = CURIE(sequence_id)
             except ValidationError:
                 sequence_id = f"sequence.id:{sequence_id}"
 

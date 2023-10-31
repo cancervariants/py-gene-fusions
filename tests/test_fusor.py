@@ -470,10 +470,10 @@ def test_add_gene_descriptor(fusor_instance, exhaustive_example, fusion_example)
         for t_field in [actual.critical_functional_domains, actual.structural_elements]:
             for e_obj in e_field:
                 for t_obj in t_field:
-                    if "gene_descriptor" in e_obj.__fields__.keys():
+                    if "gene_descriptor" in e_obj.model_fields.keys():
                         e_gd = e_obj.gene_descriptor.label
                         e_gds.add(e_gd)
-                        if "gene_descriptor" in t_obj.__fields__.keys():
+                        if "gene_descriptor" in t_obj.model_fields.keys():
                             t_gd = t_obj.gene_descriptor.label
                             t_gds.add(t_gd)
                             if e_gd == t_gd:
@@ -484,8 +484,8 @@ def test_add_gene_descriptor(fusor_instance, exhaustive_example, fusion_example)
     assert t_gds == e_gds
 
     compare_gene_descriptor(
-        actual.regulatory_element.associated_gene.dict(),
-        expected_fusion.regulatory_element.associated_gene.dict(),
+        actual.regulatory_element.associated_gene.model_dump(),
+        expected_fusion.regulatory_element.associated_gene.model_dump(),
     )
 
 
@@ -612,7 +612,7 @@ async def test_transcript_segment_element(
     )
     assert tsg[0]
     assert tsg[1] is None
-    assert tsg[0].dict() == transcript_segment_element.dict()
+    assert tsg[0].dict() == transcript_segment_element.model_dump()
 
     # Genomic input, residue
     tsg = await fusor_instance.transcript_segment_element(
@@ -624,7 +624,7 @@ async def test_transcript_segment_element(
     )
     assert tsg[0]
     assert tsg[1] is None
-    assert tsg[0].dict() == transcript_segment_element.dict()
+    assert tsg[0].dict() == transcript_segment_element.model_dump()
 
     # Genomic input, inter-residue
     tsg = await fusor_instance.transcript_segment_element(
@@ -637,7 +637,7 @@ async def test_transcript_segment_element(
     )
     assert tsg[0]
     assert tsg[1] is None
-    assert tsg[0].dict() == transcript_segment_element.dict()
+    assert tsg[0].dict() == transcript_segment_element.model_dump()
 
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
@@ -649,7 +649,7 @@ async def test_transcript_segment_element(
     )
     assert tsg[0]
     assert tsg[1] is None
-    assert tsg[0].dict() == transcript_segment_element.dict()
+    assert tsg[0].dict() == transcript_segment_element.model_dump()
 
     expected = copy.deepcopy(transcript_segment_element)
     expected.element_genomic_start.location.sequence_id = (
@@ -669,7 +669,7 @@ async def test_transcript_segment_element(
     )
     assert tsg[0]
     assert tsg[1] is None
-    assert tsg[0].dict() == expected.dict()
+    assert tsg[0].dict() == expected.model_dump()
 
     # Genomic input
     tsg = await fusor_instance.transcript_segment_element(
@@ -699,7 +699,7 @@ async def test_transcript_segment_element(
     )
     assert tsg[0]
     assert tsg[1] is None
-    assert tsg[0].dict() == expected.dict()
+    assert tsg[0].dict() == expected.model_dump()
 
     # Genomic Input
     tsg = await fusor_instance.transcript_segment_element(
@@ -712,7 +712,7 @@ async def test_transcript_segment_element(
     )
     assert tsg[0]
     assert tsg[1] is None
-    assert tsg[0].dict() == expected.dict()
+    assert tsg[0].dict() == expected.model_dump()
 
     expected.exon_end = None
     expected.exon_end_offset = None
@@ -727,7 +727,7 @@ async def test_transcript_segment_element(
     )
     assert tsg[0]
     assert tsg[1] is None
-    assert tsg[0].dict() == expected.dict()
+    assert tsg[0].dict() == expected.model_dump()
 
     # Genomic Input
     tsg = await fusor_instance.transcript_segment_element(
@@ -739,7 +739,7 @@ async def test_transcript_segment_element(
     )
     assert tsg[0]
     assert tsg[1] is None
-    assert tsg[0].dict() == expected.dict()
+    assert tsg[0].dict() == expected.model_dump()
 
     # MANE
     tsg = await fusor_instance.transcript_segment_element(
@@ -750,7 +750,7 @@ async def test_transcript_segment_element(
     )
     assert tsg[0]
     assert tsg[1] is None
-    assert tsg[0].dict() == mane_transcript_segment_element.dict()
+    assert tsg[0].dict() == mane_transcript_segment_element.model_dump()
 
 
 def test_gene_element(fusor_instance, braf_gene_descr_min, braf_gene_descr):
@@ -759,13 +759,15 @@ def test_gene_element(fusor_instance, braf_gene_descr_min, braf_gene_descr):
     assert gc[0]
     assert gc[1] is None
     assert isinstance(gc[0], GeneElement)
-    compare_gene_descriptor(gc[0].gene_descriptor.dict(), braf_gene_descr_min.dict())
+    compare_gene_descriptor(
+        gc[0].gene_descriptor.dict(), braf_gene_descr_min.model_dump()
+    )
 
     gc = fusor_instance.gene_element("BRAF", use_minimal_gene_descr=False)
     assert gc[0]
     assert gc[1] is None
     assert isinstance(gc[0], GeneElement)
-    compare_gene_descriptor(gc[0].gene_descriptor.dict(), braf_gene_descr.dict())
+    compare_gene_descriptor(gc[0].gene_descriptor.dict(), braf_gene_descr.model_dump())
 
     gc = fusor_instance.gene_element("BRA F", use_minimal_gene_descr=True)
     assert gc[0] is None
@@ -782,14 +784,14 @@ def test_templated_sequence_element(
     tsg = fusor_instance.templated_sequence_element(
         100, 150, "NC_000001.11", "+", residue_mode="residue"
     )
-    assert tsg.dict() == templated_sequence_element.dict()
+    assert tsg.dict() == templated_sequence_element.model_dump()
 
     tsg = fusor_instance.templated_sequence_element(
         99, 150, "NC_000001.11", "+", residue_mode="inter-residue"
     )
-    assert tsg.dict() == templated_sequence_element.dict()
+    assert tsg.dict() == templated_sequence_element.model_dump()
 
-    expected = copy.deepcopy(templated_sequence_element.dict())
+    expected = copy.deepcopy(templated_sequence_element.model_dump())
     expected["region"]["location"][
         "sequence_id"
     ] = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
@@ -807,11 +809,11 @@ def test_templated_sequence_element(
     tsg = fusor_instance.templated_sequence_element(
         140719329, 140719400, "ENSG00000157764", "-"
     )
-    assert tsg.dict() == templated_sequence_element_ensg.dict()
+    assert tsg.dict() == templated_sequence_element_ensg.model_dump()
 
     # test untranslateable sequence ID
     # adds "ensembl" namespace but unable to translate to ga4gh digest ID
-    expected = copy.deepcopy(templated_sequence_element_ensg.dict())
+    expected = copy.deepcopy(templated_sequence_element_ensg.model_dump())
     tsg = fusor_instance.templated_sequence_element(
         140719329, 140719400, "ENSG00000157764", "-", seq_id_target_namespace="ga4gh"
     )
@@ -819,7 +821,7 @@ def test_templated_sequence_element(
 
     # test in-house/bespoke sequence ID
     # can't coerce namespace or translate to ga4gh ID
-    expected = copy.deepcopy(templated_sequence_element_custom_id.dict())
+    expected = copy.deepcopy(templated_sequence_element_custom_id.model_dump())
     tsg = fusor_instance.templated_sequence_element(
         200,
         300,
@@ -836,7 +838,7 @@ def test_linker_element(fusor_instance, linker_element):
     lc = fusor_instance.linker_element("act")
     assert lc[0]
     assert lc[1] is None
-    assert lc[0].dict() == linker_element.dict()
+    assert lc[0].dict() == linker_element.model_dump()
 
     lc = fusor_instance.linker_element("bob!")
     assert lc[0] is None
@@ -846,13 +848,13 @@ def test_linker_element(fusor_instance, linker_element):
 def test_unknown_gene_element(fusor_instance):
     """Test that unknown_gene_element method works correctly."""
     unknown_gc = fusor_instance.unknown_gene_element()
-    assert unknown_gc.dict() == UnknownGeneElement().dict()
+    assert unknown_gc.dict() == UnknownGeneElement().model_dump()
 
 
 def test_multiple_possible_genes_element(fusor_instance):
     """Test that test_multiple_possible_genes_element method works correctly."""
     mult_gene = fusor_instance.multiple_possible_genes_element()
-    assert mult_gene.dict() == MultiplePossibleGenesElement().dict()
+    assert mult_gene.dict() == MultiplePossibleGenesElement().model_dump()
 
 
 def test_functional_domain(
@@ -1017,14 +1019,14 @@ def test_regulatory_element(fusor_instance, regulatory_element, regulatory_eleme
 def test__location_descriptor(fusor_instance, location_descriptor_tpm3):
     """Test that _location_descriptor method works correctly."""
     ld = fusor_instance._location_descriptor(154170398, 154170399, "NM_152263.3")
-    assert ld.dict() == location_descriptor_tpm3.dict()
+    assert ld.dict() == location_descriptor_tpm3.model_dump()
 
     expected = copy.deepcopy(location_descriptor_tpm3)
     expected.location.sequence_id = "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT"
     ld = fusor_instance._location_descriptor(
         154170398, 154170399, "NM_152263.3", seq_id_target_namespace="ga4gh"
     )
-    assert ld.dict() == expected.dict()
+    assert ld.dict() == expected.model_dump()
 
     expected.id = "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa"
     ld = fusor_instance._location_descriptor(
@@ -1034,16 +1036,16 @@ def test__location_descriptor(fusor_instance, location_descriptor_tpm3):
         seq_id_target_namespace="ga4gh",
         use_location_id=True,
     )
-    assert ld.dict() == expected.dict()
+    assert ld.dict() == expected.model_dump()
 
     expected.location.sequence_id = "refseq:NM_152263.3"
     expected.id = "fusor.location_descriptor:refseq%3ANM_152263.3"
     ld = fusor_instance._location_descriptor(154170398, 154170399, "refseq:NM_152263.3")
-    assert ld.dict() == expected.dict()
+    assert ld.dict() == expected.model_dump()
 
     expected.id = "fusor.location_descriptor:example_label"
     expected.label = "example_label"
     ld = fusor_instance._location_descriptor(
         154170398, 154170399, "refseq:NM_152263.3", label="example_label"
     )
-    assert ld.dict() == expected.dict()
+    assert ld.dict() == expected.model_dump()
