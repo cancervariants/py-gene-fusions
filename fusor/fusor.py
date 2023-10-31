@@ -582,7 +582,7 @@ class FUSOR:
         )
 
         if use_location_id:
-            _id = self._location_id(location.dict())
+            _id = self._location_id(location.model_dump())
         else:
             quote_id = quote(label) if label else quote(seq_id_input)
             _id = f"fusor.location_descriptor:{quote_id}"
@@ -638,7 +638,7 @@ class FUSOR:
         for structural_element in fusion.structural_elements:
             if isinstance(structural_element, TemplatedSequenceElement):
                 location = structural_element.region.location
-                location_id = self._location_id(location.dict())
+                location_id = self._location_id(location.model_dump())
                 structural_element.region.location_id = location_id
             elif isinstance(structural_element, TranscriptSegmentElement):
                 for element_genomic in [
@@ -648,19 +648,19 @@ class FUSOR:
                     if element_genomic:
                         location = element_genomic.location
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                            location_id = self._location_id(location.dict())
+                            location_id = self._location_id(location.model_dump())
                             element_genomic.location_id = location_id
         if isinstance(fusion, CategoricalFusion) and fusion.critical_functional_domains:
             for domain in fusion.critical_functional_domains:
                 location = domain.sequence_location.location
-                location_id = self._location_id(location.dict())
+                location_id = self._location_id(location.model_dump())
                 domain.sequence_location.location_id = location_id
         if fusion.regulatory_element:
             element = fusion.regulatory_element
             if element.feature_location:
                 location = element.feature_location
                 if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                    location_id = self._location_id(location.dict())
+                    location_id = self._location_id(location.model_dump())
                     element.feature_location.location_id = location_id
         return fusion
 
