@@ -20,7 +20,7 @@ from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, LocationDesc
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.exceptions import FUSORParametersException, IDTranslationException
