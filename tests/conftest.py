@@ -28,23 +28,6 @@ def braf_gene_descriptor():
             },
             {
                 "type": "Extension",
-                "name": "hgnc_locations",
-                "value": [
-                    {
-                        "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
-                        "type": "ChromosomeLocation",
-                        "species_id": "taxonomy:9606",
-                        "chr": "7",
-                        "interval": {
-                            "end": "q34",
-                            "start": "q34",
-                            "type": "CytobandInterval",
-                        },
-                    }
-                ],
-            },
-            {
-                "type": "Extension",
                 "name": "ensembl_locations",
                 "value": [
                     {
@@ -63,17 +46,6 @@ def braf_gene_descriptor():
                 "type": "Extension",
                 "name": "ncbi_locations",
                 "value": [
-                    {
-                        "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
-                        "type": "ChromosomeLocation",
-                        "species_id": "taxonomy:9606",
-                        "chr": "7",
-                        "interval": {
-                            "end": "q34",
-                            "start": "q34",
-                            "type": "CytobandInterval",
-                        },
-                    },
                     {
                         "_id": "ga4gh:VSL.xZU3kL8F6t2ca6WH_26CWKfNW9-owhR4",
                         "type": "SequenceLocation",
@@ -114,6 +86,7 @@ def braf_gene_descriptor():
             },
             {"type": "Extension", "name": "ncbi_gene_type", "value": "protein-coding"},
             {"type": "Extension", "name": "ensembl_biotype", "value": "protein_coding"},
+            {"type": "Extension", "name": "strand", "value": "-"},
         ],
         "gene_id": "hgnc:1097",
     }
@@ -142,23 +115,6 @@ def alk_gene_descriptor():
             },
             {
                 "type": "Extension",
-                "name": "hgnc_locations",
-                "value": [
-                    {
-                        "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
-                        "type": "ChromosomeLocation",
-                        "species_id": "taxonomy:9606",
-                        "chr": "2",
-                        "interval": {
-                            "end": "p23.1",
-                            "start": "p23.2",
-                            "type": "CytobandInterval",
-                        },
-                    }
-                ],
-            },
-            {
-                "type": "Extension",
                 "name": "ensembl_locations",
                 "value": [
                     {
@@ -177,17 +133,6 @@ def alk_gene_descriptor():
                 "type": "Extension",
                 "name": "ncbi_locations",
                 "value": [
-                    {
-                        "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
-                        "type": "ChromosomeLocation",
-                        "species_id": "taxonomy:9606",
-                        "chr": "2",
-                        "interval": {
-                            "end": "p23.1",
-                            "start": "p23.2",
-                            "type": "CytobandInterval",
-                        },
-                    },
                     {
                         "_id": "ga4gh:VSL.-k3kxW3qMyV-oBTvTffVZojkJBLs0flu",
                         "type": "SequenceLocation",
@@ -234,6 +179,7 @@ def alk_gene_descriptor():
                 "name": "ensembl_biotype",
                 "value": "protein_coding",
             },
+            {"type": "Extension", "name": "strand", "value": "-"},
         ],
         "gene_id": "hgnc:427",
         "gene": None,
@@ -324,23 +270,6 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                         },
                         {
                             "type": "Extension",
-                            "name": "hgnc_locations",
-                            "value": [
-                                {
-                                    "_id": "ga4gh:VCL.rmJvYV5JccRSEoMVxe5BmuHs9S2VZ4uR",
-                                    "type": "ChromosomeLocation",
-                                    "species_id": "taxonomy:9606",
-                                    "chr": "1",
-                                    "interval": {
-                                        "end": "q21.3",
-                                        "start": "q21.3",
-                                        "type": "CytobandInterval",
-                                    },
-                                }
-                            ],
-                        },
-                        {
-                            "type": "Extension",
                             "name": "ensembl_locations",
                             "value": [
                                 {
@@ -359,17 +288,6 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                             "type": "Extension",
                             "name": "ncbi_locations",
                             "value": [
-                                {
-                                    "_id": "ga4gh:VCL.rmJvYV5JccRSEoMVxe5BmuHs9S2VZ4uR",
-                                    "type": "ChromosomeLocation",
-                                    "species_id": "taxonomy:9606",
-                                    "chr": "1",
-                                    "interval": {
-                                        "end": "q21.3",
-                                        "start": "q21.3",
-                                        "type": "CytobandInterval",
-                                    },
-                                },
                                 {
                                     "_id": "ga4gh:VSL.sGJqQhhTg3BYlndAP7nFzN7KoKID1yP_",
                                     "type": "SequenceLocation",
@@ -428,6 +346,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                             "name": "ensembl_biotype",
                             "value": "protein_coding",
                         },
+                        {"type": "Extension", "name": "strand", "value": "-"},
                     ],
                     "gene_id": "hgnc:12012",
                     "gene": None,

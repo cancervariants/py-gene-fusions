@@ -943,10 +943,7 @@ def test_functional_domain(
         use_minimal_gene_descr=True,
     )
     assert cd[0] is None
-    assert (
-        "value is not a valid enumeration member; permitted: "
-        "'lost', 'preserved'" in cd[1]
-    )
+    assert "Input should be 'lost' or 'preserved'" in cd[1]
 
     # check for protein accession
     cd = fusor_instance.functional_domain(
