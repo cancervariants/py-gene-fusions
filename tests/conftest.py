@@ -28,6 +28,23 @@ def braf_gene_descriptor():
             },
             {
                 "type": "Extension",
+                "name": "hgnc_locations",
+                "value": [
+                    {
+                        "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
+                        "type": "ChromosomeLocation",
+                        "species_id": "taxonomy:9606",
+                        "chr": "7",
+                        "interval": {
+                            "end": "q34",
+                            "start": "q34",
+                            "type": "CytobandInterval",
+                        },
+                    }
+                ],
+            },
+            {
+                "type": "Extension",
                 "name": "ensembl_locations",
                 "value": [
                     {
@@ -46,6 +63,17 @@ def braf_gene_descriptor():
                 "type": "Extension",
                 "name": "ncbi_locations",
                 "value": [
+                    {
+                        "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
+                        "type": "ChromosomeLocation",
+                        "species_id": "taxonomy:9606",
+                        "chr": "7",
+                        "interval": {
+                            "end": "q34",
+                            "start": "q34",
+                            "type": "CytobandInterval",
+                        },
+                    },
                     {
                         "_id": "ga4gh:VSL.xZU3kL8F6t2ca6WH_26CWKfNW9-owhR4",
                         "type": "SequenceLocation",
@@ -74,8 +102,6 @@ def braf_gene_descriptor():
                     "vega:OTTHUMG00000157457",
                     "uniprot:P15056",
                     "ccds:CCDS5863",
-                    "ccds:CCDS94218",
-                    "ccds:CCDS94219",
                     "omim:164757",
                 ],
             },
@@ -115,6 +141,23 @@ def alk_gene_descriptor():
             },
             {
                 "type": "Extension",
+                "name": "hgnc_locations",
+                "value": [
+                    {
+                        "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
+                        "type": "ChromosomeLocation",
+                        "species_id": "taxonomy:9606",
+                        "chr": "2",
+                        "interval": {
+                            "end": "p23.1",
+                            "start": "p23.2",
+                            "type": "CytobandInterval",
+                        },
+                    }
+                ],
+            },
+            {
+                "type": "Extension",
                 "name": "ensembl_locations",
                 "value": [
                     {
@@ -133,6 +176,17 @@ def alk_gene_descriptor():
                 "type": "Extension",
                 "name": "ncbi_locations",
                 "value": [
+                    {
+                        "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
+                        "type": "ChromosomeLocation",
+                        "species_id": "taxonomy:9606",
+                        "chr": "2",
+                        "interval": {
+                            "end": "p23.1",
+                            "start": "p23.2",
+                            "type": "CytobandInterval",
+                        },
+                    },
                     {
                         "_id": "ga4gh:VSL.-k3kxW3qMyV-oBTvTffVZojkJBLs0flu",
                         "type": "SequenceLocation",
@@ -254,8 +308,6 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                         "NEM1",
                         "hscp30",
                         "HEL-189",
-                        "CMYP4A",
-                        "CMYP4B",
                     ],
                     "extensions": [
                         {
@@ -267,6 +319,23 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                             "type": "Extension",
                             "name": "approved_name",
                             "value": "tropomyosin 3",
+                        },
+                        {
+                            "type": "Extension",
+                            "name": "hgnc_locations",
+                            "value": [
+                                {
+                                    "_id": "ga4gh:VCL.rmJvYV5JccRSEoMVxe5BmuHs9S2VZ4uR",
+                                    "type": "ChromosomeLocation",
+                                    "species_id": "taxonomy:9606",
+                                    "chr": "1",
+                                    "interval": {
+                                        "end": "q21.3",
+                                        "start": "q21.3",
+                                        "type": "CytobandInterval",
+                                    },
+                                }
+                            ],
                         },
                         {
                             "type": "Extension",
@@ -289,6 +358,17 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                             "name": "ncbi_locations",
                             "value": [
                                 {
+                                    "_id": "ga4gh:VCL.rmJvYV5JccRSEoMVxe5BmuHs9S2VZ4uR",
+                                    "type": "ChromosomeLocation",
+                                    "species_id": "taxonomy:9606",
+                                    "chr": "1",
+                                    "interval": {
+                                        "end": "q21.3",
+                                        "start": "q21.3",
+                                        "type": "CytobandInterval",
+                                    },
+                                },
+                                {
                                     "_id": "ga4gh:VSL.sGJqQhhTg3BYlndAP7nFzN7KoKID1yP_",
                                     "type": "SequenceLocation",
                                     "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",  # noqa: E501
@@ -309,8 +389,6 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                                 "ccds:CCDS1060",
                                 "ccds:CCDS41402",
                                 "ccds:CCDS41401",
-                                "ccds:CCDS91060",
-                                "ccds:CCDS91061",
                                 "pubmed:25369766",
                                 "cosmic:TPM3",
                                 "refseq:NM_152263",
