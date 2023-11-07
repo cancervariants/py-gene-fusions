@@ -4,7 +4,6 @@ from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Type, Union
 
 from ga4gh.vrsatile.pydantic import return_value
-from ga4gh.vrsatile.pydantic.vrs_models import SEQUENCE, LiteralSequenceExpression
 from ga4gh.vrsatile.pydantic.vrsatile_models import (
     CURIE,
     GeneDescriptor,
@@ -17,7 +16,6 @@ from pydantic import (
     StrictBool,
     StrictInt,
     StrictStr,
-    ValidationError,
     field_validator,
     model_validator,
 )
@@ -217,28 +215,6 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
         FUSORTypes.LINKER_SEQUENCE_ELEMENT
     ] = FUSORTypes.LINKER_SEQUENCE_ELEMENT
     linker_sequence: SequenceDescriptor
-
-    @field_validator("linker_sequence", mode="before")
-    def validate_sequence(cls, v):
-        """Enforce nucleotide base code requirements on sequence literals."""
-        if isinstance(v, dict):
-            try:
-                v["sequence"] = v["sequence"].upper()
-                seq = v["sequence"]
-            except KeyError:
-                raise TypeError
-        elif isinstance(v, SequenceDescriptor):
-            v.sequence = v.sequence.upper()
-            seq = v.sequence
-        else:
-            raise TypeError
-
-        try:
-            LiteralSequenceExpression(sequence=SEQUENCE(seq))
-        except ValidationError:
-            raise AssertionError("sequence does not match regex '^[A-Za-z*\\-]*$'")
-
-        return v
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,

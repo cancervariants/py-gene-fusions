@@ -844,7 +844,7 @@ def test_linker_element(fusor_instance, linker_element):
 
     lc = fusor_instance.linker_element("bob!")
     assert lc[0] is None
-    assert "sequence does not match regex '^[A-Za-z*\\-]*$'" in lc[1]
+    assert "String should match pattern '^[A-Z*\\-]*$'" in lc[1]
 
 
 def test_unknown_gene_element(fusor_instance):
