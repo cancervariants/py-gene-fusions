@@ -555,11 +555,6 @@ class FUSOR:
         try:
             sequence_id = coerce_namespace(sequence_id)
         except ValueError:
-            # following no longer throws validation error after v2 change??
-            # try:
-            # CURIE(sequence_id)
-            # except ValidationError:
-            #     sequence_id = f"sequence.id:{sequence_id}"
             if not re.match(CURIE.__metadata__[0].pattern, sequence_id):
                 sequence_id = f"sequence.id:{sequence_id}"
 
