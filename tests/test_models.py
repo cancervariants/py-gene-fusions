@@ -532,7 +532,7 @@ def test_linker_element(linkers):
         LinkerElement(
             **{"linker_sequence": {"id": "sequence:ACT1", "sequence": "ACT1"}}
         )
-    msg = "Assertion failed, sequence does not match regex '^[A-Za-z*\\-]*$'"
+    msg = "String should match pattern '^[A-Z*\\-]*$'"
     check_validation_error(exc_info, msg)
 
     # test enum validation

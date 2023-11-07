@@ -214,6 +214,21 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
     ] = FUSORTypes.LINKER_SEQUENCE_ELEMENT
     linker_sequence: SequenceDescriptor
 
+    @field_validator("linker_sequence", mode="before")
+    def validate_sequence(cls, v):
+        """Enforce nucleotide base code requirements on sequence literals."""
+        if isinstance(v, dict):
+            try:
+                v["sequence"] = v["sequence"].upper()
+            except KeyError:
+                raise TypeError
+        elif isinstance(v, SequenceDescriptor):
+            v.sequence = v.sequence.upper()
+        else:
+            raise TypeError
+
+        return v
+
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
