@@ -372,6 +372,18 @@ def test_transcript_segment_element(transcript_segments):
     assert test_element.gene_descriptor.id == "gene:G1"
     assert test_element.gene_descriptor.label == "G1"
     assert test_element.gene_descriptor.gene.gene_id == "hgnc:9339"
+    test_region_start = test_element.element_genomic_start
+    assert test_region_start.location.species_id == "taxonomy:9606"
+    assert test_region_start.location.type == "ChromosomeLocation"
+    assert test_region_start.location.chr == "12"
+    assert test_region_start.location.interval.start == "p12.1"
+    assert test_region_start.location.interval.end == "p12.1"
+    test_region_end = test_element.element_genomic_end
+    assert test_region_end.location.species_id == "taxonomy:9606"
+    assert test_region_end.location.type == "ChromosomeLocation"
+    assert test_region_end.location.chr == "12"
+    assert test_region_end.location.interval.start == "p12.2"
+    assert test_region_end.location.interval.end == "p12.2"
 
     test_element = TranscriptSegmentElement(**transcript_segments[3])
     assert test_element.transcript == "refseq:NM_938439.4"
@@ -444,7 +456,8 @@ def test_transcript_segment_element(transcript_segments):
                 },
             }
         )
-    assert exc_info.type == ValidationError
+    msg = "Input should be <FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT: 'TranscriptSegmentElement'>"  # noqa: E501
+    check_validation_error(exc_info, msg)
 
     # test element required
     with pytest.raises(ValidationError) as exc_info:
@@ -634,7 +647,8 @@ def test_unknown_gene_element():
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert UnknownGeneElement(type="gene")
-    assert exc_info.type == ValidationError
+    msg = "Input should be <FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>"  # noqa: E501
+    check_validation_error(exc_info, msg)
 
 
 def test_mult_gene_element():
