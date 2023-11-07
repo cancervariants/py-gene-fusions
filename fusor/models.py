@@ -71,7 +71,6 @@ class FunctionalDomain(BaseModel):
 
     model_config = ConfigDict(
         populate_by_name=True,
-        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "FunctionalDomain",
@@ -160,7 +159,6 @@ class TranscriptSegmentElement(BaseStructuralElement):
 
     _get_transcript_val = field_validator("transcript")(return_value)
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "TranscriptSegmentElement",
@@ -217,7 +215,6 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
     linker_sequence: SequenceDescriptor
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "LinkerSequenceElement",
@@ -252,7 +249,6 @@ class TemplatedSequenceElement(BaseStructuralElement):
     strand: Strand
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "TemplatedSequenceElement",
@@ -284,7 +280,6 @@ class GeneElement(BaseStructuralElement):
     gene_descriptor: GeneDescriptor
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "GeneElement",
@@ -312,7 +307,6 @@ class UnknownGeneElement(BaseStructuralElement):
     type: Literal[FUSORTypes.UNKNOWN_GENE_ELEMENT] = FUSORTypes.UNKNOWN_GENE_ELEMENT
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={"example": {"type": "UnknownGeneElement"}},
     )
 
@@ -333,7 +327,6 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
     ] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={"example": {"type": "MultiplePossibleGenesElement"}},
     )
 
@@ -395,7 +388,6 @@ class RegulatoryElement(BaseModel):
         return values
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "RegulatoryElement",
@@ -636,7 +628,6 @@ class CausativeEvent(BaseModelForbidExtra):
     event_description: Optional[StrictStr] = None
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "CausativeEvent",
@@ -660,7 +651,6 @@ class AssayedFusion(AbstractFusion):
     assay: Optional[Assay] = None
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "AssayedFusion",
@@ -717,7 +707,6 @@ class CategoricalFusion(AbstractFusion):
     structural_elements: CategoricalFusionElements
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "CategoricalFusion",
