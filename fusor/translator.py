@@ -153,7 +153,7 @@ class Translator:
             gene=genes[1],
         )
 
-        if jaffa_row.rearrangement is True:
+        if jaffa_row.rearrangement:
             ce = CausativeEvent(event_type=EventType("rearrangement"))
         else:
             ce = None
@@ -162,7 +162,7 @@ class Translator:
 
     async def from_star_fusion(self, sf_row: pd.DataFrame) -> AssayedFusion:
         """Parse STAR-Fusion output to create AssayedFusion object
-        :param sf_row A row of STAR-Fusion output
+        :param sf_row: A row of STAR-Fusion output
         :return: An AssayedFusion object, if construction is successful
         """
         gene1 = sf_row["LeftGene"].split("^")[0]
@@ -281,10 +281,10 @@ class Translator:
 
     async def from_arriba(self, arriba_row: pd.DataFrame) -> AssayedFusion:
         """Parse Arriba output to create AssayedFusion object
-        :param arriba_row: A row of Arriba output:
+        :param arriba_row: A row of Arriba output
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = arriba_row["#gene1"]
+        gene1 = arriba_row["gene1"]
         gene2 = arriba_row["gene2"]
 
         gene_5prime = self.fusor.gene_element(gene=gene1)
@@ -322,7 +322,7 @@ class Translator:
 
     async def from_cicero(self, cicero_row: pd.DataFrame) -> AssayedFusion:
         """Parse CICERO output to create AssayedFusion object
-        :param cicero_row: A row of CICERO output:
+        :param cicero_row: A row of CICERO output
         :return: An AssayedFusion object, if construction is successful
         """
         gene1 = cicero_row["geneA"]
@@ -351,7 +351,11 @@ class Translator:
             gene=gene2,
         )
 
-        ce = self._get_causative_event(cicero_row["chrA"], cicero_row["chrB"])
+        if cicero_row["type"] == "read_through":
+            ce = CausativeEvent(event_type=EventType("read-through"))
+        else:
+            if cicero_row["type"] != "Internal_dup":
+                ce = CausativeEvent(event_type=EventType("rearrangement"))
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_mapsplice(self, mapsplice_row: pd.DataFrame) -> AssayedFusion:
