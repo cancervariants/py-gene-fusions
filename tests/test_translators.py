@@ -77,12 +77,6 @@ def fusion_data_example():
     return AssayedFusion(**params)
 
 
-@pytest.fixture(scope="session")
-def translator_instance(fusor_instance):
-    """Create Translator fixture instance"""
-    return Translator(fusor_instance)
-
-
 def compare_fusions(alg_fusion: dict, fusion_data_example: dict):
     """Create helper function for comparing fusion output"""
     assert (
@@ -157,8 +151,9 @@ def compare_fusions(alg_fusion: dict, fusion_data_example: dict):
 
 
 @pytest.mark.asyncio
-async def test_jaffa(fusion_data_example, translator_instance):
+async def test_jaffa(fusion_data_example, fusor_instance):
     """Test JAFFA translator"""
+    translator_instance = Translator(fusor_instance)
     jaffa_data = pd.DataFrame(
         [["TPM3:PDGFRB", "chr1", "154170400", "-", "chr5", "150125578", "-", True]],
         columns=[
@@ -177,8 +172,9 @@ async def test_jaffa(fusion_data_example, translator_instance):
 
 
 @pytest.mark.asyncio
-async def test_star_fusion(fusion_data_example, translator_instance):
+async def test_star_fusion(fusion_data_example, fusor_instance):
     """Test STAR-Fusion translator"""
+    translator_instance = Translator(fusor_instance)
     star_fusion_data = pd.DataFrame(
         [
             [
@@ -197,8 +193,9 @@ async def test_star_fusion(fusion_data_example, translator_instance):
 
 
 @pytest.mark.asyncio
-async def test_fusion_catcher(fusion_data_example, translator_instance):
+async def test_fusion_catcher(fusion_data_example, fusor_instance):
     """Test Fusion Catcher translator"""
+    translator_instance = Translator(fusor_instance)
     fusion_catcher_data = pd.DataFrame(
         [["TPM3", "PDGFRB", "1:154170400:-", "5:150125578:-"]],
         columns=[
@@ -215,8 +212,9 @@ async def test_fusion_catcher(fusion_data_example, translator_instance):
 
 
 @pytest.mark.asyncio
-async def test_fusion_map(fusion_data_example, translator_instance):
+async def test_fusion_map(fusion_data_example, fusor_instance):
     """Test Fusion Map translator"""
+    translator_instance = Translator(fusor_instance)
     fusion_map_data = pd.DataFrame(
         [["TPM3", "PDGFRB", "1", "154170400", "5", "150125578", "--"]],
         columns=[
@@ -236,8 +234,9 @@ async def test_fusion_map(fusion_data_example, translator_instance):
 
 
 @pytest.mark.asyncio
-async def test_arriba(fusion_data_example, translator_instance):
+async def test_arriba(fusion_data_example, fusor_instance):
     """Test Arriba translator"""
+    translator_instance = Translator(fusor_instance)
     arriba_data = pd.DataFrame(
         [["TPM3", "PDGFRB", "1:154170400", "5:150125578", "-/-", "-/-", "."]],
         columns=[
@@ -257,8 +256,9 @@ async def test_arriba(fusion_data_example, translator_instance):
 
 
 @pytest.mark.asyncio
-async def test_cicero(fusion_data_example, translator_instance):
+async def test_cicero(fusion_data_example, fusor_instance):
     """Test CICERO translator"""
+    translator_instance = Translator(fusor_instance)
     cicero_data = pd.DataFrame(
         [["TPM3", "PDGFRB", "1", "-", "154170400", "5", "-", "150125578", "CTX"]],
         columns=[
@@ -280,8 +280,9 @@ async def test_cicero(fusion_data_example, translator_instance):
 
 
 @pytest.mark.asyncio
-async def test_enfusion(fusion_data_example, translator_instance):
+async def test_enfusion(fusion_data_example, fusor_instance):
     """Test EnFusion translator"""
+    translator_instance = Translator(fusor_instance)
     enfusion_data = pd.DataFrame(
         [["TPM3", "PDGFRB", "1", "-", "154170400", "5", "-", "150125578"]],
         columns=[
