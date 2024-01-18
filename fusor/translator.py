@@ -427,3 +427,39 @@ class Translator:
 
         ce = self._get_causative_event(enfusion_row["Chr1"], enfusion_row["Chr2"])
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
+
+    async def from_genie(self, genie_row: pd.DataFrame) -> AssayedFusion:
+        """Parse GENIE output to create AssayedFusion object
+        :param genie_row: A row of EnFusion output
+        :return: An AssayedFusion object, if construction is successful
+        """
+        gene1 = genie_row["Site1_Hugo_Symbol"]
+        gene2 = genie_row["Site2_Hugo_Symbol"]
+
+        gene_5prime = self.fusor.gene_element(gene=gene1)
+        gene_3prime = self.fusor.gene_element(gene=gene2)
+
+        if gene_5prime[0] is None or gene_3prime[0] is None:
+            print("Unable to normalize at least one gene partner")
+            return None
+
+        tr_5prime = await self.fusor.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome=genie_row["Site1_Chromosome"],
+            strand=1 if "+" in genie_row["Site1_Description"] else -1,
+            end=int(genie_row["Site1_Position"]),
+            gene=gene1,
+        )
+
+        tr_3prime = await self.fusor.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome=genie_row["Site2_Chromosome"],
+            strand=1 if "+" in genie_row["Site2_Description"] else -1,
+            start=int(genie_row["Site2_Position"]),
+            gene=gene2,
+        )
+
+        ce = self._get_causative_event(
+            genie_row["Site1_Chromosome"], genie_row["Site2_Chromosome"]
+        )
+        return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)

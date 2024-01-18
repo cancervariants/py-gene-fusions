@@ -300,3 +300,36 @@ async def test_enfusion(fusion_data_example, fusor_instance):
         0
     ].dict()
     compare_fusions(enfusion_fusor, fusion_data_example.dict())
+
+
+@pytest.mark.asyncio
+async def test_genie(fusion_data_example, fusor_instance):
+    """Test GENIE Translator"""
+    translator_instance = Translator(fusor_instance)
+    genie_data = pd.DataFrame(
+        [
+            [
+                "TPM3",
+                "PDGFRB",
+                "1",
+                "154170400",
+                "5",
+                "150125578",
+                "exon of TPM3(-): 68bp before exon 9",
+                "exon of PDGFRB(-):1 bp after start of exon 11",
+            ]
+        ],
+        columns=[
+            "Site1_Hugo_Symbol",
+            "Site2_Hugo_Symbol",
+            "Site1_Chromosome",
+            "Site1_Position",
+            "Site2_Chromosome",
+            "Site2_Position",
+            "Site1_Description",
+            "Site2_Description",
+        ],
+    )
+    genie_fusor = (await translator_instance.from_genie(genie_data.iloc[0]))[0].dict()
+    print(genie_fusor)
+    compare_fusions(genie_fusor, fusion_data_example.dict())
