@@ -331,5 +331,4 @@ async def test_genie(fusion_data_example, fusor_instance):
         ],
     )
     genie_fusor = (await translator_instance.from_genie(genie_data.iloc[0]))[0].dict()
-    print(genie_fusor)
     compare_fusions(genie_fusor, fusion_data_example.dict())
