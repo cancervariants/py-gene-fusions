@@ -344,7 +344,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
                 "associated_gene": gene_descriptors[0],
             }
         )
-    msg = "value is not a valid enumeration member; permitted: 'lost', 'preserved'"
+    msg = "Input should be 'lost' or 'preserved'"
     check_validation_error(exc_info, msg)
 
     # test domain ID CURIE requirement
@@ -357,7 +357,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
                 "associated_gene": gene_descriptors[0],
             }
         )
-    msg = 'string does not match regex "^\w[^:]*:.+$"'  # noqa: W605, Q003
+    msg = "String should match pattern '^\\w[^:]*:.+$'"  # noqa: W605, Q003
     check_validation_error(exc_info, msg)
 
 
@@ -422,7 +422,7 @@ def test_transcript_segment_element(transcript_segments):
                 },
             }
         )
-    msg = 'string does not match regex "^\\w[^:]*:.+$"'  # noqa: W605, Q003
+    msg = "String should match pattern '^\\w[^:]*:.+$'"  # noqa: W605, Q003
     check_validation_error(exc_info, msg)
 
     # test enum validation
@@ -456,7 +456,7 @@ def test_transcript_segment_element(transcript_segments):
                 },
             }
         )
-    msg = "unexpected value; permitted: <FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT: 'TranscriptSegmentElement'>"  # noqa: E501
+    msg = "Input should be <FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT: 'TranscriptSegmentElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
     # test element required
@@ -474,7 +474,7 @@ def test_transcript_segment_element(transcript_segments):
                 },
             }
         )
-    msg = "Must give `element_genomic_start` if `exon_start` is given"
+    msg = "Assertion failed, Must give `element_genomic_start` if `exon_start` is given"
     check_validation_error(exc_info, msg)
 
     # Neither exon_start or exon_end given
@@ -506,7 +506,7 @@ def test_transcript_segment_element(transcript_segments):
                 },
             }
         )
-    msg = "Must give values for either `exon_start`, `exon_end`, or both"
+    msg = "Assertion failed, Must give values for either `exon_start`, `exon_end`, or both"
     check_validation_error(exc_info, msg)
 
 
@@ -532,7 +532,7 @@ def test_linker_element(linkers):
         LinkerElement(
             **{"linker_sequence": {"id": "sequence:ACT1", "sequence": "ACT1"}}
         )
-    msg = "sequence does not match regex '^[A-Za-z*\\-]*$'"
+    msg = "String should match pattern '^[A-Z*\\-]*$'"
     check_validation_error(exc_info, msg)
 
     # test enum validation
@@ -543,7 +543,7 @@ def test_linker_element(linkers):
                 "linker_sequence": {"id": "sequence:ATG", "sequence": "ATG"},
             }
         )
-    msg = "unexpected value; permitted: <FUSORTypes.LINKER_SEQUENCE_ELEMENT: 'LinkerSequenceElement'>"  # noqa: E501
+    msg = "Input should be <FUSORTypes.LINKER_SEQUENCE_ELEMENT: 'LinkerSequenceElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
     # test no extras
@@ -555,7 +555,7 @@ def test_linker_element(linkers):
                 "bonus_value": "bonus",
             }
         )
-    msg = "extra fields not permitted"
+    msg = "Extra inputs are not permitted"
     check_validation_error(exc_info, msg)
 
 
@@ -596,7 +596,7 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
                 "sequence_id": "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
             }
         )
-    msg = "Must give values for either `location`, `location_id`, or both"
+    msg = "Field required"
     check_validation_error(exc_info, msg)
 
     # test enum validation
@@ -604,7 +604,7 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
         assert TemplatedSequenceElement(
             **{"type": "GeneElement", "region": location_descriptors[0], "strand": "+"}
         )
-    msg = "unexpected value; permitted: <FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT: 'TemplatedSequenceElement'>"  # noqa: E501
+    msg = "Input should be <FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT: 'TemplatedSequenceElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
@@ -627,7 +627,7 @@ def test_gene_element(gene_descriptors):
                 }
             }
         )
-    msg = 'string does not match regex "^\w[^:]*:.+$"'  # noqa: W605, Q003
+    msg = "String should match pattern '^\\w[^:]*:.+$'"  # noqa: W605, Q003
     check_validation_error(exc_info, msg)
 
     # test enum validation
@@ -635,7 +635,7 @@ def test_gene_element(gene_descriptors):
         assert GeneElement(
             **{"type": "UnknownGeneElement", "gene_descriptor": gene_descriptors[0]}
         )
-    msg = "unexpected value; permitted: <FUSORTypes.GENE_ELEMENT: 'GeneElement'>"
+    msg = "Input should be <FUSORTypes.GENE_ELEMENT: 'GeneElement'>"
     check_validation_error(exc_info, msg)
 
 
@@ -647,7 +647,7 @@ def test_unknown_gene_element():
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert UnknownGeneElement(type="gene")
-    msg = "unexpected value; permitted: <FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>"
+    msg = "Input should be <FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
@@ -659,7 +659,7 @@ def test_mult_gene_element():
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert MultiplePossibleGenesElement(type="unknown_gene")
-    msg = "unexpected value; permitted: <FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT: 'MultiplePossibleGenesElement'>"  # noqa: E501
+    msg = "Input should be <FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT: 'MultiplePossibleGenesElement'>"  # noqa: E501
     check_validation_error(exc_info, msg)
 
 
@@ -689,9 +689,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
                 "associated_gene": gene_descriptors[0],
             }
         )
-    assert exc_info.value.errors()[0]["msg"].startswith(
-        "value is not a valid enumeration member; permitted: "
-    )
+    assert exc_info.value.errors()[0]["msg"].startswith("Input should be")
 
     # require minimum input
     with pytest.raises(ValidationError) as exc_info:
@@ -702,7 +700,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
         )
     assert (
         exc_info.value.errors()[0]["msg"]
-        == "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
+        == "Value error, Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
     )
 
 
@@ -815,7 +813,7 @@ def test_fusion(
                 ],
             }
         )
-    msg = "First structural element cannot be LinkerSequence"
+    msg = "Value error, First structural element cannot be LinkerSequence"
     check_validation_error(exc_info, msg)
 
 
@@ -838,7 +836,7 @@ def test_fusion_element_count(
             }
         )
     element_ct_msg = (
-        "Fusions must contain >= 2 structural elements, or >=1 structural element "
+        "Value error, Fusions must contain >= 2 structural elements, or >=1 structural element "
         "and a regulatory element"
     )
     check_validation_error(exc_info, element_ct_msg)
@@ -865,7 +863,7 @@ def test_fusion_element_count(
     check_validation_error(exc_info, element_ct_msg)
 
     # unique gene requirements
-    uq_gene_error_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
+    uq_gene_error_msg = "Value error, Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(
             **{"structural_elements": [gene_elements[0], gene_elements[0]]}
@@ -944,7 +942,9 @@ def test_fusion_abstraction_validator(transcript_segments, linkers):
         assert AbstractFusion(
             **{"structural_elements": [transcript_segments[2], linkers[0]]}
         )
-    check_validation_error(exc_info, "Cannot instantiate Fusion abstract class")
+    check_validation_error(
+        exc_info, "Value error, Cannot instantiate Fusion abstract class"
+    )
 
 
 def test_file_examples():
@@ -970,7 +970,6 @@ def test_model_examples():
         CategoricalFusion,
     ]
     for model in models:
-        schema = {}
-        model.__config__.schema_extra(schema, None)
+        schema = model.model_config["json_schema_extra"]
         if "example" in schema:
             model(**schema["example"])

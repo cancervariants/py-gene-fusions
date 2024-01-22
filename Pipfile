@@ -4,12 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pydantic = "*"
-"ga4gh.vrsatile.pydantic" = "~=0.0.11"
+pydantic = "==2.*"
+"ga4gh.vrsatile.pydantic" = "~=0.2.0"
 "ga4gh.vrs" = "~=0.8.1"
 "biocommons.seqrepo" = "*"
-gene-normalizer = "~=0.1.35"
-cool-seq-tool = "~=0.1.13"
+gene-normalizer = "~=0.1.40-dev1"
+cool-seq-tool = "~=0.3.0-dev1"
 
 [dev-packages]
 fusor = {editable = true, path = "."}

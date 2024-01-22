@@ -1,10 +1,11 @@
 """Module for modifying fusion objects."""
+import re
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import quote
 
 from biocommons.seqrepo import SeqRepo
 from bioutils.accessions import coerce_namespace
-from cool_seq_tool import CoolSeqTool
+from cool_seq_tool.routers import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models
@@ -19,7 +20,7 @@ from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, LocationDesc
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.exceptions import FUSORParametersException, IDTranslationException
@@ -70,15 +71,13 @@ class FUSOR:
 
         :param seqrepo_data_path: Path to SeqRepo data directory
         :param gene_database: gene normalizer database instance
-        :param db_url: Postgres URL for UTA
+        :param uta_db_url: Postgres URL for UTA
         """
         self.seqrepo = SeqRepo(seqrepo_data_path)
         if not gene_database:
             gene_database = create_db()
         self.gene_normalizer = QueryHandler(gene_database)
-        self.cool_seq_tool = CoolSeqTool(
-            db_url=uta_db_url, gene_query_handler=self.gene_normalizer
-        )
+        self.cool_seq_tool = CoolSeqTool(db_url=uta_db_url)
 
     @staticmethod
     def _contains_element_type(kwargs: Dict, elm_type: StructuralElementType) -> bool:
@@ -173,7 +172,7 @@ class FUSOR:
             constituting the fusion
         :param Optional[RegulatoryElement] regulatory_element: affected
             regulatory element
-        :param Optional[List[FunctionalDomain]] domains: lost or preserved
+        :param Optional[List[FunctionalDomain]] critical_functional_domains: lost or preserved
             functional domains
         :param Optional[bool] r_frame_preserved: `True` if reading frame is
             preserved.  `False` otherwise
@@ -254,7 +253,9 @@ class FUSOR:
         :return: Transcript Segment Element, warning
         """
         if tx_to_genomic_coords:
-            data = await self.cool_seq_tool.transcript_to_genomic_coordinates(**kwargs)
+            data = await self.cool_seq_tool.ex_g_coords_mapper.transcript_to_genomic_coordinates(
+                **kwargs
+            )
         else:
             if "chromosome" in kwargs and kwargs.get("chromosome") is None:
                 msg = (
@@ -269,7 +270,7 @@ class FUSOR:
                 start = kwargs.get("start")
                 kwargs["start"] = start - 1 if start is not None else None
                 kwargs["residue_mode"] = "inter-residue"
-            data = await self.cool_seq_tool.genomic_to_transcript_exon_coordinates(
+            data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_transcript_exon_coordinates(
                 **kwargs
             )
 
@@ -373,7 +374,7 @@ class FUSOR:
         )
 
         if add_location_id:
-            location_id = self._location_id(region.location.dict())
+            location_id = self._location_id(region.location.model_dump())
             region.location_id = location_id
 
         return TemplatedSequenceElement(region=region, strand=strand)
@@ -503,6 +504,7 @@ class FUSOR:
         """Create RegulatoryElement
         :param RegulatoryClass regulatory_class: one of {"promoter", "enhancer"}
         :param str gene: gene term to fetch normalized descriptor for
+        :param bool use_minimal_gene_descr: whether to use the minimal gene descriptor
         :return: Tuple with RegulatoryElement instance and None value for warnings if
             successful, or a None value and warning message if unsuccessful
         """
@@ -510,7 +512,7 @@ class FUSOR:
             gene, use_minimal_gene_descr=use_minimal_gene_descr
         )
         if not gene_descr:
-            return (None, warning)
+            return None, warning
 
         try:
             return (
@@ -549,12 +551,11 @@ class FUSOR:
             Descriptor's id. `False`, use default of `label` > `sequence_id`
         """
         seq_id_input = sequence_id
+
         try:
             sequence_id = coerce_namespace(sequence_id)
         except ValueError:
-            try:
-                CURIE(__root__=sequence_id)
-            except ValidationError:
+            if not re.match(CURIE.__metadata__[0].pattern, sequence_id):
                 sequence_id = f"sequence.id:{sequence_id}"
 
         if seq_id_target_namespace:
@@ -577,7 +578,7 @@ class FUSOR:
         )
 
         if use_location_id:
-            _id = self._location_id(location.dict())
+            _id = self._location_id(location.model_dump())
         else:
             quote_id = quote(label) if label else quote(seq_id_input)
             _id = f"fusor.location_descriptor:{quote_id}"
@@ -633,7 +634,7 @@ class FUSOR:
         for structural_element in fusion.structural_elements:
             if isinstance(structural_element, TemplatedSequenceElement):
                 location = structural_element.region.location
-                location_id = self._location_id(location.dict())
+                location_id = self._location_id(location.model_dump())
                 structural_element.region.location_id = location_id
             elif isinstance(structural_element, TranscriptSegmentElement):
                 for element_genomic in [
@@ -643,19 +644,19 @@ class FUSOR:
                     if element_genomic:
                         location = element_genomic.location
                         if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                            location_id = self._location_id(location.dict())
+                            location_id = self._location_id(location.model_dump())
                             element_genomic.location_id = location_id
         if isinstance(fusion, CategoricalFusion) and fusion.critical_functional_domains:
             for domain in fusion.critical_functional_domains:
                 location = domain.sequence_location.location
-                location_id = self._location_id(location.dict())
+                location_id = self._location_id(location.model_dump())
                 domain.sequence_location.location_id = location_id
         if fusion.regulatory_element:
             element = fusion.regulatory_element
             if element.feature_location:
                 location = element.feature_location
                 if location.type == VRSTypes.SEQUENCE_LOCATION.value:
-                    location_id = self._location_id(location.dict())
+                    location_id = self._location_id(location.model_dump())
                     element.feature_location.location_id = location_id
         return fusion
 
@@ -732,9 +733,9 @@ class FUSOR:
         if fusion.type == FusionType.CATEGORICAL_FUSION:
             properties.append(fusion.critical_functional_domains)
 
-        for property in properties:
-            for obj in property:
-                if "gene_descriptor" in obj.__fields__.keys():
+        for prop in properties:
+            for obj in prop:
+                if "gene_descriptor" in obj.model_fields.keys():
                     label = obj.gene_descriptor.label
                     norm_gene_descr, _ = self._normalized_gene_descriptor(
                         label, use_minimal_gene_descr=False
@@ -742,13 +743,13 @@ class FUSOR:
                     if norm_gene_descr:
                         obj.gene_descriptor = norm_gene_descr
         if fusion.regulatory_element and fusion.regulatory_element.associated_gene:
-            re = fusion.regulatory_element
-            label = re.associated_gene.label
+            reg_el = fusion.regulatory_element
+            label = reg_el.associated_gene.label
             norm_gene_descr, _ = self._normalized_gene_descriptor(
                 label, use_minimal_gene_descr=False
             )
             if norm_gene_descr:
-                re.associated_gene = norm_gene_descr
+                reg_el.associated_gene = norm_gene_descr
         return fusion
 
     def _normalized_gene_descriptor(
