@@ -182,14 +182,25 @@ async def test_star_fusion(fusion_data_example, fusor_instance):
                 "PDGFRB^ENSG00000113721",
                 "chr1:154170400:-",
                 "chr5:150125578:-",
+                "INTERCHROMOSOMAL[chr1--chr5]",
             ]
         ],
-        columns=["LeftGene", "RightGene", "LeftBreakpoint", "RightBreakpoint"],
+        columns=[
+            "LeftGene",
+            "RightGene",
+            "LeftBreakpoint",
+            "RightBreakpoint",
+            "annots",
+        ],
     )
     star_fusion_fusor = (
         await translator_instance.from_star_fusion(star_fusion_data.iloc[0])
     )[0].dict()
     compare_fusions(star_fusion_fusor, fusion_data_example.dict())
+    assert (
+        star_fusion_fusor["causative_event"]["event_description"]
+        == "INTERCHROMOSOMAL[chr1--chr5]"
+    )
 
 
 @pytest.mark.asyncio
@@ -197,18 +208,31 @@ async def test_fusion_catcher(fusion_data_example, fusor_instance):
     """Test Fusion Catcher translator"""
     translator_instance = Translator(fusor_instance)
     fusion_catcher_data = pd.DataFrame(
-        [["TPM3", "PDGFRB", "1:154170400:-", "5:150125578:-"]],
+        [
+            [
+                "TPM3",
+                "PDGFRB",
+                "1:154170400:-",
+                "5:150125578:-",
+                "exonic(no-known-CDS)/exonic(no-known-CDS)",
+            ]
+        ],
         columns=[
             "Gene_1_symbol(5end_fusion_partner)",
             "Gene_2_symbol(3end_fusion_partner)",
             "Fusion_point_for_gene_1(5end_fusion_partner)",
             "Fusion_point_for_gene_2(3end_fusion_partner)",
+            "Predicted_effect",
         ],
     )
     fusion_catcher_fusor = (
         await translator_instance.from_fusion_catcher(fusion_catcher_data.iloc[0])
     )[0].dict()
     compare_fusions(fusion_catcher_fusor, fusion_data_example.dict())
+    assert (
+        fusion_catcher_fusor["causative_event"]["event_description"]
+        == "exonic(no-known-CDS)/exonic(no-known-CDS)"
+    )
 
 
 @pytest.mark.asyncio
@@ -216,7 +240,20 @@ async def test_fusion_map(fusion_data_example, fusor_instance):
     """Test Fusion Map translator"""
     translator_instance = Translator(fusor_instance)
     fusion_map_data = pd.DataFrame(
-        [["TPM3", "PDGFRB", "1", "154170400", "5", "150125578", "--"]],
+        [
+            [
+                "TPM3",
+                "PDGFRB",
+                "1",
+                "154170400",
+                "5",
+                "150125578",
+                "--",
+                "TPM3->PDGFRB",
+                "CanonicalPattern[Major]",
+                "InFrame",
+            ]
+        ],
         columns=[
             "KnownGene1",
             "KnownGene2",
@@ -225,12 +262,19 @@ async def test_fusion_map(fusion_data_example, fusor_instance):
             "Chromosome2",
             "Position2",
             "Strand",
+            "FusionGene",
+            "SplicePatternClass",
+            "FrameShiftClass",
         ],
     )
     fusion_map_fusor = (
         await translator_instance.from_fusion_map(fusion_map_data.iloc[0])
     )[0].dict()
     compare_fusions(fusion_map_fusor, fusion_data_example.dict())
+    assert (
+        fusion_map_fusor["causative_event"]["event_description"]
+        == "TPM3->PDGFRB,CanonicalPattern[Major],InFrame"
+    )
 
 
 @pytest.mark.asyncio
@@ -317,6 +361,7 @@ async def test_genie(fusion_data_example, fusor_instance):
                 "150125578",
                 "exon of TPM3(-): 68bp before exon 9",
                 "exon of PDGFRB(-):1 bp after start of exon 11",
+                "TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion",
             ]
         ],
         columns=[
@@ -328,7 +373,12 @@ async def test_genie(fusion_data_example, fusor_instance):
             "Site2_Position",
             "Site1_Description",
             "Site2_Description",
+            "Annotation",
         ],
     )
     genie_fusor = (await translator_instance.from_genie(genie_data.iloc[0]))[0].dict()
     compare_fusions(genie_fusor, fusion_data_example.dict())
+    assert (
+        genie_fusor["causative_event"]["event_description"]
+        == "TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion"
+    )

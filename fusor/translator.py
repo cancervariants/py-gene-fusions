@@ -106,17 +106,21 @@ class Translator:
                     None,
                 )
 
-    def _get_causative_event(self, chrom1: str, chrom2: str) -> CausativeEvent:
+    def _get_causative_event(
+        self, chrom1: str, chrom2: str, descr: Optional[str] = None
+    ) -> CausativeEvent:
         """Infer Causative Event. Currently restricted to rearrangements
         :param chrom1: The chromosome for the 5' partner
         :param chrom2: The chromosome for the 3' partner
         :return: A CausativeEvent object if construction is successful
         """
-        return (
-            CausativeEvent(event_type=EventType("rearrangement"))
-            if chrom1 != chrom2
-            else None
-        )
+        if chrom1 != chrom2 and descr is not None:
+            return CausativeEvent(
+                event_type=EventType("rearrangement"), event_description=descr
+            )
+        elif chrom1 != chrom2:
+            return CausativeEvent(event_type=EventType("rearrangement"))
+        return None
 
     async def from_jaffa(self, jaffa_row: pd.DataFrame) -> AssayedFusion:
         """Parse JAFFA fusion output to create AssayedFusion object
@@ -200,7 +204,7 @@ class Translator:
             gene=gene2,
         )
 
-        ce = self._get_causative_event(chrom1, chrom2)
+        ce = self._get_causative_event(chrom1, chrom2, sf_row["annots"])
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_fusion_catcher(self, fc_row: pd.DataFrame) -> AssayedFusion:
@@ -243,7 +247,7 @@ class Translator:
             gene=gene2,
         )
 
-        ce = self._get_causative_event(chrom1, chrom2)
+        ce = self._get_causative_event(chrom1, chrom2, fc_row["Predicted_effect"])
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_fusion_map(self, fmap_row: pd.DataFrame) -> AssayedFusion:
@@ -276,7 +280,17 @@ class Translator:
             gene=gene2,
         )
 
-        ce = self._get_causative_event(fmap_row["Chromosome1"], fmap_row["Chromosome2"])
+        # Combine columns to create fusion annotation string"
+        descr = (
+            fmap_row["FusionGene"]
+            + ","
+            + fmap_row["SplicePatternClass"]
+            + ","
+            + fmap_row["FrameShiftClass"]
+        )
+        ce = self._get_causative_event(
+            fmap_row["Chromosome1"], fmap_row["Chromosome2"], descr
+        )
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_arriba(self, arriba_row: pd.DataFrame) -> AssayedFusion:
@@ -460,6 +474,8 @@ class Translator:
         )
 
         ce = self._get_causative_event(
-            genie_row["Site1_Chromosome"], genie_row["Site2_Chromosome"]
+            genie_row["Site1_Chromosome"],
+            genie_row["Site2_Chromosome"],
+            genie_row["Annotation"],
         )
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
