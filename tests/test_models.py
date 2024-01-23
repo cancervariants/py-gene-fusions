@@ -2,6 +2,8 @@
 import copy
 
 import pytest
+from pydantic import ValidationError
+
 from fusor.models import (
     AbstractFusion,
     Assay,
@@ -18,7 +20,6 @@ from fusor.models import (
     TranscriptSegmentElement,
     UnknownGeneElement,
 )
-from pydantic import ValidationError
 
 
 @pytest.fixture(scope="module")

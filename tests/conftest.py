@@ -1,5 +1,6 @@
 """Module containing methods and fixtures used throughout tests."""
 import pytest
+
 from fusor.fusor import FUSOR
 
 
