@@ -448,7 +448,7 @@ class AbstractFusion(BaseModel, ABC):
     def _access_object_attr(
         cls: Type[FusionType],
         obj: Union[Dict, BaseModel],
-        attr_name: str,  # noqa: ANN102
+        attr_name: str,
     ) -> Optional[Any]:  # noqa: ANN401
         """Help enable safe access of object properties while performing
         validation for Pydantic class objects. Because the validator could be handling either
@@ -477,7 +477,7 @@ class AbstractFusion(BaseModel, ABC):
     def _fetch_gene_id(
         cls: Type[FusionType],
         obj: Union[Dict, BaseModel],
-        gene_descriptor_field: str,  # noqa: ANN102
+        gene_descriptor_field: str,
     ) -> Optional[str]:
         """Get gene ID if element includes a gene annotation.
 
@@ -526,7 +526,7 @@ class AbstractFusion(BaseModel, ABC):
         if (num_structural_elements + bool(reg_element)) < 2:
             raise ValueError(qt_error_msg)
 
-        uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
+        uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
         gene_ids = []
         if reg_element:
             gene_id = cls._fetch_gene_id(
@@ -647,7 +647,7 @@ class CausativeEvent(BaseModelForbidExtra):
             "example": {
                 "type": "CausativeEvent",
                 "event_type": "rearrangement",
-                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
             }
         },
     )
@@ -672,7 +672,7 @@ class AssayedFusion(AbstractFusion):
                 "causative_event": {
                     "type": "CausativeEvent",
                     "event_type": "rearrangement",
-                    "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+                    "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
                 },
                 "assay": {
                     "type": "Assay",
@@ -759,7 +759,7 @@ class CategoricalFusion(AbstractFusion):
                             "type": "LocationDescriptor",
                             "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",
                             "location": {
-                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
+                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
                                 "type": "SequenceLocation",
                                 "interval": {
                                     "start": {"type": "Number", "value": 154192135},
@@ -773,7 +773,7 @@ class CategoricalFusion(AbstractFusion):
                             "type": "LocationDescriptor",
                             "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",
                             "location": {
-                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
+                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
                                 "type": "SequenceLocation",
                                 "interval": {
                                     "start": {"type": "Number", "value": 154170398},

@@ -2,8 +2,6 @@
 import copy
 
 import pytest
-from pydantic import ValidationError
-
 from fusor.models import (
     AbstractFusion,
     Assay,
@@ -20,6 +18,7 @@ from fusor.models import (
     TranscriptSegmentElement,
     UnknownGeneElement,
 )
+from pydantic import ValidationError
 
 
 @pytest.fixture(scope="module")
@@ -456,7 +455,7 @@ def test_transcript_segment_element(transcript_segments):
                 },
             }
         )
-    msg = "Input should be <FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT: 'TranscriptSegmentElement'>"  # noqa: E501
+    msg = "Input should be <FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT: 'TranscriptSegmentElement'>"
     check_validation_error(exc_info, msg)
 
     # test element required
@@ -543,7 +542,9 @@ def test_linker_element(linkers):
                 "linker_sequence": {"id": "sequence:ATG", "sequence": "ATG"},
             }
         )
-    msg = "Input should be <FUSORTypes.LINKER_SEQUENCE_ELEMENT: 'LinkerSequenceElement'>"  # noqa: E501
+    msg = (
+        "Input should be <FUSORTypes.LINKER_SEQUENCE_ELEMENT: 'LinkerSequenceElement'>"
+    )
     check_validation_error(exc_info, msg)
 
     # test no extras
@@ -604,7 +605,7 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
         assert TemplatedSequenceElement(
             **{"type": "GeneElement", "region": location_descriptors[0], "strand": "+"}
         )
-    msg = "Input should be <FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT: 'TemplatedSequenceElement'>"  # noqa: E501
+    msg = "Input should be <FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT: 'TemplatedSequenceElement'>"
     check_validation_error(exc_info, msg)
 
 
@@ -647,7 +648,7 @@ def test_unknown_gene_element():
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert UnknownGeneElement(type="gene")
-    msg = "Input should be <FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>"  # noqa: E501
+    msg = "Input should be <FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>"
     check_validation_error(exc_info, msg)
 
 
@@ -659,7 +660,7 @@ def test_mult_gene_element():
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert MultiplePossibleGenesElement(type="unknown_gene")
-    msg = "Input should be <FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT: 'MultiplePossibleGenesElement'>"  # noqa: E501
+    msg = "Input should be <FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT: 'MultiplePossibleGenesElement'>"
     check_validation_error(exc_info, msg)
 
 
@@ -776,7 +777,7 @@ def test_fusion(
             "causative_event": {
                 "type": "CausativeEvent",
                 "event_type": "rearrangement",
-                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
             },
             "assay": {
                 "type": "Assay",
@@ -849,7 +850,7 @@ def test_fusion_element_count(
                 "causative_event": {
                     "type": "CausativeEvent",
                     "event_type": "rearrangement",
-                    "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+                    "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
                 },
                 "assay": {
                     "type": "Assay",
@@ -863,7 +864,7 @@ def test_fusion_element_count(
     check_validation_error(exc_info, element_ct_msg)
 
     # unique gene requirements
-    uq_gene_error_msg = "Value error, Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
+    uq_gene_error_msg = "Value error, Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(
             **{"structural_elements": [gene_elements[0], gene_elements[0]]}

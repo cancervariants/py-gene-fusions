@@ -1,6 +1,5 @@
 """Test nomenclature generation."""
 import pytest
-
 from fusor.models import AssayedFusion, CategoricalFusion, TranscriptSegmentElement
 from fusor.nomenclature import tx_segment_nomenclature
 
@@ -285,7 +284,7 @@ def test_generate_nomenclature(
     nm = fusor_instance.generate_nomenclature(reg_location_example)
     assert (
         nm
-        == "reg_p_NC_000023.11(chr X):g.1462581_1534182@P2RY8(hgnc:15524)::SOX5(hgnc:11201)"  # noqa: E501
+        == "reg_p_NC_000023.11(chr X):g.1462581_1534182@P2RY8(hgnc:15524)::SOX5(hgnc:11201)"
     )
 
     nm = fusor_instance.generate_nomenclature(exon_offset_example)

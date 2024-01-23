@@ -381,7 +381,8 @@ class FUSOR:
 
     @staticmethod
     def linker_element(
-        sequence: str, residue_type: CURIE = "SO:0000348"  # type: ignore
+        sequence: str,
+        residue_type: CURIE = "SO:0000348",  # type: ignore
     ) -> Tuple[Optional[LinkerElement], Optional[str]]:
         """Create linker element
 
