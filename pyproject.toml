@@ -34,7 +34,7 @@ dependencies = [
     "gene-normalizer ~=0.1.40-dev1",
     "cool-seq-tool ~=0.3.0-dev1",
 ]
-dynamic="version"
+dynamic=["version"]
 
 [project.optional-dependencies]
 tests = ["pytest", "pytest-cov", "pytest-asyncio"]
