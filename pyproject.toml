@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.ruff]
-src = ["src"]
+src = ["fusor"]
 # pycodestyle (E, W)
 # Pyflakes (F)
 # flake8-annotations (ANN)
