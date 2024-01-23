@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.ruff]
-src = ["fusor"]
+src = ["src"]
 # pycodestyle (E, W)
 # Pyflakes (F)
 # flake8-annotations (ANN)
@@ -40,9 +40,7 @@ ignore = [
 # ANN2 - missing-return-type
 # ANN102 - missing-type-cls
 # N805 - invalid-first-argument-name-for-method
-# F821 - undefined-name
 # F401 - unused-import
 "tests/*" = ["ANN001", "ANN2", "ANN102"]
-"setup.py" = ["F821"]
 "*__init__.py" = ["F401"]
-"fusor/models.py" = ["ANN201", "N805", "ANN001", "ANN2"]
+"src/fusor/models.py" = ["ANN201", "N805", "ANN001", "ANN2"]
