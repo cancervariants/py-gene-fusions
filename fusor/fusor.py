@@ -1,4 +1,5 @@
 """Module for modifying fusion objects."""
+import logging
 import re
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import quote
@@ -22,7 +23,6 @@ from gene.database import create_db
 from gene.query import QueryHandler
 from pydantic import ValidationError
 
-from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.exceptions import FUSORParametersException, IDTranslationException
 from fusor.models import (
     AdditionalFields,
@@ -57,15 +57,17 @@ from fusor.nomenclature import (
 )
 from fusor.tools import translate_identifier
 
+_logger = logging.getLogger(__name__)
+
 
 class FUSOR:
     """Class for modifying fusion objects."""
 
     def __init__(
         self,
-        seqrepo_data_path: str = SEQREPO_DATA_PATH,
+        seqrepo_data_path: Optional[str] = None,
         gene_database: Optional[GeneDatabase] = None,
-        uta_db_url: str = UTA_DB_URL,
+        uta_db_url: Optional[str] = None,
     ) -> None:
         """Initialize FUSOR class.
 
@@ -73,11 +75,17 @@ class FUSOR:
         :param gene_database: gene normalizer database instance
         :param uta_db_url: Postgres URL for UTA
         """
-        self.seqrepo = SeqRepo(seqrepo_data_path)
         if not gene_database:
             gene_database = create_db()
         self.gene_normalizer = QueryHandler(gene_database)
-        self.cool_seq_tool = CoolSeqTool(db_url=uta_db_url)
+
+        cst_params = {}
+        if uta_db_url:
+            cst_params["db_url"] = uta_db_url
+        if seqrepo_data_path:
+            cst_params["sr"] = SeqRepo(seqrepo_data_path)
+        self.cool_seq_tool = CoolSeqTool(**cst_params)
+        self.seqrepo = self.cool_seq_tool.seqrepo_access.sr
 
     @staticmethod
     def _contains_element_type(kwargs: Dict, elm_type: StructuralElementType) -> bool:
@@ -262,7 +270,7 @@ class FUSOR:
                     "`chromosome` is required when going from genomic to"
                     " transcript exon coordinates"
                 )
-                logger.warning(msg)
+                _logger.warning(msg)
                 return None, [msg]
             residue_mode = kwargs.get("residue_mode")
             # TODO: Remove once fixed in cool_seq_tool
@@ -403,7 +411,7 @@ class FUSOR:
             return LinkerElement(**params), None
         except ValidationError as e:
             msg = str(e)
-            logger.warning(msg)
+            _logger.warning(msg)
             return None, msg
 
     @staticmethod
@@ -459,7 +467,7 @@ class FUSOR:
             sequence_id_lower.startswith("ensp")
         ):
             msg = "Sequence_id must be a protein accession."
-            logger.warning(msg)
+            _logger.warning(msg)
             return None, msg
 
         seq, warning = self.cool_seq_tool.seqrepo_access.get_reference_sequence(
@@ -492,7 +500,7 @@ class FUSOR:
             )
         except ValidationError as e:
             msg = str(e)
-            logger.warning(msg)
+            _logger.warning(msg)
             return None, msg
 
     def regulatory_element(
@@ -523,7 +531,7 @@ class FUSOR:
             )
         except ValidationError as e:
             msg = str(e)
-            logger.warning(msg)
+            _logger.warning(msg)
             return None, msg
 
     def _location_descriptor(
@@ -564,7 +572,7 @@ class FUSOR:
                     self.seqrepo, sequence_id, target_namespace=seq_id_target_namespace
                 )
             except IDTranslationException:
-                logger.warning(
+                _logger.warning(
                     f"Unable to translate {sequence_id} using"
                     f" {seq_id_target_namespace} as the target"
                     f" namespace"
@@ -622,7 +630,7 @@ class FUSOR:
                     elif field == AdditionalFields.LOCATION_ID.value:
                         self.add_location_id(fusion)
                     else:
-                        logger.warning(f"Invalid field: {field}")
+                        _logger.warning(f"Invalid field: {field}")
         return fusion
 
     def add_location_id(self, fusion: Fusion) -> Fusion:
