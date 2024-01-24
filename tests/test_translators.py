@@ -155,7 +155,19 @@ async def test_jaffa(fusion_data_example, fusor_instance):
     """Test JAFFA translator"""
     translator_instance = Translator(fusor_instance)
     jaffa_data = pd.DataFrame(
-        [["TPM3:PDGFRB", "chr1", "154170400", "-", "chr5", "150125578", "-", True]],
+        [
+            [
+                "TPM3:PDGFRB",
+                "chr1",
+                "154170400",
+                "-",
+                "chr5",
+                "150125578",
+                "-",
+                True,
+                "HighConfidence",
+            ]
+        ],
         columns=[
             "fusion genes",
             "chrom1",
@@ -165,10 +177,12 @@ async def test_jaffa(fusion_data_example, fusor_instance):
             "base2",
             "strand2",
             "rearrangement",
+            "classification",
         ],
     )
     jaffa_fusor = (await translator_instance.from_jaffa(jaffa_data.iloc[0]))[0].dict()
     compare_fusions(jaffa_fusor, fusion_data_example.dict())
+    assert jaffa_fusor["causative_event"]["event_description"] == "HighConfidence"
 
 
 @pytest.mark.asyncio
@@ -282,7 +296,7 @@ async def test_arriba(fusion_data_example, fusor_instance):
     """Test Arriba translator"""
     translator_instance = Translator(fusor_instance)
     arriba_data = pd.DataFrame(
-        [["TPM3", "PDGFRB", "1:154170400", "5:150125578", "-/-", "-/-", "."]],
+        [["TPM3", "PDGFRB", "1:154170400", "5:150125578", "-/-", "-/-", ".", "high"]],
         columns=[
             "gene1",
             "gene2",
@@ -291,12 +305,14 @@ async def test_arriba(fusion_data_example, fusor_instance):
             "strand1(gene/fusion)",
             "strand2(gene/fusion)",
             "type",
+            "confidence",
         ],
     )
     arriba_fusor = (await translator_instance.from_arriba(arriba_data.iloc[0]))[
         0
     ].dict()
     compare_fusions(arriba_fusor, fusion_data_example.dict())
+    assert arriba_fusor["causative_event"]["event_description"] == "high"
 
 
 @pytest.mark.asyncio
@@ -304,7 +320,7 @@ async def test_cicero(fusion_data_example, fusor_instance):
     """Test CICERO translator"""
     translator_instance = Translator(fusor_instance)
     cicero_data = pd.DataFrame(
-        [["TPM3", "PDGFRB", "1", "-", "154170400", "5", "-", "150125578", "CTX"]],
+        [["TPM3", "PDGFRB", "1", "-", "154170400", "5", "-", "150125578", "CTX", "HQ"]],
         columns=[
             "geneA",
             "geneB",
@@ -315,12 +331,14 @@ async def test_cicero(fusion_data_example, fusor_instance):
             "ortB",
             "posB",
             "type",
+            "rating",
         ],
     )
     cicero_fusor = (await translator_instance.from_cicero(cicero_data.iloc[0]))[
         0
     ].dict()
     compare_fusions(cicero_fusor, fusion_data_example.dict())
+    assert cicero_fusor["causative_event"]["event_description"] == "HQ"
 
 
 @pytest.mark.asyncio

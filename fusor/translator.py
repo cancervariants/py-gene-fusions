@@ -112,6 +112,7 @@ class Translator:
         """Infer Causative Event. Currently restricted to rearrangements
         :param chrom1: The chromosome for the 5' partner
         :param chrom2: The chromosome for the 3' partner
+        :param annots: An annotation describing the fusion event. This input is supplied to the event_description CausativeEvent attribute.
         :return: A CausativeEvent object if construction is successful
         """
         if chrom1 != chrom2 and descr is not None:
@@ -158,7 +159,10 @@ class Translator:
         )
 
         if jaffa_row.rearrangement:
-            ce = CausativeEvent(event_type=EventType("rearrangement"))
+            ce = CausativeEvent(
+                event_type=EventType("rearrangement"),
+                event_description=jaffa_row["classification"],
+            )
         else:
             ce = None
 
@@ -328,9 +332,15 @@ class Translator:
         )
 
         ce = (
-            CausativeEvent(event_type=EventType("read-through"))
+            CausativeEvent(
+                event_type=EventType("read-through"),
+                event_description=arriba_row["confidence"],
+            )
             if "read_through" in arriba_row["type"]
-            else CausativeEvent(event_type=EventType("rearrangement"))
+            else CausativeEvent(
+                event_type=EventType("rearrangement"),
+                event_description=arriba_row["confidence"],
+            )
         )
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
@@ -366,10 +376,16 @@ class Translator:
         )
 
         if cicero_row["type"] == "read_through":
-            ce = CausativeEvent(event_type=EventType("read-through"))
+            ce = CausativeEvent(
+                event_type=EventType("read-through"),
+                event_description=cicero_row["rating"],
+            )
         else:
             if cicero_row["type"] != "Internal_dup":
-                ce = CausativeEvent(event_type=EventType("rearrangement"))
+                ce = CausativeEvent(
+                    event_type=EventType("rearrangement"),
+                    event_description=cicero_row["rating"],
+                )
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_mapsplice(self, mapsplice_row: pd.DataFrame) -> AssayedFusion:
