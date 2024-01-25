@@ -1,10 +1,9 @@
 """Model for fusion class"""
 from abc import ABC
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Set, Union
+from typing import Any, Dict, List, Literal, Optional, Set, Type, Union
 
 from ga4gh.vrsatile.pydantic import return_value
-from ga4gh.vrsatile.pydantic.vrs_models import Sequence
 from ga4gh.vrsatile.pydantic.vrsatile_models import (
     CURIE,
     GeneDescriptor,
@@ -13,24 +12,18 @@ from ga4gh.vrsatile.pydantic.vrsatile_models import (
 )
 from pydantic import (
     BaseModel,
-    Extra,
+    ConfigDict,
     StrictBool,
     StrictInt,
     StrictStr,
-    ValidationError,
-    root_validator,
-    validator,
+    field_validator,
+    model_validator,
 )
 from pydantic.fields import Field
 
 
-class BaseModelForbidExtra(BaseModel):
-    """Base model with extra fields forbidden."""
-
-    class Config:
-        """Configure class."""
-
-        extra = Extra.forbid
+class BaseModelForbidExtra(BaseModel, extra="forbid"):
+    """Base Pydantic model class with extra values forbidden."""
 
 
 class FUSORTypes(str, Enum):
@@ -70,25 +63,16 @@ class FunctionalDomain(BaseModel):
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
     associated_gene: GeneDescriptor
-    id: Optional[CURIE] = Field(alias="_id")
-    label: Optional[StrictStr]
-    sequence_location: Optional[LocationDescriptor]
+    id: Optional[CURIE] = Field(None, alias="_id")
+    label: Optional[StrictStr] = None
+    sequence_location: Optional[LocationDescriptor] = None
 
-    _get_id_val = validator("id", allow_reuse=True)(return_value)
+    _get_id_val = field_validator("id")(return_value)
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        allow_population_by_field_name = True
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_schema_extra={
+            "example": {
                 "type": "FunctionalDomain",
                 "status": "lost",
                 "label": "Tyrosine-protein kinase, catalytic domain",
@@ -112,6 +96,8 @@ class FunctionalDomain(BaseModel):
                     },
                 },
             }
+        },
+    )
 
 
 class StructuralElementType(str, Enum):
@@ -138,15 +124,15 @@ class TranscriptSegmentElement(BaseStructuralElement):
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     ] = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     transcript: CURIE
-    exon_start: Optional[StrictInt]
+    exon_start: Optional[StrictInt] = None
     exon_start_offset: Optional[StrictInt] = 0
-    exon_end: Optional[StrictInt]
+    exon_end: Optional[StrictInt] = None
     exon_end_offset: Optional[StrictInt] = 0
     gene_descriptor: GeneDescriptor
-    element_genomic_start: Optional[LocationDescriptor]
-    element_genomic_end: Optional[LocationDescriptor]
+    element_genomic_start: Optional[LocationDescriptor] = None
+    element_genomic_end: Optional[LocationDescriptor] = None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def check_exons(cls, values):
         """Check that at least one of {`exon_start`, `exon_end`} is set.
         If set, check that the corresponding `element_genomic` field is set.
@@ -171,19 +157,10 @@ class TranscriptSegmentElement(BaseStructuralElement):
             values["exon_end_offset"] = None
         return values
 
-    _get_transcript_val = validator("transcript", allow_reuse=True)(return_value)
-
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    _get_transcript_val = field_validator("transcript")(return_value)
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
                 "exon_start": 1,
@@ -225,9 +202,11 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     },
                 },
             }
+        },
+    )
 
 
-class LinkerElement(BaseStructuralElement):
+class LinkerElement(BaseStructuralElement, extra="forbid"):
     """Define Linker class (linker sequence)"""
 
     type: Literal[
@@ -235,39 +214,24 @@ class LinkerElement(BaseStructuralElement):
     ] = FUSORTypes.LINKER_SEQUENCE_ELEMENT
     linker_sequence: SequenceDescriptor
 
-    @validator("linker_sequence", pre=True)
+    @field_validator("linker_sequence", mode="before")
     def validate_sequence(cls, v):
         """Enforce nucleotide base code requirements on sequence literals."""
         if isinstance(v, dict):
             try:
                 v["sequence"] = v["sequence"].upper()
-                seq = v["sequence"]
             except KeyError:
                 raise TypeError
         elif isinstance(v, SequenceDescriptor):
             v.sequence = v.sequence.upper()
-            seq = v.sequence
         else:
             raise TypeError
 
-        try:
-            Sequence(__root__=seq)
-        except ValidationError:
-            raise AssertionError("sequence does not match regex '^[A-Za-z*\\-]*$'")
-
         return v
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "LinkerSequenceElement",
                 "linker_sequence": {
                     "id": "sequence:ACGT",
@@ -276,6 +240,8 @@ class LinkerElement(BaseStructuralElement):
                     "residue_type": "SO:0000348",
                 },
             }
+        },
+    )
 
 
 class Strand(str, Enum):
@@ -297,17 +263,9 @@ class TemplatedSequenceElement(BaseStructuralElement):
     region: LocationDescriptor
     strand: Strand
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "TemplatedSequenceElement",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
@@ -326,6 +284,8 @@ class TemplatedSequenceElement(BaseStructuralElement):
                 },
                 "strand": "+",
             }
+        },
+    )
 
 
 class GeneElement(BaseStructuralElement):
@@ -334,17 +294,9 @@ class GeneElement(BaseStructuralElement):
     type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
     gene_descriptor: GeneDescriptor
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "GeneElement",
                 "gene_descriptor": {
                     "id": "gene:BRAF",
@@ -353,6 +305,8 @@ class GeneElement(BaseStructuralElement):
                     "type": "GeneDescriptor",
                 },
             }
+        },
+    )
 
 
 class UnknownGeneElement(BaseStructuralElement):
@@ -367,17 +321,9 @@ class UnknownGeneElement(BaseStructuralElement):
 
     type: Literal[FUSORTypes.UNKNOWN_GENE_ELEMENT] = FUSORTypes.UNKNOWN_GENE_ELEMENT
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {"type": "UnknownGeneElement"}
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"type": "UnknownGeneElement"}},
+    )
 
 
 class MultiplePossibleGenesElement(BaseStructuralElement):
@@ -395,17 +341,9 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
         FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
     ] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {"type": "MultiplePossibleGenesElement"}
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"type": "MultiplePossibleGenesElement"}},
+    )
 
 
 class RegulatoryClass(str, Enum):
@@ -449,9 +387,9 @@ class RegulatoryElement(BaseModel):
     associated_gene: Optional[GeneDescriptor] = None
     feature_location: Optional[LocationDescriptor] = None
 
-    _get_ref_id_val = validator("feature_id", allow_reuse=True)(return_value)
+    _get_ref_id_val = field_validator("feature_id")(return_value)
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def ensure_min_values(cls, values):
         """Ensure that one of {`feature_id`, `feature_location`}, and/or
         `associated_gene` is set.
@@ -464,17 +402,9 @@ class RegulatoryElement(BaseModel):
             )
         return values
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "RegulatoryElement",
                 "regulatory_class": "promoter",
                 "feature_location": {
@@ -491,6 +421,8 @@ class RegulatoryElement(BaseModel):
                     },
                 },
             }
+        },
+    )
 
 
 class FusionType(str, Enum):
@@ -514,7 +446,9 @@ class AbstractFusion(BaseModel, ABC):
 
     @classmethod
     def _access_object_attr(
-        cls, obj: Union[Dict, BaseModel], attr_name: str  # noqa: ANN102
+        cls: Type[FusionType],
+        obj: Union[Dict, BaseModel],
+        attr_name: str,  # noqa: ANN102
     ) -> Optional[Any]:  # noqa: ANN401
         """Help enable safe access of object properties while performing
         validation for Pydantic class objects. Because the validator could be handling either
@@ -541,7 +475,9 @@ class AbstractFusion(BaseModel, ABC):
 
     @classmethod
     def _fetch_gene_id(
-        cls, obj: Union[Dict, BaseModel], gene_descriptor_field: str  # noqa: ANN102
+        cls: Type[FusionType],
+        obj: Union[Dict, BaseModel],
+        gene_descriptor_field: str,  # noqa: ANN102
     ) -> Optional[str]:
         """Get gene ID if element includes a gene annotation.
 
@@ -552,19 +488,24 @@ class AbstractFusion(BaseModel, ABC):
         """
         gene_descriptor = cls._access_object_attr(obj, gene_descriptor_field)
         if gene_descriptor:
-            gene = cls._access_object_attr(gene_descriptor, "gene")
-            if gene:
-                gene_id = cls._access_object_attr(gene, "gene_id")
+            gene_value = cls._access_object_attr(gene_descriptor, "gene")
+            if gene_value:
+                gene_id = cls._access_object_attr(gene_value, "gene_id")
+                if gene_id:
+                    return gene_id
+            gene_id = cls._access_object_attr(gene_descriptor, "gene_id")
+            if gene_id:
                 return gene_id
+        return None
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def enforce_abc(cls, values):
         """Ensure only subclasses can be instantiated."""
         if cls.__name__ == "AbstractFusion":
             raise ValueError("Cannot instantiate Fusion abstract class")
         return values
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     def enforce_element_quantities(cls, values):
         """Ensure minimum # of elements, and require > 1 unique genes.
 
@@ -588,12 +529,16 @@ class AbstractFusion(BaseModel, ABC):
         uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
         gene_ids = []
         if reg_element:
-            gene_id = cls._fetch_gene_id(reg_element, "associated_gene")
+            gene_id = cls._fetch_gene_id(
+                obj=reg_element, gene_descriptor_field="associated_gene"
+            )
             if gene_id:
                 gene_ids.append(gene_id)
 
         for element in structural_elements:
-            gene_id = cls._fetch_gene_id(element, "gene_descriptor")
+            gene_id = cls._fetch_gene_id(
+                obj=element, gene_descriptor_field="gene_descriptor"
+            )
             if gene_id:
                 gene_ids.append(gene_id)
 
@@ -604,12 +549,12 @@ class AbstractFusion(BaseModel, ABC):
             raise ValueError(uq_gene_msg)
         return values
 
-    @root_validator(skip_on_failure=True)
+    @model_validator(mode="after")
     def structural_elements_ends(cls, values):
         """Ensure start/end elements are of legal types and have fields
         required by their position.
         """
-        elements = values.get("structural_elements", [])
+        elements = values.structural_elements
         if isinstance(elements[0], TranscriptSegmentElement):
             if elements[0].exon_end is None and not values["regulatory_element"]:
                 raise ValueError(
@@ -646,26 +591,24 @@ class Assay(BaseModelForbidExtra):
     """Information pertaining to the assay used in identifying the fusion."""
 
     type: Literal["Assay"] = "Assay"
-    assay_name: StrictStr
-    assay_id: CURIE
-    method_uri: CURIE
-    fusion_detection: Evidence
+    assay_name: Optional[StrictStr] = None
+    assay_id: Optional[CURIE] = None
+    method_uri: Optional[CURIE] = None
+    fusion_detection: Optional[Evidence] = None
 
-    _get_assay_id_val = validator("assay_id", allow_reuse=True)(return_value)
-    _get_method_uri_val = validator("method_uri", allow_reuse=True)(return_value)
+    _get_assay_id_val = field_validator("assay_id")(return_value)
+    _get_method_uri_val = field_validator("method_uri")(return_value)
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "method_uri": "pmid:33576979",
                 "assay_id": "obi:OBI_0003094",
                 "assay_name": "fluorescence in-situ hybridization assay",
                 "fusion_detection": "inferred",
             }
+        }
+    )
 
 
 AssayedFusionElements = List[
@@ -697,23 +640,17 @@ class CausativeEvent(BaseModelForbidExtra):
 
     type: Literal[FUSORTypes.CAUSATIVE_EVENT] = FUSORTypes.CAUSATIVE_EVENT
     event_type: EventType
-    event_description: Optional[StrictStr]
+    event_description: Optional[StrictStr] = None
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class"""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide schema"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "CausativeEvent",
                 "event_type": "rearrangement",
                 "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
             }
+        },
+    )
 
 
 class AssayedFusion(AbstractFusion):
@@ -728,17 +665,9 @@ class AssayedFusion(AbstractFusion):
     causative_event: Optional[CausativeEvent] = None
     assay: Optional[Assay] = None
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "AssayedFusion",
                 "causative_event": {
                     "type": "CausativeEvent",
@@ -765,6 +694,8 @@ class AssayedFusion(AbstractFusion):
                     {"type": "UnknownGeneElement"},
                 ],
             }
+        },
+    )
 
 
 CategoricalFusionElements = List[
@@ -786,21 +717,13 @@ class CategoricalFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
-    r_frame_preserved: Optional[StrictBool]
-    critical_functional_domains: Optional[List[FunctionalDomain]]
+    r_frame_preserved: Optional[StrictBool] = None
+    critical_functional_domains: Optional[List[FunctionalDomain]] = None
     structural_elements: CategoricalFusionElements
 
-    class Config(BaseModelForbidExtra.Config):
-        """Configure class."""
-
-        @staticmethod
-        def schema_extra(schema, _):
-            """Provide example"""
-            if "title" in schema.keys():
-                schema.pop("title", None)
-            for prop in schema.get("properties", {}).values():
-                prop.pop("title", None)
-            schema["example"] = {
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
                 "type": "CategoricalFusion",
                 "r_frame_preserved": True,
                 "critical_functional_domains": [
@@ -881,6 +804,8 @@ class CategoricalFusion(AbstractFusion):
                     },
                 },
             }
+        },
+    )
 
 
 Fusion = Union[CategoricalFusion, AssayedFusion]
