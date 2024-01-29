@@ -11,6 +11,7 @@ from fusor.models import (
     AssayedFusion,
     CausativeEvent,
     EventType,
+    GeneDescriptor,
     GeneElement,
     TranscriptSegmentElement,
 )
@@ -123,6 +124,24 @@ class Translator:
             return CausativeEvent(event_type=EventType("rearrangement"))
         return None
 
+    def _get_gene_element_unnormalized(self, symbol: str, caller: str) -> GeneElement:
+        """Return GeneElement when gene symbol cannot be normalized
+        :param symbol: A gene symbol for a fusion partner
+        :return: A GeneElement object
+        """
+        return (
+            GeneElement(
+                type="GeneElement",
+                gene_descriptor=GeneDescriptor(
+                    id=f"fusor.gene:{symbol}",
+                    type="GeneDescriptor",
+                    label=symbol,
+                    gene_id=f"{caller}:N/A",
+                ),
+            ),
+            None,
+        )
+
     async def from_jaffa(self, jaffa_row: pd.DataFrame) -> AssayedFusion:
         """Parse JAFFA fusion output to create AssayedFusion object
         :param jaffa_row: A row of JAFFA output
@@ -131,10 +150,10 @@ class Translator:
         genes = jaffa_row["fusion genes"].split(":")
         gene_5prime = self.fusor.gene_element(gene=genes[0])
         gene_3prime = self.fusor.gene_element(gene=genes[1])
-
-        if gene_5prime[0] is None or gene_3prime[0] is None:
-            print("Unable to normalize at least one gene partner")
-            return None
+        if gene_5prime[0] is None:
+            gene_5prime = self._get_gene_element_unnormalized(genes[0], "jaffa_5prime")
+        if gene_3prime[0] is None:
+            gene_3prime = self._get_gene_element_unnormalized(genes[1], "jaffa_3prime")
 
         # Reformat chromosome, strand orientation
         chrom1 = jaffa_row.chrom1.strip("chr")
@@ -177,10 +196,14 @@ class Translator:
         gene2 = sf_row["RightGene"].split("^")[0]
         gene_5prime = self.fusor.gene_element(gene=gene1)
         gene_3prime = self.fusor.gene_element(gene=gene2)
-
-        if gene_5prime[0] is None or gene_3prime[0] is None:
-            print("Unable to normalize at least one gene partner")
-            return None
+        if gene_5prime[0] is None:
+            gene_5prime = self._get_gene_element_unnormalized(
+                gene1, "star_fusion_5prime"
+            )
+        if gene_3prime[0] is None:
+            gene_3prime = self._get_gene_element_unnormalized(
+                gene2, "star_fusion_3prime"
+            )
 
         five_prime = sf_row["LeftBreakpoint"].split(":")
         chrom1 = five_prime[0].strip("chr")
@@ -220,10 +243,14 @@ class Translator:
         gene2 = fc_row["Gene_2_symbol(3end_fusion_partner)"]
         gene_5prime = self.fusor.gene_element(gene=gene1)
         gene_3prime = self.fusor.gene_element(gene=gene2)
-
-        if gene_5prime[0] is None or gene_3prime[0] is None:
-            print("Unable to normalize at least one gene partner")
-            return None
+        if gene_5prime[0] is None:
+            gene_5prime = self._get_gene_element_unnormalized(
+                gene1, "fusion_catcher_5prime"
+            )
+        if gene_3prime[0] is None:
+            gene_3prime = self._get_gene_element_unnormalized(
+                gene2, "fusion_catcher_3prime"
+            )
 
         five_prime = fc_row["Fusion_point_for_gene_1(5end_fusion_partner)"].split(":")
         chrom1 = five_prime[0]
@@ -263,10 +290,14 @@ class Translator:
         gene2 = fmap_row["KnownGene2"]
         gene_5prime = self.fusor.gene_element(gene=gene1)
         gene_3prime = self.fusor.gene_element(gene=gene2)
-
-        if gene_5prime[0] is None or gene_3prime[0] is None:
-            print("Unable to normalize at least one gene partner")
-            return None
+        if gene_5prime[0] is None:
+            gene_5prime = self._get_gene_element_unnormalized(
+                gene1, "fusion_map_5prime"
+            )
+        if gene_3prime[0] is None:
+            gene_3prime = self._get_gene_element_unnormalized(
+                gene2, "fusion_map_3prime"
+            )
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -304,13 +335,12 @@ class Translator:
         """
         gene1 = arriba_row["gene1"]
         gene2 = arriba_row["gene2"]
-
         gene_5prime = self.fusor.gene_element(gene=gene1)
         gene_3prime = self.fusor.gene_element(gene=gene2)
-
-        if gene_5prime[0] is None or gene_3prime[0] is None:
-            print("Unable to normalize at least one gene partner")
-            return None
+        if gene_5prime[0] is None:
+            gene_5prime = self._get_gene_element_unnormalized(gene1, "arriba_5prime")
+        if gene_3prime[0] is None:
+            gene_3prime = self._get_gene_element_unnormalized(gene2, "arriba_3prime")
 
         breakpoint1 = arriba_row["breakpoint1"].split(":")
         breakpoint2 = arriba_row["breakpoint2"].split(":")
@@ -351,13 +381,12 @@ class Translator:
         """
         gene1 = cicero_row["geneA"]
         gene2 = cicero_row["geneB"]
-
         gene_5prime = self.fusor.gene_element(gene=gene1)
         gene_3prime = self.fusor.gene_element(gene=gene2)
-
-        if gene_5prime[0] is None or gene_3prime[0] is None:
-            print("Unable to normalize at least one gene partner")
-            return None
+        if gene_5prime[0] is None:
+            gene_5prime = self._get_gene_element_unnormalized(gene1, "cicero_5prime")
+        if gene_3prime[0] is None:
+            gene_3prime = self._get_gene_element_unnormalized(gene2, "cicero_3prime")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -395,13 +424,12 @@ class Translator:
         """
         gene1 = mapsplice_row[60].strip(",")
         gene2 = mapsplice_row[61].strip(",")
-
         gene_5prime = self.fusor.gene_element(gene=gene1)
         gene_3prime = self.fusor.gene_element(gene=gene2)
-
-        if gene_5prime[0] is None or gene_3prime[0] is None:
-            print("Unable to normalize at least one gene partner")
-            return None
+        if gene_5prime[0] is None:
+            gene_5prime = self._get_gene_element_unnormalized(gene1, "mapslice_5prime")
+        if gene_3prime[0] is None:
+            gene_3prime = self._get_gene_element_unnormalized(gene2, "mapslice_3prime")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -431,13 +459,12 @@ class Translator:
         """
         gene1 = enfusion_row["Gene1"]
         gene2 = enfusion_row["Gene2"]
-
         gene_5prime = self.fusor.gene_element(gene=gene1)
         gene_3prime = self.fusor.gene_element(gene=gene2)
-
-        if gene_5prime[0] is None or gene_3prime[0] is None:
-            print("Unable to normalize at least one gene partner")
-            return None
+        if gene_5prime[0] is None:
+            gene_5prime = self._get_gene_element_unnormalized(gene1, "enfusion_5prime")
+        if gene_3prime[0] is None:
+            gene_3prime = self._get_gene_element_unnormalized(gene2, "enufusion_3prime")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -465,13 +492,12 @@ class Translator:
         """
         gene1 = genie_row["Site1_Hugo_Symbol"]
         gene2 = genie_row["Site2_Hugo_Symbol"]
-
         gene_5prime = self.fusor.gene_element(gene=gene1)
         gene_3prime = self.fusor.gene_element(gene=gene2)
-
-        if gene_5prime[0] is None or gene_3prime[0] is None:
-            print("Unable to normalize at least one gene partner")
-            return None
+        if gene_5prime[0] is None:
+            gene_5prime = self._get_gene_element_unnormalized(gene1, "genie_5prime")
+        if gene_3prime[0] is None:
+            gene_3prime = self._get_gene_element_unnormalized(gene2, "genie_3prime")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
