@@ -523,7 +523,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def fusion_example():
     """Create test fixture for a fake fusion without additional property expansion."""
     return {
