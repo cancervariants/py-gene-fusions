@@ -1,9 +1,75 @@
+[project]
+name = "fusor"
+description = "Computable object representation and validation for gene fusions"
+authors = [
+    {name = "Alex Wagner", email = "alex.wagner@nationwidechildrens.org"},
+    {name = "Kori Kuzma", email = "kori.kuzma@nationwidechildrens.org"},
+    {name = "James Stevenson", email = "james.stevenson@nationwidechildrens.org"},
+    {name = "Katie Stahl", email = "kathryn.stahl@nationwidechildrens.org"},
+    {name = "Jeremy Arbesfeld", email = "jeremy.arbesfeld@nationwidechildrens.org"}
+]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Pydantic",
+    "Framework :: Pydantic :: 2",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+dependencies = [
+    "pydantic == 2.*",
+    "ga4gh.vrsatile.pydantic ~=0.2.0",
+    "ga4gh.vrs ~=0.8.1",
+    "biocommons.seqrepo",
+    "gene-normalizer ~=0.1.40-dev1",
+    "cool-seq-tool ~=0.3.0-dev1",
+]
+dynamic=["version"]
+
+[project.optional-dependencies]
+tests = ["pytest", "pytest-cov", "pytest-asyncio"]
+dev = ["pre-commit", "pytest", "pytest-cov", "pytest-asyncio", "ruff>=0.1.14"]
+
+[project.urls]
+Homepage = "https://github.com/cancervariants/fusor"
+Documentation = "https://github.com/cancervariants/fusor"
+Changelog = "https://github.com/cancervariants/fusor/releases"
+Source = "https://github.com/cancervariants/fusor"
+"Bug Tracker" = "https://github.com/cancervariants/fusor/issues"
+
+
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=64.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.dynamic]
+version = {attr = "fusor.version.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"fusor.examples" = ["*.json"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-report term-missing"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+
 [tool.ruff]
-src = ["fusor"]
+src = ["src"]
 select = [
     "F",  # https://docs.astral.sh/ruff/rules/#pyflakes-f
     "E", "W",  # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
@@ -78,6 +144,5 @@ ignore = [
 # F401 - unused-import
 # S101 - assert
 "tests/*" = ["ANN001", "ANN2", "ANN102", "S101"]
-"setup.py" = ["F821", "S102", "SIM115", "PTH123"]  # temporary -- remove in #136
 "*__init__.py" = ["F401"]
-"fusor/models.py" = ["ANN201", "N805", "ANN001", "ANN2"]
+"src/fusor/models.py" = ["ANN201", "N805", "ANN001", "ANN2"]
