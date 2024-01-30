@@ -142,17 +142,20 @@ class TranscriptSegmentElement(BaseStructuralElement):
         msg = "Must give values for either `exon_start`, `exon_end`, or both"
         exon_start = values.get("exon_start")
         exon_end = values.get("exon_end")
-        assert exon_start or exon_end, msg
+        if (not exon_start) and (not exon_end):
+            raise ValueError(msg)
 
         if exon_start:
-            msg = "Must give `element_genomic_start` if `exon_start` is given"
-            assert values.get("element_genomic_start"), msg
+            if not values.get("element_genomic_start"):
+                msg = "Must give `element_genomic_start` if `exon_start` is given"
+                raise ValueError(msg)
         else:
             values["exon_start_offset"] = None
 
         if exon_end:
-            msg = "Must give `element_genomic_end` if `exon_end` is given"
-            assert values.get("element_genomic_end"), msg
+            if not values.get("element_genomic_end"):
+                msg = "Must give `element_genomic_end` if `exon_end` is given"
+                raise ValueError(msg)
         else:
             values["exon_end_offset"] = None
         return values
@@ -220,8 +223,8 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
         if isinstance(v, dict):
             try:
                 v["sequence"] = v["sequence"].upper()
-            except KeyError:
-                raise TypeError
+            except KeyError as e:
+                raise TypeError from e
         elif isinstance(v, SequenceDescriptor):
             v.sequence = v.sequence.upper()
         else:
@@ -397,9 +400,8 @@ class RegulatoryElement(BaseModel):
         if not (
             bool(values.get("feature_id")) ^ bool(values.get("feature_location"))
         ) and not (values.get("associated_gene")):
-            raise ValueError(
-                "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
-            )
+            msg = "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
+            raise ValueError(msg)
         return values
 
     model_config = ConfigDict(
@@ -434,7 +436,7 @@ class FusionType(str, Enum):
     @classmethod
     def values(cls) -> Set:  # noqa: ANN102
         """Provide all possible enum values."""
-        return set(map(lambda c: c.value, cls))
+        return {c.value for c in cls}
 
 
 class AbstractFusion(BaseModel, ABC):
@@ -469,9 +471,8 @@ class AbstractFusion(BaseModel, ABC):
         elif isinstance(obj, dict):
             return obj.get(attr_name)
         else:
-            raise ValueError(
-                "Unrecognized type, should only pass entities with properties"
-            )
+            msg = "Unrecognized type, should only pass entities with properties"
+            raise ValueError(msg)
 
     @classmethod
     def _fetch_gene_id(
@@ -502,7 +503,8 @@ class AbstractFusion(BaseModel, ABC):
     def enforce_abc(cls, values):
         """Ensure only subclasses can be instantiated."""
         if cls.__name__ == "AbstractFusion":
-            raise ValueError("Cannot instantiate Fusion abstract class")
+            msg = "Cannot instantiate Fusion abstract class"
+            raise ValueError(msg)
         return values
 
     @model_validator(mode="before")
@@ -557,26 +559,24 @@ class AbstractFusion(BaseModel, ABC):
         elements = values.structural_elements
         if isinstance(elements[0], TranscriptSegmentElement):
             if elements[0].exon_end is None and not values["regulatory_element"]:
-                raise ValueError(
-                    "5' TranscriptSegmentElement fusion partner must "
-                    "contain ending exon position"
-                )
+                msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
+                raise ValueError(msg)
         elif isinstance(elements[0], LinkerElement):
-            raise ValueError("First structural element cannot be LinkerSequence")
+            msg = "First structural element cannot be LinkerSequence"
+            raise ValueError(msg)
 
         if len(elements) > 2:
             for element in elements[1:-1]:
-                if isinstance(element, TranscriptSegmentElement):
-                    if element.exon_start is None or element.exon_end is None:
-                        raise ValueError(
-                            "Connective TranscriptSegmentElement must "
-                            "include both start and end positions"
-                        )
-        if isinstance(elements[-1], TranscriptSegmentElement):
-            if elements[-1].exon_start is None:
-                raise ValueError(
-                    "3' fusion partner junction must include " "starting position"
-                )
+                if isinstance(element, TranscriptSegmentElement) and (
+                    element.exon_start is None or element.exon_end is None
+                ):
+                    msg = "Connective TranscriptSegmentElement must include both start and end positions"
+                    raise ValueError(msg)
+        if isinstance(elements[-1], TranscriptSegmentElement) and (
+            elements[-1].exon_start is None
+        ):
+            msg = "3' fusion partner junction must include " "starting position"
+            raise ValueError
         return values
 
 
