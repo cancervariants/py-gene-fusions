@@ -23,9 +23,8 @@ def translate_identifier(
         )
     except KeyError as e:
         logger.warning(f"Unable to get translated identifier: {e}")
-        raise IDTranslationException
+        raise IDTranslationException from e
 
-    if target_ids:
-        return target_ids[0]
-    else:
+    if not target_ids:
         raise IDTranslationException
+    return target_ids[0]

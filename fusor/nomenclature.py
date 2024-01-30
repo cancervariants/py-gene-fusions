@@ -37,10 +37,10 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
         sequence_id = start.location.sequence_id
         refseq_id = str(translate_identifier(sr, sequence_id, "refseq")).split(":")[1]
         try:
-            chr = str(translate_identifier(sr, sequence_id, "GRCh38")).split(":")[1]
-        except IDTranslationException:
-            raise ValueError
-        feature_string += f"_{refseq_id}(chr {chr}):g.{start.location.interval.start.value}_{start.location.interval.end.value}"  # noqa: E501
+            chrom = str(translate_identifier(sr, sequence_id, "GRCh38")).split(":")[1]
+        except IDTranslationException as e:
+            raise ValueError from e
+        feature_string += f"_{refseq_id}(chr {chrom}):g.{start.location.interval.start.value}_{start.location.interval.end.value}"
     if element.associated_gene:
         if element.associated_gene.gene_id:
             gene_id = gene_id = element.associated_gene.gene_id
@@ -84,7 +84,7 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
             end_offset = str(element.exon_end_offset)
     else:
         end_offset = ""
-    return f"{prefix}:e.{start}{start_offset}{'_' if start and end else ''}{end}{end_offset}"  # noqa: E501
+    return f"{prefix}:e.{start}{start_offset}{'_' if start and end else ''}{end}{end_offset}"
 
 
 def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -> str:
@@ -102,14 +102,14 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
             start = location.interval.start.value
             end = location.interval.end.value
             try:
-                chr = str(translate_identifier(sr, sequence_id, "GRCh38")).split(":")[1]
-            except IDTranslationException:
-                raise ValueError
-            return f"{refseq_id.split(':')[1]}(chr {chr}):g.{start}_{end}({element.strand.value})"  # noqa: E501
-        else:
-            raise ValueError
-    else:
+                chrom = str(translate_identifier(sr, sequence_id, "GRCh38")).split(":")[
+                    1
+                ]
+            except IDTranslationException as e:
+                raise ValueError from e
+            return f"{refseq_id.split(':')[1]}(chr {chrom}):g.{start}_{end}({element.strand.value})"
         raise ValueError
+    raise ValueError
 
 
 def gene_nomenclature(element: GeneElement) -> str:

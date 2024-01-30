@@ -2,4 +2,4 @@
 from setuptools import setup
 
 exec(open("fusor/version.py").read())
-setup(version=__version__)  # noqa: F821
+setup(version=__version__)
