@@ -663,6 +663,7 @@ class AssayedFusion(AbstractFusion):
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
     structural_elements: AssayedFusionElements
     causative_event: Optional[CausativeEvent] = None
+    r_frame_preserved: Optional[StrictBool] = None
     assay: Optional[Assay] = None
 
     model_config = ConfigDict(

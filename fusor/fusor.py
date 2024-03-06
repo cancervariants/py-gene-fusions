@@ -20,7 +20,7 @@ from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, LocationDesc
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
-from pydantic import ValidationError
+from pydantic import StrictBool, ValidationError
 
 from fusor import SEQREPO_DATA_PATH, UTA_DB_URL, logger
 from fusor.exceptions import FUSORParametersException, IDTranslationException
@@ -194,6 +194,7 @@ class FUSOR:
     def assayed_fusion(
         structural_elements: AssayedFusionElements,
         causative_event: Optional[CausativeEvent] = None,
+        r_frame_preserved: Optional[StrictBool] = None,
         assay: Optional[Assay] = None,
         regulatory_element: Optional[RegulatoryElement] = None,
     ) -> AssayedFusion:
@@ -201,6 +202,8 @@ class FUSOR:
         :param AssayedFusionElements structural_elements: elements constituting the
             fusion
         :param Optional[Event] causative_event: event causing the fusion
+        :param Optional[StrictBool] r_frame_preserved: A boolean indicating if the
+            reading frame of the fusion was preserved
         :param Optional[Assay] assay: how knowledge of the fusion was obtained
         :param Optional[RegulatoryElement] regulatory_element: affected regulatory
             elements
@@ -212,6 +215,7 @@ class FUSOR:
                 structural_elements=structural_elements,
                 regulatory_element=regulatory_element,
                 causative_event=causative_event,
+                r_frame_preserved=r_frame_preserved,
                 assay=assay,
             )
         except ValidationError as e:
@@ -381,7 +385,8 @@ class FUSOR:
 
     @staticmethod
     def linker_element(
-        sequence: str, residue_type: CURIE = "SO:0000348"  # type: ignore
+        sequence: str,
+        residue_type: CURIE = "SO:0000348",  # type: ignore
     ) -> Tuple[Optional[LinkerElement], Optional[str]]:
         """Create linker element
 

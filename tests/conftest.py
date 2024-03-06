@@ -1,13 +1,30 @@
 """Module containing methods and fixtures used throughout tests."""
+import asyncio
+
 import pytest
 
 from fusor.fusor import FUSOR
+from fusor.translator import Translator
 
 
 @pytest.fixture(scope="session")
 def fusor_instance():
     """Create test fixture for fusor object"""
     return FUSOR()
+
+
+@pytest.fixture(scope="session")
+def translator_instance():
+    """Create test fixture for translator object"""
+    return Translator(fusor=FUSOR())
+
+
+@pytest.yield_fixture(scope="session")
+def event_loop(request):
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope="session")

@@ -383,14 +383,36 @@ def test_add_additional_fields(fusor_instance, fusion_example, fusion_ensg_seque
     fusion = CategoricalFusion(**fusion_example)
 
     expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.critical_functional_domains[0].sequence_location.location_id = "ga4gh:VSL.2CWYzSpOJfZq7KW4VIUKeP5SJtepRar0"  # type: ignore # noqa: E501
-    expected_fusion.critical_functional_domains[0].sequence_location.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_start.location_id = "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_start.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_end.location_id = "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_end.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[3].region.location_id = "ga4gh:VSL.zd12pX_ju2gLq9a9UOYgM8AtbkuhnyUu"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[3].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
+    expected_fusion.critical_functional_domains[
+        0
+    ].sequence_location.location_id = "ga4gh:VSL.2CWYzSpOJfZq7KW4VIUKeP5SJtepRar0"  # type: ignore # noqa: E501
+    expected_fusion.critical_functional_domains[
+        0
+    ].sequence_location.location.sequence_id = (
+        "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
+    )
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_start.location_id = "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW"  # type: ignore # noqa: E501
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_start.location.sequence_id = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
+    )
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_end.location_id = "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq"  # type: ignore # noqa: E501
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_end.location.sequence_id = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
+    )
+    expected_fusion.structural_elements[
+        3
+    ].region.location_id = "ga4gh:VSL.zd12pX_ju2gLq9a9UOYgM8AtbkuhnyUu"  # type: ignore # noqa: E501
+    expected_fusion.structural_elements[
+        3
+    ].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
 
     actual_fusion = fusor_instance.add_additional_fields(fusion)
     assert actual_fusion.model_dump() == expected_fusion.model_dump()
@@ -408,10 +430,24 @@ def test_add_translated_sequence_id(fusor_instance, fusion_example):
     fusion = CategoricalFusion(**fusion_example)
 
     expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.critical_functional_domains[0].sequence_location.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_start.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_end.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[3].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
+    expected_fusion.critical_functional_domains[
+        0
+    ].sequence_location.location.sequence_id = (
+        "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
+    )
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_start.location.sequence_id = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
+    )
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_end.location.sequence_id = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
+    )
+    expected_fusion.structural_elements[
+        3
+    ].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
 
     actual_fusion = fusor_instance.add_translated_sequence_id(fusion)
     assert actual_fusion.model_dump() == expected_fusion.model_dump()

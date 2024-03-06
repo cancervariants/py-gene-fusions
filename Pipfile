@@ -9,7 +9,7 @@ pydantic = "==2.*"
 "ga4gh.vrs" = "~=0.8.1"
 "biocommons.seqrepo" = "*"
 gene-normalizer = "~=0.1.40-dev1"
-cool-seq-tool = "~=0.3.0-dev1"
+cool-seq-tool = "~=0.4.0-dev3"
 
 [dev-packages]
 fusor = {editable = true, path = "."}
