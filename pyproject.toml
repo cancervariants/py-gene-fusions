@@ -1,6 +1,5 @@
 [project]
 name = "fusor"
-description = "Computable object representation and validation for gene fusions"
 authors = [
     {name = "Alex Wagner", email = "alex.wagner@nationwidechildrens.org"},
     {name = "Kori Kuzma", email = "kori.kuzma@nationwidechildrens.org"},
@@ -25,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 requires-python = ">=3.8"
+description = "Computable object representation and validation for gene fusions"
 license = {file = "LICENSE"}
 dependencies = [
     "pydantic == 2.*",
@@ -46,7 +46,6 @@ Documentation = "https://github.com/cancervariants/fusor"
 Changelog = "https://github.com/cancervariants/fusor/releases"
 Source = "https://github.com/cancervariants/fusor"
 "Bug Tracker" = "https://github.com/cancervariants/fusor/issues"
-
 
 [build-system]
 requires = ["setuptools>=64.0"]
