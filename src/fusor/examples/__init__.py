@@ -1,10 +1,10 @@
 """Provide programmatic access to example objects."""
 import json
+from pathlib import Path
 
-from fusor import APP_ROOT
 from fusor.models import AssayedFusion, CategoricalFusion
 
-EXAMPLES_DIR = APP_ROOT / "examples"
+EXAMPLES_DIR = Path(__file__).resolve().parents[0]
 
 with (EXAMPLES_DIR / "alk.json").open() as f:
     alk = CategoricalFusion(**json.load(f))

@@ -1,7 +1,30 @@
 """Module containing methods and fixtures used throughout tests."""
+import logging
+
 import pytest
 
 from fusor.fusor import FUSOR
+
+
+def pytest_addoption(parser):
+    """Add custom commands to pytest invocation.
+    See https://docs.pytest.org/en/7.1.x/reference/reference.html#parser
+    """
+    parser.addoption(
+        "--verbose-logs",
+        action="store_true",
+        default=False,
+        help="show noisy module logs",
+    )
+
+
+def pytest_configure(config):
+    """Configure pytest setup."""
+    if not config.getoption("--verbose-logs"):
+        logging.getLogger("botocore").setLevel(logging.INFO)
+        logging.getLogger("boto3").setLevel(logging.INFO)
+        logging.getLogger("urllib3").setLevel(logging.INFO)
+        logging.getLogger("nose").setLevel(logging.INFO)
 
 
 @pytest.fixture(scope="session")

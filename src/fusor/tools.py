@@ -1,9 +1,12 @@
 """Provide miscellaneous tools for fusion modeling."""
+import logging
+
 from biocommons.seqrepo.seqrepo import SeqRepo
 from ga4gh.vrsatile.pydantic.vrs_models import CURIE
 
-from fusor import logger
 from fusor.exceptions import IDTranslationException
+
+_logger = logging.getLogger(__name__)
 
 
 def translate_identifier(
@@ -22,7 +25,7 @@ def translate_identifier(
             ac, target_namespaces=target_namespace
         )
     except KeyError as e:
-        logger.warning(f"Unable to get translated identifier: {e}")
+        _logger.warning("Unable to get translated identifier: %s", e)
         raise IDTranslationException from e
 
     if not target_ids:
