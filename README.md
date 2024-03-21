@@ -1,6 +1,13 @@
 # FUSOR
 
+[![image](https://img.shields.io/pypi/v/fusor.svg)](https://pypi.python.org/pypi/fusor)
+[![image](https://img.shields.io/pypi/l/fusor.svg)](https://pypi.python.org/pypi/fusor)
+[![image](https://img.shields.io/pypi/pyversions/fusor.svg)](https://pypi.python.org/pypi/fusor)
+[![Actions status](https://github.com/cancervariants/fusor/actions/workflows/checks.yaml/badge.svg)](https://github.com/cancervariants/fusor/actions/checks.yaml)
+
+<!-- description -->
 FUSOR (**FUS**ion **O**bject **R**epresentation) provides modeling and validation tools for representing gene fusions in a flexible, computable structure.
+<!-- /description -->
 
 ## Installation
 
@@ -49,7 +56,11 @@ python3 -m pip install -e '.[dev,tests]'
 
 ### Style
 
-Code style is managed by [Ruff](https://github.com/astral-sh/ruff) and [Black](https://github.com/psf/black) and checked prior to commit.
+Code style is managed by [Ruff](https://github.com/astral-sh/ruff) and checked prior to commit.
+
+```shell
+python3 -m ruff format . && python3 -m ruff check --fix .
+```
 
 We use [pre-commit](https://pre-commit.com/#usage) to run conformance tests.
 
