@@ -353,7 +353,7 @@ def compare_gene_descriptor(actual: Dict, expected: Dict):
         ), "alt labels"
     else:
         assert actual["alternate_labels"] == expected["alternate_labels"]
-    assert "extensions" in actual.keys() and "extensions" in expected.keys()
+    assert "extensions" in actual
     if expected["extensions"]:
         assert len(actual["extensions"]) == len(
             expected["extensions"]
@@ -383,14 +383,36 @@ def test_add_additional_fields(fusor_instance, fusion_example, fusion_ensg_seque
     fusion = CategoricalFusion(**fusion_example)
 
     expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.critical_functional_domains[0].sequence_location.location_id = "ga4gh:VSL.2CWYzSpOJfZq7KW4VIUKeP5SJtepRar0"  # type: ignore # noqa: E501
-    expected_fusion.critical_functional_domains[0].sequence_location.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_start.location_id = "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_start.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_end.location_id = "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_end.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[3].region.location_id = "ga4gh:VSL.zd12pX_ju2gLq9a9UOYgM8AtbkuhnyUu"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[3].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
+    expected_fusion.critical_functional_domains[
+        0
+    ].sequence_location.location_id = "ga4gh:VSL.2CWYzSpOJfZq7KW4VIUKeP5SJtepRar0"
+    expected_fusion.critical_functional_domains[
+        0
+    ].sequence_location.location.sequence_id = (
+        "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"
+    )
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_start.location_id = "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW"
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_start.location.sequence_id = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+    )
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_end.location_id = "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq"
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_end.location.sequence_id = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+    )
+    expected_fusion.structural_elements[
+        3
+    ].region.location_id = "ga4gh:VSL.zd12pX_ju2gLq9a9UOYgM8AtbkuhnyUu"
+    expected_fusion.structural_elements[
+        3
+    ].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
 
     actual_fusion = fusor_instance.add_additional_fields(fusion)
     assert actual_fusion.model_dump() == expected_fusion.model_dump()
@@ -408,10 +430,24 @@ def test_add_translated_sequence_id(fusor_instance, fusion_example):
     fusion = CategoricalFusion(**fusion_example)
 
     expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.critical_functional_domains[0].sequence_location.location.sequence_id = "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_start.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[0].element_genomic_end.location.sequence_id = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"  # type: ignore # noqa: E501
-    expected_fusion.structural_elements[3].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"  # type: ignore # noqa: E501
+    expected_fusion.critical_functional_domains[
+        0
+    ].sequence_location.location.sequence_id = (
+        "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"
+    )
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_start.location.sequence_id = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+    )
+    expected_fusion.structural_elements[
+        0
+    ].element_genomic_end.location.sequence_id = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+    )
+    expected_fusion.structural_elements[
+        3
+    ].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
 
     actual_fusion = fusor_instance.add_translated_sequence_id(fusion)
     assert actual_fusion.model_dump() == expected_fusion.model_dump()
@@ -470,10 +506,10 @@ def test_add_gene_descriptor(fusor_instance, exhaustive_example, fusion_example)
         for t_field in [actual.critical_functional_domains, actual.structural_elements]:
             for e_obj in e_field:
                 for t_obj in t_field:
-                    if "gene_descriptor" in e_obj.model_fields.keys():
+                    if "gene_descriptor" in e_obj.model_fields:
                         e_gd = e_obj.gene_descriptor.label
                         e_gds.add(e_gd)
-                        if "gene_descriptor" in t_obj.model_fields.keys():
+                        if "gene_descriptor" in t_obj.model_fields:
                             t_gd = t_obj.gene_descriptor.label
                             t_gds.add(t_gd)
                             if e_gd == t_gd:
@@ -499,96 +535,84 @@ def test_fusion(
     """Test that fusion methods work correctly."""
     # infer type from properties
     f = fusor_instance.fusion(
-        **{
-            "structural_elements": [
-                templated_sequence_element,
-                linker_element,
-                UnknownGeneElement(),
-            ],
-            "causative_event": {
-                "type": "CausativeEvent",
-                "event_type": "rearrangement",
-                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
-            },
-            "assay": {
-                "type": "Assay",
-                "method_uri": "pmid:33576979",
-                "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred",
-            },
-        }
+        structural_elements=[
+            templated_sequence_element,
+            linker_element,
+            UnknownGeneElement(),
+        ],
+        causative_event={
+            "type": "CausativeEvent",
+            "event_type": "rearrangement",
+            "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+        },
+        assay={
+            "type": "Assay",
+            "method_uri": "pmid:33576979",
+            "assay_id": "obi:OBI_0003094",
+            "assay_name": "fluorescence in-situ hybridization assay",
+            "fusion_detection": "inferred",
+        },
     )
     assert isinstance(f, AssayedFusion)
     f = fusor_instance.fusion(
-        **{
-            "structural_elements": [
-                transcript_segment_element,
-                MultiplePossibleGenesElement(),
-            ],
-            "critical_functional_domains": [functional_domain],
-        }
+        structural_elements=[
+            transcript_segment_element,
+            MultiplePossibleGenesElement(),
+        ],
+        critical_functional_domains=[functional_domain],
     )
     assert isinstance(f, CategoricalFusion)
 
     # catch conflicting property args
     with pytest.raises(FUSORParametersException) as excinfo:
         f = fusor_instance.fusion(
-            **{
-                "structural_elements": [
-                    transcript_segment_element,
-                    UnknownGeneElement(),
-                ],
-                "causative_event": "rearrangement",
-                "critical_functional_domains": [functional_domain],
-            }
+            structural_elements=[
+                transcript_segment_element,
+                UnknownGeneElement(),
+            ],
+            causative_event="rearrangement",
+            critical_functional_domains=[functional_domain],
         )
     assert str(excinfo.value) == "Received conflicting attributes"
 
     # handle indeterminate type
     with pytest.raises(FUSORParametersException) as excinfo:
         f = fusor_instance.fusion(
-            **{
-                "structural_elements": [
-                    transcript_segment_element,
-                    templated_sequence_element,
-                ],
-            }
+            structural_elements=[
+                transcript_segment_element,
+                templated_sequence_element,
+            ]
         )
     assert str(excinfo.value) == "Unable to determine fusion type"
 
     # handle both type parameter options
     f = fusor_instance.fusion(
         fusion_type="AssayedFusion",
-        **{
-            "structural_elements": [
-                templated_sequence_element,
-                linker_element,
-                UnknownGeneElement(),
-            ],
-            "causative_event": {
-                "type": "CausativeEvent",
-                "event_type": "rearrangement",
-            },
-            "assay": {
-                "type": "Assay",
-                "method_uri": "pmid:33576979",
-                "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred",
-            },
+        structural_elements=[
+            templated_sequence_element,
+            linker_element,
+            UnknownGeneElement(),
+        ],
+        causative_event={
+            "type": "CausativeEvent",
+            "event_type": "rearrangement",
+        },
+        assay={
+            "type": "Assay",
+            "method_uri": "pmid:33576979",
+            "assay_id": "obi:OBI_0003094",
+            "assay_name": "fluorescence in-situ hybridization assay",
+            "fusion_detection": "inferred",
         },
     )
     assert isinstance(f, AssayedFusion)
     f = fusor_instance.fusion(
-        **{
-            "type": "CategoricalFusion",
-            "structural_elements": [
-                transcript_segment_element,
-                MultiplePossibleGenesElement(),
-            ],
-            "critical_functional_domains": [functional_domain],
-        }
+        type="CategoricalFusion",
+        structural_elements=[
+            transcript_segment_element,
+            MultiplePossibleGenesElement(),
+        ],
+        critical_functional_domains=[functional_domain],
     )
     assert isinstance(f, CategoricalFusion)
 
@@ -597,11 +621,11 @@ def test_fusion(
         f = fusor_instance.fusion(
             fusion_type="CategoricalFusion", structural_elements=[linker_element]
         )
-    msg = "Fusions must contain >= 2 structural elements, or >=1 structural element and a regulatory element"  # noqa: E501
+    msg = "Fusions must contain >= 2 structural elements, or >=1 structural element and a regulatory element"
     assert msg in str(excinfo.value)
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio()
 async def test_transcript_segment_element(
     fusor_instance, transcript_segment_element, mane_transcript_segment_element
 ):
@@ -871,7 +895,7 @@ def test_functional_domain(
         actual = actual[0].model_dump()
         expected = expected.model_dump()
         assert actual.keys() == expected.keys()
-        for key in expected.keys():
+        for key in expected:
             if key == "associated_gene":
                 compare_gene_descriptor(actual[key], expected[key])
             elif key == "sequence_location":

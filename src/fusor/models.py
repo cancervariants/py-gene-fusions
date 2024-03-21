@@ -142,17 +142,20 @@ class TranscriptSegmentElement(BaseStructuralElement):
         msg = "Must give values for either `exon_start`, `exon_end`, or both"
         exon_start = values.get("exon_start")
         exon_end = values.get("exon_end")
-        assert exon_start or exon_end, msg
+        if (not exon_start) and (not exon_end):
+            raise ValueError(msg)
 
         if exon_start:
-            msg = "Must give `element_genomic_start` if `exon_start` is given"
-            assert values.get("element_genomic_start"), msg
+            if not values.get("element_genomic_start"):
+                msg = "Must give `element_genomic_start` if `exon_start` is given"
+                raise ValueError(msg)
         else:
             values["exon_start_offset"] = None
 
         if exon_end:
-            msg = "Must give `element_genomic_end` if `exon_end` is given"
-            assert values.get("element_genomic_end"), msg
+            if not values.get("element_genomic_end"):
+                msg = "Must give `element_genomic_end` if `exon_end` is given"
+                raise ValueError(msg)
         else:
             values["exon_end_offset"] = None
         return values
@@ -220,8 +223,8 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
         if isinstance(v, dict):
             try:
                 v["sequence"] = v["sequence"].upper()
-            except KeyError:
-                raise TypeError
+            except KeyError as e:
+                raise TypeError from e
         elif isinstance(v, SequenceDescriptor):
             v.sequence = v.sequence.upper()
         else:
@@ -397,9 +400,8 @@ class RegulatoryElement(BaseModel):
         if not (
             bool(values.get("feature_id")) ^ bool(values.get("feature_location"))
         ) and not (values.get("associated_gene")):
-            raise ValueError(
-                "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
-            )
+            msg = "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
+            raise ValueError(msg)
         return values
 
     model_config = ConfigDict(
@@ -434,7 +436,7 @@ class FusionType(str, Enum):
     @classmethod
     def values(cls) -> Set:  # noqa: ANN102
         """Provide all possible enum values."""
-        return set(map(lambda c: c.value, cls))
+        return {c.value for c in cls}
 
 
 class AbstractFusion(BaseModel, ABC):
@@ -448,7 +450,7 @@ class AbstractFusion(BaseModel, ABC):
     def _access_object_attr(
         cls: Type[FusionType],
         obj: Union[Dict, BaseModel],
-        attr_name: str,  # noqa: ANN102
+        attr_name: str,
     ) -> Optional[Any]:  # noqa: ANN401
         """Help enable safe access of object properties while performing
         validation for Pydantic class objects. Because the validator could be handling either
@@ -469,15 +471,14 @@ class AbstractFusion(BaseModel, ABC):
         elif isinstance(obj, dict):
             return obj.get(attr_name)
         else:
-            raise ValueError(
-                "Unrecognized type, should only pass entities with properties"
-            )
+            msg = "Unrecognized type, should only pass entities with properties"
+            raise ValueError(msg)
 
     @classmethod
     def _fetch_gene_id(
         cls: Type[FusionType],
         obj: Union[Dict, BaseModel],
-        gene_descriptor_field: str,  # noqa: ANN102
+        gene_descriptor_field: str,
     ) -> Optional[str]:
         """Get gene ID if element includes a gene annotation.
 
@@ -502,7 +503,8 @@ class AbstractFusion(BaseModel, ABC):
     def enforce_abc(cls, values):
         """Ensure only subclasses can be instantiated."""
         if cls.__name__ == "AbstractFusion":
-            raise ValueError("Cannot instantiate Fusion abstract class")
+            msg = "Cannot instantiate Fusion abstract class"
+            raise ValueError(msg)
         return values
 
     @model_validator(mode="before")
@@ -526,7 +528,7 @@ class AbstractFusion(BaseModel, ABC):
         if (num_structural_elements + bool(reg_element)) < 2:
             raise ValueError(qt_error_msg)
 
-        uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."  # noqa: E501
+        uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
         gene_ids = []
         if reg_element:
             gene_id = cls._fetch_gene_id(
@@ -557,26 +559,24 @@ class AbstractFusion(BaseModel, ABC):
         elements = values.structural_elements
         if isinstance(elements[0], TranscriptSegmentElement):
             if elements[0].exon_end is None and not values["regulatory_element"]:
-                raise ValueError(
-                    "5' TranscriptSegmentElement fusion partner must "
-                    "contain ending exon position"
-                )
+                msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
+                raise ValueError(msg)
         elif isinstance(elements[0], LinkerElement):
-            raise ValueError("First structural element cannot be LinkerSequence")
+            msg = "First structural element cannot be LinkerSequence"
+            raise ValueError(msg)
 
         if len(elements) > 2:
             for element in elements[1:-1]:
-                if isinstance(element, TranscriptSegmentElement):
-                    if element.exon_start is None or element.exon_end is None:
-                        raise ValueError(
-                            "Connective TranscriptSegmentElement must "
-                            "include both start and end positions"
-                        )
-        if isinstance(elements[-1], TranscriptSegmentElement):
-            if elements[-1].exon_start is None:
-                raise ValueError(
-                    "3' fusion partner junction must include " "starting position"
-                )
+                if isinstance(element, TranscriptSegmentElement) and (
+                    element.exon_start is None or element.exon_end is None
+                ):
+                    msg = "Connective TranscriptSegmentElement must include both start and end positions"
+                    raise ValueError(msg)
+        if isinstance(elements[-1], TranscriptSegmentElement) and (
+            elements[-1].exon_start is None
+        ):
+            msg = "3' fusion partner junction must include " "starting position"
+            raise ValueError
         return values
 
 
@@ -647,7 +647,7 @@ class CausativeEvent(BaseModelForbidExtra):
             "example": {
                 "type": "CausativeEvent",
                 "event_type": "rearrangement",
-                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
             }
         },
     )
@@ -672,7 +672,7 @@ class AssayedFusion(AbstractFusion):
                 "causative_event": {
                     "type": "CausativeEvent",
                     "event_type": "rearrangement",
-                    "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",  # noqa: E501
+                    "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
                 },
                 "assay": {
                     "type": "Assay",
@@ -759,7 +759,7 @@ class CategoricalFusion(AbstractFusion):
                             "type": "LocationDescriptor",
                             "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",
                             "location": {
-                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
+                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
                                 "type": "SequenceLocation",
                                 "interval": {
                                     "start": {"type": "Number", "value": 154192135},
@@ -773,7 +773,7 @@ class CategoricalFusion(AbstractFusion):
                             "type": "LocationDescriptor",
                             "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",
                             "location": {
-                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",  # noqa: E501
+                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
                                 "type": "SequenceLocation",
                                 "interval": {
                                     "start": {"type": "Number", "value": 154170398},

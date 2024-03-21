@@ -25,10 +25,9 @@ def translate_identifier(
             ac, target_namespaces=target_namespace
         )
     except KeyError as e:
-        _logger.warning(f"Unable to get translated identifier: {e}")
-        raise IDTranslationException
+        _logger.warning("Unable to get translated identifier: %s", e)
+        raise IDTranslationException from e
 
-    if target_ids:
-        return target_ids[0]
-    else:
+    if not target_ids:
         raise IDTranslationException
+    return target_ids[0]

@@ -97,9 +97,9 @@ class FUSOR:
         False otherwise.
         """
         for c in kwargs["structural_elements"]:
-            if isinstance(c, Dict) and c.get("type") == elm_type:
-                return True
-            elif isinstance(c, BaseStructuralElement) and c.type == elm_type:
+            if (isinstance(c, Dict) and c.get("type") == elm_type) or (
+                isinstance(c, BaseStructuralElement) and c.type == elm_type
+            ):
                 return True
         return False
 
@@ -120,9 +120,8 @@ class FUSOR:
                 fusion_type = explicit_type
                 kwargs.pop("type")
             else:
-                raise FUSORParametersException(
-                    f"Invalid type parameter: {explicit_type}"
-                )
+                msg = f"Invalid type parameter: {explicit_type}"
+                raise FUSORParametersException(msg)
         fusion_fn = None
         if fusion_type:
             if fusion_type == FusionType.CATEGORICAL_FUSION:
@@ -130,9 +129,8 @@ class FUSOR:
             elif fusion_type == FusionType.ASSAYED_FUSION:
                 fusion_fn = self.assayed_fusion
             else:
-                raise FUSORParametersException(
-                    f"Invalid fusion_type parameter: {fusion_type}"
-                )
+                msg = f"Invalid fusion_type parameter: {fusion_type}"
+                raise FUSORParametersException(msg)
         else:
             # try to infer from provided attributes
             categorical_attributes = any(
@@ -154,19 +152,20 @@ class FUSOR:
                 ]
             )
             if categorical_attributes and assayed_attributes:
-                raise FUSORParametersException("Received conflicting attributes")
-            elif categorical_attributes and not assayed_attributes:
+                msg = "Received conflicting attributes"
+                raise FUSORParametersException(msg)
+            if categorical_attributes and not assayed_attributes:
                 fusion_fn = self.categorical_fusion
             elif assayed_attributes and not categorical_attributes:
                 fusion_fn = self.assayed_fusion
         if fusion_fn is None:
-            raise FUSORParametersException("Unable to determine fusion type")
+            msg = "Unable to determine fusion type"
+            raise FUSORParametersException(msg)
         try:
             return fusion_fn(**kwargs)
         except TypeError as e:
-            raise FUSORParametersException(
-                f"Unable to construct fusion with provided args: {e}"
-            )
+            msg = f"Unable to construct fusion with provided args: {e}"
+            raise FUSORParametersException(msg) from e
 
     @staticmethod
     def categorical_fusion(
@@ -195,7 +194,7 @@ class FUSOR:
                 regulatory_element=regulatory_element,
             )
         except ValidationError as e:
-            raise FUSORParametersException(str(e))
+            raise FUSORParametersException(str(e)) from e
         return fusion
 
     @staticmethod
@@ -223,7 +222,7 @@ class FUSOR:
                 assay=assay,
             )
         except ValidationError as e:
-            raise FUSORParametersException(str(e))
+            raise FUSORParametersException(str(e)) from e
         return fusion
 
     async def transcript_segment_element(
@@ -340,8 +339,7 @@ class FUSOR:
         )
         if not gene_descr:
             return None, warning
-        else:
-            return GeneElement(gene_descriptor=gene_descr), None
+        return GeneElement(gene_descriptor=gene_descr), None
 
     def templated_sequence_element(
         self,
@@ -389,7 +387,8 @@ class FUSOR:
 
     @staticmethod
     def linker_element(
-        sequence: str, residue_type: CURIE = "SO:0000348"  # type: ignore
+        sequence: str,
+        residue_type: CURIE = "SO:0000348",
     ) -> Tuple[Optional[LinkerElement], Optional[str]]:
         """Create linker element
 
@@ -573,9 +572,9 @@ class FUSOR:
                 )
             except IDTranslationException:
                 _logger.warning(
-                    f"Unable to translate {sequence_id} using"
-                    f" {seq_id_target_namespace} as the target"
-                    f" namespace"
+                    "Unable to translate %s using %s as the target namespace",
+                    sequence_id,
+                    seq_id_target_namespace,
                 )
             else:
                 sequence_id = seq_id
@@ -630,7 +629,7 @@ class FUSOR:
                     elif field == AdditionalFields.LOCATION_ID.value:
                         self.add_location_id(fusion)
                     else:
-                        _logger.warning(f"Invalid field: {field}")
+                        _logger.warning("Invalid field: %s", field)
         return fusion
 
     def add_location_id(self, fusion: Fusion) -> Fusion:
@@ -743,7 +742,7 @@ class FUSOR:
 
         for prop in properties:
             for obj in prop:
-                if "gene_descriptor" in obj.model_fields.keys():
+                if "gene_descriptor" in obj.model_fields:
                     label = obj.gene_descriptor.label
                     norm_gene_descr, _ = self._normalized_gene_descriptor(
                         label, use_minimal_gene_descr=False
@@ -780,8 +779,7 @@ class FUSOR:
                     id=gene_descr.id, gene_id=gene_descr.gene_id, label=gene_descr.label
                 )
             return gene_descr, None
-        else:
-            return None, f"gene-normalizer unable to normalize {query}"
+        return None, f"gene-normalizer unable to normalize {query}"
 
     def generate_nomenclature(self, fusion: Fusion) -> str:
         """Generate human-readable nomenclature describing provided fusion
@@ -804,14 +802,14 @@ class FUSOR:
                 parts.append(element.linker_sequence.sequence)
             elif isinstance(element, TranscriptSegmentElement):
                 if not any(
-                    [gene == element.gene_descriptor.label for gene in element_genes]
+                    [gene == element.gene_descriptor.label for gene in element_genes]  # noqa: C419
                 ):
                     parts.append(tx_segment_nomenclature(element))
             elif isinstance(element, TemplatedSequenceElement):
                 parts.append(templated_seq_nomenclature(element, self.seqrepo))
             elif isinstance(element, GeneElement):
                 if not any(
-                    [gene == element.gene_descriptor.label for gene in element_genes]
+                    [gene == element.gene_descriptor.label for gene in element_genes]  # noqa: C419
                 ):
                     parts.append(gene_nomenclature(element))
             else:
