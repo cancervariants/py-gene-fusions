@@ -1,7 +1,6 @@
 """Module for modifying fusion objects."""
 import logging
 import re
-from typing import Dict, List, Optional, Tuple
 from urllib.parse import quote
 
 from biocommons.seqrepo import SeqRepo
@@ -65,9 +64,9 @@ class FUSOR:
 
     def __init__(
         self,
-        seqrepo_data_path: Optional[str] = None,
-        gene_database: Optional[GeneDatabase] = None,
-        uta_db_url: Optional[str] = None,
+        seqrepo_data_path: str | None = None,
+        gene_database: GeneDatabase | None = None,
+        uta_db_url: str | None = None,
     ) -> None:
         """Initialize FUSOR class.
 
@@ -88,7 +87,7 @@ class FUSOR:
         self.seqrepo = self.cool_seq_tool.seqrepo_access.sr
 
     @staticmethod
-    def _contains_element_type(kwargs: Dict, elm_type: StructuralElementType) -> bool:
+    def _contains_element_type(kwargs: dict, elm_type: StructuralElementType) -> bool:
         """Check if fusion contains element of a specific type. Helper method
         for inferring fusion type.
         :param Dict kwargs: keyword args given to fusion method
@@ -97,13 +96,13 @@ class FUSOR:
         False otherwise.
         """
         for c in kwargs["structural_elements"]:
-            if (isinstance(c, Dict) and c.get("type") == elm_type) or (
+            if (isinstance(c, dict) and c.get("type") == elm_type) or (
                 isinstance(c, BaseStructuralElement) and c.type == elm_type
             ):
                 return True
         return False
 
-    def fusion(self, fusion_type: Optional[FusionType] = None, **kwargs) -> Fusion:
+    def fusion(self, fusion_type: FusionType | None = None, **kwargs) -> Fusion:
         """Construct fusion object.
 
         :param Optional[FusionType] fusion_type: explicitly specify fusion type.
@@ -170,9 +169,9 @@ class FUSOR:
     @staticmethod
     def categorical_fusion(
         structural_elements: CategoricalFusionElements,
-        regulatory_element: Optional[RegulatoryElement] = None,
-        critical_functional_domains: Optional[List[FunctionalDomain]] = None,
-        r_frame_preserved: Optional[bool] = None,
+        regulatory_element: RegulatoryElement | None = None,
+        critical_functional_domains: list[FunctionalDomain] | None = None,
+        r_frame_preserved: bool | None = None,
     ) -> CategoricalFusion:
         """Construct a categorical fusion object
         :param CategoricalFusionElements structural_elements: elements
@@ -200,9 +199,9 @@ class FUSOR:
     @staticmethod
     def assayed_fusion(
         structural_elements: AssayedFusionElements,
-        causative_event: Optional[CausativeEvent] = None,
-        assay: Optional[Assay] = None,
-        regulatory_element: Optional[RegulatoryElement] = None,
+        causative_event: CausativeEvent | None = None,
+        assay: Assay | None = None,
+        regulatory_element: RegulatoryElement | None = None,
     ) -> AssayedFusion:
         """Construct an assayed fusion object
         :param AssayedFusionElements structural_elements: elements constituting the
@@ -229,9 +228,9 @@ class FUSOR:
         self,
         tx_to_genomic_coords: bool = True,
         use_minimal_gene_descr: bool = True,
-        seq_id_target_namespace: Optional[str] = None,
+        seq_id_target_namespace: str | None = None,
         **kwargs,
-    ) -> Tuple[Optional[TranscriptSegmentElement], Optional[List[str]]]:
+    ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
         """Create transcript segment element
 
         :param bool tx_to_genomic_coords: `True` if going from transcript
@@ -325,7 +324,7 @@ class FUSOR:
 
     def gene_element(
         self, gene: str, use_minimal_gene_descr: bool = True
-    ) -> Tuple[Optional[GeneElement], Optional[str]]:
+    ) -> tuple[GeneElement | None, str | None]:
         """Create gene element
 
         :param str gene: Gene
@@ -347,10 +346,10 @@ class FUSOR:
         end: int,
         sequence_id: str,
         strand: Strand,
-        label: Optional[str] = None,
+        label: str | None = None,
         add_location_id: bool = False,
         residue_mode: ResidueMode = ResidueMode.RESIDUE,
-        seq_id_target_namespace: Optional[str] = None,
+        seq_id_target_namespace: str | None = None,
     ) -> TemplatedSequenceElement:
         """Create templated sequence element
 
@@ -389,7 +388,7 @@ class FUSOR:
     def linker_element(
         sequence: str,
         residue_type: CURIE = "SO:0000348",
-    ) -> Tuple[Optional[LinkerElement], Optional[str]]:
+    ) -> tuple[LinkerElement | None, str | None]:
         """Create linker element
 
         :param str sequence: Sequence
@@ -439,8 +438,8 @@ class FUSOR:
         start: int,
         end: int,
         use_minimal_gene_descr: bool = True,
-        seq_id_target_namespace: Optional[str] = None,
-    ) -> Tuple[Optional[FunctionalDomain], Optional[str]]:
+        seq_id_target_namespace: str | None = None,
+    ) -> tuple[FunctionalDomain | None, str | None]:
         """Build functional domain instance.
 
         :param DomainStatus status: Status for domain.  Must be either `lost`
@@ -507,7 +506,7 @@ class FUSOR:
         regulatory_class: RegulatoryClass,
         gene: str,
         use_minimal_gene_descr: bool = True,
-    ) -> Tuple[Optional[RegulatoryElement], Optional[str]]:
+    ) -> tuple[RegulatoryElement | None, str | None]:
         """Create RegulatoryElement
         :param RegulatoryClass regulatory_class: one of {"promoter", "enhancer"}
         :param str gene: gene term to fetch normalized descriptor for
@@ -538,8 +537,8 @@ class FUSOR:
         start: int,
         end: int,
         sequence_id: str,
-        label: Optional[str] = None,
-        seq_id_target_namespace: Optional[str] = None,
+        label: str | None = None,
+        seq_id_target_namespace: str | None = None,
         use_location_id: bool = False,
     ) -> LocationDescriptor:
         """Create location descriptor
@@ -600,7 +599,7 @@ class FUSOR:
         self,
         fusion: Fusion,
         add_all: bool = True,
-        fields: Optional[List[AdditionalFields]] = None,
+        fields: list[AdditionalFields] | None = None,
         target_namespace: str = "ga4gh",
     ) -> Fusion:
         """Add additional fields to Fusion object.
@@ -668,7 +667,7 @@ class FUSOR:
         return fusion
 
     @staticmethod
-    def _location_id(location: Dict) -> CURIE:
+    def _location_id(location: dict) -> CURIE:
         """Return GA4GH digest for location
 
         :param dict location: VRS Location represented as a dict
@@ -761,7 +760,7 @@ class FUSOR:
 
     def _normalized_gene_descriptor(
         self, query: str, use_minimal_gene_descr: bool = True
-    ) -> Tuple[Optional[GeneDescriptor], Optional[str]]:
+    ) -> tuple[GeneDescriptor | None, str | None]:
         """Return gene descriptor from normalized response.
 
         :param str query: Gene query

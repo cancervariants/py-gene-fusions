@@ -1,7 +1,7 @@
 """Model for fusion class"""
 from abc import ABC
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Set, Type, Union
+from typing import Any, Literal
 
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_models import (
@@ -63,9 +63,9 @@ class FunctionalDomain(BaseModel):
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
     associated_gene: GeneDescriptor
-    id: Optional[CURIE] = Field(None, alias="_id")
-    label: Optional[StrictStr] = None
-    sequence_location: Optional[LocationDescriptor] = None
+    id: CURIE | None = Field(None, alias="_id")
+    label: StrictStr | None = None
+    sequence_location: LocationDescriptor | None = None
 
     _get_id_val = field_validator("id")(return_value)
 
@@ -124,13 +124,13 @@ class TranscriptSegmentElement(BaseStructuralElement):
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     ] = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     transcript: CURIE
-    exon_start: Optional[StrictInt] = None
-    exon_start_offset: Optional[StrictInt] = 0
-    exon_end: Optional[StrictInt] = None
-    exon_end_offset: Optional[StrictInt] = 0
+    exon_start: StrictInt | None = None
+    exon_start_offset: StrictInt | None = 0
+    exon_end: StrictInt | None = None
+    exon_end_offset: StrictInt | None = 0
     gene_descriptor: GeneDescriptor
-    element_genomic_start: Optional[LocationDescriptor] = None
-    element_genomic_end: Optional[LocationDescriptor] = None
+    element_genomic_start: LocationDescriptor | None = None
+    element_genomic_end: LocationDescriptor | None = None
 
     @model_validator(mode="before")
     def check_exons(cls, values):
@@ -386,9 +386,9 @@ class RegulatoryElement(BaseModel):
 
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT
     regulatory_class: RegulatoryClass
-    feature_id: Optional[str] = None
-    associated_gene: Optional[GeneDescriptor] = None
-    feature_location: Optional[LocationDescriptor] = None
+    feature_id: str | None = None
+    associated_gene: GeneDescriptor | None = None
+    feature_location: LocationDescriptor | None = None
 
     _get_ref_id_val = field_validator("feature_id")(return_value)
 
@@ -434,7 +434,7 @@ class FusionType(str, Enum):
     ASSAYED_FUSION = FUSORTypes.ASSAYED_FUSION.value
 
     @classmethod
-    def values(cls) -> Set:  # noqa: ANN102
+    def values(cls) -> set:
         """Provide all possible enum values."""
         return {c.value for c in cls}
 
@@ -443,15 +443,15 @@ class AbstractFusion(BaseModel, ABC):
     """Define Fusion class"""
 
     type: FusionType
-    regulatory_element: Optional[RegulatoryElement] = None
-    structural_elements: List[BaseStructuralElement]
+    regulatory_element: RegulatoryElement | None = None
+    structural_elements: list[BaseStructuralElement]
 
     @classmethod
     def _access_object_attr(
-        cls: Type[FusionType],
-        obj: Union[Dict, BaseModel],
+        cls,
+        obj: dict | BaseModel,
         attr_name: str,
-    ) -> Optional[Any]:  # noqa: ANN401
+    ) -> Any | None:  # noqa: ANN401
         """Help enable safe access of object properties while performing
         validation for Pydantic class objects. Because the validator could be handling either
         existing Pydantic class objects, or candidate dictionaries, we need a flexible
@@ -476,10 +476,10 @@ class AbstractFusion(BaseModel, ABC):
 
     @classmethod
     def _fetch_gene_id(
-        cls: Type[FusionType],
-        obj: Union[Dict, BaseModel],
+        cls,
+        obj: dict | BaseModel,
         gene_descriptor_field: str,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Get gene ID if element includes a gene annotation.
 
         :param obj: element to fetch gene from. Might not contain a gene (e.g. it's a
@@ -591,10 +591,10 @@ class Assay(BaseModelForbidExtra):
     """Information pertaining to the assay used in identifying the fusion."""
 
     type: Literal["Assay"] = "Assay"
-    assay_name: Optional[StrictStr] = None
-    assay_id: Optional[CURIE] = None
-    method_uri: Optional[CURIE] = None
-    fusion_detection: Optional[Evidence] = None
+    assay_name: StrictStr | None = None
+    assay_id: CURIE | None = None
+    method_uri: CURIE | None = None
+    fusion_detection: Evidence | None = None
 
     _get_assay_id_val = field_validator("assay_id")(return_value)
     _get_method_uri_val = field_validator("method_uri")(return_value)
@@ -611,14 +611,12 @@ class Assay(BaseModelForbidExtra):
     )
 
 
-AssayedFusionElements = List[
-    Union[
-        TranscriptSegmentElement,
-        GeneElement,
-        TemplatedSequenceElement,
-        LinkerElement,
-        UnknownGeneElement,
-    ]
+AssayedFusionElements = list[
+    TranscriptSegmentElement
+    | GeneElement
+    | TemplatedSequenceElement
+    | LinkerElement
+    | UnknownGeneElement
 ]
 
 
@@ -640,7 +638,7 @@ class CausativeEvent(BaseModelForbidExtra):
 
     type: Literal[FUSORTypes.CAUSATIVE_EVENT] = FUSORTypes.CAUSATIVE_EVENT
     event_type: EventType
-    event_description: Optional[StrictStr] = None
+    event_description: StrictStr | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -662,8 +660,8 @@ class AssayedFusion(AbstractFusion):
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
     structural_elements: AssayedFusionElements
-    causative_event: Optional[CausativeEvent] = None
-    assay: Optional[Assay] = None
+    causative_event: CausativeEvent | None = None
+    assay: Assay | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -698,14 +696,12 @@ class AssayedFusion(AbstractFusion):
     )
 
 
-CategoricalFusionElements = List[
-    Union[
-        TranscriptSegmentElement,
-        GeneElement,
-        TemplatedSequenceElement,
-        LinkerElement,
-        MultiplePossibleGenesElement,
-    ]
+CategoricalFusionElements = list[
+    TranscriptSegmentElement
+    | GeneElement
+    | TemplatedSequenceElement
+    | LinkerElement
+    | MultiplePossibleGenesElement
 ]
 
 
@@ -717,8 +713,8 @@ class CategoricalFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
-    r_frame_preserved: Optional[StrictBool] = None
-    critical_functional_domains: Optional[List[FunctionalDomain]] = None
+    r_frame_preserved: StrictBool | None = None
+    critical_functional_domains: list[FunctionalDomain] | None = None
     structural_elements: CategoricalFusionElements
 
     model_config = ConfigDict(
@@ -808,4 +804,4 @@ class CategoricalFusion(AbstractFusion):
     )
 
 
-Fusion = Union[CategoricalFusion, AssayedFusion]
+Fusion = CategoricalFusion | AssayedFusion
