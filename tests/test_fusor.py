@@ -1,6 +1,5 @@
 """Module for testing the FUSOR class."""
 import copy
-from typing import Dict
 
 import pytest
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, LocationDescriptor
@@ -337,7 +336,7 @@ def fusion_ensg_sequence_id(templated_sequence_element_ensg):
     return CategoricalFusion(**params)
 
 
-def compare_gene_descriptor(actual: Dict, expected: Dict):
+def compare_gene_descriptor(actual: dict, expected: dict):
     """Test that actual and expected gene descriptors match."""
     assert actual["id"] == expected["id"]
     assert actual["type"] == expected["type"]
