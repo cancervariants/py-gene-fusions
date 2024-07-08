@@ -4,10 +4,6 @@
 class IDTranslationException(Exception):  # noqa: N818
     """Indicate translation failure for provided ID value"""
 
-    pass
-
 
 class FUSORParametersException(Exception):  # noqa: N818
     """Signal incorrect or insufficient parameters for model constructor methods."""
-
-    pass

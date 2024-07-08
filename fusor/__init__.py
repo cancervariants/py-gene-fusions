@@ -3,7 +3,7 @@ import logging
 from os import environ
 from pathlib import Path
 
-from .version import __version__  # noqa: F401
+from .version import __version__
 
 logging.basicConfig(
     filename="fusor.log",
@@ -13,10 +13,7 @@ logger = logging.getLogger("fusor")
 logger.setLevel(logging.DEBUG)
 
 
-if "SEQREPO_DATA_PATH" in environ:
-    SEQREPO_DATA_PATH = environ["SEQREPO_DATA_PATH"]
-else:
-    SEQREPO_DATA_PATH = "/usr/local/share/seqrepo/latest"
+SEQREPO_DATA_PATH = environ.get("SEQREPO_DATA_PATH", "/usr/local/share/seqrepo/latest")
 
 if "UTA_DB_URL" in environ:
     UTA_DB_URL = environ["UTA_DB_URL"]
@@ -29,6 +26,6 @@ logging.getLogger("nose").setLevel(logging.INFO)
 logging.getLogger("python_jsonschema_objects.classbuilder").setLevel(logging.INFO)
 logging.getLogger("urllib3").setLevel(logging.INFO)
 
-from fusor.fusor import FUSOR  # noqa: E402, F401
+from fusor.fusor import FUSOR  # noqa: E402
 
 APP_ROOT = Path(__file__).resolve().parents[0]

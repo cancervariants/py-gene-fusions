@@ -76,7 +76,7 @@ class Translator:
             return CausativeEvent(
                 event_type=EventType("rearrangement"), event_description=descr
             )
-        elif chrom1 != chrom2:
+        if chrom1 != chrom2:
             return CausativeEvent(event_type=EventType("rearrangement"))
         return None
 
@@ -107,24 +107,20 @@ class Translator:
         """
         if "," not in genelist or caller != "arriba":
             ge = self.fusor.gene_element(gene=genelist)
-            if ge[0]:
-                return ge
-            else:
-                return self._get_gene_element_unnormalized(genelist, caller)
-
-        else:
-            genes = genelist.split(",")
-            dists = []
-            for gene in genes:
-                start, end = gene.rfind("("), gene.rfind(")")
-                dists.append(int(gene[start + 1 : end]))
-            gene = (
-                genes[0].split("(")[0]
-                if dists[0] <= dists[1]
-                else genes[1].split("(")[0]
+            return (
+                ge if ge[0] else self._get_gene_element_unnormalized(genelist, caller)
             )
-            ge = self.fusor.gene_element(gene=gene)
-            return ge if ge[0] else self._get_gene_element_unnormalized(gene, caller)
+
+        genes = genelist.split(",")
+        dists = []
+        for gene in genes:
+            start, end = gene.rfind("("), gene.rfind(")")
+            dists.append(int(gene[start + 1 : end]))
+        gene = (
+            genes[0].split("(")[0] if dists[0] <= dists[1] else genes[1].split("(")[0]
+        )
+        ge = self.fusor.gene_element(gene=gene)
+        return ge if ge[0] else self._get_gene_element_unnormalized(gene, caller)
 
     async def from_jaffa(self, jaffa_row: pd.DataFrame) -> AssayedFusion:
         """Parse JAFFA fusion output to create AssayedFusion object
@@ -167,7 +163,7 @@ class Translator:
         else:
             ce = None
 
-        rf = True if jaffa_row.inframe == "TRUE" else False
+        rf = bool(jaffa_row.inframe == "TRUE")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
@@ -293,7 +289,7 @@ class Translator:
         ce = self._get_causative_event(
             fmap_row["Chromosome1"], fmap_row["Chromosome2"], descr
         )
-        rf = True if fmap_row["FrameShiftClass"] == "InFrame" else False
+        rf = bool(fmap_row["FrameShiftClass"] == "InFrame")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
@@ -348,7 +344,7 @@ class Translator:
                 event_description=arriba_row["confidence"],
             )
         )
-        rf = True if arriba_row["reading_frame"] == "in-frame" else False
+        rf = bool(arriba_row["reading_frame"] == "in-frame")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
@@ -392,7 +388,7 @@ class Translator:
                     event_type=EventType("rearrangement"),
                     event_description=cicero_row["type"],
                 )
-        rf = True if int(cicero_row["frame"]) == 1 else False
+        rf = bool(int(cicero_row["frame"]) == 1)
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
@@ -502,7 +498,7 @@ class Translator:
             genie_row["Site2_Chromosome"],
             genie_row["Annotation"],
         )
-        rf = True if genie_row["Site2_Effect_on_Frame"] == "In_frame" else False
+        rf = bool(genie_row["Site2_Effect_on_Frame"] == "In_frame")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )

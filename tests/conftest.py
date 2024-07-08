@@ -361,7 +361,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                                 {
                                     "_id": "ga4gh:VSL._ASa2-iBSDZSpC3JlpwJxzv4OY5M-5Ct",
                                     "type": "SequenceLocation",
-                                    "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",  # noqa: E501
+                                    "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                                     "interval": {
                                         "start": {"type": "Number", "value": 154155307},
                                         "end": {"type": "Number", "value": 154194648},
@@ -388,7 +388,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                                 {
                                     "_id": "ga4gh:VSL.sGJqQhhTg3BYlndAP7nFzN7KoKID1yP_",
                                     "type": "SequenceLocation",
-                                    "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",  # noqa: E501
+                                    "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                                     "interval": {
                                         "start": {"type": "Number", "value": 154155307},
                                         "end": {"type": "Number", "value": 154192100},
@@ -540,7 +540,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def fusion_example():
     """Create test fixture for a fake fusion without additional property expansion."""
     return {
