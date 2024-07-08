@@ -59,7 +59,7 @@
       "status": "preserved",
       "associated_gene": {
         "id": "normalize.gene:hgnc%3A76",
-        "type": "GeneDescriptor",
+        "type": "Gene",
         "label": "ABL1",
         "gene_id": "hgnc:76"
       },
