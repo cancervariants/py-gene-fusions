@@ -4,7 +4,7 @@
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_004327.3",
-      "gene_descriptor": {
+      "gene": {
         "type": "Gene",
         "id": "normalize.gene:BCR",
         "gene_id": "hgnc:1014",
@@ -35,7 +35,7 @@
       "transcript": "refseq:NM_005157.5",
       "exon_start": 2,
       "exon_start_offset": -173,
-      "gene_descriptor": {
+      "gene": {
         "id": "normalize.gene:ABL1",
         "type": "Gene",
         "label": "ABL1",
