@@ -5,29 +5,18 @@
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_004327.3",
       "gene_descriptor": {
-        "type": "GeneDescriptor",
+        "type": "Gene",
         "id": "normalize.gene:BCR",
         "gene_id": "hgnc:1014",
         "label": "BCR"
       },
       "element_genomic_end": {
-        "id": "fusor.location_descriptor:NC_000022.11",
-        "type": "LocationDescriptor",
-        "label": "NC_000022.11",
-        "location": {
-          "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000022.11",
-          "interval": {
-            "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 23253980
-            },
-            "end": {
-              "type": "Number",
-              "value": 23253981
-            }
-          }
+        "type": "SequenceLocation",
+        "sequenceReference": {
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
+          "residueAlphabet": null,
+          "end": 23253981
         }
       },
       "exon_end": 2,
@@ -36,10 +25,9 @@
     {
       "type": "LinkerSequenceElement",
       "linker_sequence": {
-        "id": "sequence:ACTAAAGCG",
-        "type": "SequenceDescriptor",
-        "sequence": "ACTAAAGCG",
-        "residue_type": "SO:0000348"
+          "type": "LiteralSequenceExpression",
+          "sequence": "CCCGTC",
+          "residue_type": "SO:0000348"
       }
     },
     {
@@ -49,31 +37,20 @@
       "exon_start_offset": -173,
       "gene_descriptor": {
         "id": "normalize.gene:ABL1",
-        "type": "GeneDescriptor",
+        "type": "Gene",
         "label": "ABL1",
         "gene_id": "hgnc:76"
       },
       "element_genomic_start": {
-        "id": "fusor.location_descriptor:NC_000009.12",
-        "type": "LocationDescriptor",
-        "label": "NC_000009.12",
-        "location": {
-          "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000009.12",
-          "interval": {
-            "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 130854064
-            },
-            "end": {
-              "type": "Number",
-              "value": 130854065
-            }
-          }
+        "type": "SequenceLocation",
+        "sequenceReference": {
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
+          "residueAlphabet": null,
+          "start": 130854065
         }
-      }
     }
+  }
   ],
   "r_frame_preserved": true,
   "critical_functional_domains": [
@@ -89,22 +66,13 @@
       "_id": "interpro:IPR000980",
       "label": "SH2 domain",
       "sequence_location": {
-        "id": "fusor.location_descriptor:NP_005148.2",
-        "type": "LocationDescriptor",
-        "location": {
-          "type": "SequenceLocation",
-          "sequence_id": "refseq:NP_005148.2",
-          "interval": {
-            "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 127
-            },
-            "end": {
-              "type": "Number",
-              "value": 202
-            }
-          }
+        "type": "SequenceLocation",
+        "sequenceReference": {
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
+          "residueAlphabet": null,
+          "start": 127,
+          "end": 202
         }
       }
     }
