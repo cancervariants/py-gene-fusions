@@ -1,4 +1,5 @@
 """Module for testing the fusion model."""
+
 import copy
 
 import pytest

@@ -1,4 +1,5 @@
 """Provide programmatic access to example objects."""
+
 import json
 from pathlib import Path
 

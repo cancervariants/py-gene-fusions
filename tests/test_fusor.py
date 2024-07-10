@@ -1,4 +1,5 @@
 """Module for testing the FUSOR class."""
+
 import copy
 
 import pytest
@@ -817,9 +818,9 @@ def test_templated_sequence_element(
     assert tsg.model_dump() == templated_sequence_element.model_dump()
 
     expected = copy.deepcopy(templated_sequence_element.model_dump())
-    expected["region"]["location"][
-        "sequence_id"
-    ] = "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+    expected["region"]["location"]["sequence_id"] = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+    )
     expected["region"]["location_id"] = "ga4gh:VSL.bL1N-PQfp4dGlEz6PEd34fGxdxo82Zkb"
     tsg = fusor_instance.templated_sequence_element(
         100,
