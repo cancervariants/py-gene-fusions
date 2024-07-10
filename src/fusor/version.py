@@ -1,2 +1,2 @@
 """Define library version."""
-__version__ = "0.0.31-dev0"
+__version__ = "0.1.0"
