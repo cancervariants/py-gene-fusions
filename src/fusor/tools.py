@@ -1,4 +1,5 @@
 """Provide miscellaneous tools for fusion modeling."""
+
 import logging
 
 from biocommons.seqrepo.seqrepo import SeqRepo
