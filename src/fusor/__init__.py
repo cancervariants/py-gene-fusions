@@ -1,4 +1,5 @@
 """Provide computable object representation and validation for gene fusions"""
+
 from fusor.fusor import FUSOR
 
 from .version import __version__

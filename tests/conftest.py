@@ -1,4 +1,5 @@
 """Module containing methods and fixtures used throughout tests."""
+
 import logging
 
 import pytest
