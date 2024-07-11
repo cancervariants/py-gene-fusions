@@ -1,4 +1,5 @@
 """Module for modifying fusion objects."""
+
 import logging
 import re
 from urllib.parse import quote

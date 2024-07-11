@@ -1,4 +1,5 @@
 """Test FUSOR tools."""
+
 import pytest
 
 from fusor.exceptions import IDTranslationException

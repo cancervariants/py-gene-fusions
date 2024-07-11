@@ -1,4 +1,5 @@
 """Model for fusion class"""
+
 from abc import ABC
 from enum import Enum
 from typing import Any, Literal
@@ -120,9 +121,9 @@ class BaseStructuralElement(ABC, BaseModel):
 class TranscriptSegmentElement(BaseStructuralElement):
     """Define TranscriptSegment class"""
 
-    type: Literal[
+    type: Literal[FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT] = (
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
-    ] = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
+    )
     transcript: CURIE
     exon_start: StrictInt | None = None
     exon_start_offset: StrictInt | None = 0
@@ -212,9 +213,9 @@ class TranscriptSegmentElement(BaseStructuralElement):
 class LinkerElement(BaseStructuralElement, extra="forbid"):
     """Define Linker class (linker sequence)"""
 
-    type: Literal[
+    type: Literal[FUSORTypes.LINKER_SEQUENCE_ELEMENT] = (
         FUSORTypes.LINKER_SEQUENCE_ELEMENT
-    ] = FUSORTypes.LINKER_SEQUENCE_ELEMENT
+    )
     linker_sequence: SequenceDescriptor
 
     @field_validator("linker_sequence", mode="before")
@@ -260,9 +261,9 @@ class TemplatedSequenceElement(BaseStructuralElement):
     product.
     """
 
-    type: Literal[
+    type: Literal[FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT] = (
         FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT
-    ] = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT
+    )
     region: LocationDescriptor
     strand: Strand
 
@@ -340,9 +341,9 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
     MultiplePossibleGenesElement.
     """
 
-    type: Literal[
+    type: Literal[FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT] = (
         FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
-    ] = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT
+    )
 
     model_config = ConfigDict(
         json_schema_extra={"example": {"type": "MultiplePossibleGenesElement"}},
