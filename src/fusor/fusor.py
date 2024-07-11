@@ -4,9 +4,8 @@ import logging
 import re
 from urllib.parse import quote
 
-from biocommons.seqrepo import SeqRepo
 from bioutils.accessions import coerce_namespace
-from cool_seq_tool.routers import CoolSeqTool
+from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models
@@ -65,26 +64,21 @@ class FUSOR:
 
     def __init__(
         self,
-        seqrepo_data_path: str | None = None,
         gene_database: GeneDatabase | None = None,
-        uta_db_url: str | None = None,
+        cool_seq_tool: CoolSeqTool | None = None,
     ) -> None:
         """Initialize FUSOR class.
 
-        :param seqrepo_data_path: Path to SeqRepo data directory
+        :param cool_seq_tool: Cool-Seq-Tool instance
         :param gene_database: gene normalizer database instance
-        :param uta_db_url: Postgres URL for UTA
         """
         if not gene_database:
             gene_database = create_db()
         self.gene_normalizer = QueryHandler(gene_database)
 
-        cst_params = {}
-        if uta_db_url:
-            cst_params["db_url"] = uta_db_url
-        if seqrepo_data_path:
-            cst_params["sr"] = SeqRepo(seqrepo_data_path)
-        self.cool_seq_tool = CoolSeqTool(**cst_params)
+        if not cool_seq_tool:
+            cool_seq_tool = CoolSeqTool()
+        self.cool_seq_tool = cool_seq_tool
         self.seqrepo = self.cool_seq_tool.seqrepo_access.sr
 
     @staticmethod

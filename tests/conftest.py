@@ -3,6 +3,7 @@
 import logging
 
 import pytest
+from cool_seq_tool.app import CoolSeqTool
 
 from fusor.fusor import FUSOR
 
@@ -30,8 +31,18 @@ def pytest_configure(config):
 
 @pytest.fixture(scope="session")
 def fusor_instance():
-    """Create test fixture for fusor object"""
-    return FUSOR()
+    """Create test fixture for fusor object
+
+    Suppresses checks for CoolSeqTool external resources. Otherwise, on CST startup,
+    it will try to check that its MANE summary file is up-to-date, which is an FTP call
+    to the NCBI servers and can hang sometimes.
+
+    If those files aren't available, create a CST instance in another session -- by
+    default, it should save files to a centralized location that this test instance can
+    access.
+    """
+    cst = CoolSeqTool(force_local_files=True)
+    return FUSOR(cool_seq_tool=cst)
 
 
 @pytest.fixture(scope="session")
