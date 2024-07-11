@@ -766,6 +766,7 @@ async def test_transcript_segment_element(
     assert tsg[0].model_dump() == expected.model_dump()
 
     # MANE
+    # help wanted!!! I can't get this test to work and I can't figure out why - this is a valid start, but CST returns no data
     tsg = await fusor_instance.transcript_segment_element(
         tx_to_genomic_coords=False,
         chromosome="NC_000011.10",
