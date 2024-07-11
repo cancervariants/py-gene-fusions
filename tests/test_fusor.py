@@ -260,8 +260,8 @@ def transcript_segment_element():
             "label": "NC_000001.11",
             "location": {
                 "interval": {
-                    "end": {"type": "Number", "value": 154170400},
-                    "start": {"type": "Number", "value": 154170399},
+                    "end": {"type": "Number", "value": 154170401},
+                    "start": {"type": "Number", "value": 154170400},
                     "type": "SequenceInterval",
                 },
                 "sequence_id": "refseq:NC_000001.11",
@@ -274,8 +274,8 @@ def transcript_segment_element():
             "label": "NC_000001.11",
             "location": {
                 "interval": {
-                    "end": {"type": "Number", "value": 154192136},
-                    "start": {"type": "Number", "value": 154192135},
+                    "end": {"type": "Number", "value": 154192100},
+                    "start": {"type": "Number", "value": 154192099},
                     "type": "SequenceInterval",
                 },
                 "sequence_id": "refseq:NC_000001.11",
@@ -641,8 +641,8 @@ async def test_transcript_segment_element(
     # Genomic input, residue
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.4",
-        start=154192136,
-        end=154170399,
+        start=154192100,
+        end=154170400,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
     )
@@ -653,8 +653,8 @@ async def test_transcript_segment_element(
     # Genomic input, inter-residue
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.4",
-        start=154192135,
-        end=154170399,
+        start=154192099,
+        end=154170400,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         residue_mode="inter-residue",
@@ -698,8 +698,8 @@ async def test_transcript_segment_element(
     # Genomic input
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.4",
-        start=154192136,
-        end=154170399,
+        start=154192100,
+        end=154170400,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
@@ -709,8 +709,8 @@ async def test_transcript_segment_element(
     assert tsg[0].model_dump() == expected.model_dump()
 
     expected.exon_end_offset = -5
-    expected.element_genomic_end.location.interval.start.value = 154170404
-    expected.element_genomic_end.location.interval.end.value = 154170405
+    expected.element_genomic_end.location.interval.start.value = 154170405
+    expected.element_genomic_end.location.interval.end.value = 154170406
 
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
@@ -728,8 +728,8 @@ async def test_transcript_segment_element(
     # Genomic Input
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.4",
-        start=154192136,
-        end=154170404,
+        start=154192100,
+        end=154170405,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
@@ -756,7 +756,7 @@ async def test_transcript_segment_element(
     # Genomic Input
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.4",
-        start=154192136,
+        start=154192100,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
