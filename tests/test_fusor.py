@@ -153,10 +153,10 @@ def regulatory_element_min(braf_gene_descr_min):
 def location_descriptor_tpm3():
     """Create location descriptor test fixture."""
     params = {
-        "id": "fusor.location_descriptor:NM_152263.4",
+        "id": "fusor.location_descriptor:NM_152263.3",
         "type": "LocationDescriptor",
         "location": {
-            "sequence_id": "refseq:NM_152263.4",
+            "sequence_id": "refseq:NM_152263.3",
             "type": "SequenceLocation",
             "interval": {
                 "start": {"type": "Number", "value": 154170398},
@@ -254,14 +254,14 @@ def transcript_segment_element():
             "label": "TPM3",
             "type": "GeneDescriptor",
         },
-        "transcript": "refseq:NM_152263.4",
+        "transcript": "refseq:NM_152263.3",
         "element_genomic_end": {
             "id": "fusor.location_descriptor:NC_000001.11",
             "label": "NC_000001.11",
             "location": {
                 "interval": {
-                    "end": {"type": "Number", "value": 154170401},
-                    "start": {"type": "Number", "value": 154170400},
+                    "end": {"type": "Number", "value": 154170400},
+                    "start": {"type": "Number", "value": 154170399},
                     "type": "SequenceInterval",
                 },
                 "sequence_id": "refseq:NC_000001.11",
@@ -274,8 +274,8 @@ def transcript_segment_element():
             "label": "NC_000001.11",
             "location": {
                 "interval": {
-                    "end": {"type": "Number", "value": 154192100},
-                    "start": {"type": "Number", "value": 154192099},
+                    "end": {"type": "Number", "value": 154192136},
+                    "start": {"type": "Number", "value": 154192135},
                     "type": "SequenceInterval",
                 },
                 "sequence_id": "refseq:NC_000001.11",
@@ -632,7 +632,7 @@ async def test_transcript_segment_element(
     """Test that transcript_segment_element method works correctly"""
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.4", exon_start=1, exon_end=8, tx_to_genomic_coords=True
+        transcript="NM_152263.3", exon_start=1, exon_end=8, tx_to_genomic_coords=True
     )
     assert tsg[0]
     assert tsg[1] is None
@@ -640,9 +640,9 @@ async def test_transcript_segment_element(
 
     # Genomic input, residue
     tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.4",
-        start=154192100,
-        end=154170400,
+        transcript="NM_152263.3",
+        start=154192136,
+        end=154170399,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
     )
@@ -652,9 +652,9 @@ async def test_transcript_segment_element(
 
     # Genomic input, inter-residue
     tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.4",
-        start=154192099,
-        end=154170400,
+        transcript="NM_152263.3",
+        start=154192135,
+        end=154170399,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         residue_mode="inter-residue",
@@ -665,7 +665,7 @@ async def test_transcript_segment_element(
 
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.4",
+        transcript="NM_152263.3",
         exon_start=1,
         exon_end=8,
         gene="TPM3",
@@ -685,7 +685,7 @@ async def test_transcript_segment_element(
 
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.4",
+        transcript="NM_152263.3",
         exon_start=1,
         exon_end=8,
         tx_to_genomic_coords=True,
@@ -697,9 +697,9 @@ async def test_transcript_segment_element(
 
     # Genomic input
     tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.4",
-        start=154192100,
-        end=154170400,
+        transcript="NM_152263.3",
+        start=154192136,
+        end=154170399,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
@@ -709,12 +709,12 @@ async def test_transcript_segment_element(
     assert tsg[0].model_dump() == expected.model_dump()
 
     expected.exon_end_offset = -5
-    expected.element_genomic_end.location.interval.start.value = 154170405
-    expected.element_genomic_end.location.interval.end.value = 154170406
+    expected.element_genomic_end.location.interval.start.value = 154170404
+    expected.element_genomic_end.location.interval.end.value = 154170405
 
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.4",
+        transcript="NM_152263.3",
         exon_start=1,
         exon_end=8,
         exon_end_offset=-5,
@@ -727,9 +727,9 @@ async def test_transcript_segment_element(
 
     # Genomic Input
     tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.4",
-        start=154192100,
-        end=154170405,
+        transcript="NM_152263.3",
+        start=154192136,
+        end=154170404,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
@@ -744,7 +744,7 @@ async def test_transcript_segment_element(
 
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.4",
+        transcript="NM_152263.3",
         exon_start=1,
         tx_to_genomic_coords=True,
         seq_id_target_namespace="ga4gh",
@@ -755,8 +755,8 @@ async def test_transcript_segment_element(
 
     # Genomic Input
     tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.4",
-        start=154192100,
+        transcript="NM_152263.3",
+        start=154192136,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
@@ -766,7 +766,6 @@ async def test_transcript_segment_element(
     assert tsg[0].model_dump() == expected.model_dump()
 
     # MANE
-    # help wanted!!! I can't get this test to work and I can't figure out why - this is a valid start, but CST returns no data
     tsg = await fusor_instance.transcript_segment_element(
         tx_to_genomic_coords=False,
         chromosome="NC_000011.10",
@@ -1015,7 +1014,7 @@ def test_functional_domain(
     )
     assert cd[0] is None
     assert (
-        "End inter-residue coordinate (712000) is out of index on "
+        "End inter-residue coordinate (711999) is out of index on "
         "NP_004324.2" in cd[1]
     )
 
@@ -1042,34 +1041,34 @@ def test_regulatory_element(fusor_instance, regulatory_element, regulatory_eleme
 
 def test__location_descriptor(fusor_instance, location_descriptor_tpm3):
     """Test that _location_descriptor method works correctly."""
-    ld = fusor_instance._location_descriptor(154170398, 154170399, "NM_152263.4")
+    ld = fusor_instance._location_descriptor(154170398, 154170399, "NM_152263.3")
     assert ld.model_dump() == location_descriptor_tpm3.model_dump()
 
     expected = copy.deepcopy(location_descriptor_tpm3)
-    expected.location.sequence_id = "ga4gh:SQ.J5ZWC7S_-_e_vj-Si6LrRWTX9dk9W1vn"
+    expected.location.sequence_id = "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT"
     ld = fusor_instance._location_descriptor(
-        154170398, 154170399, "NM_152263.4", seq_id_target_namespace="ga4gh"
+        154170398, 154170399, "NM_152263.3", seq_id_target_namespace="ga4gh"
     )
     assert ld.model_dump() == expected.model_dump()
 
-    expected.id = "ga4gh:VSL.6SYEqiRy5gRXfQCuZ8GSxMIlCAziZt3a"
+    expected.id = "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa"
     ld = fusor_instance._location_descriptor(
         154170398,
         154170399,
-        "NM_152263.4",
+        "NM_152263.3",
         seq_id_target_namespace="ga4gh",
         use_location_id=True,
     )
     assert ld.model_dump() == expected.model_dump()
 
-    expected.location.sequence_id = "refseq:NM_152263.4"
-    expected.id = "fusor.location_descriptor:refseq%3ANM_152263.4"
-    ld = fusor_instance._location_descriptor(154170398, 154170399, "refseq:NM_152263.4")
+    expected.location.sequence_id = "refseq:NM_152263.3"
+    expected.id = "fusor.location_descriptor:refseq%3ANM_152263.3"
+    ld = fusor_instance._location_descriptor(154170398, 154170399, "refseq:NM_152263.3")
     assert ld.model_dump() == expected.model_dump()
 
     expected.id = "fusor.location_descriptor:example_label"
     expected.label = "example_label"
     ld = fusor_instance._location_descriptor(
-        154170398, 154170399, "refseq:NM_152263.4", label="example_label"
+        154170398, 154170399, "refseq:NM_152263.3", label="example_label"
     )
     assert ld.model_dump() == expected.model_dump()
