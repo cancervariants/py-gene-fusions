@@ -1,79 +1,94 @@
 {
   "type": "CategoricalFusion",
-  "structural_elements": [
-    {
-      "type": "TranscriptSegmentElement",
-      "transcript": "refseq:NM_004327.3",
-      "gene": {
-        "type": "Gene",
-        "id": "normalize.gene:BCR",
-        "gene_id": "hgnc:1014",
-        "label": "BCR"
+  "structure": {
+    "type": "Adjacency",
+    "adjoinedSequences": [{
+      "type": "SequenceLocation",
+      "sequenceReference": {
+        "id": "GRCh38:chr22",
+        "type": "SequenceReference",
+        "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
+        "residueAlphabet": "na"
       },
-      "element_genomic_end": {
-        "type": "SequenceLocation",
-        "sequenceReference": {
-          "type": "SequenceReference",
-          "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
-          "residueAlphabet": null,
-          "end": 23253981
+      "end": 23290413,
+      "extensions": [{
+          "name": "NM_004327.4:e._14",
+          "description": "VICC exon representation of the aligned transcript boundary.",
+          "value": {
+            "exon_end": 14,
+            "exon_end_offset": 0,
+            "sequenceReference":{
+              "type": "SequenceReference",
+              "id": "NM_004327.4",
+              "refgetAccession": "SQ.kpytJsXw3BwLC3oBSjHQS1kwxs4WO3I3",
+              "residueAlphabet": "na"
+            },
+            "gene": {
+              "code": "hgnc:1014",
+              "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+              "label": "BCR"
+            }
+          }
         }
+      ]
       },
-      "exon_end": 2,
-      "exon_end_offset": 182
-    },
-    {
-      "type": "LinkerSequenceElement",
-      "linker_sequence": {
-          "type": "LiteralSequenceExpression",
-          "sequence": "CCCGTC",
-          "residue_type": "SO:0000348"
-      }
-    },
-    {
-      "type": "TranscriptSegmentElement",
-      "transcript": "refseq:NM_005157.5",
-      "exon_start": 2,
-      "exon_start_offset": -173,
-      "gene": {
-        "id": "normalize.gene:ABL1",
-        "type": "Gene",
-        "label": "ABL1",
-        "gene_id": "hgnc:76"
-      },
-      "element_genomic_start": {
+      {
         "type": "SequenceLocation",
         "sequenceReference": {
+          "id": "GRCh38:chr9",
           "type": "SequenceReference",
           "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
-          "residueAlphabet": null,
-          "start": 130854065
-        }
+          "residueAlphabet": "na"
+        },
+        "start": 130854064,
+        "extensions": [{
+            "name": "NM_005157.6:e.2_",
+            "description": "VICC exon representation of the aligned transcript boundary.",
+            "value": {
+              "exon_start": 2,
+              "exon_start_offset": 0,
+              "sequenceReference":{
+                "type": "SequenceReference",
+                "id": "NM_004327.4",
+                "refgetAccession": "SQ.kpytJsXw3BwLC3oBSjHQS1kwxs4WO3I3",
+                "residueAlphabet": "na"
+              },
+              "gene": {
+                "code": "hgnc:76",
+                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+                "label": "ABL1"
+              }
+            }
+          }
+        ]
+      }],
+    "linker": {
+      "type": "LiteralSequenceExpression",
+      "sequence": "CCCGTC"
     }
-  }
-  ],
-  "r_frame_preserved": true,
-  "critical_functional_domains": [
+  },
+  "readingFramePreserved": true,
+  "criticalFunctionalDomains": [
     {
       "type": "FunctionalDomain",
       "status": "preserved",
       "associated_gene": {
-        "id": "normalize.gene:hgnc%3A76",
-        "type": "Gene",
-        "label": "ABL1",
-        "gene_id": "hgnc:76"
+        "code": "hgnc:76",
+        "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+        "label": "ABL1"
       },
-      "_id": "interpro:IPR000980",
+      "id": "interpro:IPR000980",
       "label": "SH2 domain",
-      "sequence_location": {
+      "sequenceLocation": {
         "type": "SequenceLocation",
         "sequenceReference": {
+          "id": "GRCh38:chr22",
           "type": "SequenceReference",
           "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
-          "residueAlphabet": null,
-          "start": 127,
-          "end": 202
-        }
+          "residueAlphabet": "na"
+        },
+        "start": 127,
+        "end": 202
       }
     }
   ]
