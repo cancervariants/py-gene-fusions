@@ -11,7 +11,8 @@
         "residueAlphabet": "na"
       },
       "end": 23290413,
-      "extensions": [{
+      "extensions": [
+        {
           "name": "NM_004327.4:e._14",
           "description": "VICC exon representation of the aligned transcript boundary.",
           "value": {
@@ -22,16 +23,33 @@
               "id": "NM_004327.4",
               "refgetAccession": "SQ.kpytJsXw3BwLC3oBSjHQS1kwxs4WO3I3",
               "residueAlphabet": "na"
-            },
-            "gene": {
-              "code": "hgnc:1014",
-              "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
-              "label": "BCR"
             }
           }
+        },
+        {
+          "name": "NM_004327.4:c._2782",
+          "description": "Transcript SequenceLocation of the aligned transcript boundary.",
+          "value": {
+            "type": "SequenceLocation",
+            "sequenceReference": {
+              "id": "NM_004327.4",
+              "type": "SequenceReference",
+              "refgetAccession": "SQ.kpytJsXw3BwLC3oBSjHQS1kwxs4WO3I3",
+              "residueAlphabet": "na"
+            },
+            "end": 3234
+          }
+        },
+        {
+          "name": "gene",
+          "description": "The gene concept (BCR) associated with this fusion partner.",
+          "value": {
+            "code": "hgnc:1014",
+            "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+            "label": "BCR"
+          }
         }
-      ]
-      },
+      ]},
       {
         "type": "SequenceLocation",
         "sequenceReference": {
@@ -41,23 +59,42 @@
           "residueAlphabet": "na"
         },
         "start": 130854064,
-        "extensions": [{
+        "extensions": [
+          {
             "name": "NM_005157.6:e.2_",
             "description": "VICC exon representation of the aligned transcript boundary.",
             "value": {
               "exon_start": 2,
               "exon_start_offset": 0,
               "sequenceReference":{
+                "id": "NM_005157.6",
                 "type": "SequenceReference",
-                "id": "NM_004327.4",
-                "refgetAccession": "SQ.kpytJsXw3BwLC3oBSjHQS1kwxs4WO3I3",
+                "refgetAccession": "SQ.w8Qg3x-PQ2akJrJQeGEN-_eBUMo1H1CL",
+                "residueAlphabet": "na"
+              }
+            }
+          },
+          {
+            "name": "NM_005157.6:c.80_",
+            "description": "Transcript SequenceLocation of the aligned transcript boundary.",
+            "value": {
+              "type": "SequenceLocation",
+              "sequenceReference": {
+                "id": "NM_005157.6",
+                "type": "SequenceReference",
+                "refgetAccession": "SQ.w8Qg3x-PQ2akJrJQeGEN-_eBUMo1H1CL",
                 "residueAlphabet": "na"
               },
-              "gene": {
-                "code": "hgnc:76",
-                "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
-                "label": "ABL1"
-              }
+              "end": 273
+            }
+          },
+          {
+            "name": "gene",
+            "description": "The gene concept (ABL1) associated with this fusion partner.",
+            "value": {
+              "code": "hgnc:76",
+              "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
+              "label": "ABL1"
             }
           }
         ]
@@ -72,7 +109,7 @@
     {
       "type": "FunctionalDomain",
       "status": "preserved",
-      "associated_gene": {
+      "gene": {
         "code": "hgnc:76",
         "system": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/",
         "label": "ABL1"
