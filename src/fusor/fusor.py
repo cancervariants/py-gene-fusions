@@ -6,7 +6,7 @@ from urllib.parse import quote
 
 from biocommons.seqrepo import SeqRepo
 from bioutils.accessions import coerce_namespace
-from cool_seq_tool.routers import CoolSeqTool
+from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models
@@ -272,11 +272,15 @@ class FUSOR:
                 _logger.warning(msg)
                 return None, [msg]
             residue_mode = kwargs.get("residue_mode")
-            # TODO: Remove once fixed in cool_seq_tool
+            # TODO: Remove once fixed in cool_seq_tool - need to verify that this code isn't still needed
             if residue_mode != ResidueMode.INTER_RESIDUE:
                 start = kwargs.get("start")
                 kwargs["start"] = start - 1 if start is not None else None
                 kwargs["residue_mode"] = "inter-residue"
+            chromosome = kwargs.get("chromosome")
+            # if chromosome is a string, assume it's an accession, fix it for the kwargs since CST expects
+            if type(chromosome) is str:
+                kwargs["alt_ac"] = chromosome
             data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_transcript_exon_coordinates(
                 **kwargs
             )
