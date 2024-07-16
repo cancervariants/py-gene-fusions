@@ -16,8 +16,9 @@ from fusor.tools import translate_identifier
 
 def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
     """Return fusion nomenclature for regulatory element.
-    :param RegulatoryElement element: a regulatory element object
-    :param SeqRepo sr: a SeqRepo instance
+
+    :param element: a regulatory element object
+    :param sr: a SeqRepo instance
     :return: regulatory element nomenclature representation
     :raises ValueError: if unable to retrieve genomic location or coordinates,
         or if missing element reference ID, genomic location, and associated
@@ -60,8 +61,9 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
 
 def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
     """Return fusion nomenclature for transcript segment element
-    :param TranscriptSegmentElement element: a tx segment element. Treated as
-    a junction component if only one end is provided.
+
+    :param element: a tx segment element. Treated as a junction component if only one
+        end is provided.
     :return: element nomenclature representation
     """
     transcript = str(element.transcript)
@@ -90,10 +92,11 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
 
 def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -> str:
     """Return fusion nomenclature for templated sequence element.
-    :param TemplatedSequenceElement element: a templated sequence element
+
+    :param element: a templated sequence element
     :return: element nomenclature representation
     :raises ValueError: if location isn't a SequenceLocation or if unable
-    to retrieve region or location
+        to retrieve region or location
     """
     if element.region and element.region.location:
         location = element.region.location
@@ -115,7 +118,8 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
 
 def gene_nomenclature(element: GeneElement) -> str:
     """Return fusion nomenclature for gene element.
-    :param GeneElement element: a gene element object
+
+    :param element: a gene element object
     :return: element nomenclature representation
     :raises ValueError: if unable to retrieve gene ID
     """
