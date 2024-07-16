@@ -75,7 +75,7 @@
       }
     }
   ],
-  "r_frame_preserved": true,
+  "reading_frame_preserved": true,
   "critical_functional_domains": [
     {
       "type": "FunctionalDomain",

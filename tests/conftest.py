@@ -563,7 +563,7 @@ def fusion_example():
     """Create test fixture for a fake fusion without additional property expansion."""
     return {
         "type": "CategoricalFusion",
-        "r_frame_preserved": True,
+        "reading_frame_preserved": True,
         "critical_functional_domains": [
             {
                 "type": "FunctionalDomain",

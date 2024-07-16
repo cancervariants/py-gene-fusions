@@ -331,7 +331,7 @@ def fusion_ensg_sequence_id(templated_sequence_element_ensg):
             templated_sequence_element_ensg,
             {"type": "MultiplePossibleGenesElement"},
         ],
-        "r_frame_preserved": True,
+        "reading_frame_preserved": True,
         "regulatory_element": None,
     }
     return CategoricalFusion(**params)
