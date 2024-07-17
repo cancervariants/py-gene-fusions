@@ -1,7 +1,6 @@
 """Provide helper methods for fusion nomenclature generation."""
 
 from biocommons.seqrepo.seqrepo import SeqRepo
-from ga4gh.vrsatile.pydantic.vrs_models import SequenceLocation
 
 from fusor.exceptions import IDTranslationException
 from fusor.models import (

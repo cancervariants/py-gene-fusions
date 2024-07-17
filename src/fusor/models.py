@@ -4,13 +4,6 @@ from abc import ABC
 from enum import Enum
 from typing import Any, Literal
 
-from ga4gh.vrsatile.pydantic import return_value
-from ga4gh.vrsatile.pydantic.vrsatile_models import (
-    CURIE,
-    GeneDescriptor,
-    LocationDescriptor,
-    SequenceDescriptor,
-)
 from pydantic import (
     BaseModel,
     ConfigDict,

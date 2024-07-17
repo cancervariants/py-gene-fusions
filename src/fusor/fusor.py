@@ -9,14 +9,6 @@ from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models
-from ga4gh.vrsatile.pydantic.vrs_models import (
-    CURIE,
-    Number,
-    SequenceInterval,
-    SequenceLocation,
-    VRSTypes,
-)
-from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, LocationDescriptor
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler

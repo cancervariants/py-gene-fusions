@@ -3,7 +3,6 @@
 import copy
 
 import pytest
-from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, LocationDescriptor
 
 from fusor.exceptions import FUSORParametersException
 from fusor.models import (

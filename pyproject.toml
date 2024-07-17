@@ -26,10 +26,9 @@ description = "Computable object representation and validation for gene fusions"
 license = {file = "LICENSE"}
 dependencies = [
     "pydantic == 2.*",
-    "ga4gh.vrsatile.pydantic ~=0.2.0",
-    "ga4gh.vrs ~=0.8.1",
+    "ga4gh.vrs ~=2.0.0a8",
     "biocommons.seqrepo",
-    "gene-normalizer ~=0.1.40-dev1",
+    "gene-normalizer ~=0.4.0",
     "cool-seq-tool ~=0.5.0",
 ]
 dynamic=["version"]
