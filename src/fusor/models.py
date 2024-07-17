@@ -4,6 +4,9 @@ from abc import ABC
 from enum import Enum
 from typing import Any, Literal
 
+from ga4gh.core.domain_models import Gene
+from ga4gh.vrs.models import SequenceLocation
+from gene.schemas import CURIE
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -27,7 +30,8 @@ class FUSORTypes(str, Enum):
     TRANSCRIPT_SEGMENT_ELEMENT = "TranscriptSegmentElement"
     TEMPLATED_SEQUENCE_ELEMENT = "TemplatedSequenceElement"
     LINKER_SEQUENCE_ELEMENT = "LinkerSequenceElement"
-    GENE_ELEMENT = "GeneElement"
+    # TODO: I'm not sure if this needs to still be here or not
+    GENE = "Gene"
     UNKNOWN_GENE_ELEMENT = "UnknownGeneElement"
     MULTIPLE_POSSIBLE_GENES_ELEMENT = "MultiplePossibleGenesElement"
     REGULATORY_ELEMENT = "RegulatoryElement"
@@ -56,11 +60,12 @@ class FunctionalDomain(BaseModel):
 
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
-    associated_gene: GeneDescriptor
+    associated_gene: Gene
     id: CURIE | None = Field(None, alias="_id")
     label: StrictStr | None = None
-    sequence_location: LocationDescriptor | None = None
+    sequence_location: SequenceLocation | None = None
 
+    # TODO: is this obsolete now that vrsatile has been removed?
     _get_id_val = field_validator("id")(return_value)
 
     model_config = ConfigDict(
@@ -100,7 +105,7 @@ class StructuralElementType(str, Enum):
     TRANSCRIPT_SEGMENT_ELEMENT = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT.value
     TEMPLATED_SEQUENCE_ELEMENT = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT.value
     LINKER_SEQUENCE_ELEMENT = FUSORTypes.LINKER_SEQUENCE_ELEMENT.value
-    GENE_ELEMENT = FUSORTypes.GENE_ELEMENT.value
+    GENE_ELEMENT = Gene
     UNKNOWN_GENE_ELEMENT = FUSORTypes.UNKNOWN_GENE_ELEMENT.value
     MULTIPLE_POSSIBLE_GENES_ELEMENT = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT.value
 
@@ -122,9 +127,9 @@ class TranscriptSegmentElement(BaseStructuralElement):
     exon_start_offset: StrictInt | None = 0
     exon_end: StrictInt | None = None
     exon_end_offset: StrictInt | None = 0
-    gene_descriptor: GeneDescriptor
-    element_genomic_start: LocationDescriptor | None = None
-    element_genomic_end: LocationDescriptor | None = None
+    gene: Gene
+    element_genomic_start: SequenceLocation | None = None
+    element_genomic_end: SequenceLocation | None = None
 
     @model_validator(mode="before")
     def check_exons(cls, values):
@@ -209,7 +214,7 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
     type: Literal[FUSORTypes.LINKER_SEQUENCE_ELEMENT] = (
         FUSORTypes.LINKER_SEQUENCE_ELEMENT
     )
-    linker_sequence: SequenceDescriptor
+    linker_sequence: SequenceLocation
 
     @field_validator("linker_sequence", mode="before")
     def validate_sequence(cls, v):
@@ -219,7 +224,7 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
                 v["sequence"] = v["sequence"].upper()
             except KeyError as e:
                 raise TypeError from e
-        elif isinstance(v, SequenceDescriptor):
+        elif isinstance(v, SequenceLocation):
             v.sequence = v.sequence.upper()
         else:
             raise TypeError
@@ -257,7 +262,7 @@ class TemplatedSequenceElement(BaseStructuralElement):
     type: Literal[FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT] = (
         FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT
     )
-    region: LocationDescriptor
+    region: SequenceLocation
     strand: Strand
 
     model_config = ConfigDict(
@@ -280,27 +285,6 @@ class TemplatedSequenceElement(BaseStructuralElement):
                     "label": "chr12:44908821-44908822(+)",
                 },
                 "strand": "+",
-            }
-        },
-    )
-
-
-class GeneElement(BaseStructuralElement):
-    """Define Gene Element class."""
-
-    type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
-    gene_descriptor: GeneDescriptor
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "type": "GeneElement",
-                "gene_descriptor": {
-                    "id": "gene:BRAF",
-                    "gene_id": "hgnc:1097",
-                    "label": "BRAF",
-                    "type": "GeneDescriptor",
-                },
             }
         },
     )
@@ -381,8 +365,8 @@ class RegulatoryElement(BaseModel):
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT
     regulatory_class: RegulatoryClass
     feature_id: str | None = None
-    associated_gene: GeneDescriptor | None = None
-    feature_location: LocationDescriptor | None = None
+    associated_gene: Gene | None = None
+    feature_location: SequenceLocation | None = None
 
     _get_ref_id_val = field_validator("feature_id")(return_value)
 
@@ -607,7 +591,7 @@ class Assay(BaseModelForbidExtra):
 
 AssayedFusionElements = list[
     TranscriptSegmentElement
-    | GeneElement
+    | Gene
     | TemplatedSequenceElement
     | LinkerElement
     | UnknownGeneElement
@@ -675,13 +659,10 @@ class AssayedFusion(AbstractFusion):
                 },
                 "structural_elements": [
                     {
-                        "type": "GeneElement",
-                        "gene_descriptor": {
-                            "id": "gene:EWSR1",
-                            "gene_id": "hgnc:3058",
-                            "label": "EWSR1",
-                            "type": "GeneDescriptor",
-                        },
+                        "type": "Gene",
+                        "id": "gene:EWSR1",
+                        "gene_id": "hgnc:3058",
+                        "label": "EWSR1",
                     },
                     {"type": "UnknownGeneElement"},
                 ],
@@ -692,7 +673,7 @@ class AssayedFusion(AbstractFusion):
 
 CategoricalFusionElements = list[
     TranscriptSegmentElement
-    | GeneElement
+    | Gene
     | TemplatedSequenceElement
     | LinkerElement
     | MultiplePossibleGenesElement
@@ -774,13 +755,10 @@ class CategoricalFusion(AbstractFusion):
                         },
                     },
                     {
-                        "type": "GeneElement",
-                        "gene_descriptor": {
-                            "id": "gene:ALK",
-                            "type": "GeneDescriptor",
-                            "gene_id": "hgnc:427",
-                            "label": "ALK",
-                        },
+                        "type": "Gene",
+                        "id": "gene:ALK",
+                        "gene_id": "hgnc:427",
+                        "label": "ALK",
                     },
                 ],
                 "regulatory_element": {
