@@ -10,17 +10,11 @@ from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models
-from ga4gh.vrsatile.pydantic.vrs_models import (
-    CURIE,
-    Number,
-    SequenceInterval,
-    SequenceLocation,
-    VRSTypes,
-)
-from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, LocationDescriptor
+from ga4gh.vrs.models import SequenceLocation
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
+from gene.schemas import CURIE
 from pydantic import ValidationError
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
@@ -542,27 +536,18 @@ class FUSOR:
         start: int,
         end: int,
         sequence_id: str,
-        label: str | None = None,
         seq_id_target_namespace: str | None = None,
-        use_location_id: bool = False,
-    ) -> LocationDescriptor:
+    ) -> SequenceLocation:
         """Create location descriptor
 
         :param int start: Start position
         :param int end: End position
         :param str sequence_id: Accession for sequence
-        :param str label: label for location. If `None`, `sequence_id` will be used as
-            Location Descriptor's `id` Else, label will be used as Location
-            Descriptor's `id`.
         :param str seq_id_target_namespace: If want to use digest for `sequence_id`,
             set this to the namespace you want the digest for. Otherwise, leave as
             `None`.
-        :param bool use_location_id: Takes precedence over `label` or `sequence_id`
-            becoming Location Descriptor's id. `True` if  use ga4gh digest as Location
-            Descriptor's id. `False`, use default of `label` > `sequence_id`
         """
-        seq_id_input = sequence_id
-
+        
         try:
             sequence_id = coerce_namespace(sequence_id)
         except ValueError:
@@ -583,22 +568,11 @@ class FUSOR:
             else:
                 sequence_id = seq_id
 
-        location = SequenceLocation(
+        return SequenceLocation(
             sequence_id=sequence_id,
-            interval=SequenceInterval(start=Number(value=start), end=Number(value=end)),
+            start=start,
+            end=end,
         )
-
-        if use_location_id:
-            _id = self._location_id(location.model_dump())
-        else:
-            quote_id = quote(label) if label else quote(seq_id_input)
-            _id = f"fusor.location_descriptor:{quote_id}"
-
-        location_descr = LocationDescriptor(id=_id, location=location)
-
-        if label:
-            location_descr.label = label
-        return location_descr
 
     def add_additional_fields(
         self,
@@ -654,7 +628,7 @@ class FUSOR:
                 ]:
                     if element_genomic:
                         location = element_genomic.location
-                        if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                        if location.type == SequenceLocation:
                             location_id = self._location_id(location.model_dump())
                             element_genomic.location_id = location_id
         if isinstance(fusion, CategoricalFusion) and fusion.critical_functional_domains:
@@ -666,7 +640,7 @@ class FUSOR:
             element = fusion.regulatory_element
             if element.feature_location:
                 location = element.feature_location
-                if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                if location.type == SequenceLocation:
                     location_id = self._location_id(location.model_dump())
                     element.feature_location.location_id = location_id
         return fusion
@@ -692,7 +666,7 @@ class FUSOR:
         for element in fusion.structural_elements:
             if isinstance(element, TemplatedSequenceElement):
                 location = element.region.location
-                if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                if location.type == SequenceLocation:
                     try:
                         new_id = translate_identifier(
                             self.seqrepo, location.sequence_id, target_namespace
@@ -708,7 +682,7 @@ class FUSOR:
                 ]:
                     if loc_descr:
                         location = loc_descr.location
-                        if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                        if location.type == SequenceLocation:
                             try:
                                 new_id = translate_identifier(
                                     self.seqrepo, location.sequence_id, target_namespace
@@ -777,10 +751,12 @@ class FUSOR:
         """
         gene_norm_resp = self.gene_normalizer.normalize(query)
         if gene_norm_resp.match_type:
-            gene_descr = gene_norm_resp.gene_descriptor
+            gene_descr = gene_norm_resp.gene
             if use_minimal_gene_descr:
                 gene_descr = GeneDescriptor(
-                    id=gene_descr.id, gene_id=gene_descr.gene_id, label=gene_descr.label
+                    id=gene_descr.id,
+                    gene_id=gene_norm_resp.normalized_id,
+                    label=gene_descr.label,
                 )
             return gene_descr, None
         return None, f"gene-normalizer unable to normalize {query}"
