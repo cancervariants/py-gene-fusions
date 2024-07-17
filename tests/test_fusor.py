@@ -9,7 +9,7 @@ from fusor.models import (
     AssayedFusion,
     CategoricalFusion,
     FunctionalDomain,
-    GeneElement,
+    Gene,
     LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryClass,
@@ -475,15 +475,15 @@ def test_add_location_id(fusor_instance, fusion_example, exhaustive_example):
     )
 
 
-def test__normalized_gene_descriptor(fusor_instance):
-    """Test that _normalized_gene_descriptor works correctly."""
+def test__normalized_gene(fusor_instance):
+    """Test that _normalized_gene works correctly."""
     # Actual response is tested in test_add_gene_descriptor
-    resp = fusor_instance._normalized_gene_descriptor("BRAF")
+    resp = fusor_instance._normalized_gene("BRAF")
     assert resp[0]
     assert resp[1] is None
-    assert isinstance(resp[0], GeneDescriptor)
+    assert isinstance(resp[0], Gene)
 
-    resp = fusor_instance._normalized_gene_descriptor("B R A F")
+    resp = fusor_instance._normalized_gene("B R A F")
     assert resp[0] is None
     assert resp[1] == "gene-normalizer unable to normalize B R A F"
 
@@ -505,16 +505,16 @@ def test_add_gene_descriptor(fusor_instance, exhaustive_example, fusion_example)
         for t_field in [actual.critical_functional_domains, actual.structural_elements]:
             for e_obj in e_field:
                 for t_obj in t_field:
-                    if "gene_descriptor" in e_obj.model_fields:
-                        e_gd = e_obj.gene_descriptor.label
+                    if "gene" in e_obj.model_fields:
+                        e_gd = e_obj.gene.label
                         e_gds.add(e_gd)
-                        if "gene_descriptor" in t_obj.model_fields:
-                            t_gd = t_obj.gene_descriptor.label
+                        if "gene" in t_obj.model_fields:
+                            t_gd = t_obj.gene.label
                             t_gds.add(t_gd)
                             if e_gd == t_gd:
                                 compare_gene_descriptor(
-                                    t_obj.gene_descriptor.model_dump(),
-                                    e_obj.gene_descriptor.model_dump(),
+                                    t_obj.gene.model_dump(),
+                                    e_obj.gene.model_dump(),
                                 )
     assert t_gds == e_gds
 
@@ -781,7 +781,7 @@ def test_gene_element(fusor_instance, braf_gene_descr_min, braf_gene_descr):
     gc = fusor_instance.gene_element("BRAF", use_minimal_gene_descr=True)
     assert gc[0]
     assert gc[1] is None
-    assert isinstance(gc[0], GeneElement)
+    assert isinstance(gc[0], Gene)
     compare_gene_descriptor(
         gc[0].gene_descriptor.model_dump(), braf_gene_descr_min.model_dump()
     )
@@ -789,7 +789,7 @@ def test_gene_element(fusor_instance, braf_gene_descr_min, braf_gene_descr):
     gc = fusor_instance.gene_element("BRAF", use_minimal_gene_descr=False)
     assert gc[0]
     assert gc[1] is None
-    assert isinstance(gc[0], GeneElement)
+    assert isinstance(gc[0], Gene)
     compare_gene_descriptor(
         gc[0].gene_descriptor.model_dump(), braf_gene_descr.model_dump()
     )

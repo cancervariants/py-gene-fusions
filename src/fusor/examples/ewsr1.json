@@ -2,9 +2,8 @@
   "type": "AssayedFusion",
   "structural_elements": [
     {
-      "type": "GeneElement",
-      "gene_descriptor": {
-        "type": "GeneDescriptor",
+      "gene": {
+        "type": "Gene",
         "id": "normalize.gene:EWSR1",
         "label": "EWSR1",
         "gene_id": "hgnc:3508"

@@ -1,10 +1,11 @@
 """Provide helper methods for fusion nomenclature generation."""
 
 from biocommons.seqrepo.seqrepo import SeqRepo
+from ga4gh.vrs.models import SequenceLocation
 
 from fusor.exceptions import IDTranslationException
 from fusor.models import (
-    GeneElement,
+    Gene,
     RegulatoryClass,
     RegulatoryElement,
     TemplatedSequenceElement,
@@ -67,7 +68,7 @@ def tx_segment_nomenclature(element: TranscriptSegmentElement) -> str:
     if ":" in transcript:
         transcript = transcript.split(":")[1]
 
-    prefix = f"{transcript}({element.gene_descriptor.label})"
+    prefix = f"{transcript}({element.gene.label})"
     start = element.exon_start if element.exon_start else ""
     if element.exon_start_offset:
         if element.exon_start_offset > 0:
@@ -97,7 +98,7 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
     if element.region and element.region.location:
         location = element.region.location
         if isinstance(location, SequenceLocation):
-            sequence_id = str(location.sequence_id)
+            sequence_id = str(location.sequenceReference.id)
             refseq_id = str(translate_identifier(sr, sequence_id, "refseq"))
             start = location.interval.start.value
             end = location.interval.end.value
@@ -112,19 +113,19 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
     raise ValueError
 
 
-def gene_nomenclature(element: GeneElement) -> str:
+def gene_nomenclature(element: Gene) -> str:
     """Return fusion nomenclature for gene element.
-    :param GeneElement element: a gene element object
+    :param Gene element: a gene element object
     :return: element nomenclature representation
     :raises ValueError: if unable to retrieve gene ID
     """
-    if element.gene_descriptor.gene_id:
-        gene_id = gene_id = element.gene_descriptor.gene_id
+    if element.gene.gene_id:
+        gene_id = gene_id = element.gene.gene_id
 
-    if element.gene_descriptor.gene_id:
-        gene_id = element.gene_descriptor.gene_id
-    elif element.gene_descriptor.gene and element.gene_descriptor.gene.gene_id:
-        gene_id = element.gene_descriptor.gene.gene_id
+    if element.gene.gene_id:
+        gene_id = element.gene.gene_id
+    elif element.gene.gene and element.gene.gene.gene_id:
+        gene_id = element.gene.gene.gene_id
     else:
         raise ValueError
-    return f"{element.gene_descriptor.label}({gene_id})"
+    return f"{element.gene.label}({gene_id})"

@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 
 def translate_identifier(
     seqrepo: SeqRepo, ac: str, target_namespace: str = "ga4gh"
-) -> CURIE:
+) -> str:
     """Return `target_namespace` identifier for accession provided.
 
     :param str ac: Identifier accession

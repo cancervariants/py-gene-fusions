@@ -147,7 +147,7 @@ def alk_gene_descriptor():
     """Create test fixture for ALK gene descriptor params"""
     return {
         "id": "normalize.gene:ALK",
-        "type": "GeneDescriptor",
+        "type": "Gene",
         "label": "ALK",
         "description": None,
         "xrefs": ["ensembl:ENSG00000171094", "ncbigene:238"],
@@ -495,8 +495,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                 },
             },
             {
-                "type": "GeneElement",
-                "gene_descriptor": alk_gene_descriptor,
+                "gene": alk_gene_descriptor,
             },
             {
                 "type": "LinkerSequenceElement",
@@ -624,10 +623,9 @@ def fusion_example():
                 },
             },
             {
-                "type": "GeneElement",
-                "gene_descriptor": {
+                "gene": {
                     "id": "normalize.gene:ALK",
-                    "type": "GeneDescriptor",
+                    "type": "Gene",
                     "label": "ALK",
                     "gene_id": "hgnc:427",
                 },

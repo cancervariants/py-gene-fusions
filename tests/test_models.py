@@ -13,7 +13,7 @@ from fusor.models import (
     CausativeEvent,
     EventType,
     FunctionalDomain,
-    GeneElement,
+    Gene,
     LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryElement,
@@ -40,7 +40,7 @@ def gene_descriptors():
         # alternate structure
         {
             "id": "normalize.gene:BRAF",
-            "type": "GeneDescriptor",
+            "type": "Gene",
             "label": "BRAF",
             "gene_id": "hgnc:1097",
         },
@@ -217,8 +217,7 @@ def gene_elements(gene_descriptors):
     """Provide possible gene element input data."""
     return [
         {
-            "type": "GeneElement",
-            "gene_descriptor": gene_descriptors[1],
+            "gene": gene_descriptors[1],
         },
         {"type": "GeneElement", "gene_descriptor": gene_descriptors[0]},
         {"type"},
@@ -613,7 +612,7 @@ def test_gene_element(gene_descriptors):
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert GeneElement(
+        assert Gene(
             type="UnknownGeneElement", gene_descriptor=gene_descriptors[0]
         )
     msg = "Input should be <FUSORTypes.GENE_ELEMENT: 'GeneElement'>"

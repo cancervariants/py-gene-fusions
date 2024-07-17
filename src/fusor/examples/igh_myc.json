@@ -13,9 +13,8 @@
   },
   "structural_elements": [
     {
-      "type": "GeneElement",
-      "gene_descriptor": {
-        "type": "GeneDescriptor",
+      "gene": {
+        "type": "Gene",
         "label": "MYC",
         "gene_id": "hgnc:7553",
         "id": "normalize.gene:MYC"

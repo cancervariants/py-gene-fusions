@@ -2,7 +2,6 @@
 
 import logging
 import re
-from urllib.parse import quote
 
 from biocommons.seqrepo import SeqRepo
 from bioutils.accessions import coerce_namespace
@@ -10,7 +9,7 @@ from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models
-from ga4gh.vrs.models import SequenceLocation
+from ga4gh.vrs.models import Adjacency, SequenceLocation
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
@@ -32,7 +31,7 @@ from fusor.models import (
     FunctionalDomain,
     Fusion,
     FusionType,
-    GeneElement,
+    Gene,
     LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryClass,
@@ -225,7 +224,7 @@ class FUSOR:
         use_minimal_gene_descr: bool = True,
         seq_id_target_namespace: str | None = None,
         **kwargs,
-    ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
+    ) -> tuple[Adjacency | None, list[str] | None]:
         """Create transcript segment element
 
         :param bool tx_to_genomic_coords: `True` if going from transcript
@@ -285,12 +284,13 @@ class FUSOR:
         genomic_data = data.genomic_data
         genomic_data.transcript = coerce_namespace(genomic_data.transcript)
 
-        normalized_gene_response = self._normalized_gene_descriptor(
+        normalized_gene_response = self._normalized_gene(
             genomic_data.gene, use_minimal_gene_descr=use_minimal_gene_descr
         )
         if not normalized_gene_response[0] and normalized_gene_response[1]:
             return None, [normalized_gene_response[1]]
 
+        adjacency_obj = Adjacency()
         return (
             TranscriptSegmentElement(
                 transcript=genomic_data.transcript,
@@ -298,7 +298,7 @@ class FUSOR:
                 exon_start_offset=genomic_data.exon_start_offset,
                 exon_end=genomic_data.exon_end,
                 exon_end_offset=genomic_data.exon_end_offset,
-                gene_descriptor=normalized_gene_response[0],
+                gene=normalized_gene_response[0],
                 element_genomic_start=self._location_descriptor(
                     genomic_data.start,
                     genomic_data.start + 1,
@@ -330,14 +330,16 @@ class FUSOR:
         :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
             (`id`, `gene_id`, `label`) will be used. `False` if
             gene-normalizer's gene descriptor will be used
-        :return: GeneElement, warning
+        :return: Gene, warning
         """
-        gene_descr, warning = self._normalized_gene_descriptor(
+        gene_descr, warning = self._normalized_gene(
             gene, use_minimal_gene_descr=use_minimal_gene_descr
         )
         if not gene_descr:
             return None, warning
-        return GeneElement(gene_descriptor=gene_descr), None
+        return Gene(
+            id=gene_descr.id, gene_id=gene_descr.gene_id, label=gene_descr.label
+        ), None
 
     def templated_sequence_element(
         self,
@@ -474,7 +476,7 @@ class FUSOR:
         if not seq:
             return None, warning
 
-        gene_descr, warning = self._normalized_gene_descriptor(
+        gene_descr, warning = self._normalized_gene(
             gene, use_minimal_gene_descr=use_minimal_gene_descr
         )
         if not gene_descr:
@@ -513,7 +515,7 @@ class FUSOR:
         :return: Tuple with RegulatoryElement instance and None value for warnings if
             successful, or a None value and warning message if unsuccessful
         """
-        gene_descr, warning = self._normalized_gene_descriptor(
+        gene_descr, warning = self._normalized_gene(
             gene, use_minimal_gene_descr=use_minimal_gene_descr
         )
         if not gene_descr:
@@ -547,7 +549,6 @@ class FUSOR:
             set this to the namespace you want the digest for. Otherwise, leave as
             `None`.
         """
-        
         try:
             sequence_id = coerce_namespace(sequence_id)
         except ValueError:
@@ -708,11 +709,11 @@ class FUSOR:
                     domain.sequence_location.location.sequence_id = new_id
         return fusion
 
-    def add_gene_descriptor(self, fusion: Fusion) -> Fusion:
-        """Add additional fields to `gene_descriptor` in fusion object
+    def add_gene_fields(self, fusion: Fusion) -> Fusion:
+        """Add additional fields to `gene` in fusion object
 
         :param Fusion fusion: A valid Fusion object
-        :return: Updated fusion with additional fields set in `gene_descriptor`
+        :return: Updated fusion with additional fields set in `gene`
         """
         properties = [fusion.structural_elements]
         if fusion.type == FusionType.CATEGORICAL_FUSION:
@@ -720,40 +721,40 @@ class FUSOR:
 
         for prop in properties:
             for obj in prop:
-                if "gene_descriptor" in obj.model_fields:
-                    label = obj.gene_descriptor.label
-                    norm_gene_descr, _ = self._normalized_gene_descriptor(
+                if "gene" in obj.model_fields:
+                    label = obj.gene.label
+                    norm_gene_descr, _ = self._normalized_gene(
                         label, use_minimal_gene_descr=False
                     )
                     if norm_gene_descr:
-                        obj.gene_descriptor = norm_gene_descr
+                        obj.gene = norm_gene_descr
         if fusion.regulatory_element and fusion.regulatory_element.associated_gene:
             reg_el = fusion.regulatory_element
             label = reg_el.associated_gene.label
-            norm_gene_descr, _ = self._normalized_gene_descriptor(
+            norm_gene_descr, _ = self._normalized_gene(
                 label, use_minimal_gene_descr=False
             )
             if norm_gene_descr:
                 reg_el.associated_gene = norm_gene_descr
         return fusion
 
-    def _normalized_gene_descriptor(
+    def _normalized_gene(
         self, query: str, use_minimal_gene_descr: bool = True
-    ) -> tuple[GeneDescriptor | None, str | None]:
-        """Return gene descriptor from normalized response.
+    ) -> tuple[Gene | None, str | None]:
+        """Return gene from normalized response.
 
         :param str query: Gene query
         :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
             (`id`, `gene_id`, `label`) will be used. `False` if
             gene-normalizer's gene descriptor will be used
-        :return: Tuple with gene descriptor and None value for warnings if
+        :return: Tuple with gene and None value for warnings if
             successful, and None value with warning string if unsuccessful
         """
         gene_norm_resp = self.gene_normalizer.normalize(query)
         if gene_norm_resp.match_type:
             gene_descr = gene_norm_resp.gene
             if use_minimal_gene_descr:
-                gene_descr = GeneDescriptor(
+                gene_descr = Gene(
                     id=gene_descr.id,
                     gene_id=gene_norm_resp.normalized_id,
                     label=gene_descr.label,
@@ -782,14 +783,14 @@ class FUSOR:
                 parts.append(element.linker_sequence.sequence)
             elif isinstance(element, TranscriptSegmentElement):
                 if not any(
-                    [gene == element.gene_descriptor.label for gene in element_genes]  # noqa: C419
+                    [gene == element.gene.label for gene in element_genes]  # noqa: C419
                 ):
                     parts.append(tx_segment_nomenclature(element))
             elif isinstance(element, TemplatedSequenceElement):
                 parts.append(templated_seq_nomenclature(element, self.seqrepo))
-            elif isinstance(element, GeneElement):
+            elif isinstance(element, Gene):
                 if not any(
-                    [gene == element.gene_descriptor.label for gene in element_genes]  # noqa: C419
+                    [gene == element.gene.label for gene in element_genes]  # noqa: C419
                 ):
                     parts.append(gene_nomenclature(element))
             else:

@@ -38,10 +38,9 @@
       "type": "MultiplePossibleGenesElement"
     },
     {
-      "type": "GeneElement",
-      "gene_descriptor": {
+      "gene": {
         "id": "normalize.gene:ALK",
-        "type": "GeneDescriptor",
+        "type": "Gene",
         "label": "ALK",
         "gene_id": "hgnc:427"
       }

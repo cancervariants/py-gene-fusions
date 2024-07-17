@@ -27,7 +27,7 @@ class FUSORTypes(str, Enum):
     TRANSCRIPT_SEGMENT_ELEMENT = "TranscriptSegmentElement"
     TEMPLATED_SEQUENCE_ELEMENT = "TemplatedSequenceElement"
     LINKER_SEQUENCE_ELEMENT = "LinkerSequenceElement"
-    GENE_ELEMENT = "GeneElement"
+    GENE = "Gene"
     UNKNOWN_GENE_ELEMENT = "UnknownGeneElement"
     MULTIPLE_POSSIBLE_GENES_ELEMENT = "MultiplePossibleGenesElement"
     REGULATORY_ELEMENT = "RegulatoryElement"
@@ -41,7 +41,6 @@ class AdditionalFields(str, Enum):
 
     SEQUENCE_ID = "sequence_id"
     LOCATION_ID = "location_id"
-    GENE_DESCRIPTOR = "gene_descriptor"
 
 
 class DomainStatus(str, Enum):
@@ -51,12 +50,49 @@ class DomainStatus(str, Enum):
     PRESERVED = "preserved"
 
 
+class StructuralElementType(str, Enum):
+    """Define possible structural element type values."""
+
+    TRANSCRIPT_SEGMENT_ELEMENT = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT.value
+    TEMPLATED_SEQUENCE_ELEMENT = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT.value
+    LINKER_SEQUENCE_ELEMENT = FUSORTypes.LINKER_SEQUENCE_ELEMENT.value
+    GENE_ELEMENT = FUSORTypes.GENE_ELEMENT.value
+    UNKNOWN_GENE_ELEMENT = FUSORTypes.UNKNOWN_GENE_ELEMENT.value
+    MULTIPLE_POSSIBLE_GENES_ELEMENT = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT.value
+
+
+class BaseStructuralElement(ABC, BaseModel):
+    """Define base structural element class."""
+
+    type: StructuralElementType
+
+
+class Gene(BaseStructuralElement):
+    """Define Gene Element class."""
+
+    type: Literal[FUSORTypes.GENE] = FUSORTypes.GENE
+    id: str
+    gene_id: str
+    label: str
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "type": "Gene",
+                "id": "gene:BRAF",
+                "gene_id": "hgnc:1097",
+                "label": "BRAF",
+            }
+        },
+    )
+
+
 class FunctionalDomain(BaseModel):
     """Define FunctionalDomain class"""
 
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
-    associated_gene: GeneDescriptor
+    associated_gene: Gene
     id: CURIE | None = Field(None, alias="_id")
     label: StrictStr | None = None
     sequence_location: LocationDescriptor | None = None
@@ -94,23 +130,6 @@ class FunctionalDomain(BaseModel):
     )
 
 
-class StructuralElementType(str, Enum):
-    """Define possible structural element type values."""
-
-    TRANSCRIPT_SEGMENT_ELEMENT = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT.value
-    TEMPLATED_SEQUENCE_ELEMENT = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT.value
-    LINKER_SEQUENCE_ELEMENT = FUSORTypes.LINKER_SEQUENCE_ELEMENT.value
-    GENE_ELEMENT = FUSORTypes.GENE_ELEMENT.value
-    UNKNOWN_GENE_ELEMENT = FUSORTypes.UNKNOWN_GENE_ELEMENT.value
-    MULTIPLE_POSSIBLE_GENES_ELEMENT = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT.value
-
-
-class BaseStructuralElement(ABC, BaseModel):
-    """Define base structural element class."""
-
-    type: StructuralElementType
-
-
 class TranscriptSegmentElement(BaseStructuralElement):
     """Define TranscriptSegment class"""
 
@@ -122,7 +141,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
     exon_start_offset: StrictInt | None = 0
     exon_end: StrictInt | None = None
     exon_end_offset: StrictInt | None = 0
-    gene_descriptor: GeneDescriptor
+    gene: Gene
     element_genomic_start: LocationDescriptor | None = None
     element_genomic_end: LocationDescriptor | None = None
 
@@ -164,9 +183,9 @@ class TranscriptSegmentElement(BaseStructuralElement):
                 "exon_start_offset": 0,
                 "exon_end": 8,
                 "exon_end_offset": 0,
-                "gene_descriptor": {
+                "gene": {
                     "id": "normalize.gene:TPM3",
-                    "type": "GeneDescriptor",
+                    "type": "Gene",
                     "label": "TPM3",
                     "gene_id": "hgnc:12012",
                 },
@@ -285,27 +304,6 @@ class TemplatedSequenceElement(BaseStructuralElement):
     )
 
 
-class GeneElement(BaseStructuralElement):
-    """Define Gene Element class."""
-
-    type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
-    gene_descriptor: GeneDescriptor
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "type": "GeneElement",
-                "gene_descriptor": {
-                    "id": "gene:BRAF",
-                    "gene_id": "hgnc:1097",
-                    "label": "BRAF",
-                    "type": "GeneDescriptor",
-                },
-            }
-        },
-    )
-
-
 class UnknownGeneElement(BaseStructuralElement):
     """Define UnknownGene class. This is primarily intended to represent a
     partner in the result of a fusion partner-agnostic assay, which identifies
@@ -381,7 +379,7 @@ class RegulatoryElement(BaseModel):
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT
     regulatory_class: RegulatoryClass
     feature_id: str | None = None
-    associated_gene: GeneDescriptor | None = None
+    associated_gene: Gene | None = None
     feature_location: LocationDescriptor | None = None
 
     _get_ref_id_val = field_validator("feature_id")(return_value)
@@ -472,23 +470,23 @@ class AbstractFusion(BaseModel, ABC):
     def _fetch_gene_id(
         cls,
         obj: dict | BaseModel,
-        gene_descriptor_field: str,
+        gene_field: str,
     ) -> str | None:
         """Get gene ID if element includes a gene annotation.
 
         :param obj: element to fetch gene from. Might not contain a gene (e.g. it's a
             TemplatedSequenceElement) so we have to use safe checks to fetch.
-        :param gene_descriptor_field: name of gene_descriptor field
+        :param gene_field: name of gene field
         :return: gene ID if gene is defined
         """
-        gene_descriptor = cls._access_object_attr(obj, gene_descriptor_field)
-        if gene_descriptor:
-            gene_value = cls._access_object_attr(gene_descriptor, "gene")
+        gene = cls._access_object_attr(obj, gene_field)
+        if gene:
+            gene_value = cls._access_object_attr(gene, "gene")
             if gene_value:
                 gene_id = cls._access_object_attr(gene_value, "gene_id")
                 if gene_id:
                     return gene_id
-            gene_id = cls._access_object_attr(gene_descriptor, "gene_id")
+            gene_id = cls._access_object_attr(gene, "gene_id")
             if gene_id:
                 return gene_id
         return None
@@ -526,15 +524,15 @@ class AbstractFusion(BaseModel, ABC):
         gene_ids = []
         if reg_element:
             gene_id = cls._fetch_gene_id(
-                obj=reg_element, gene_descriptor_field="associated_gene"
+                # TODO: verify this with Jeremy/Alex
+                obj=reg_element,
+                gene_field="gene",
             )
             if gene_id:
                 gene_ids.append(gene_id)
 
         for element in structural_elements:
-            gene_id = cls._fetch_gene_id(
-                obj=element, gene_descriptor_field="gene_descriptor"
-            )
+            gene_id = cls._fetch_gene_id(obj=element, gene_field="gene")
             if gene_id:
                 gene_ids.append(gene_id)
 
@@ -607,7 +605,7 @@ class Assay(BaseModelForbidExtra):
 
 AssayedFusionElements = list[
     TranscriptSegmentElement
-    | GeneElement
+    | Gene
     | TemplatedSequenceElement
     | LinkerElement
     | UnknownGeneElement
@@ -675,13 +673,10 @@ class AssayedFusion(AbstractFusion):
                 },
                 "structural_elements": [
                     {
-                        "type": "GeneElement",
-                        "gene_descriptor": {
-                            "id": "gene:EWSR1",
-                            "gene_id": "hgnc:3058",
-                            "label": "EWSR1",
-                            "type": "GeneDescriptor",
-                        },
+                        "type": "Gene",
+                        "id": "gene:EWSR1",
+                        "gene_id": "hgnc:3058",
+                        "label": "EWSR1",
                     },
                     {"type": "UnknownGeneElement"},
                 ],
@@ -691,8 +686,9 @@ class AssayedFusion(AbstractFusion):
 
 
 CategoricalFusionElements = list[
+    # TODO: TsxSegmentElement -> VRS Adjacency
     TranscriptSegmentElement
-    | GeneElement
+    | Gene
     | TemplatedSequenceElement
     | LinkerElement
     | MultiplePossibleGenesElement
@@ -709,7 +705,7 @@ class CategoricalFusion(AbstractFusion):
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
     r_frame_preserved: StrictBool | None = None
     critical_functional_domains: list[FunctionalDomain] | None = None
-    structural_elements: CategoricalFusionElements
+    structure: CategoricalFusionElements
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -730,54 +726,26 @@ class CategoricalFusion(AbstractFusion):
                         },
                     }
                 ],
-                "structural_elements": [
+                # TODO: update this example
+                "structure": [
                     {
-                        "type": "TranscriptSegmentElement",
+                        "type": "Adjacency",
                         "transcript": "refseq:NM_152263.3",
                         "exon_start": 1,
                         "exon_start_offset": 0,
                         "exon_end": 8,
                         "exon_end_offset": 0,
-                        "gene_descriptor": {
+                        "gene": {
                             "id": "gene:TPM3",
                             "gene_id": "hgnc:12012",
-                            "type": "GeneDescriptor",
+                            "type": "Gene",
                             "label": "TPM3",
-                        },
-                        "element_genomic_start": {
-                            "id": "TPM3:exon1",
-                            "type": "LocationDescriptor",
-                            "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",
-                            "location": {
-                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
-                                "type": "SequenceLocation",
-                                "interval": {
-                                    "start": {"type": "Number", "value": 154192135},
-                                    "end": {"type": "Number", "value": 154192136},
-                                    "type": "SequenceInterval",
-                                },
-                            },
-                        },
-                        "element_genomic_end": {
-                            "id": "TPM3:exon8",
-                            "type": "LocationDescriptor",
-                            "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",
-                            "location": {
-                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
-                                "type": "SequenceLocation",
-                                "interval": {
-                                    "start": {"type": "Number", "value": 154170398},
-                                    "end": {"type": "Number", "value": 154170399},
-                                    "type": "SequenceInterval",
-                                },
-                            },
                         },
                     },
                     {
-                        "type": "GeneElement",
-                        "gene_descriptor": {
+                        "gene": {
                             "id": "gene:ALK",
-                            "type": "GeneDescriptor",
+                            "type": "Gene",
                             "gene_id": "hgnc:427",
                             "label": "ALK",
                         },
