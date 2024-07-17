@@ -13,12 +13,12 @@ _logger = logging.getLogger(__name__)
 def translate_identifier(
     seqrepo: SeqRepo, ac: str, target_namespace: str = "ga4gh"
 ) -> CURIE:
-    """Return `target_namespace` identifier for accession provided.
+    """Return ``target_namespace`` identifier for accession provided.
 
-    :param str ac: Identifier accession
-    :param str target_namespace: The namespace of identifiers to return.
-        Default is `ga4gh`
-    :return: Identifier for `target_namespace`
+    :param ac: Identifier accession
+    :param target_namespace: The namespace of identifiers to return.
+        Default is ``ga4gh``
+    :return: Identifier for ``target_namespace``
     :raise: IDTranslationException if unable to perform desired translation
     """
     try:

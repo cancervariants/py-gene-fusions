@@ -83,12 +83,12 @@ class FUSOR:
 
     @staticmethod
     def _contains_element_type(kwargs: dict, elm_type: StructuralElementType) -> bool:
-        """Check if fusion contains element of a specific type. Helper method
-        for inferring fusion type.
-        :param Dict kwargs: keyword args given to fusion method
-        :param StructuralElementType elm_type: element type to match
-        :return: True if at least one element of given type is found,
-        False otherwise.
+        """Check if fusion contains element of a specific type. Helper method for
+        inferring fusion type.
+
+        :param kwargs: keyword args given to fusion method
+        :param elm_type: element type to match
+        :return: True if at least one element of given type is found, False otherwise.
         """
         for c in kwargs["structural_elements"]:
             if (isinstance(c, dict) and c.get("type") == elm_type) or (
@@ -100,9 +100,8 @@ class FUSOR:
     def fusion(self, fusion_type: FusionType | None = None, **kwargs) -> Fusion:
         """Construct fusion object.
 
-        :param Optional[FusionType] fusion_type: explicitly specify fusion type.
-            Unecessary if providing fusion object in keyword args that includes `type`
-            attribute.
+        :param fusion_type: explicitly specify fusion type. Unecessary if providing
+            fusion object in keyword args that includes ``type`` attribute.
         :return: constructed fusion object if successful
         :raise: FUSORParametersException if fusion type unable to be determined,
             or if incorrect fusion parameters are provided
@@ -169,14 +168,12 @@ class FUSOR:
         r_frame_preserved: bool | None = None,
     ) -> CategoricalFusion:
         """Construct a categorical fusion object
-        :param CategoricalFusionElements structural_elements: elements
-            constituting the fusion
-        :param Optional[RegulatoryElement] regulatory_element: affected
-            regulatory element
-        :param Optional[List[FunctionalDomain]] critical_functional_domains: lost or preserved
-            functional domains
-        :param Optional[bool] r_frame_preserved: `True` if reading frame is
-            preserved.  `False` otherwise
+
+        :param structural_elements: elements constituting the fusion
+        :param regulatory_element: affected regulatory element
+        :param critical_functional_domains: lost or preserved functional domains
+        :param r_frame_preserved: ``True`` if reading frame is preserved. ``False``
+            otherwise
         :return: CategoricalFusion if construction successful
         :raise: FUSORParametersException if given incorrect fusion properties
         """
@@ -199,12 +196,10 @@ class FUSOR:
         regulatory_element: RegulatoryElement | None = None,
     ) -> AssayedFusion:
         """Construct an assayed fusion object
-        :param AssayedFusionElements structural_elements: elements constituting the
-            fusion
-        :param Optional[Event] causative_event: event causing the fusion
-        :param Optional[Assay] assay: how knowledge of the fusion was obtained
-        :param Optional[RegulatoryElement] regulatory_element: affected regulatory
-            elements
+        :param structural_elements: elements constituting the fusion
+        :param causative_event: event causing the fusion
+        :param assay: how knowledge of the fusion was obtained
+        :param regulatory_element: affected regulatory elements
         :return: Tuple containing optional AssayedFusion if construction successful,
             and any relevant validation warnings
         """
@@ -228,15 +223,13 @@ class FUSOR:
     ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
         """Create transcript segment element
 
-        :param bool tx_to_genomic_coords: `True` if going from transcript
-            to genomic coordinates. `False` if going from genomic to
-            transcript exon coordinates.
-        :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
-            (`id`, `gene_id`, `label`) will be used. `False` if
+        :param tx_to_genomic_coords: `True` if going from transcript to genomic
+            coordinates. ``False`` if going from genomic to transcript exon coordinates.
+        :param use_minimal_gene_descr: `True` if minimal gene descriptor
+            (``id``, ``gene_id``, ``label``) will be used. ``False`` if
             gene-normalizer's gene descriptor will be used
-        :param Optional[str] seq_id_target_namespace: If want to use digest for
-            `sequence_id`, set this to the namespace you want the digest for.
-            Otherwise, leave as `None`.
+        :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
+            this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :param kwargs:
             If `tx_to_genomic_coords`, possible key word arguments:
                 (From cool_seq_tool.transcript_to_genomic_coords)
@@ -352,18 +345,17 @@ class FUSOR:
     ) -> TemplatedSequenceElement:
         """Create templated sequence element
 
-        :param int start: Genomic start
-        :param int end: Genomic end
-        :param str sequence_id: Chromosome accession for sequence
-        :param Strand strand: Strand
-        :param Optional[str] label: Label for genomic location
-        :param bool add_location_id: `True` if `location_id` will be added
-            to `region`. `False` otherwise.
-        :param ResidueMode residue_mode: Determines coordinate base used.
-            Must be one of `residue` or `inter-residue`.
-        :param Optional[str] seq_id_target_namespace: If want to use digest for
-            `sequence_id`, set this to the namespace you want the digest for.
-            Otherwise, leave as `None`.
+        :param start: Genomic start
+        :param end: Genomic end
+        :param sequence_id: Chromosome accession for sequence
+        :param strand: Strand
+        :param label: Label for genomic location
+        :param add_location_id: ``True`` if ``location_id`` will be added to ``region``.
+            ``False`` otherwise.
+        :param residue_mode: Determines coordinate base used. Must be one of ``residue``
+            or ``inter-residue``.
+        :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
+            this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :return: Templated Sequence Element
         """
         if residue_mode == ResidueMode.RESIDUE:
@@ -390,9 +382,8 @@ class FUSOR:
     ) -> tuple[LinkerElement | None, str | None]:
         """Create linker element
 
-        :param str sequence: Sequence
-        :param CURIE residue_type: Sequence Ontology code for residue type of
-            `sequence`
+        :param sequence: Sequence
+        :param residue_type: Sequence Ontology code for residue type of ``sequence``
         :return: Tuple containing a complete Linker element and None if
             successful, or a None value and warning message if unsuccessful
         """
@@ -441,21 +432,18 @@ class FUSOR:
     ) -> tuple[FunctionalDomain | None, str | None]:
         """Build functional domain instance.
 
-        :param DomainStatus status: Status for domain.  Must be either `lost`
-            or `preserved`
-        :param str name: Domain name
-        :param CURIE functional_domain_id: Domain ID
-        :param str gene: Gene
-        :param str sequence_id: protein sequence on which provided coordinates
-            are located
-        :param int start: start position on sequence
-        :param in end: end position on sequence
-        :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
-            (`id`, `gene_id`, `label`) will be used. `False` if
-            gene-normalizer's gene descriptor will be used
-        :param Optional[str] seq_id_target_namespace: If want to use digest for
-            `sequence_id`, set this to the namespace you want the digest for.
-            Otherwise, leave as `None`.
+        :param status: Status for domain.  Must be either ``lost`` or ``preserved``
+        :param name: Domain name
+        :param functional_domain_id: Domain ID
+        :param gene: Gene
+        :param sequence_id: protein sequence on which provided coordinates are located
+        :param start: start position on sequence
+        :param end: end position on sequence
+        :param use_minimal_gene_descr: ``True`` if minimal gene descriptor (``id``,
+            ``gene_id``, ``label``) will be used. ``False`` if gene-normalizer's gene
+            descriptor will be used
+        :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
+            this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :return: Tuple with FunctionalDomain and None value for warnings if
             successful, or a None value and warning message if unsuccessful
         """
@@ -507,9 +495,9 @@ class FUSOR:
         use_minimal_gene_descr: bool = True,
     ) -> tuple[RegulatoryElement | None, str | None]:
         """Create RegulatoryElement
-        :param RegulatoryClass regulatory_class: one of {"promoter", "enhancer"}
-        :param str gene: gene term to fetch normalized descriptor for
-        :param bool use_minimal_gene_descr: whether to use the minimal gene descriptor
+        :param regulatory_class: one of {"promoter", "enhancer"}
+        :param gene: gene term to fetch normalized descriptor for
+        :param use_minimal_gene_descr: whether to use the minimal gene descriptor
         :return: Tuple with RegulatoryElement instance and None value for warnings if
             successful, or a None value and warning message if unsuccessful
         """
@@ -542,18 +530,17 @@ class FUSOR:
     ) -> LocationDescriptor:
         """Create location descriptor
 
-        :param int start: Start position
-        :param int end: End position
-        :param str sequence_id: Accession for sequence
-        :param str label: label for location. If `None`, `sequence_id` will be used as
-            Location Descriptor's `id` Else, label will be used as Location
-            Descriptor's `id`.
-        :param str seq_id_target_namespace: If want to use digest for `sequence_id`,
-            set this to the namespace you want the digest for. Otherwise, leave as
-            `None`.
-        :param bool use_location_id: Takes precedence over `label` or `sequence_id`
-            becoming Location Descriptor's id. `True` if  use ga4gh digest as Location
-            Descriptor's id. `False`, use default of `label` > `sequence_id`
+        :param start: Start position
+        :param end: End position
+        :param sequence_id: Accession for sequence
+        :param label: label for location. If ``None``, ``sequence_id`` will be used as
+            Location Descriptor's ``id`` Else, label will be used as Location
+            Descriptor's ``id``.
+        :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
+            this to the namespace you want the digest for. Otherwise, leave as ``None``.
+        :param use_location_id: Takes precedence over ``label`` or ``sequence_id``
+            becoming Location Descriptor's id. ``True`` if  use ga4gh digest as Location
+            Descriptor's id. ``False``, use default of ``label`` > ``sequence_id``
         """
         seq_id_input = sequence_id
 
@@ -602,16 +589,17 @@ class FUSOR:
         target_namespace: str = "ga4gh",
     ) -> Fusion:
         """Add additional fields to Fusion object.
-        Possible fields are shown in `AdditionalFields`
 
-        :param Fusion fusion: A valid Fusion object
-        :param bool add_all: `True` if all additional fields  will be added
-            in fusion object. `False` if only select fields will be provided.
-            If set to `True`, will always take precedence over `fields`.
-        :param list fields: Select fields that will be set. Must be a subset of
-            `AdditionalFields`
-        :param str target_namespace: The namespace of identifiers to return
-            for `sequence_id`. Default is `ga4gh`
+        Possible fields are shown in ``AdditionalFields``
+
+        :param fusion: A valid Fusion object
+        :param add_all: ``True`` if all additional fields  will be added in fusion
+            object. ``False`` if only select fields will be provided. If set to
+            ``True``, will always take precedence over ``fields``.
+        :param fields: Select fields that will be set. Must be a subset of
+            ``AdditionalFields``
+        :param target_namespace: The namespace of identifiers to return for
+            ``sequence_id``. Default is ``ga4gh``
         :return: Updated fusion with specified fields set
         """
         if add_all:
@@ -633,7 +621,7 @@ class FUSOR:
     def add_location_id(self, fusion: Fusion) -> Fusion:
         """Add `location_id` in fusion object.
 
-        :param Fusion fusion: A valid Fusion object.
+        :param fusion: A valid Fusion object.
         :return: Updated fusion with `location_id` fields set
         """
         for structural_element in fusion.structural_elements:
@@ -669,7 +657,7 @@ class FUSOR:
     def _location_id(location: dict) -> CURIE:
         """Return GA4GH digest for location
 
-        :param dict location: VRS Location represented as a dict
+        :param location: VRS Location represented as a dict
         :return: GA4GH digest
         """
         return ga4gh_identify(models.Location(**location))
@@ -679,9 +667,9 @@ class FUSOR:
     ) -> Fusion:
         """Translate sequence_ids in fusion object.
 
-        :param Fusion fusion: A valid Fusion object
-        :param str target_namespace: ID namespace to translate sequence IDs to
-        :return: Updated fusion with `sequence_id` fields set
+        :param fusion: A valid Fusion object
+        :param target_namespace: ID namespace to translate sequence IDs to
+        :return: Updated fusion with ``sequence_id`` fields set
         """
         for element in fusion.structural_elements:
             if isinstance(element, TemplatedSequenceElement):
@@ -729,10 +717,10 @@ class FUSOR:
         return fusion
 
     def add_gene_descriptor(self, fusion: Fusion) -> Fusion:
-        """Add additional fields to `gene_descriptor` in fusion object
+        """Add additional fields to ``gene_descriptor`` in fusion object
 
-        :param Fusion fusion: A valid Fusion object
-        :return: Updated fusion with additional fields set in `gene_descriptor`
+        :param fusion: A valid Fusion object
+        :return: Updated fusion with additional fields set in ``gene_descriptor``
         """
         properties = [fusion.structural_elements]
         if fusion.type == FusionType.CATEGORICAL_FUSION:
@@ -762,9 +750,9 @@ class FUSOR:
     ) -> tuple[GeneDescriptor | None, str | None]:
         """Return gene descriptor from normalized response.
 
-        :param str query: Gene query
-        :param bool use_minimal_gene_descr: `True` if minimal gene descriptor
-            (`id`, `gene_id`, `label`) will be used. `False` if
+        :param query: Gene query
+        :param use_minimal_gene_descr: ``True`` if minimal gene descriptor
+            (``id``, ``gene_id``, ``label``) will be used. ``False`` if
             gene-normalizer's gene descriptor will be used
         :return: Tuple with gene descriptor and None value for warnings if
             successful, and None value with warning string if unsuccessful
@@ -781,9 +769,10 @@ class FUSOR:
 
     def generate_nomenclature(self, fusion: Fusion) -> str:
         """Generate human-readable nomenclature describing provided fusion
-        :param Fusion fusion: a valid fusion
-        :return: string summarizing fusion in human-readable way per
-            VICC fusion curation nomenclature
+
+        :param fusion: a valid fusion
+        :return: string summarizing fusion in human-readable way per VICC fusion
+            curation nomenclature
         """
         parts = []
         element_genes = []
