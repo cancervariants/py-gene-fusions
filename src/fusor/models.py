@@ -444,6 +444,7 @@ class AbstractFusion(BaseModel, ABC):
     """Define Fusion class"""
 
     type: FusionType
+    reading_frame_preserved: StrictBool | None = None
     regulatory_element: RegulatoryElement | None = None
     structural_elements: list[BaseStructuralElement]
 
@@ -714,7 +715,6 @@ class CategoricalFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
-    r_frame_preserved: StrictBool | None = None
     critical_functional_domains: list[FunctionalDomain] | None = None
     structural_elements: CategoricalFusionElements
 
@@ -722,7 +722,7 @@ class CategoricalFusion(AbstractFusion):
         json_schema_extra={
             "example": {
                 "type": "CategoricalFusion",
-                "r_frame_preserved": True,
+                "reading_frame_preserved": True,
                 "critical_functional_domains": [
                     {
                         "type": "FunctionalDomain",
