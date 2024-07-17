@@ -591,7 +591,7 @@ class Assay(BaseModelForbidExtra):
 
 AssayedFusionElements = list[
     TranscriptSegmentElement
-    | GeneElement
+    | Gene
     | TemplatedSequenceElement
     | LinkerElement
     | UnknownGeneElement
@@ -673,7 +673,7 @@ class AssayedFusion(AbstractFusion):
 
 CategoricalFusionElements = list[
     TranscriptSegmentElement
-    | GeneElement
+    | Gene
     | TemplatedSequenceElement
     | LinkerElement
     | MultiplePossibleGenesElement
