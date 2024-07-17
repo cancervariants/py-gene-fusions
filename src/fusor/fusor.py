@@ -2,7 +2,6 @@
 
 import logging
 import re
-from urllib.parse import quote
 
 from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
@@ -32,7 +31,6 @@ from fusor.models import (
     FunctionalDomain,
     Fusion,
     FusionType,
-    GeneElement,
     LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryClass,
@@ -311,7 +309,7 @@ class FUSOR:
 
     def gene_element(
         self, gene: str, use_minimal_gene_descr: bool = True
-    ) -> tuple[GeneElement | None, str | None]:
+    ) -> tuple[Gene | None, str | None]:
         """Create gene element
 
         :param str gene: Gene
@@ -320,12 +318,15 @@ class FUSOR:
             gene-normalizer's gene descriptor will be used
         :return: GeneElement, warning
         """
-        gene_descr, warning = self._normalized_gene_descriptor(
+        gene_descr, warning = self._normalized_gene(
             gene, use_minimal_gene_descr=use_minimal_gene_descr
         )
         if not gene_descr:
             return None, warning
-        return GeneElement(gene_descriptor=gene_descr), None
+        # TODO: I don't think I can actually pass in label and gene_id here... extensions??
+        return Gene(
+            id=gene_descr.id, label=gene_descr.label, gene_id=gene_descr.gene_id
+        ), None
 
     def templated_sequence_element(
         self,
@@ -561,9 +562,9 @@ class FUSOR:
 
         return SequenceLocation(
             sequence_id=sequence_id,
-            start=start, end=end,
+            start=start,
+            end=end,
         )
-
 
     def add_additional_fields(
         self,
@@ -780,9 +781,10 @@ class FUSOR:
                     parts.append(tx_segment_nomenclature(element))
             elif isinstance(element, TemplatedSequenceElement):
                 parts.append(templated_seq_nomenclature(element, self.seqrepo))
-            elif isinstance(element, GeneElement):
+            # TODO: ?
+            elif isinstance(element, Gene):
                 if not any(
-                    [gene == element.gene_descriptor.label for gene in element_genes]  # noqa: C419
+                    [gene == element.label for gene in element_genes]  # noqa: C419
                 ):
                     parts.append(gene_nomenclature(element))
             else:

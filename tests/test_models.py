@@ -3,6 +3,7 @@
 import copy
 
 import pytest
+from ga4gh.core.domain_models import Gene
 from pydantic import ValidationError
 
 from fusor.models import (
@@ -13,7 +14,6 @@ from fusor.models import (
     CausativeEvent,
     EventType,
     FunctionalDomain,
-    GeneElement,
     LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryElement,
@@ -593,7 +593,7 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
 
 def test_gene_element(gene_descriptors):
     """Test that Gene Element initializes correctly."""
-    test_element = GeneElement(gene_descriptor=gene_descriptors[0])
+    test_element = Gene(**gene_descriptors[0])
     assert test_element.type == "GeneElement"
     assert test_element.gene_descriptor.id == "gene:G1"
     assert test_element.gene_descriptor.label == "G1"
@@ -601,21 +601,15 @@ def test_gene_element(gene_descriptors):
 
     # test CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
-        GeneElement(
-            gene_descriptor={
-                "id": "G1",
-                "gene": {"gene_id": "hgnc:9339"},
-                "label": "G1",
-            }
+        Gene(
+            id="G1", gene={"gene_id": "hgnc:9339"}, label="G1"
         )
     msg = "String should match pattern '^\\w[^:]*:.+$'"
     check_validation_error(exc_info, msg)
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert GeneElement(
-            type="UnknownGeneElement", gene_descriptor=gene_descriptors[0]
-        )
+        assert Gene(type="UnknownGeneElement", **gene_descriptors[0])
     msg = "Input should be <FUSORTypes.GENE_ELEMENT: 'GeneElement'>"
     check_validation_error(exc_info, msg)
 
@@ -722,10 +716,9 @@ def test_fusion(
         ],
         regulatory_element=None,
     )
-    assert fusion.structural_elements[0].type == "GeneElement"
+    assert fusion.structural_elements[0].type == "Gene"
     assert fusion.structural_elements[0].gene_descriptor.id == "gene:NTRK1"
-    assert fusion.structural_elements[1].type == "GeneElement"
-    assert fusion.structural_elements[1].gene_descriptor.type == "GeneDescriptor"
+    assert fusion.structural_elements[1].type == "Gene"
 
     # test that non-element properties are optional
     assert CategoricalFusion(
@@ -914,7 +907,6 @@ def test_model_examples():
         TranscriptSegmentElement,
         LinkerElement,
         TemplatedSequenceElement,
-        GeneElement,
         UnknownGeneElement,
         MultiplePossibleGenesElement,
         RegulatoryElement,
