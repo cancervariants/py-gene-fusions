@@ -50,7 +50,7 @@ def braf_gene_descriptor():
     """Create gene descriptor params for BRAF."""
     return {
         "id": "normalize.gene:BRAF",
-        "type": "Gene",
+        "type": "GeneDescriptor",
         "label": "BRAF",
         "xrefs": ["ensembl:ENSG00000157764", "ncbigene:673"],
         "alternate_labels": ["BRAF1", "BRAF-1", "NS7", "B-raf", "B-RAF1", "RAFB1"],

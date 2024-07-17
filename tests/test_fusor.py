@@ -3,13 +3,13 @@
 import copy
 
 import pytest
-from ga4gh.core.domain_models import Gene
 
 from fusor.exceptions import FUSORParametersException
 from fusor.models import (
     AssayedFusion,
     CategoricalFusion,
     FunctionalDomain,
+    GeneElement,
     LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryClass,
@@ -23,13 +23,13 @@ from fusor.models import (
 @pytest.fixture(scope="module")
 def braf_gene_descr_min():
     """Create minimal gene descriptor for BRAF"""
-    return Gene(id="normalize.gene:BRAF", label="BRAF", gene_id="hgnc:1097")
+    return GeneDescriptor(id="normalize.gene:BRAF", label="BRAF", gene_id="hgnc:1097")
 
 
 @pytest.fixture(scope="module")
 def braf_gene_descr(braf_gene_descriptor):
     """Create gene descriptor object for braf"""
-    return Gene(**braf_gene_descriptor)
+    return GeneDescriptor(**braf_gene_descriptor)
 
 
 @pytest.fixture(scope="module")
@@ -481,7 +481,7 @@ def test__normalized_gene_descriptor(fusor_instance):
     resp = fusor_instance._normalized_gene_descriptor("BRAF")
     assert resp[0]
     assert resp[1] is None
-    assert isinstance(resp[0], Gene)
+    assert isinstance(resp[0], GeneDescriptor)
 
     resp = fusor_instance._normalized_gene_descriptor("B R A F")
     assert resp[0] is None
@@ -781,7 +781,7 @@ def test_gene_element(fusor_instance, braf_gene_descr_min, braf_gene_descr):
     gc = fusor_instance.gene_element("BRAF", use_minimal_gene_descr=True)
     assert gc[0]
     assert gc[1] is None
-    assert isinstance(gc[0], Gene)
+    assert isinstance(gc[0], GeneElement)
     compare_gene_descriptor(
         gc[0].gene_descriptor.model_dump(), braf_gene_descr_min.model_dump()
     )
@@ -789,7 +789,7 @@ def test_gene_element(fusor_instance, braf_gene_descr_min, braf_gene_descr):
     gc = fusor_instance.gene_element("BRAF", use_minimal_gene_descr=False)
     assert gc[0]
     assert gc[1] is None
-    assert isinstance(gc[0], Gene)
+    assert isinstance(gc[0], GeneElement)
     compare_gene_descriptor(
         gc[0].gene_descriptor.model_dump(), braf_gene_descr.model_dump()
     )

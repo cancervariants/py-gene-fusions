@@ -1,11 +1,10 @@
 """Provide helper methods for fusion nomenclature generation."""
 
 from biocommons.seqrepo.seqrepo import SeqRepo
-from ga4gh.core.domain_models import Gene
-from ga4gh.vrs.models import SequenceLocation
 
 from fusor.exceptions import IDTranslationException
 from fusor.models import (
+    GeneElement,
     RegulatoryClass,
     RegulatoryElement,
     TemplatedSequenceElement,
@@ -116,21 +115,20 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
     raise ValueError
 
 
-def gene_nomenclature(element: Gene) -> str:
+def gene_nomenclature(element: GeneElement) -> str:
     """Return fusion nomenclature for gene element.
 
     :param element: a gene element object
     :return: element nomenclature representation
     :raises ValueError: if unable to retrieve gene ID
     """
-    if element.gene_id:
-        gene_id = gene_id = element.gene_id
+    if element.gene_descriptor.gene_id:
+        gene_id = gene_id = element.gene_descriptor.gene_id
 
     if element.gene_descriptor.gene_id:
-        gene_id = element.gene_id
-    # TODO: fix this? unsure where to store these so unsure where to access them
-    elif element.gene and element.gene.gene_id:
-        gene_id = element.gene.gene_id
+        gene_id = element.gene_descriptor.gene_id
+    elif element.gene_descriptor.gene and element.gene_descriptor.gene.gene_id:
+        gene_id = element.gene_descriptor.gene.gene_id
     else:
         raise ValueError
-    return f"{element.label}({gene_id})"
+    return f"{element.gene_descriptor.label}({gene_id})"

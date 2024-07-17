@@ -19,32 +19,6 @@ from pydantic import (
 from pydantic.fields import Field
 
 
-def return_value(cls, v):
-    """Return value from object.
-
-    :param ModelMetaclass cls: Pydantic Model ModelMetaclass
-    :param v: Model from vrs or vrsatile
-    :return: Value
-    """
-    if v is not None:
-        try:
-            if isinstance(v, list):
-                tmp = list()
-                for item in v:
-                    while True:
-                        try:
-                            item = item.root
-                        except AttributeError:
-                            break
-                    tmp.append(item)
-                v = tmp
-            else:
-                v = v.root
-        except AttributeError:
-            pass
-    return v
-
-
 class BaseModelForbidExtra(BaseModel, extra="forbid"):
     """Base Pydantic model class with extra values forbidden."""
 
@@ -56,7 +30,8 @@ class FUSORTypes(str, Enum):
     TRANSCRIPT_SEGMENT_ELEMENT = "TranscriptSegmentElement"
     TEMPLATED_SEQUENCE_ELEMENT = "TemplatedSequenceElement"
     LINKER_SEQUENCE_ELEMENT = "LinkerSequenceElement"
-    GENE_ELEMENT = "GeneElement"
+    # TODO: I'm not sure if this needs to still be here or not
+    GENE = "Gene"
     UNKNOWN_GENE_ELEMENT = "UnknownGeneElement"
     MULTIPLE_POSSIBLE_GENES_ELEMENT = "MultiplePossibleGenesElement"
     REGULATORY_ELEMENT = "RegulatoryElement"
@@ -105,7 +80,7 @@ class FunctionalDomain(BaseModel):
                     "id": "gene:NTRK1",
                     "gene_id": "hgnc:8031",
                     "label": "8031",
-                    "type": "Gene",
+                    "type": "GeneDescriptor",
                 },
                 "sequence_location": {
                     "id": "fusor.location_descriptor:NP_002520.2",
@@ -130,7 +105,7 @@ class StructuralElementType(str, Enum):
     TRANSCRIPT_SEGMENT_ELEMENT = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT.value
     TEMPLATED_SEQUENCE_ELEMENT = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT.value
     LINKER_SEQUENCE_ELEMENT = FUSORTypes.LINKER_SEQUENCE_ELEMENT.value
-    GENE_ELEMENT = FUSORTypes.GENE_ELEMENT.value
+    GENE_ELEMENT = Gene
     UNKNOWN_GENE_ELEMENT = FUSORTypes.UNKNOWN_GENE_ELEMENT.value
     MULTIPLE_POSSIBLE_GENES_ELEMENT = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT.value
 
@@ -270,25 +245,6 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
         },
     )
 
-class GeneElement(BaseStructuralElement):
-    """Define Gene Element class."""
-
-    type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
-    gene: Gene
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "type": "GeneElement",
-                "gene": {
-                    "id": "gene:BRAF",
-                    "gene_id": "hgnc:1097",
-                    "label": "BRAF",
-                    "type": "Gene",
-                },
-            }
-        },
-    )
 
 class Strand(str, Enum):
     """Define possible values for strand"""
