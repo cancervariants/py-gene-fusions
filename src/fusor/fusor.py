@@ -8,10 +8,13 @@ from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
 from cool_seq_tool.schemas import ResidueMode
 from ga4gh.core import ga4gh_identify
+from ga4gh.core.domain_models import Gene
 from ga4gh.vrs import models
+from ga4gh.vrs.models import SequenceLocation
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
+from gene.schemas import CURIE
 from pydantic import ValidationError
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
@@ -92,7 +95,7 @@ class FUSOR:
     def fusion(self, fusion_type: FusionType | None = None, **kwargs) -> Fusion:
         """Construct fusion object.
 
-        :param fusion_type: explicitly specify fusion type. Unecessary if providing
+        :param fusion_type: explicitly specify fusion type. Unnecessary if providing
             fusion object in keyword args that includes ``type`` attribute.
         :return: constructed fusion object if successful
         :raise: FUSORParametersException if fusion type unable to be determined,
@@ -284,7 +287,7 @@ class FUSOR:
                 exon_end=genomic_data.exon_end,
                 exon_end_offset=genomic_data.exon_end_offset,
                 gene_descriptor=normalized_gene_response[0],
-                element_genomic_start=self._location_descriptor(
+                element_genomic_start=self._sequence_location(
                     genomic_data.start,
                     genomic_data.start + 1,
                     genomic_data.chr,
@@ -293,7 +296,7 @@ class FUSOR:
                 )
                 if genomic_data.start
                 else None,
-                element_genomic_end=self._location_descriptor(
+                element_genomic_end=self._sequence_location(
                     genomic_data.end,
                     genomic_data.end + 1,
                     genomic_data.chr,
@@ -353,7 +356,7 @@ class FUSOR:
         if residue_mode == ResidueMode.RESIDUE:
             start -= 1
 
-        region = self._location_descriptor(
+        region = self._sequence_location(
             start,
             end,
             sequence_id,
@@ -460,7 +463,7 @@ class FUSOR:
         if not gene_descr:
             return None, warning
 
-        loc_descr = self._location_descriptor(
+        loc_descr = self._sequence_location(
             start, end, sequence_id, seq_id_target_namespace=seq_id_target_namespace
         )
 
@@ -511,7 +514,7 @@ class FUSOR:
             _logger.warning(msg)
             return None, msg
 
-    def _location_descriptor(
+    def _sequence_location(
         self,
         start: int,
         end: int,
@@ -519,7 +522,7 @@ class FUSOR:
         label: str | None = None,
         seq_id_target_namespace: str | None = None,
         use_location_id: bool = False,
-    ) -> LocationDescriptor:
+    ) -> SequenceLocation:
         """Create location descriptor
 
         :param start: Start position
@@ -556,22 +559,11 @@ class FUSOR:
             else:
                 sequence_id = seq_id
 
-        location = SequenceLocation(
+        return SequenceLocation(
             sequence_id=sequence_id,
-            interval=SequenceInterval(start=Number(value=start), end=Number(value=end)),
+            start=start, end=end,
         )
 
-        if use_location_id:
-            _id = self._location_id(location.model_dump())
-        else:
-            quote_id = quote(label) if label else quote(seq_id_input)
-            _id = f"fusor.location_descriptor:{quote_id}"
-
-        location_descr = LocationDescriptor(id=_id, location=location)
-
-        if label:
-            location_descr.label = label
-        return location_descr
 
     def add_additional_fields(
         self,
@@ -628,7 +620,7 @@ class FUSOR:
                 ]:
                     if element_genomic:
                         location = element_genomic.location
-                        if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                        if location.type == SequenceLocation:
                             location_id = self._location_id(location.model_dump())
                             element_genomic.location_id = location_id
         if isinstance(fusion, CategoricalFusion) and fusion.critical_functional_domains:
@@ -640,7 +632,7 @@ class FUSOR:
             element = fusion.regulatory_element
             if element.feature_location:
                 location = element.feature_location
-                if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                if location.type == SequenceLocation:
                     location_id = self._location_id(location.model_dump())
                     element.feature_location.location_id = location_id
         return fusion
@@ -666,7 +658,7 @@ class FUSOR:
         for element in fusion.structural_elements:
             if isinstance(element, TemplatedSequenceElement):
                 location = element.region.location
-                if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                if location.type == SequenceLocation:
                     try:
                         new_id = translate_identifier(
                             self.seqrepo, location.sequence_id, target_namespace
@@ -682,7 +674,7 @@ class FUSOR:
                 ]:
                     if loc_descr:
                         location = loc_descr.location
-                        if location.type == VRSTypes.SEQUENCE_LOCATION.value:
+                        if location.type == SequenceLocation:
                             try:
                                 new_id = translate_identifier(
                                     self.seqrepo, location.sequence_id, target_namespace
@@ -708,6 +700,7 @@ class FUSOR:
                     domain.sequence_location.location.sequence_id = new_id
         return fusion
 
+    # TODO: should this be adding to the gene extensions or something instead?
     def add_gene_descriptor(self, fusion: Fusion) -> Fusion:
         """Add additional fields to ``gene_descriptor`` in fusion object
 
@@ -722,7 +715,7 @@ class FUSOR:
             for obj in prop:
                 if "gene_descriptor" in obj.model_fields:
                     label = obj.gene_descriptor.label
-                    norm_gene_descr, _ = self._normalized_gene_descriptor(
+                    norm_gene_descr, _ = self._normalized_gene(
                         label, use_minimal_gene_descr=False
                     )
                     if norm_gene_descr:
@@ -730,16 +723,16 @@ class FUSOR:
         if fusion.regulatory_element and fusion.regulatory_element.associated_gene:
             reg_el = fusion.regulatory_element
             label = reg_el.associated_gene.label
-            norm_gene_descr, _ = self._normalized_gene_descriptor(
+            norm_gene_descr, _ = self._normalized_gene(
                 label, use_minimal_gene_descr=False
             )
             if norm_gene_descr:
                 reg_el.associated_gene = norm_gene_descr
         return fusion
 
-    def _normalized_gene_descriptor(
+    def _normalized_gene(
         self, query: str, use_minimal_gene_descr: bool = True
-    ) -> tuple[GeneDescriptor | None, str | None]:
+    ) -> tuple[Gene | None, str | None]:
         """Return gene descriptor from normalized response.
 
         :param query: Gene query
@@ -753,7 +746,8 @@ class FUSOR:
         if gene_norm_resp.match_type:
             gene_descr = gene_norm_resp.gene_descriptor
             if use_minimal_gene_descr:
-                gene_descr = GeneDescriptor(
+                # TODO: how to handle gene_id here? add to extensions??
+                gene_descr = Gene(
                     id=gene_descr.id, gene_id=gene_descr.gene_id, label=gene_descr.label
                 )
             return gene_descr, None
