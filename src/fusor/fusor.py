@@ -32,8 +32,6 @@ from fusor.models import (
     FunctionalDomain,
     Fusion,
     FusionType,
-    GeneElement,
-    LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryClass,
     RegulatoryElement,
@@ -311,7 +309,7 @@ class FUSOR:
 
     def gene_element(
         self, gene: str, use_minimal_gene_descr: bool = True
-    ) -> tuple[GeneElement | None, str | None]:
+    ) -> tuple[Gene | None, str | None]:
         """Create gene element
 
         :param str gene: Gene
@@ -320,12 +318,12 @@ class FUSOR:
             gene-normalizer's gene descriptor will be used
         :return: GeneElement, warning
         """
-        gene_descr, warning = self._normalized_gene_descriptor(
+        gene_descr, warning = self._normalized_gene(
             gene, use_minimal_gene_descr=use_minimal_gene_descr
         )
         if not gene_descr:
             return None, warning
-        return GeneElement(gene_descriptor=gene_descr), None
+        return Gene(gene_descriptor=gene_descr), None
 
     def templated_sequence_element(
         self,
@@ -700,7 +698,7 @@ class FUSOR:
                     domain.sequence_location.location.sequence_id = new_id
         return fusion
 
-    # TODO: should this be adding to the gene extensions or something instead?
+    # TODO: do we still need this?
     def add_gene_descriptor(self, fusion: Fusion) -> Fusion:
         """Add additional fields to ``gene_descriptor`` in fusion object
 
@@ -716,7 +714,7 @@ class FUSOR:
                 if "gene_descriptor" in obj.model_fields:
                     label = obj.gene_descriptor.label
                     norm_gene_descr, _ = self._normalized_gene(
-                        label, use_minimal_gene_descr=False
+                        label
                     )
                     if norm_gene_descr:
                         obj.gene_descriptor = norm_gene_descr
@@ -724,33 +722,25 @@ class FUSOR:
             reg_el = fusion.regulatory_element
             label = reg_el.associated_gene.label
             norm_gene_descr, _ = self._normalized_gene(
-                label, use_minimal_gene_descr=False
+                label
             )
             if norm_gene_descr:
                 reg_el.associated_gene = norm_gene_descr
         return fusion
 
     def _normalized_gene(
-        self, query: str, use_minimal_gene_descr: bool = True
+        self, query: str
     ) -> tuple[Gene | None, str | None]:
-        """Return gene descriptor from normalized response.
+        """Return gene from normalized response.
 
         :param query: Gene query
-        :param use_minimal_gene_descr: ``True`` if minimal gene descriptor
-            (``id``, ``gene_id``, ``label``) will be used. ``False`` if
-            gene-normalizer's gene descriptor will be used
-        :return: Tuple with gene descriptor and None value for warnings if
+        :return: Tuple with gene and None value for warnings if
             successful, and None value with warning string if unsuccessful
         """
         gene_norm_resp = self.gene_normalizer.normalize(query)
         if gene_norm_resp.match_type:
-            gene_descr = gene_norm_resp.gene_descriptor
-            if use_minimal_gene_descr:
-                # TODO: how to handle gene_id here? add to extensions??
-                gene_descr = Gene(
-                    id=gene_descr.id, gene_id=gene_descr.gene_id, label=gene_descr.label
-                )
-            return gene_descr, None
+            gene = gene_norm_resp.gene
+            return gene, None
         return None, f"gene-normalizer unable to normalize {query}"
 
     def generate_nomenclature(self, fusion: Fusion) -> str:

@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Any, Literal
 
 from ga4gh.core.domain_models import Gene
-from ga4gh.vrs.models import SequenceLocation
+from ga4gh.vrs.models import SequenceLocation, Adjacency, LiteralSequenceExpression, SequenceString
 from gene.schemas import CURIE
 from pydantic import (
     BaseModel,
@@ -14,9 +14,35 @@ from pydantic import (
     StrictInt,
     StrictStr,
     field_validator,
-    model_validator,
+    model_validator, ValidationError,
 )
 from pydantic.fields import Field
+
+def return_value(cls, v):
+    """Return value from object.
+
+    :param ModelMetaclass cls: Pydantic Model ModelMetaclass
+    :param v: Model from vrs or vrsatile
+    :return: Value
+    """
+    if v is not None:
+        try:
+            if isinstance(v, list):
+                tmp = list()
+                for item in v:
+                    while True:
+                        try:
+                            item = item.root
+                        except AttributeError:
+                            break
+                    tmp.append(item)
+                v = tmp
+            else:
+                v = v.root
+        except AttributeError:
+            pass
+    return v
+
 
 
 class BaseModelForbidExtra(BaseModel, extra="forbid"):
@@ -30,8 +56,6 @@ class FUSORTypes(str, Enum):
     TRANSCRIPT_SEGMENT_ELEMENT = "TranscriptSegmentElement"
     TEMPLATED_SEQUENCE_ELEMENT = "TemplatedSequenceElement"
     LINKER_SEQUENCE_ELEMENT = "LinkerSequenceElement"
-    # TODO: I'm not sure if this needs to still be here or not
-    GENE = "Gene"
     UNKNOWN_GENE_ELEMENT = "UnknownGeneElement"
     MULTIPLE_POSSIBLE_GENES_ELEMENT = "MultiplePossibleGenesElement"
     REGULATORY_ELEMENT = "RegulatoryElement"
@@ -45,7 +69,6 @@ class AdditionalFields(str, Enum):
 
     SEQUENCE_ID = "sequence_id"
     LOCATION_ID = "location_id"
-    GENE_DESCRIPTOR = "gene_descriptor"
 
 
 class DomainStatus(str, Enum):
@@ -60,12 +83,11 @@ class FunctionalDomain(BaseModel):
 
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
-    associated_gene: Gene
+    gene: Gene
     id: CURIE | None = Field(None, alias="_id")
     label: StrictStr | None = None
     sequence_location: SequenceLocation | None = None
 
-    # TODO: is this obsolete now that vrsatile has been removed?
     _get_id_val = field_validator("id")(return_value)
 
     model_config = ConfigDict(
@@ -76,22 +98,22 @@ class FunctionalDomain(BaseModel):
                 "status": "lost",
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "_id": "interpro:IPR020635",
-                "associated_gene": {
+                "gene": {
                     "id": "gene:NTRK1",
                     "gene_id": "hgnc:8031",
                     "label": "8031",
-                    "type": "GeneDescriptor",
+                    "type": "Gene",
                 },
                 "sequence_location": {
+                    # TODO: keep this?
                     "id": "fusor.location_descriptor:NP_002520.2",
-                    "type": "LocationDescriptor",
-                    "location": {
-                        "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
-                        "type": "SequenceLocation",
-                        "interval": {
-                            "start": {"type": "Number", "value": 510},
-                            "end": {"type": "Number", "value": 781},
-                        },
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "GRCh38:chr22",
+                        "type": "SequenceReference",
+                        # TODO: get correct id here
+                        "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
+                        "residueAlphabet": "na"
                     },
                 },
             }
@@ -116,6 +138,7 @@ class BaseStructuralElement(ABC, BaseModel):
     type: StructuralElementType
 
 
+# TODO: remove and replace constructor with adjacency item?
 class TranscriptSegmentElement(BaseStructuralElement):
     """Define TranscriptSegment class"""
 
@@ -207,13 +230,12 @@ class TranscriptSegmentElement(BaseStructuralElement):
         },
     )
 
-
 class LinkerElement(BaseStructuralElement, extra="forbid"):
     """Define Linker class (linker sequence)"""
 
-    type: Literal[FUSORTypes.LINKER_SEQUENCE_ELEMENT] = (
+    type: Literal[
         FUSORTypes.LINKER_SEQUENCE_ELEMENT
-    )
+    ] = FUSORTypes.LINKER_SEQUENCE_ELEMENT
     linker_sequence: SequenceLocation
 
     @field_validator("linker_sequence", mode="before")
@@ -222,16 +244,24 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
         if isinstance(v, dict):
             try:
                 v["sequence"] = v["sequence"].upper()
-            except KeyError as e:
-                raise TypeError from e
+                seq = v["sequence"]
+            except KeyError:
+                raise TypeError
         elif isinstance(v, SequenceLocation):
             v.sequence = v.sequence.upper()
+            seq = v.sequence
         else:
             raise TypeError
+
+        try:
+            LiteralSequenceExpression(sequence=SequenceString(seq))
+        except ValidationError:
+            raise AssertionError("sequence does not match regex '^[A-Za-z*\\-]*$'")
 
         return v
 
     model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "LinkerSequenceElement",
@@ -271,7 +301,7 @@ class TemplatedSequenceElement(BaseStructuralElement):
                 "type": "TemplatedSequenceElement",
                 "region": {
                     "id": "chr12:44908821-44908822(+)",
-                    "type": "LocationDescriptor",
+                    "type": "SequenceLocation",
                     "location_id": "ga4gh:VSL.AG54ZRBhg6pwpPLafF4KgaAHpdFio6l5",
                     "location": {
                         "type": "SequenceLocation",
@@ -539,6 +569,7 @@ class AbstractFusion(BaseModel, ABC):
             if elements[0].exon_end is None and not values["regulatory_element"]:
                 msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
                 raise ValueError(msg)
+        # TODO: how to verify this now with adjacency model?
         elif isinstance(elements[0], LinkerElement):
             msg = "First structural element cannot be LinkerSequence"
             raise ValueError(msg)
@@ -593,7 +624,7 @@ AssayedFusionElements = list[
     TranscriptSegmentElement
     | Gene
     | TemplatedSequenceElement
-    | LinkerElement
+    | Adjacency
     | UnknownGeneElement
 ]
 
@@ -675,7 +706,7 @@ CategoricalFusionElements = list[
     TranscriptSegmentElement
     | Gene
     | TemplatedSequenceElement
-    | LinkerElement
+    | Adjacency
     | MultiplePossibleGenesElement
 ]
 
