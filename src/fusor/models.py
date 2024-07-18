@@ -165,11 +165,10 @@ class TranscriptSegmentElement(BaseStructuralElement):
                 "exon_start_offset": 0,
                 "exon_end": 8,
                 "exon_end_offset": 0,
-                "gene_descriptor": {
-                    "id": "normalize.gene:TPM3",
-                    "type": "GeneDescriptor",
+                "gene": {
+                    "id": "hgnc:12012",
+                    "type": "Gene",
                     "label": "TPM3",
-                    "gene_id": "hgnc:12012",
                 },
                 "element_genomic_start": {
                     "id": "fusor.location_descriptor:NC_000001.11",

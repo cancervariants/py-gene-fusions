@@ -3,6 +3,7 @@
 import logging
 
 from biocommons.seqrepo.seqrepo import SeqRepo
+from gene.schemas import CURIE
 
 from fusor.exceptions import IDTranslationException
 
