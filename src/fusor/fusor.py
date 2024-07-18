@@ -32,6 +32,7 @@ from fusor.models import (
     FunctionalDomain,
     Fusion,
     FusionType,
+    LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryClass,
     RegulatoryElement,

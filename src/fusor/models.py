@@ -5,7 +5,11 @@ from enum import Enum
 from typing import Any, Literal
 
 from ga4gh.core.domain_models import Gene
-from ga4gh.vrs.models import SequenceLocation, Adjacency, LiteralSequenceExpression, SequenceString
+from ga4gh.vrs.models import (
+    LiteralSequenceExpression,
+    SequenceLocation,
+    SequenceString,
+)
 from gene.schemas import CURIE
 from pydantic import (
     BaseModel,
@@ -13,37 +17,12 @@ from pydantic import (
     StrictBool,
     StrictInt,
     StrictStr,
+    ValidationError,
     field_validator,
-    model_validator, ValidationError,
+    model_validator,
 )
 from pydantic.fields import Field
-
-def return_value(cls, v):
-    """Return value from object.
-
-    :param ModelMetaclass cls: Pydantic Model ModelMetaclass
-    :param v: Model from vrs or vrsatile
-    :return: Value
-    """
-    if v is not None:
-        try:
-            if isinstance(v, list):
-                tmp = list()
-                for item in v:
-                    while True:
-                        try:
-                            item = item.root
-                        except AttributeError:
-                            break
-                    tmp.append(item)
-                v = tmp
-            else:
-                v = v.root
-        except AttributeError:
-            pass
-    return v
-
-
+# TODO: add back minimum information function from normalizers (id (hgnc or whatever passed by normalizer) and label only)
 
 class BaseModelForbidExtra(BaseModel, extra="forbid"):
     """Base Pydantic model class with extra values forbidden."""
@@ -56,6 +35,7 @@ class FUSORTypes(str, Enum):
     TRANSCRIPT_SEGMENT_ELEMENT = "TranscriptSegmentElement"
     TEMPLATED_SEQUENCE_ELEMENT = "TemplatedSequenceElement"
     LINKER_SEQUENCE_ELEMENT = "LinkerSequenceElement"
+    GENE_ELEMENT = "GeneElement"
     UNKNOWN_GENE_ELEMENT = "UnknownGeneElement"
     MULTIPLE_POSSIBLE_GENES_ELEMENT = "MultiplePossibleGenesElement"
     REGULATORY_ELEMENT = "RegulatoryElement"
@@ -77,7 +57,6 @@ class DomainStatus(str, Enum):
     LOST = "lost"
     PRESERVED = "preserved"
 
-
 class FunctionalDomain(BaseModel):
     """Define FunctionalDomain class"""
 
@@ -86,9 +65,7 @@ class FunctionalDomain(BaseModel):
     gene: Gene
     id: CURIE | None = Field(None, alias="_id")
     label: StrictStr | None = None
-    sequence_location: SequenceLocation | None = None
-
-    _get_id_val = field_validator("id")(return_value)
+    sequenceLocation: SequenceLocation | None = None
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -97,6 +74,7 @@ class FunctionalDomain(BaseModel):
                 "type": "FunctionalDomain",
                 "status": "lost",
                 "label": "Tyrosine-protein kinase, catalytic domain",
+                # TODO: verify this field isn't getting populated/used
                 "_id": "interpro:IPR020635",
                 "gene": {
                     "id": "gene:NTRK1",
@@ -105,7 +83,7 @@ class FunctionalDomain(BaseModel):
                     "type": "Gene",
                 },
                 "sequence_location": {
-                    # TODO: keep this?
+                    # TODO: keep this? - yes, use standardized ids as seen in Jeremy's PR
                     "id": "fusor.location_descriptor:NP_002520.2",
                     "type": "SequenceLocation",
                     "sequenceReference": {
@@ -113,7 +91,7 @@ class FunctionalDomain(BaseModel):
                         "type": "SequenceReference",
                         # TODO: get correct id here
                         "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
-                        "residueAlphabet": "na"
+                        "residueAlphabet": "na",
                     },
                 },
             }
@@ -138,7 +116,6 @@ class BaseStructuralElement(ABC, BaseModel):
     type: StructuralElementType
 
 
-# TODO: remove and replace constructor with adjacency item?
 class TranscriptSegmentElement(BaseStructuralElement):
     """Define TranscriptSegment class"""
 
@@ -146,13 +123,13 @@ class TranscriptSegmentElement(BaseStructuralElement):
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     )
     transcript: CURIE
-    exon_start: StrictInt | None = None
-    exon_start_offset: StrictInt | None = 0
-    exon_end: StrictInt | None = None
-    exon_end_offset: StrictInt | None = 0
+    exonStart: StrictInt | None = None
+    exonStartOffset: StrictInt | None = 0
+    exonEnd: StrictInt | None = None
+    exonEndOffset: StrictInt | None = 0
     gene: Gene
-    element_genomic_start: SequenceLocation | None = None
-    element_genomic_end: SequenceLocation | None = None
+    elementGenomicStart: SequenceLocation | None = None
+    elementGenomicEnd: SequenceLocation | None = None
 
     @model_validator(mode="before")
     def check_exons(cls, values):
@@ -182,7 +159,6 @@ class TranscriptSegmentElement(BaseStructuralElement):
             values["exon_end_offset"] = None
         return values
 
-    _get_transcript_val = field_validator("transcript")(return_value)
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
@@ -230,13 +206,14 @@ class TranscriptSegmentElement(BaseStructuralElement):
         },
     )
 
+
 class LinkerElement(BaseStructuralElement, extra="forbid"):
     """Define Linker class (linker sequence)"""
 
-    type: Literal[
+    type: Literal[FUSORTypes.LINKER_SEQUENCE_ELEMENT] = (
         FUSORTypes.LINKER_SEQUENCE_ELEMENT
-    ] = FUSORTypes.LINKER_SEQUENCE_ELEMENT
-    linker_sequence: SequenceLocation
+    )
+    linkerSequence: LiteralSequenceExpression
 
     @field_validator("linker_sequence", mode="before")
     def validate_sequence(cls, v):
@@ -253,6 +230,7 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
         else:
             raise TypeError
 
+        # TODO: remove this validation
         try:
             LiteralSequenceExpression(sequence=SequenceString(seq))
         except ValidationError:
@@ -319,6 +297,25 @@ class TemplatedSequenceElement(BaseStructuralElement):
         },
     )
 
+
+class GeneElement(BaseStructuralElement):
+    """Define Gene Element class."""
+
+    type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
+    gene: Gene
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "type": "GeneElement",
+                "gene": {
+                    "id": "hgnc:1097",
+                    "label": "BRAF",
+                    "type": "Gene",
+                },
+            }
+        },
+    )
 
 class UnknownGeneElement(BaseStructuralElement):
     """Define UnknownGene class. This is primarily intended to represent a
@@ -393,12 +390,10 @@ class RegulatoryElement(BaseModel):
     """
 
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT
-    regulatory_class: RegulatoryClass
-    feature_id: str | None = None
-    associated_gene: Gene | None = None
-    feature_location: SequenceLocation | None = None
-
-    _get_ref_id_val = field_validator("feature_id")(return_value)
+    regulatoryClass: RegulatoryClass
+    featureId: CURIE | None = None
+    associatedGene: Gene | None = None
+    featureLocation: SequenceLocation | None = None
 
     @model_validator(mode="before")
     def ensure_min_values(cls, values):
@@ -451,8 +446,8 @@ class AbstractFusion(BaseModel, ABC):
     """Define Fusion class"""
 
     type: FusionType
-    regulatory_element: RegulatoryElement | None = None
-    structural_elements: list[BaseStructuralElement]
+    regulatoryElement: RegulatoryElement | None = None
+    structuralElements: list[BaseStructuralElement]
 
     @classmethod
     def _access_object_attr(
@@ -528,12 +523,12 @@ class AbstractFusion(BaseModel, ABC):
             "Fusions must contain >= 2 structural elements, or >=1 structural element "
             "and a regulatory element"
         )
-        structural_elements = values.get("structural_elements", [])
-        if not structural_elements:
+        structure = values.get("structure", [])
+        if not structure:
             raise ValueError(qt_error_msg)
-        num_structural_elements = len(structural_elements)
+        num_structure = len(structure)
         reg_element = values.get("regulatory_element")
-        if (num_structural_elements + bool(reg_element)) < 2:
+        if (num_structure + bool(reg_element)) < 2:
             raise ValueError(qt_error_msg)
 
         uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
@@ -545,7 +540,7 @@ class AbstractFusion(BaseModel, ABC):
             if gene_id:
                 gene_ids.append(gene_id)
 
-        for element in structural_elements:
+        for element in structure:
             gene_id = cls._fetch_gene_id(
                 obj=element, gene_descriptor_field="gene_descriptor"
             )
@@ -554,17 +549,17 @@ class AbstractFusion(BaseModel, ABC):
 
         unique_gene_ids = set(gene_ids)
         if len(unique_gene_ids) == 1 and len(gene_ids) == (
-            num_structural_elements + bool(reg_element)
+            num_structure + bool(reg_element)
         ):
             raise ValueError(uq_gene_msg)
         return values
 
     @model_validator(mode="after")
-    def structural_elements_ends(cls, values):
+    def structure_ends(cls, values):
         """Ensure start/end elements are of legal types and have fields
         required by their position.
         """
-        elements = values.structural_elements
+        elements = values.structure
         if isinstance(elements[0], TranscriptSegmentElement):
             if elements[0].exon_end is None and not values["regulatory_element"]:
                 msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
@@ -599,13 +594,10 @@ class Assay(BaseModelForbidExtra):
     """Information pertaining to the assay used in identifying the fusion."""
 
     type: Literal["Assay"] = "Assay"
-    assay_name: StrictStr | None = None
-    assay_id: CURIE | None = None
-    method_uri: CURIE | None = None
-    fusion_detection: Evidence | None = None
-
-    _get_assay_id_val = field_validator("assay_id")(return_value)
-    _get_method_uri_val = field_validator("method_uri")(return_value)
+    assayName: StrictStr | None = None
+    assayId: CURIE | None = None
+    methodUri: CURIE | None = None
+    fusionDetection: Evidence | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -621,9 +613,9 @@ class Assay(BaseModelForbidExtra):
 
 AssayedFusionElements = list[
     TranscriptSegmentElement
-    | Gene
+    | GeneElement
     | TemplatedSequenceElement
-    | Adjacency
+    | LinkerElement
     | UnknownGeneElement
 ]
 
@@ -645,8 +637,8 @@ class CausativeEvent(BaseModelForbidExtra):
     """
 
     type: Literal[FUSORTypes.CAUSATIVE_EVENT] = FUSORTypes.CAUSATIVE_EVENT
-    event_type: EventType
-    event_description: StrictStr | None = None
+    eventType: EventType
+    eventDescription: StrictStr | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -667,8 +659,8 @@ class AssayedFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
-    structural_elements: AssayedFusionElements
-    causative_event: CausativeEvent | None = None
+    structure: AssayedFusionElements
+    causativeEvent: CausativeEvent | None = None
     assay: Assay | None = None
 
     model_config = ConfigDict(
@@ -687,12 +679,16 @@ class AssayedFusion(AbstractFusion):
                     "assay_name": "fluorescence in-situ hybridization assay",
                     "fusion_detection": "inferred",
                 },
-                "structural_elements": [
+                "structure": [
                     {
+                        "type": "GeneElement",
+                        "gene": {
                         "type": "Gene",
                         "id": "gene:EWSR1",
+                        # TODO: This should be mappings instead
                         "gene_id": "hgnc:3058",
                         "label": "EWSR1",
+                        }
                     },
                     {"type": "UnknownGeneElement"},
                 ],
@@ -703,9 +699,9 @@ class AssayedFusion(AbstractFusion):
 
 CategoricalFusionElements = list[
     TranscriptSegmentElement
-    | Gene
+    | GeneElement
     | TemplatedSequenceElement
-    | Adjacency
+    | LinkerElement
     | MultiplePossibleGenesElement
 ]
 
@@ -718,9 +714,9 @@ class CategoricalFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
-    r_frame_preserved: StrictBool | None = None
-    critical_functional_domains: list[FunctionalDomain] | None = None
-    structural_elements: CategoricalFusionElements
+    readingFramePreserved: StrictBool | None = None
+    criticalFunctionalDomains: list[FunctionalDomain] | None = None
+    structure: CategoricalFusionElements
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -741,7 +737,7 @@ class CategoricalFusion(AbstractFusion):
                         },
                     }
                 ],
-                "structural_elements": [
+                "structure": [
                     {
                         "type": "TranscriptSegmentElement",
                         "transcript": "refseq:NM_152263.3",
