@@ -2,7 +2,6 @@
 
 import logging
 import re
-from urllib.parse import quote
 
 from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
@@ -52,6 +51,7 @@ from fusor.tools import translate_identifier
 
 _logger = logging.getLogger(__name__)
 
+# TODO: add back minimum information function for fetches from normalizers
 
 class FUSOR:
     """Class for modifying fusion objects."""
@@ -560,9 +560,9 @@ class FUSOR:
 
         return SequenceLocation(
             sequence_id=sequence_id,
-            start=start, end=end,
+            start=start,
+            end=end,
         )
-
 
     def add_additional_fields(
         self,
@@ -714,24 +714,18 @@ class FUSOR:
             for obj in prop:
                 if "gene_descriptor" in obj.model_fields:
                     label = obj.gene_descriptor.label
-                    norm_gene_descr, _ = self._normalized_gene(
-                        label
-                    )
+                    norm_gene_descr, _ = self._normalized_gene(label)
                     if norm_gene_descr:
                         obj.gene_descriptor = norm_gene_descr
         if fusion.regulatory_element and fusion.regulatory_element.associated_gene:
             reg_el = fusion.regulatory_element
             label = reg_el.associated_gene.label
-            norm_gene_descr, _ = self._normalized_gene(
-                label
-            )
+            norm_gene_descr, _ = self._normalized_gene(label)
             if norm_gene_descr:
                 reg_el.associated_gene = norm_gene_descr
         return fusion
 
-    def _normalized_gene(
-        self, query: str
-    ) -> tuple[Gene | None, str | None]:
+    def _normalized_gene(self, query: str) -> tuple[Gene | None, str | None]:
         """Return gene from normalized response.
 
         :param query: Gene query

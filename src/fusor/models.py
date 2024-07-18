@@ -22,7 +22,6 @@ from pydantic import (
     model_validator,
 )
 from pydantic.fields import Field
-# TODO: add back minimum information function from normalizers (id (hgnc or whatever passed by normalizer) and label only)
 
 class BaseModelForbidExtra(BaseModel, extra="forbid"):
     """Base Pydantic model class with extra values forbidden."""
@@ -57,6 +56,7 @@ class DomainStatus(str, Enum):
     LOST = "lost"
     PRESERVED = "preserved"
 
+
 class FunctionalDomain(BaseModel):
     """Define FunctionalDomain class"""
 
@@ -69,12 +69,12 @@ class FunctionalDomain(BaseModel):
 
     model_config = ConfigDict(
         populate_by_name=True,
+        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "FunctionalDomain",
                 "status": "lost",
                 "label": "Tyrosine-protein kinase, catalytic domain",
-                # TODO: verify this field isn't getting populated/used
                 "_id": "interpro:IPR020635",
                 "gene": {
                     "id": "gene:NTRK1",
@@ -83,13 +83,11 @@ class FunctionalDomain(BaseModel):
                     "type": "Gene",
                 },
                 "sequence_location": {
-                    # TODO: keep this? - yes, use standardized ids as seen in Jeremy's PR
                     "id": "fusor.location_descriptor:NP_002520.2",
                     "type": "SequenceLocation",
                     "sequenceReference": {
                         "id": "GRCh38:chr22",
                         "type": "SequenceReference",
-                        # TODO: get correct id here
                         "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
                         "residueAlphabet": "na",
                     },
@@ -160,6 +158,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
         return values
 
     model_config = ConfigDict(
+        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "TranscriptSegmentElement",
@@ -215,31 +214,9 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
     )
     linkerSequence: LiteralSequenceExpression
 
-    @field_validator("linker_sequence", mode="before")
-    def validate_sequence(cls, v):
-        """Enforce nucleotide base code requirements on sequence literals."""
-        if isinstance(v, dict):
-            try:
-                v["sequence"] = v["sequence"].upper()
-                seq = v["sequence"]
-            except KeyError:
-                raise TypeError
-        elif isinstance(v, SequenceLocation):
-            v.sequence = v.sequence.upper()
-            seq = v.sequence
-        else:
-            raise TypeError
-
-        # TODO: remove this validation
-        try:
-            LiteralSequenceExpression(sequence=SequenceString(seq))
-        except ValidationError:
-            raise AssertionError("sequence does not match regex '^[A-Za-z*\\-]*$'")
-
-        return v
-
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
+        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "LinkerSequenceElement",
@@ -274,6 +251,7 @@ class TemplatedSequenceElement(BaseStructuralElement):
     strand: Strand
 
     model_config = ConfigDict(
+        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "TemplatedSequenceElement",
@@ -316,6 +294,7 @@ class GeneElement(BaseStructuralElement):
             }
         },
     )
+
 
 class UnknownGeneElement(BaseStructuralElement):
     """Define UnknownGene class. This is primarily intended to represent a
@@ -408,6 +387,7 @@ class RegulatoryElement(BaseModel):
         return values
 
     model_config = ConfigDict(
+        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "RegulatoryElement",
@@ -600,12 +580,13 @@ class Assay(BaseModelForbidExtra):
     fusionDetection: Evidence | None = None
 
     model_config = ConfigDict(
+        # TODO: verify this example json once models approved
         json_schema_extra={
             "example": {
-                "method_uri": "pmid:33576979",
-                "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred",
+                "methodUri": "pmid:33576979",
+                "assayId": "obi:OBI_0003094",
+                "assayName": "fluorescence in-situ hybridization assay",
+                "fusionDetection": "inferred",
             }
         }
     )
@@ -641,11 +622,12 @@ class CausativeEvent(BaseModelForbidExtra):
     eventDescription: StrictStr | None = None
 
     model_config = ConfigDict(
+        # TODO: verify this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "CausativeEvent",
-                "event_type": "rearrangement",
-                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+                "eventType": "rearrangement",
+                "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
             }
         },
     )
@@ -664,6 +646,7 @@ class AssayedFusion(AbstractFusion):
     assay: Assay | None = None
 
     model_config = ConfigDict(
+        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "AssayedFusion",
@@ -683,12 +666,11 @@ class AssayedFusion(AbstractFusion):
                     {
                         "type": "GeneElement",
                         "gene": {
-                        "type": "Gene",
-                        "id": "gene:EWSR1",
-                        # TODO: This should be mappings instead
-                        "gene_id": "hgnc:3058",
-                        "label": "EWSR1",
-                        }
+                            "type": "Gene",
+                            "id": "gene:EWSR1",
+                            "gene_id": "hgnc:3058",
+                            "label": "EWSR1",
+                        },
                     },
                     {"type": "UnknownGeneElement"},
                 ],
@@ -719,6 +701,7 @@ class CategoricalFusion(AbstractFusion):
     structure: CategoricalFusionElements
 
     model_config = ConfigDict(
+        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "CategoricalFusion",
