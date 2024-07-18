@@ -153,10 +153,11 @@ ignore = [
 # S101 - assert
 # B011 - assert-false
 # N805 - invalid-first-argument-name-for-method
+# N805 - invalid-argument-name
 # INP001 - implicit-namespace-package
 # SLF001 - private-member-access
 "tests/*" = ["ANN001", "ANN2", "ANN102", "S101", "B011", "INP001", "SLF001"]
-"src/fusor/models.py" = ["ANN201", "N805", "ANN001", "ANN2", "ANN102"]
+"src/fusor/models.py" = ["ANN201", "N803", "N805", "ANN001", "ANN2", "ANN102"]
 
 [tool.ruff.format]
 docstring-code-format = true
