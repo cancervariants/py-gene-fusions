@@ -67,26 +67,27 @@ class FunctionalDomain(BaseModel):
 
     model_config = ConfigDict(
         populate_by_name=True,
-        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "FunctionalDomain",
                 "status": "lost",
                 "label": "Tyrosine-protein kinase, catalytic domain",
-                "_id": "interpro:IPR020635",
+                "id": "interpro:IPR020635",
                 "gene": {
                     "id": "gene:NTRK1",
                     "gene_id": "hgnc:8031",
                     "label": "8031",
                     "type": "Gene",
                 },
-                "sequence_location": {
-                    "id": "fusor.location_descriptor:NP_002520.2",
+                "sequenceLocation": {
+                    "id": "NP_002520.2",
+                    "start": 510,
+                    "end": "781",
                     "type": "SequenceLocation",
                     "sequenceReference": {
                         "id": "GRCh38:chr22",
                         "type": "SequenceReference",
-                        "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
+                        "refgetAccession": "SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
                         "residueAlphabet": "na",
                     },
                 },
@@ -135,68 +136,55 @@ class TranscriptSegmentElement(BaseStructuralElement):
 
         """
         msg = "Must give values for either `exon_start`, `exon_end`, or both"
-        exon_start = values.get("exon_start")
-        exon_end = values.get("exon_end")
+        exon_start = values.get("exonStart")
+        exon_end = values.get("exonEnd")
         if (not exon_start) and (not exon_end):
             raise ValueError(msg)
 
         if exon_start:
-            if not values.get("element_genomic_start"):
-                msg = "Must give `element_genomic_start` if `exon_start` is given"
+            if not values.get("elementGenomicStart"):
+                msg = "Must give `elementGenomicStart` if `exonStart` is given"
                 raise ValueError(msg)
         else:
-            values["exon_start_offset"] = None
+            values["exonStartOffset"] = None
 
         if exon_end:
-            if not values.get("element_genomic_end"):
-                msg = "Must give `element_genomic_end` if `exon_end` is given"
+            if not values.get("elementGenomicEnd"):
+                msg = "Must give `elementGenomicEnd` if `exonEnd` is given"
                 raise ValueError(msg)
         else:
-            values["exon_end_offset"] = None
+            values["exonEndOffset"] = None
         return values
 
     model_config = ConfigDict(
-        # TODO: update this example json once models approved
+        # TODO: verify this example
         json_schema_extra={
             "example": {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
-                "exon_start": 1,
-                "exon_start_offset": 0,
-                "exon_end": 8,
-                "exon_end_offset": 0,
+                "exonStart": 1,
+                "exonStartOffset": 0,
+                "exonEnd": 8,
+                "exonEndOffset": 0,
                 "gene": {
                     "id": "hgnc:12012",
                     "type": "Gene",
                     "label": "TPM3",
                 },
-                "element_genomic_start": {
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "type": "LocationDescriptor",
+                "elementGenomicStart": {
+                    "id": "NC_000001.11",
+                    "type": "SequenceLocation",
                     "label": "NC_000001.11",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NC_000001.11",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 154192135},
-                            "end": {"type": "Number", "value": 154192136},
-                        },
-                    },
+                    "start": 154192135,
+                    "end": 154192136,
+                    # do we need a sequence reference here?
                 },
-                "element_genomic_end": {
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "type": "LocationDescriptor",
+                "elementGenomicEnd": {
+                    "id": "NC_000001.11",
+                    "type": "SequenceLocation",
                     "label": "NC_000001.11",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NC_000001.11",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 154170399},
-                            "end": {"type": "Number", "value": 154170400},
-                        },
-                    },
+                    "start": 154170399,
+                    "end": 154170400,
                 },
             }
         },
@@ -217,7 +205,7 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
         json_schema_extra={
             "example": {
                 "type": "LinkerSequenceElement",
-                "linker_sequence": {
+                "linkerSequence": {
                     "id": "sequence:ACGT",
                     "type": "SequenceDescriptor",
                     "sequence": "ACGT",
@@ -377,9 +365,11 @@ class RegulatoryElement(BaseModel):
         `associated_gene` is set.
         """
         if not (
-            bool(values.get("feature_id")) ^ bool(values.get("feature_location"))
-        ) and not (values.get("associated_gene")):
-            msg = "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
+            bool(values.get("featureId")) ^ bool(values.get("featureLocation"))
+        ) and not (values.get("associatedGene")):
+            msg = (
+                "Must set 1 of {`featureId`, `associatedGene`} and/or `featureLocation`"
+            )
             raise ValueError(msg)
         return values
 
@@ -459,7 +449,6 @@ class AbstractFusion(BaseModel, ABC):
     def _fetch_gene_id(
         cls,
         obj: dict | BaseModel,
-        gene_descriptor_field: str,
     ) -> str | None:
         """Get gene ID if element includes a gene annotation.
 
@@ -468,14 +457,9 @@ class AbstractFusion(BaseModel, ABC):
         :param gene_descriptor_field: name of gene_descriptor field
         :return: gene ID if gene is defined
         """
-        gene_descriptor = cls._access_object_attr(obj, gene_descriptor_field)
-        if gene_descriptor:
-            gene_value = cls._access_object_attr(gene_descriptor, "gene")
-            if gene_value:
-                gene_id = cls._access_object_attr(gene_value, "gene_id")
-                if gene_id:
-                    return gene_id
-            gene_id = cls._access_object_attr(gene_descriptor, "gene_id")
+        gene_info = cls._access_object_attr(obj, "gene")
+        if gene_info:
+            gene_id = cls._access_object_attr(gene_info, "id")
             if gene_id:
                 return gene_id
         return None
@@ -505,23 +489,19 @@ class AbstractFusion(BaseModel, ABC):
         if not structure:
             raise ValueError(qt_error_msg)
         num_structure = len(structure)
-        reg_element = values.get("regulatory_element")
+        reg_element = values.get("regulatoryElement")
         if (num_structure + bool(reg_element)) < 2:
             raise ValueError(qt_error_msg)
 
         uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
         gene_ids = []
         if reg_element:
-            gene_id = cls._fetch_gene_id(
-                obj=reg_element, gene_descriptor_field="associated_gene"
-            )
+            gene_id = cls._fetch_gene_id(obj=reg_element)
             if gene_id:
                 gene_ids.append(gene_id)
 
         for element in structure:
-            gene_id = cls._fetch_gene_id(
-                obj=element, gene_descriptor_field="gene_descriptor"
-            )
+            gene_id = cls._fetch_gene_id(obj=element)
             if gene_id:
                 gene_ids.append(gene_id)
 
