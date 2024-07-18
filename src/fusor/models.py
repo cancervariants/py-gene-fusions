@@ -135,7 +135,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
         If not set, set corresponding offset to `None`
 
         """
-        msg = "Must give values for either `exon_start`, `exon_end`, or both"
+        msg = "Must give values for either `exonStart`, `exonEnd`, or both"
         exon_start = values.get("exonStart")
         exon_end = values.get("exonEnd")
         if (not exon_start) and (not exon_end):
@@ -348,7 +348,7 @@ class RegulatoryClass(str, Enum):
 class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class.
 
-    `feature_id` would ideally be constrained as a CURIE, but Encode, our preferred
+    `featureId` would ideally be constrained as a CURIE, but Encode, our preferred
     feature ID source, doesn't currently have a registered CURIE structure for EH_
     identifiers. Consequently, we permit any kind of free text.
     """
@@ -361,8 +361,8 @@ class RegulatoryElement(BaseModel):
 
     @model_validator(mode="before")
     def ensure_min_values(cls, values):
-        """Ensure that one of {`feature_id`, `feature_location`}, and/or
-        `associated_gene` is set.
+        """Ensure that one of {`featureId`, `featureLocation`}, and/or
+        `associatedGene` is set.
         """
         if not (
             bool(values.get("featureId")) ^ bool(values.get("featureLocation"))
@@ -454,7 +454,6 @@ class AbstractFusion(BaseModel, ABC):
 
         :param obj: element to fetch gene from. Might not contain a gene (e.g. it's a
             TemplatedSequenceElement) so we have to use safe checks to fetch.
-        :param gene_descriptor_field: name of gene_descriptor field
         :return: gene ID if gene is defined
         """
         gene_info = cls._access_object_attr(obj, "gene")
@@ -519,7 +518,7 @@ class AbstractFusion(BaseModel, ABC):
         """
         elements = values.structure
         if isinstance(elements[0], TranscriptSegmentElement):
-            if elements[0].exon_end is None and not values["regulatory_element"]:
+            if elements[0].exonEnd is None and not values["regulatory_element"]:
                 msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
                 raise ValueError(msg)
         elif isinstance(elements[0], LinkerElement):
@@ -529,12 +528,12 @@ class AbstractFusion(BaseModel, ABC):
         if len(elements) > 2:
             for element in elements[1:-1]:
                 if isinstance(element, TranscriptSegmentElement) and (
-                    element.exon_start is None or element.exon_end is None
+                    element.exonStart is None or element.exonEnd is None
                 ):
                     msg = "Connective TranscriptSegmentElement must include both start and end positions"
                     raise ValueError(msg)
         if isinstance(elements[-1], TranscriptSegmentElement) and (
-            elements[-1].exon_start is None
+            elements[-1].exonStart is None
         ):
             msg = "3' fusion partner junction must include " "starting position"
             raise ValueError
