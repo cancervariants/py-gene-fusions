@@ -569,7 +569,6 @@ class AbstractFusion(BaseModel, ABC):
             if elements[0].exon_end is None and not values["regulatory_element"]:
                 msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
                 raise ValueError(msg)
-        # TODO: how to verify this now with adjacency model?
         elif isinstance(elements[0], LinkerElement):
             msg = "First structural element cannot be LinkerSequence"
             raise ValueError(msg)
