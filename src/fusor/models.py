@@ -355,7 +355,7 @@ class RegulatoryElement(BaseModel):
 
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT
     regulatoryClass: RegulatoryClass
-    featureId: CURIE | None = None
+    featureId: str | None = None
     associatedGene: Gene | None = None
     featureLocation: SequenceLocation | None = None
 
