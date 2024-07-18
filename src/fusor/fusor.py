@@ -9,7 +9,7 @@ from cool_seq_tool.schemas import ResidueMode
 from ga4gh.core import ga4gh_identify
 from ga4gh.core.domain_models import Gene
 from ga4gh.vrs import models
-from ga4gh.vrs.models import SequenceLocation
+from ga4gh.vrs.models import LiteralSequenceExpression, SequenceLocation, SequenceString
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
@@ -373,25 +373,18 @@ class FUSOR:
     @staticmethod
     def linker_element(
         sequence: str,
-        residue_type: CURIE = "SO:0000348",
     ) -> tuple[LinkerElement | None, str | None]:
         """Create linker element
 
         :param sequence: Sequence
-        :param residue_type: Sequence Ontology code for residue type of ``sequence``
         :return: Tuple containing a complete Linker element and None if
             successful, or a None value and warning message if unsuccessful
         """
         try:
-            seq = sequence.upper()
-            params = {
-                "linker_sequence": {
-                    "id": f"fusor.sequence:{seq}",
-                    "sequence": seq,
-                    "residue_type": residue_type,
-                }
-            }
-            return LinkerElement(**params), None
+            upper_seq = sequence.upper()
+            seq = SequenceString(upper_seq)
+            linker_sequence = LiteralSequenceExpression(sequence=seq)
+            return LinkerElement(linkerSequence=linker_sequence), None
         except ValidationError as e:
             msg = str(e)
             _logger.warning(msg)
