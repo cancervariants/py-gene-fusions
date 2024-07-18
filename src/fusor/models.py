@@ -426,6 +426,7 @@ class AbstractFusion(BaseModel, ABC):
     type: FusionType
     regulatoryElement: RegulatoryElement | None = None
     structuralElements: list[BaseStructuralElement]
+    readingFramePreserved: StrictBool | None = None
 
     @classmethod
     def _access_object_attr(
@@ -694,7 +695,6 @@ class CategoricalFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
-    readingFramePreserved: StrictBool | None = None
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
     structure: CategoricalFusionElements
 
@@ -703,7 +703,7 @@ class CategoricalFusion(AbstractFusion):
         json_schema_extra={
             "example": {
                 "type": "CategoricalFusion",
-                "r_frame_preserved": True,
+                "reading_frame_preserved": True,
                 "critical_functional_domains": [
                     {
                         "type": "FunctionalDomain",
