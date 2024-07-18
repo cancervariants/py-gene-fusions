@@ -130,8 +130,8 @@ class TranscriptSegmentElement(BaseStructuralElement):
 
     @model_validator(mode="before")
     def check_exons(cls, values):
-        """Check that at least one of {`exon_start`, `exon_end`} is set.
-        If set, check that the corresponding `element_genomic` field is set.
+        """Check that at least one of {`exonStart`, `exonEnd`} is set.
+        If set, check that the corresponding `elementGenomic` field is set.
         If not set, set corresponding offset to `None`
 
         """
