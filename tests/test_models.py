@@ -690,7 +690,7 @@ def test_fusion(
     """Test that Fusion object initializes correctly"""
     # test valid object
     fusion = CategoricalFusion(
-        r_frame_preserved=True,
+        reading_frame_preserved=True,
         critical_functional_domains=[functional_domains[0]],
         structural_elements=[transcript_segments[1], transcript_segments[2]],
         regulatory_element=regulatory_elements[0],

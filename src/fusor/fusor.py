@@ -123,7 +123,6 @@ class FUSOR:
             categorical_attributes = any(
                 [
                     "criticalFunctionalDomains" in kwargs,
-                    "readingFramePreserved" in kwargs,
                     self._contains_element_type(
                         kwargs, StructuralElementType.MULTIPLE_POSSIBLE_GENES_ELEMENT
                     ),
@@ -162,12 +161,11 @@ class FUSOR:
         reading_frame_preserved: bool | None = None,
     ) -> CategoricalFusion:
         """Construct a categorical fusion object
-
-        :param structure: elements constituting the fusion
-        :param regulatoryElement: affected regulatory element
-        :param criticalFunctionalDomains: lost or preserved functional domains
-        :param readingFramePreserved: ``True`` if reading frame is preserved. ``False``
-            otherwise
+        :param structural_elements: elements constituting the fusion
+        :param regulatory_element: affected regulatory element
+        :param critical_functional_domains: lost or preserved functional domains
+        :param reading_frame_preserved: ``True`` if reading frame is preserved.
+            ``False`` otherwise
         :return: CategoricalFusion if construction successful
         :raise: FUSORParametersException if given incorrect fusion properties
         """
@@ -188,12 +186,15 @@ class FUSOR:
         causative_event: CausativeEvent | None = None,
         assay: Assay | None = None,
         regulatory_element: RegulatoryElement | None = None,
+        reading_frame_preserved: bool | None = None,
     ) -> AssayedFusion:
         """Construct an assayed fusion object
         :param structure: elements constituting the fusion
         :param causativeEvent: event causing the fusion
         :param assay: how knowledge of the fusion was obtained
-        :param regulatoryElement: affected regulatory elements
+        :param regulatory_element: affected regulatory elements
+        :param reading_frame_preserved: ``True`` if reading frame is preserved.
+            ``False`` otherwise
         :return: Tuple containing optional AssayedFusion if construction successful,
             and any relevant validation warnings
         """
@@ -203,6 +204,7 @@ class FUSOR:
                 regulatoryElement=regulatory_element,
                 causativeEvent=causative_event,
                 assay=assay,
+                reading_frame_preserved=reading_frame_preserved,
             )
         except ValidationError as e:
             raise FUSORParametersException(str(e)) from e
