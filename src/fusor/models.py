@@ -8,7 +8,6 @@ from ga4gh.core.domain_models import Gene
 from ga4gh.vrs.models import (
     LiteralSequenceExpression,
     SequenceLocation,
-    SequenceString,
 )
 from gene.schemas import CURIE
 from pydantic import (
@@ -17,11 +16,10 @@ from pydantic import (
     StrictBool,
     StrictInt,
     StrictStr,
-    ValidationError,
-    field_validator,
     model_validator,
 )
 from pydantic.fields import Field
+
 
 class BaseModelForbidExtra(BaseModel, extra="forbid"):
     """Base Pydantic model class with extra values forbidden."""
@@ -103,7 +101,7 @@ class StructuralElementType(str, Enum):
     TRANSCRIPT_SEGMENT_ELEMENT = FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT.value
     TEMPLATED_SEQUENCE_ELEMENT = FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT.value
     LINKER_SEQUENCE_ELEMENT = FUSORTypes.LINKER_SEQUENCE_ELEMENT.value
-    GENE_ELEMENT = Gene
+    GENE_ELEMENT = FUSORTypes.GENE_ELEMENT.value
     UNKNOWN_GENE_ELEMENT = FUSORTypes.UNKNOWN_GENE_ELEMENT.value
     MULTIPLE_POSSIBLE_GENES_ELEMENT = FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT.value
 
