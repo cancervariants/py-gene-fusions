@@ -80,12 +80,13 @@ class FunctionalDomain(BaseModel):
                     "type": "Gene",
                 },
                 "sequenceLocation": {
-                    "id": "NP_002520.2",
+                    "id": "SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
                     "start": 510,
                     "end": "781",
                     "type": "SequenceLocation",
                     "sequenceReference": {
-                        "id": "GRCh38:chr22",
+                        "id": "NP_002520.2",
+                        "label": "GRCh38:chr22",
                         "type": "SequenceReference",
                         "refgetAccession": "SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
                         "residueAlphabet": "na",
@@ -175,14 +176,21 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     "id": "NC_000001.11",
                     "type": "SequenceLocation",
                     "label": "NC_000001.11",
+                    "sequenceReference": {
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+                    },
                     "start": 154192135,
                     "end": 154192136,
-                    # do we need a sequence reference here?
                 },
                 "elementGenomicEnd": {
                     "id": "NC_000001.11",
                     "type": "SequenceLocation",
                     "label": "NC_000001.11",
+                    "sequenceReference": {
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+                    },
                     "start": 154170399,
                     "end": 154170400,
                 },
@@ -414,7 +422,7 @@ class AbstractFusion(BaseModel, ABC):
 
     type: FusionType
     regulatoryElement: RegulatoryElement | None = None
-    structuralElements: list[BaseStructuralElement]
+    structure: list[BaseStructuralElement]
     readingFramePreserved: StrictBool | None = None
 
     @classmethod
@@ -441,9 +449,7 @@ class AbstractFusion(BaseModel, ABC):
                 return None
         elif isinstance(obj, dict):
             return obj.get(attr_name)
-        else:
-            msg = "Unrecognized type, should only pass entities with properties"
-            raise ValueError(msg)
+
 
     @classmethod
     def _fetch_gene_id(
