@@ -27,22 +27,20 @@ from fusor.models import (
 def gene_descriptors():
     """Provide possible gene_descriptor input."""
     return [
-        {"id": "gene:G1", "gene": {"gene_id": "hgnc:9339"}, "label": "G1"},
-        {"id": "gene:ABL", "gene": {"gene_id": "hgnc:76"}, "label": "ABL"},
-        {"id": "gene:BCR1", "gene": {"gene_id": "hgnc:1014"}, "label": "BCR1"},
-        {"id": "gene:NTRK1", "gene_id": "hgnc:8031", "label": "NTRK1"},
+        {"id": "hgnc:9339", "label": "G1"},
+        {"id": "hgnc:76", "label": "ABL"},
+        {"id": "hgnc:1014", "label": "BCR1"},
+        {"id": "hgnc:8031", "label": "NTRK1"},
         {
-            "id": "gene:ALK",
-            "gene_id": "hgnc:1837",
+            "id": "hgnc:1837",
             "label": "ALK",
         },
-        {"id": "gene:YAP1", "gene_id": "hgnc:16262", "label": "YAP1"},
+        {"id": "hgnc:16262", "label": "YAP1"},
         # alternate structure
         {
-            "id": "normalize.gene:BRAF",
-            "type": "GeneDescriptor",
+            "id": "hgnc:1097",
+            "type": "Gene",
             "label": "BRAF",
-            "gene_id": "hgnc:1097",
         },
     ]
 
@@ -53,7 +51,7 @@ def location_descriptors():
     return [
         {
             "id": "NC_000001.11:15455",
-            "type": "LocationDescriptor",
+            "type": "SequenceLocation",
             "location": {
                 "sequence_id": "ncbi:NC_000001.11",
                 "interval": {
@@ -66,7 +64,7 @@ def location_descriptors():
         },
         {
             "id": "NC_000001.11:15566",
-            "type": "LocationDescriptor",
+            "type": "SequenceLocation",
             "location": {
                 "sequence_id": "ncbi:NC_000001.11",
                 "interval": {
@@ -79,7 +77,7 @@ def location_descriptors():
         },
         {
             "id": "chr12:p12.1",
-            "type": "LocationDescriptor",
+            "type": "SequenceLocation",
             "location": {
                 "species_id": "taxonomy:9606",
                 "chr": "12",
@@ -89,7 +87,7 @@ def location_descriptors():
         },
         {
             "id": "chr12:p12.2",
-            "type": "LocationDescriptor",
+            "type": "SequenceLocation",
             "location": {
                 "species_id": "taxonomy:9606",
                 "chr": "12",
@@ -99,7 +97,7 @@ def location_descriptors():
         },
         {
             "id": "NC_000001.11:15455-15566",
-            "type": "LocationDescriptor",
+            "type": "SequenceLocation",
             "location": {
                 "sequence_id": "ncbi:NC_000001.11",
                 "interval": {
@@ -112,7 +110,7 @@ def location_descriptors():
         },
         {
             "id": "chr12:p12.1-p12.2",
-            "type": "LocationDescriptor",
+            "type": "SequenceLocation",
             "location": {
                 "species_id": "taxonomy:9606",
                 "chr": "12",
@@ -122,7 +120,7 @@ def location_descriptors():
         },
         {
             "id": "fusor.location_descriptor:NP_001123617.1",
-            "type": "LocationDescriptor",
+            "type": "SequenceLocation",
             "location": {
                 "sequence_id": "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
                 "type": "SequenceLocation",
@@ -134,7 +132,7 @@ def location_descriptors():
         },
         {
             "id": "fusor.location_descriptor:NP_002520.2",
-            "type": "LocationDescriptor",
+            "type": "SequenceLocation",
             "location": {
                 "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
                 "type": "SequenceLocation",
@@ -155,16 +153,16 @@ def functional_domains(gene_descriptors, location_descriptors):
             "type": "FunctionalDomain",
             "status": "preserved",
             "label": "WW domain",
-            "_id": "interpro:IPR001202",
-            "associated_gene": gene_descriptors[5],
-            "sequence_location": location_descriptors[6],
+            "id": "interpro:IPR001202",
+            "gene": gene_descriptors[5],
+            "sequenceLocation": location_descriptors[6],
         },
         {
             "status": "lost",
             "label": "Tyrosine-protein kinase, catalytic domain",
-            "_id": "interpro:IPR020635",
-            "associated_gene": gene_descriptors[3],
-            "sequence_location": location_descriptors[7],
+            "id": "interpro:IPR020635",
+            "gene": gene_descriptors[3],
+            "sequenceLocation": location_descriptors[7],
         },
     ]
 
@@ -308,12 +306,11 @@ def test_functional_domain(functional_domains, gene_descriptors):
     assert test_domain.status == "preserved"
     assert test_domain.label == "WW domain"
     assert test_domain.id == "interpro:IPR001202"
-    assert test_domain.associated_gene.id == "gene:YAP1"
-    assert test_domain.associated_gene.gene_id == "hgnc:16262"
-    assert test_domain.associated_gene.label == "YAP1"
-    test_loc = test_domain.sequence_location
+    assert test_domain.gene.id == "hgnc:16262"
+    assert test_domain.gene.label == "YAP1"
+    test_loc = test_domain.sequenceLocation
     assert test_loc.id == "fusor.location_descriptor:NP_001123617.1"
-    assert test_loc.type == "LocationDescriptor"
+    assert test_loc.type == "SequenceLocation"
     assert test_loc.location.sequence_id == "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7"
     assert test_loc.location.interval.type == "SequenceInterval"
     assert test_loc.location.interval.start.value == 171
@@ -324,12 +321,11 @@ def test_functional_domain(functional_domains, gene_descriptors):
     assert test_domain.status == "lost"
     assert test_domain.label == "Tyrosine-protein kinase, catalytic domain"
     assert test_domain.id == "interpro:IPR020635"
-    assert test_domain.associated_gene.id == "gene:NTRK1"
-    assert test_domain.associated_gene.gene_id == "hgnc:8031"
-    assert test_domain.associated_gene.label == "NTRK1"
+    assert test_domain.gene.id == "hgnc:8031"
+    assert test_domain.gene.label == "NTRK1"
     test_loc = test_domain.sequence_location
     assert test_loc.id == "fusor.location_descriptor:NP_002520.2"
-    assert test_loc.type == "LocationDescriptor"
+    assert test_loc.type == "SequenceLocation"
     assert test_loc.location.sequence_id == "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6"
     assert test_loc.location.interval.type == "SequenceInterval"
     assert test_loc.location.interval.start.value == 510
