@@ -87,7 +87,7 @@ class FunctionalDomain(BaseModel):
                     "sequenceReference": {
                         "id": "GRCh38:chr22",
                         "type": "SequenceReference",
-                        "refgetAccession": "SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                        "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
                         "residueAlphabet": "na",
                     },
                 },
