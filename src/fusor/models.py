@@ -18,7 +18,6 @@ from pydantic import (
     StrictStr,
     model_validator,
 )
-from pydantic.fields import Field
 
 
 class BaseModelForbidExtra(BaseModel, extra="forbid"):
@@ -449,6 +448,9 @@ class AbstractFusion(BaseModel, ABC):
                 return None
         elif isinstance(obj, dict):
             return obj.get(attr_name)
+        else:
+            msg = "Unrecognized type, should only pass entities with properties"
+            raise ValueError(msg)
 
     @classmethod
     def _fetch_gene_id(
