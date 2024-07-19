@@ -172,7 +172,8 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     "label": "TPM3",
                 },
                 "elementGenomicStart": {
-                    "id": "NC_000001.11",
+                    # TODO: this digest may not be correct, but putting a placeholder example here for now
+                    "id": "SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
                     "type": "SequenceLocation",
                     "label": "NC_000001.11",
                     "sequenceReference": {
@@ -183,7 +184,8 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     "end": 154192136,
                 },
                 "elementGenomicEnd": {
-                    "id": "NC_000001.11",
+                    # TODO: this digest may not be correct, but putting a placeholder example here for now
+                    "id": "SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
                     "type": "SequenceLocation",
                     "label": "NC_000001.11",
                     "sequenceReference": {
