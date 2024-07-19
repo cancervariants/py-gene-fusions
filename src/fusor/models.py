@@ -61,7 +61,7 @@ class FunctionalDomain(BaseModel):
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
     gene: Gene
-    id: CURIE | None = Field(None, alias="_id")
+    id: CURIE | None
     label: StrictStr | None = None
     sequenceLocation: SequenceLocation | None = None
 
