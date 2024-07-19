@@ -178,7 +178,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     "label": "NC_000001.11",
                     "sequenceReference": {
                         "type": "SequenceReference",
-                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
                     "start": 154192135,
                     "end": 154192136,
@@ -189,7 +189,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     "label": "NC_000001.11",
                     "sequenceReference": {
                         "type": "SequenceReference",
-                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
                     "start": 154170399,
                     "end": 154170400,
@@ -449,7 +449,6 @@ class AbstractFusion(BaseModel, ABC):
                 return None
         elif isinstance(obj, dict):
             return obj.get(attr_name)
-
 
     @classmethod
     def _fetch_gene_id(
