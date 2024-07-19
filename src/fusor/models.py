@@ -61,7 +61,7 @@ class FunctionalDomain(BaseModel):
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
     gene: Gene
-    id: CURIE | None = Field(None, alias="_id")
+    id: CURIE | None
     label: StrictStr | None = None
     sequenceLocation: SequenceLocation | None = None
 
@@ -88,7 +88,7 @@ class FunctionalDomain(BaseModel):
                         "id": "NP_002520.2",
                         "label": "GRCh38:chr22",
                         "type": "SequenceReference",
-                        "refgetAccession": "SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                        "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
                         "residueAlphabet": "na",
                     },
                 },
