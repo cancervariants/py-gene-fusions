@@ -36,7 +36,6 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
         feature_string += f"_{element.featureId}"
     elif element.featureLocation:
         feature_location = element.featureLocation
-        # TODO: update this with new model
         sequence_id = feature_location.sequenceReference.id
         refseq_id = str(translate_identifier(sr, sequence_id, "refseq")).split(":")[1]
         try:
