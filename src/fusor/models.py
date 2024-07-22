@@ -79,7 +79,7 @@ class FunctionalDomain(BaseModel):
                     "type": "Gene",
                 },
                 "sequenceLocation": {
-                    "id": "SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                    "id": "ga4gh:SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
                     "start": 510,
                     "end": "781",
                     "type": "SequenceLocation",
