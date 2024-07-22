@@ -547,7 +547,6 @@ class FUSOR:
             else:
                 sequence_id = seq_id
 
-        # TODO: unsure if this is correct - I'm getting SQ's instead of SL's
         refget_accession = translate_identifier(
             self.seqrepo,
             label,
