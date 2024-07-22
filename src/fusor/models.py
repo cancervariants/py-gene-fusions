@@ -73,9 +73,8 @@ class FunctionalDomain(BaseModel):
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "id": "interpro:IPR020635",
                 "associatedGene": {
-                    "id": "gene:NTRK1",
-                    "gene_id": "hgnc:8031",
-                    "label": "8031",
+                    "id": "hgnc:8031",
+                    "label": "NTRK1",
                     "type": "Gene",
                 },
                 "sequenceLocation": {
