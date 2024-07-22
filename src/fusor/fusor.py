@@ -322,7 +322,7 @@ class FUSOR:
             gene-normalizer's gene object will be used
         :return: GeneElement, warning
         """
-        normalized_gene, warning = self._normalized_gene(
+        return self._normalized_gene(
             gene, use_minimal_gene_descr=use_minimal_gene_descr
         )
         if not normalized_gene:
