@@ -24,8 +24,8 @@ from fusor.models import (
 
 
 @pytest.fixture(scope="module")
-def gene_descriptors():
-    """Provide possible gene_descriptor input."""
+def gene_examples():
+    """Provide possible gene input."""
     return [
         {"id": "hgnc:9339", "label": "G1"},
         {"id": "hgnc:76", "label": "ABL"},
@@ -46,35 +46,23 @@ def gene_descriptors():
 
 
 @pytest.fixture(scope="module")
-def location_descriptors():
-    """Provide possible templated_sequence input."""
+def sequence_locations():
+    """Provide possible sequence_location input."""
     return [
         {
-            "id": "NC_000001.11:15455",
+            "id": "NC_000001.11",
             "type": "SequenceLocation",
-            "location": {
-                "sequence_id": "ncbi:NC_000001.11",
-                "interval": {
-                    "start": {"type": "Number", "value": 15455},
-                    "end": {"type": "Number", "value": 15456},
-                },
-                "type": "SequenceLocation",
-            },
-            "label": "NC_000001.11:15455",
+            "start": 15455,
+            "end": 15456,
+            # TODO what to put for sequence reference here?? or other places in these examples?
         },
         {
-            "id": "NC_000001.11:15566",
+            "id": "NC_000001.11",
             "type": "SequenceLocation",
-            "location": {
-                "sequence_id": "ncbi:NC_000001.11",
-                "interval": {
-                    "start": {"type": "Number", "value": 15565},
-                    "end": {"type": "Number", "value": 15566},
-                },
-                "type": "SequenceLocation",
-            },
-            "label": "NC_000001.11:15566",
+            "start": 15565,
+            "end": 15566,
         },
+        # TODO: no clue what to do here - SequenceLocations don't support anything other than integers for start/end
         {
             "id": "chr12:p12.1",
             "type": "SequenceLocation",
@@ -96,16 +84,10 @@ def location_descriptors():
             "label": "chr12:p12.2",
         },
         {
-            "id": "NC_000001.11:15455-15566",
+            "id": "NC_000001.11",
             "type": "SequenceLocation",
-            "location": {
-                "sequence_id": "ncbi:NC_000001.11",
-                "interval": {
-                    "start": {"type": "Number", "value": 15455},
-                    "end": {"type": "Number", "value": 15566},
-                },
-                "type": "SequenceLocation",
-            },
+            "start": 15455,
+            "end": 15566,
             "label": "NC_000001.11:15455-15566",
         },
         {
@@ -119,34 +101,34 @@ def location_descriptors():
             "label": "chr12:p12.1-p12.2",
         },
         {
-            "id": "fusor.location_descriptor:NP_001123617.1",
+            "id": "NP_001123617.1",
             "type": "SequenceLocation",
-            "location": {
-                "sequence_id": "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
-                "type": "SequenceLocation",
-                "interval": {
-                    "start": {"type": "Number", "value": 171},
-                    "end": {"type": "Number", "value": 204},
-                },
+            "start": 171,
+            "end": 204,
+            "label": "NP_001123617.1",
+            "sequenceReference": {
+                "id": "NM_001130145.3",
+                "refgetAccession": "SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
+                "type": "SequenceReference",
             },
         },
         {
-            "id": "fusor.location_descriptor:NP_002520.2",
+            "id": "NP_002520.2",
             "type": "SequenceLocation",
-            "location": {
-                "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
-                "type": "SequenceLocation",
-                "interval": {
-                    "start": {"type": "Number", "value": 510},
-                    "end": {"type": "Number", "value": 781},
-                },
+            "start": 510,
+            "end": 781,
+            "label": "NP_002520.2",
+            "sequenceReference": {
+                "id": "NM_001130145.3",
+                "refgetAccession": "SQ.61McMQgrnlFJ2Vxh3SJ34hTzpxdubu--",
+                "type": "SequenceReference",
             },
         },
     ]
 
 
 @pytest.fixture(scope="module")
-def functional_domains(gene_descriptors, location_descriptors):
+def functional_domains(gene_examples, sequence_locations):
     """Provide possible functional_domains input."""
     return [
         {
@@ -154,88 +136,88 @@ def functional_domains(gene_descriptors, location_descriptors):
             "status": "preserved",
             "label": "WW domain",
             "id": "interpro:IPR001202",
-            "gene": gene_descriptors[5],
-            "sequenceLocation": location_descriptors[6],
+            "associatedGene": gene_examples[5],
+            "sequenceLocation": sequence_locations[6],
         },
         {
             "status": "lost",
             "label": "Tyrosine-protein kinase, catalytic domain",
             "id": "interpro:IPR020635",
-            "gene": gene_descriptors[3],
-            "sequenceLocation": location_descriptors[7],
+            "associatedGene": gene_examples[3],
+            "sequenceLocation": sequence_locations[7],
         },
     ]
 
 
 @pytest.fixture(scope="module")
-def transcript_segments(location_descriptors, gene_descriptors):
+def transcript_segments(sequence_locations, gene_examples):
     """Provide possible transcript_segment input."""
     return [
         {
             "transcript": "refseq:NM_152263.3",
-            "exon_start": 1,
-            "exon_start_offset": -9,
-            "exon_end": 8,
-            "exon_end_offset": 7,
-            "gene_descriptor": gene_descriptors[0],
-            "element_genomic_start": location_descriptors[2],
-            "element_genomic_end": location_descriptors[3],
+            "exonStart": 1,
+            "exonStartOffset": -9,
+            "exonEnd": 8,
+            "exonEndOffset": 7,
+            "gene": gene_examples[0],
+            "elementGenomicStart": sequence_locations[2],
+            "elementGenomicEnd": sequence_locations[3],
         },
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_034348.3",
-            "exon_start": 1,
-            "exon_end": 8,
-            "gene_descriptor": gene_descriptors[3],
-            "element_genomic_start": location_descriptors[0],
-            "element_genomic_end": location_descriptors[1],
+            "exonStart": 1,
+            "exonEnd": 8,
+            "gene": gene_examples[3],
+            "elementGenomicStart": sequence_locations[0],
+            "elementGenomicEnd": sequence_locations[1],
         },
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_938439.4",
-            "exon_start": 7,
-            "exon_end": 14,
-            "exon_end_offset": -5,
-            "gene_descriptor": gene_descriptors[4],
-            "element_genomic_start": location_descriptors[0],
-            "element_genomic_end": location_descriptors[1],
+            "exonStart": 7,
+            "exonEnd": 14,
+            "exonEndOffset": -5,
+            "gene": gene_examples[4],
+            "elementGenomicStart": sequence_locations[0],
+            "elementGenomicEnd": sequence_locations[1],
         },
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_938439.4",
-            "exon_start": 7,
-            "gene_descriptor": gene_descriptors[4],
-            "element_genomic_start": location_descriptors[0],
+            "exonStart": 7,
+            "gene": gene_examples[4],
+            "elementGenomicStart": sequence_locations[0],
         },
     ]
 
 
 @pytest.fixture(scope="module")
-def gene_elements(gene_descriptors):
+def gene_elements(gene_examples):
     """Provide possible gene element input data."""
     return [
         {
             "type": "GeneElement",
-            "gene_descriptor": gene_descriptors[1],
+            "gene": gene_examples[1],
         },
-        {"type": "GeneElement", "gene_descriptor": gene_descriptors[0]},
+        {"type": "GeneElement", "gene": gene_examples[0]},
         {"type"},
     ]
 
 
 @pytest.fixture(scope="module")
-def templated_sequence_elements(location_descriptors):
+def templated_sequence_elements(sequence_locations):
     """Provide possible templated sequence element input data."""
     return [
         {
             "type": "TemplatedSequenceElement",
             "strand": "+",
-            "region": location_descriptors[5],
+            "region": sequence_locations[5],
         },
         {
             "type": "TemplatedSequenceElement",
             "strand": "-",
-            "region": location_descriptors[4],
+            "region": sequence_locations[4],
         },
     ]
 
@@ -248,19 +230,19 @@ def sequence_descriptors():
             "id": "sequence:ACGT",
             "type": "SequenceDescriptor",
             "sequence": "ACGT",
-            "residue_type": "SO:0000348",
+            "residueType": "SO:0000348",
         },
         {
             "id": "sequence:T",
             "type": "SequenceDescriptor",
             "sequence": "T",
-            "residue_type": "SO:0000348",
+            "residueType": "SO:0000348",
         },
         {
             "id": "sequence:actgu",
             "type": "SequenceDescriptor",
             "sequence": "actgu",
-            "residue_type": "SO:0000348",
+            "residueType": "SO:0000348",
         },
     ]
 
@@ -269,9 +251,9 @@ def sequence_descriptors():
 def linkers(sequence_descriptors):
     """Provide possible linker element input data."""
     return [
-        {"type": "LinkerSequenceElement", "linker_sequence": sequence_descriptors[0]},
-        {"type": "LinkerSequenceElement", "linker_sequence": sequence_descriptors[1]},
-        {"type": "LinkerSequenceElement", "linker_sequence": sequence_descriptors[2]},
+        {"type": "LinkerSequenceElement", "linkerSequence": sequence_descriptors[0]},
+        {"type": "LinkerSequenceElement", "linkerSequence": sequence_descriptors[1]},
+        {"type": "LinkerSequenceElement", "linkerSequence": sequence_descriptors[2]},
     ]
 
 
@@ -282,9 +264,9 @@ def unknown_element():
 
 
 @pytest.fixture(scope="module")
-def regulatory_elements(gene_descriptors):
+def regulatory_elements(gene_examples):
     """Provide possible regulatory_element input data."""
-    return [{"regulatory_class": "promoter", "associated_gene": gene_descriptors[0]}]
+    return [{"regulatoryClass": "promoter", "associatedGene": gene_examples[0]}]
 
 
 def check_validation_error(exc_info, expected_msg: str, index: int = 0):
@@ -299,30 +281,29 @@ def check_validation_error(exc_info, expected_msg: str, index: int = 0):
     assert exc_info.value.errors()[index]["msg"] == expected_msg
 
 
-def test_functional_domain(functional_domains, gene_descriptors):
+def test_functional_domain(functional_domains, gene_examples):
     """Test FunctionalDomain object initializes correctly"""
     test_domain = FunctionalDomain(**functional_domains[0])
     assert test_domain.type == "FunctionalDomain"
     assert test_domain.status == "preserved"
     assert test_domain.label == "WW domain"
     assert test_domain.id == "interpro:IPR001202"
-    assert test_domain.gene.id == "hgnc:16262"
-    assert test_domain.gene.label == "YAP1"
+    assert test_domain.associatedGene.id == "hgnc:16262"
+    assert test_domain.associatedGene.label == "YAP1"
     test_loc = test_domain.sequenceLocation
     assert test_loc.id == "fusor.location_descriptor:NP_001123617.1"
     assert test_loc.type == "SequenceLocation"
-    assert test_loc.location.sequence_id == "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7"
-    assert test_loc.location.interval.type == "SequenceInterval"
-    assert test_loc.location.interval.start.value == 171
-    assert test_loc.location.interval.end.value == 204
+    assert test_loc.sequence_id == "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7"
+    assert test_loc.start.value == 171
+    assert test_loc.end.value == 204
 
     test_domain = FunctionalDomain(**functional_domains[1])
     assert test_domain.type == "FunctionalDomain"
     assert test_domain.status == "lost"
     assert test_domain.label == "Tyrosine-protein kinase, catalytic domain"
     assert test_domain.id == "interpro:IPR020635"
-    assert test_domain.gene.id == "hgnc:8031"
-    assert test_domain.gene.label == "NTRK1"
+    assert test_domain.associatedGene.id == "hgnc:8031"
+    assert test_domain.associatedGene.label == "NTRK1"
     test_loc = test_domain.sequence_location
     assert test_loc.id == "fusor.location_descriptor:NP_002520.2"
     assert test_loc.type == "SequenceLocation"
@@ -337,7 +318,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
             status="gained",
             name="tyrosine kinase catalytic domain",
             id="interpro:IPR020635",
-            associated_gene=gene_descriptors[0],
+            associated_gene=gene_examples[0],
         )
     msg = "Input should be 'lost' or 'preserved'"
     check_validation_error(exc_info, msg)
@@ -348,7 +329,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
             status="lost",
             label="tyrosine kinase catalytic domain",
             id="interpro_IPR020635",
-            associated_gene=gene_descriptors[0],
+            associated_gene=gene_examples[0],
         )
     msg = "String should match pattern '^\\w[^:]*:.+$'"
     check_validation_error(exc_info, msg)
@@ -540,7 +521,7 @@ def test_linker_element(linkers):
     check_validation_error(exc_info, msg)
 
 
-def test_genomic_region_element(templated_sequence_elements, location_descriptors):
+def test_genomic_region_element(templated_sequence_elements, sequence_locations):
     """Test that TemplatedSequenceElement initializes correctly."""
 
     def assert_genomic_region_test_element(test):
@@ -581,15 +562,15 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert TemplatedSequenceElement(
-            type="GeneElement", region=location_descriptors[0], strand="+"
+            type="GeneElement", region=sequence_locations[0], strand="+"
         )
     msg = "Input should be <FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT: 'TemplatedSequenceElement'>"
     check_validation_error(exc_info, msg)
 
 
-def test_gene_element(gene_descriptors):
+def test_gene_element(gene_examples):
     """Test that Gene Element initializes correctly."""
-    test_element = GeneElement(gene_descriptor=gene_descriptors[0])
+    test_element = GeneElement(gene_descriptor=gene_examples[0])
     assert test_element.type == "GeneElement"
     assert test_element.gene_descriptor.id == "gene:G1"
     assert test_element.gene_descriptor.label == "G1"
@@ -609,9 +590,7 @@ def test_gene_element(gene_descriptors):
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert GeneElement(
-            type="UnknownGeneElement", gene_descriptor=gene_descriptors[0]
-        )
+        assert GeneElement(type="UnknownGeneElement", gene_descriptor=gene_examples[0])
     msg = "Input should be <FUSORTypes.GENE_ELEMENT: 'GeneElement'>"
     check_validation_error(exc_info, msg)
 
@@ -650,7 +629,7 @@ def test_event():
         CausativeEvent(event_type="combination")
 
 
-def test_regulatory_element(regulatory_elements, gene_descriptors):
+def test_regulatory_element(regulatory_elements, gene_examples):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
     assert test_reg_elmt.regulatory_class.value == "promoter"
@@ -661,7 +640,7 @@ def test_regulatory_element(regulatory_elements, gene_descriptors):
     # check type constraint
     with pytest.raises(ValidationError) as exc_info:
         RegulatoryElement(
-            regulatory_class="notpromoter", associated_gene=gene_descriptors[0]
+            regulatory_class="notpromoter", associated_gene=gene_examples[0]
         )
     assert exc_info.value.errors()[0]["msg"].startswith("Input should be")
 
@@ -785,7 +764,7 @@ def test_fusion_element_count(
     unknown_element,
     gene_elements,
     transcript_segments,
-    gene_descriptors,
+    gene_examples,
 ):
     """Test fusion element count requirements."""
     # elements are mandatory
@@ -846,8 +825,8 @@ def test_fusion_element_count(
         assert AssayedFusion(
             type="AssayedFusion",
             structural_elements=[
-                {"type": "GeneElement", "gene_descriptor": gene_descriptors[6]},
-                {"type": "GeneElement", "gene_descriptor": gene_descriptors[6]},
+                {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
+                {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
             ],
             causative_event={
                 "type": "CausativeEvent",
@@ -865,13 +844,13 @@ def test_fusion_element_count(
         assert AssayedFusion(
             type="AssayedFusion",
             structural_elements=[
-                {"type": "GeneElement", "gene_descriptor": gene_descriptors[6]},
+                {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
             ],
             regulatory_element={
                 "type": "RegulatoryElement",
                 "regulatory_class": "enhancer",
                 "feature_id": "EH111111111",
-                "associated_gene": gene_descriptors[6],
+                "associated_gene": gene_examples[6],
             },
             causative_event={
                 "type": "CausativeEvent",
