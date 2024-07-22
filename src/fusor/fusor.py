@@ -312,22 +312,17 @@ class FUSOR:
         )
 
     def gene_element(
-        self, gene: str, use_minimal_gene_descr: bool = True
+        self, gene: str, use_minimal_gene: bool = True
     ) -> tuple[Gene | None, str | None]:
         """Create gene element
 
         :param str gene: Gene
-        :param bool use_minimal_gene_descr: `True` if minimal gene object
+        :param bool use_minimal_gene: `True` if minimal gene object
             (`id`, `gene_id`, `label`) will be used. `False` if
             gene-normalizer's gene object will be used
         :return: GeneElement, warning
         """
-        return self._normalized_gene(
-            gene, use_minimal_gene_descr=use_minimal_gene_descr
-        )
-        if not normalized_gene:
-            return None, warning
-        return normalized_gene, None
+        return self._normalized_gene(gene, use_minimal_gene=use_minimal_gene)
 
     def templated_sequence_element(
         self,
@@ -692,20 +687,21 @@ class FUSOR:
         return fusion
 
     def _normalized_gene(
-        self, query: str, use_minimal_gene_descr: bool
+        self, query: str, use_minimal_gene: bool
     ) -> tuple[Gene | None, str | None]:
         """Return gene from normalized response.
 
         :param query: Gene query
+        :param use_minimal_gene: bool Use minimal gene representation (id and label only)
         :return: Tuple with gene and None value for warnings if
             successful, and None value with warning string if unsuccessful
         """
         gene_norm_resp = self.gene_normalizer.normalize(query)
         if gene_norm_resp.match_type:
             gene = gene_norm_resp.gene
-            if use_minimal_gene_descr:
+            if not use_minimal_gene:
                 return gene, None
-            return Gene(id=gene_norm_resp.normalized_id, label=gene.label)
+            return Gene(id=gene_norm_resp.normalized_id, label=gene.label), None
         return None, f"gene-normalizer unable to normalize {query}"
 
     def generate_nomenclature(self, fusion: Fusion) -> str:
