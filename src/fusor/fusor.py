@@ -557,18 +557,19 @@ class FUSOR:
             "ga4gh",
         )
 
-        return SequenceLocation(
-            # TODO: I think we want id here to be the ga4gh_identified SequenceLocation object here instead, but in order to get that,
-            # I need to make this object first? if I make the object to get that id and then make a new object with that id, that seems a bit too roundabout...
-            id=sequence_id,
-            # TODO: and I think this is supposed to be sequence_id
-            label=label,
+        sequence_location_label = label if label else sequence_id
+        sequence_location = SequenceLocation(
+            label=sequence_location_label,
             start=start,
             end=end,
             sequence_reference=SequenceReference(
                 id=transcript, refgetAccession=refget_accession.replace("ga4gh:", "")
             ),
         )
+        sequence_location_id = ga4gh_identify(sequence_location)
+        sequence_location.id = sequence_location_id
+
+        return sequence_location
 
     def add_additional_fields(
         self,
