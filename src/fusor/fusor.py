@@ -272,6 +272,7 @@ class FUSOR:
             return None, data.warnings
 
         genomic_data = data.genomic_data
+        # should we be doing this before the call to cool_seq_tool? if the namespace prefix is present, that call will fail
         genomic_data.transcript = coerce_namespace(genomic_data.transcript)
 
         normalized_gene_response = self._normalized_gene(
@@ -283,11 +284,10 @@ class FUSOR:
         return (
             TranscriptSegmentElement(
                 transcript=genomic_data.transcript,
-                exonStart=genomic_data.exonStart,
-                exonStartOffset=genomic_data.exonStartOffset,
-                exonEnd=genomic_data.exonEnd,
-                exonEndOffset=genomic_data.exonEndOffset,
-                # TODO: make sure this is correct/works (might be response.gene?)
+                exonStart=genomic_data.exon_start,
+                exonStartOffset=genomic_data.exon_start_offset,
+                exonEnd=genomic_data.exon_end,
+                exonEndOffset=genomic_data.exon_end_offset,
                 gene=normalized_gene_response[0],
                 elementGenomicStart=self._sequence_location(
                     genomic_data.start,
