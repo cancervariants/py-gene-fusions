@@ -3,6 +3,8 @@
 import copy
 
 import pytest
+from ga4gh.core.domain_models import Gene
+from ga4gh.vrs.models import SequenceLocation
 
 from fusor.exceptions import FUSORParametersException
 from fusor.models import (
@@ -23,24 +25,23 @@ from fusor.models import (
 @pytest.fixture(scope="module")
 def braf_gene_descr_min():
     """Create minimal gene descriptor for BRAF"""
-    return GeneDescriptor(id="normalize.gene:BRAF", label="BRAF", gene_id="hgnc:1097")
+    return Gene(label="BRAF", id="hgnc:1097")
 
 
 @pytest.fixture(scope="module")
 def braf_gene_descr(braf_gene_descriptor):
     """Create gene descriptor object for braf"""
-    return GeneDescriptor(**braf_gene_descriptor)
+    return Gene(**braf_gene_descriptor)
 
 
 @pytest.fixture(scope="module")
 def linker_element():
     """Create linker element test fixture."""
     params = {
-        "linker_sequence": {
+        "linkerSequence": {
             "id": "fusor.sequence:ACT",
             "sequence": "ACT",
-            "residue_type": "SO:0000348",
-            "type": "SequenceDescriptor",
+            "type": "LiteralSequenceExpression",
         },
         "type": "LinkerSequenceElement",
     }
@@ -52,20 +53,12 @@ def location_descriptor_braf_domain():
     """Create location descriptor fixture for BRAF catalytic domain"""
     params = {
         "id": "fusor.location_descriptor:NP_004324.2",
-        "type": "LocationDescriptor",
-        "location": {
-            "sequence_id": "refseq:NP_004324.2",
-            "type": "SequenceLocation",
-            "interval": {
-                "start": {"type": "Number", "value": 458},
-                "end": {
-                    "type": "Number",
-                    "value": 712,
-                },
-            },
-        },
+        "type": "SequenceLocation",
+        "sequenceReference": {"id": "", "refgetAccession": ""},
+        "start": 458,
+        "end": 712,
     }
-    return LocationDescriptor(**params)
+    return SequenceLocation(**params)
 
 
 @pytest.fixture(scope="module")
@@ -73,20 +66,12 @@ def location_descriptor_braf_domain_seq_id():
     """Create location descriptor fixture for BRAF catalytic domain"""
     params = {
         "id": "fusor.location_descriptor:NP_004324.2",
-        "type": "LocationDescriptor",
-        "location": {
-            "sequence_id": "ga4gh:SQ.cQvw4UsHHRRlogxbWCB8W-mKD4AraM9y",
-            "type": "SequenceLocation",
-            "interval": {
-                "start": {"type": "Number", "value": 458},
-                "end": {
-                    "type": "Number",
-                    "value": 712,
-                },
-            },
-        },
+        "type": "SequenceLocation",
+        "sequenceReference": {"id": "", "refgetAccession": ""},
+        "start": 458,
+        "end": 712,
     }
-    return LocationDescriptor(**params)
+    return SequenceLocation(**params)
 
 
 @pytest.fixture(scope="module")
@@ -96,8 +81,8 @@ def functional_domain_min(braf_gene_descr_min, location_descriptor_braf_domain):
         "status": "preserved",
         "label": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "id": "interpro:IPR001245",
-        "associated_gene": braf_gene_descr_min,
-        "sequence_location": location_descriptor_braf_domain,
+        "associatedGene": braf_gene_descr_min,
+        "sequenceLocation": location_descriptor_braf_domain,
     }
     return FunctionalDomain(**params)
 
@@ -109,8 +94,8 @@ def functional_domain(braf_gene_descr, location_descriptor_braf_domain):
         "status": "preserved",
         "label": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "id": "interpro:IPR001245",
-        "associated_gene": braf_gene_descr,
-        "sequence_location": location_descriptor_braf_domain,
+        "associatedGene": braf_gene_descr,
+        "sequenceLocation": location_descriptor_braf_domain,
     }
     return FunctionalDomain(**params)
 
@@ -124,8 +109,8 @@ def functional_domain_seq_id(
         "status": "preserved",
         "label": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "id": "interpro:IPR001245",
-        "associated_gene": braf_gene_descr_min,
-        "sequence_location": location_descriptor_braf_domain_seq_id,
+        "associatedGene": braf_gene_descr_min,
+        "sequenceLocation": location_descriptor_braf_domain_seq_id,
     }
     return FunctionalDomain(**params)
 
@@ -135,8 +120,8 @@ def regulatory_element(braf_gene_descr):
     """Create regulatory element test fixture."""
     params = {
         "type": "RegulatoryElement",
-        "regulatory_class": "promoter",
-        "associated_gene": braf_gene_descr,
+        "regulatoryClass": "promoter",
+        "associatedGene": braf_gene_descr,
     }
     return RegulatoryElement(**params)
 
@@ -144,7 +129,7 @@ def regulatory_element(braf_gene_descr):
 @pytest.fixture(scope="module")
 def regulatory_element_min(braf_gene_descr_min):
     """Create regulatory element test fixture with minimal gene descriptor."""
-    params = {"regulatory_class": "promoter", "associated_gene": braf_gene_descr_min}
+    params = {"regulatoryClass": "promoter", "associatedGene": braf_gene_descr_min}
     return RegulatoryElement(**params)
 
 
@@ -153,18 +138,12 @@ def location_descriptor_tpm3():
     """Create location descriptor test fixture."""
     params = {
         "id": "fusor.location_descriptor:NM_152263.3",
-        "type": "LocationDescriptor",
-        "location": {
-            "sequence_id": "refseq:NM_152263.3",
-            "type": "SequenceLocation",
-            "interval": {
-                "start": {"type": "Number", "value": 154170398},
-                "end": {"type": "Number", "value": 154170399},
-                "type": "SequenceInterval",
-            },
-        },
+        "type": "SequenceLocation",
+        "sequenceReference": {"id": "", "refgetAccession": ""},
+        "start": 154170398,
+        "end": 154170399,
     }
-    return LocationDescriptor(**params)
+    return SequenceLocation(**params)
 
 
 @pytest.fixture(scope="module")
@@ -174,16 +153,10 @@ def templated_sequence_element():
         "type": "TemplatedSequenceElement",
         "region": {
             "id": "fusor.location_descriptor:NC_000001.11",
-            "type": "LocationDescriptor",
-            "location": {
-                "type": "SequenceLocation",
-                "sequence_id": "refseq:NC_000001.11",
-                "interval": {
-                    "type": "SequenceInterval",
-                    "start": {"type": "Number", "value": 99},
-                    "end": {"type": "Number", "value": 150},
-                },
-            },
+            "type": "SequenceLocation",
+            "sequenceReference": {"id": "", "refgetAccession": ""},
+            "start": 99,
+            "end": 150,
         },
         "strand": "+",
     }
@@ -478,12 +451,12 @@ def test_add_location_id(fusor_instance, fusion_example, exhaustive_example):
 def test__normalized_gene_descriptor(fusor_instance):
     """Test that _normalized_gene_descriptor works correctly."""
     # Actual response is tested in test_add_gene_descriptor
-    resp = fusor_instance._normalized_gene_descriptor("BRAF")
+    resp = fusor_instance._normalized_gene("BRAF")
     assert resp[0]
     assert resp[1] is None
-    assert isinstance(resp[0], GeneDescriptor)
+    assert isinstance(resp[0], Gene)
 
-    resp = fusor_instance._normalized_gene_descriptor("B R A F")
+    resp = fusor_instance._normalized_gene("B R A F")
     assert resp[0] is None
     assert resp[1] == "gene-normalizer unable to normalize B R A F"
 
