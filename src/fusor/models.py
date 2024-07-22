@@ -207,15 +207,13 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
-        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "LinkerSequenceElement",
                 "linkerSequence": {
                     "id": "sequence:ACGT",
-                    "type": "SequenceDescriptor",
+                    "type": "LiteralSequenceExpression",
                     "sequence": "ACGT",
-                    "residue_type": "SO:0000348",
                 },
             }
         },

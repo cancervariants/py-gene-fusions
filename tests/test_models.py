@@ -55,7 +55,7 @@ def sequence_locations():
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                "type": "SequenceLocation",
+                "type": "SequenceReference",
             },
             "start": 15455,
             "end": 15456,
@@ -66,10 +66,44 @@ def sequence_locations():
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                "type": "SequenceLocation",
+                "type": "SequenceReference",
             },
             "start": 15565,
             "end": 15566,
+        },
+        # TODO: the following 3 examples were made when intervals supported strings and need updated data chr12:p12.1-p12.2. I put in placeholders for now
+        {
+            "id": "ga4gh:SL.PPQ-aYd6dsSj7ulUEeqK8xZJP-yPrfdP",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000012.12",
+                "refgetAccession": "SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+                "type": "SequenceReference",
+            },
+            "start": 1,
+            "end": 2,
+        },
+        {
+            "id": "ga4gh:SL.OBeSv2B0pURlocL7viFiRwajew_GYGqN",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000012.12",
+                "refgetAccession": "SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+                "type": "SequenceReference",
+            },
+            "start": 2,
+            "end": 3,
+        },
+        {
+            "id": "ga4gh:SL.OBeSv2B0pURlocL7viFiRwajew_GYGqN",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000012.12",
+                "refgetAccession": "SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+                "type": "SequenceReference",
+            },
+            "start": 1,
+            "end": 3,
         },
         {
             "id": "ga4gh:SL.-xC3omZDIKZEuotbbHWQMTC8sS3nOxTb",
@@ -77,7 +111,7 @@ def sequence_locations():
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                "type": "SequenceLocation",
+                "type": "SequenceReference",
             },
             "start": 15455,
             "end": 15566,
@@ -88,7 +122,7 @@ def sequence_locations():
             "sequenceReference": {
                 "id": "refseq:NP_001123617.1",
                 "refgetAccession": "SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
-                "type": "SequenceLocation",
+                "type": "SequenceReference",
             },
             "start": 171,
             "end": 204,
@@ -99,7 +133,7 @@ def sequence_locations():
             "sequenceReference": {
                 "id": "refseq:NP_002520.2",
                 "refgetAccession": "SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
-                "type": "SequenceLocation",
+                "type": "SequenceReference",
             },
             "start": 510,
             "end": 781,
@@ -203,37 +237,46 @@ def templated_sequence_elements(sequence_locations):
 
 
 @pytest.fixture(scope="module")
-def sequence_descriptors():
-    """Provide possible SequenceDescriptor input data"""
+def literal_sequence_expressions():
+    """Provide possible LiteralSequenceExpression input data"""
     return [
         {
             "id": "sequence:ACGT",
-            "type": "SequenceDescriptor",
+            "type": "LiteralSequenceExpression",
             "sequence": "ACGT",
             "residueType": "SO:0000348",
         },
         {
             "id": "sequence:T",
-            "type": "SequenceDescriptor",
+            "type": "LiteralSequenceExpression",
             "sequence": "T",
             "residueType": "SO:0000348",
         },
         {
             "id": "sequence:actgu",
-            "type": "SequenceDescriptor",
-            "sequence": "actgu",
+            "type": "LiteralSequenceExpression",
+            "sequence": "ACTGU",
             "residueType": "SO:0000348",
         },
     ]
 
 
 @pytest.fixture(scope="module")
-def linkers(sequence_descriptors):
+def linkers(literal_sequence_expressions):
     """Provide possible linker element input data."""
     return [
-        {"type": "LinkerSequenceElement", "linkerSequence": sequence_descriptors[0]},
-        {"type": "LinkerSequenceElement", "linkerSequence": sequence_descriptors[1]},
-        {"type": "LinkerSequenceElement", "linkerSequence": sequence_descriptors[2]},
+        {
+            "type": "LinkerSequenceElement",
+            "linkerSequence": literal_sequence_expressions[0],
+        },
+        {
+            "type": "LinkerSequenceElement",
+            "linkerSequence": literal_sequence_expressions[1],
+        },
+        {
+            "type": "LinkerSequenceElement",
+            "linkerSequence": literal_sequence_expressions[2],
+        },
     ]
 
 
@@ -271,11 +314,14 @@ def test_functional_domain(functional_domains, gene_examples):
     assert test_domain.associatedGene.id == "hgnc:16262"
     assert test_domain.associatedGene.label == "YAP1"
     test_loc = test_domain.sequenceLocation
-    assert test_loc.id == "fusor.location_descriptor:NP_001123617.1"
+    assert "ga4gh:SL" in test_loc.id
     assert test_loc.type == "SequenceLocation"
-    assert test_loc.sequence_id == "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7"
-    assert test_loc.start.value == 171
-    assert test_loc.end.value == 204
+    assert test_loc.start == 171
+    assert test_loc.end == 204
+    test_ref = test_loc.sequenceReference
+    assert test_ref.id == "refseq:NP_001123617.1"
+    assert "SQ." in test_ref.refgetAccession
+    assert test_ref.type == "SequenceReference"
 
     test_domain = FunctionalDomain(**functional_domains[1])
     assert test_domain.type == "FunctionalDomain"
@@ -284,13 +330,15 @@ def test_functional_domain(functional_domains, gene_examples):
     assert test_domain.id == "interpro:IPR020635"
     assert test_domain.associatedGene.id == "hgnc:8031"
     assert test_domain.associatedGene.label == "NTRK1"
-    test_loc = test_domain.sequence_location
-    assert test_loc.id == "fusor.location_descriptor:NP_002520.2"
+    test_loc = test_domain.sequenceLocation
+    assert "ga4gh:SL" in test_loc.id
     assert test_loc.type == "SequenceLocation"
-    assert test_loc.location.sequence_id == "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6"
-    assert test_loc.location.interval.type == "SequenceInterval"
-    assert test_loc.location.interval.start.value == 510
-    assert test_loc.location.interval.end.value == 781
+    assert test_loc.start == 510
+    assert test_loc.end == 781
+    test_ref = test_loc.sequenceReference
+    assert test_ref.id == "refseq:NP_002520.2"
+    assert "SQ." in test_ref.refgetAccession
+    assert test_ref.type == "SequenceReference"
 
     # test status string
     with pytest.raises(ValidationError) as exc_info:
@@ -298,7 +346,7 @@ def test_functional_domain(functional_domains, gene_examples):
             status="gained",
             name="tyrosine kinase catalytic domain",
             id="interpro:IPR020635",
-            associated_gene=gene_examples[0],
+            associatedGene=gene_examples[0],
         )
     msg = "Input should be 'lost' or 'preserved'"
     check_validation_error(exc_info, msg)
@@ -309,7 +357,7 @@ def test_functional_domain(functional_domains, gene_examples):
             status="lost",
             label="tyrosine kinase catalytic domain",
             id="interpro_IPR020635",
-            associated_gene=gene_examples[0],
+            associatedGene=gene_examples[0],
         )
     msg = "String should match pattern '^\\w[^:]*:.+$'"
     check_validation_error(exc_info, msg)
@@ -319,54 +367,45 @@ def test_transcript_segment_element(transcript_segments):
     """Test TranscriptSegmentElement object initializes correctly"""
     test_element = TranscriptSegmentElement(**transcript_segments[0])
     assert test_element.transcript == "refseq:NM_152263.3"
-    assert test_element.exon_start == 1
-    assert test_element.exon_start_offset == -9
-    assert test_element.exon_end == 8
-    assert test_element.exon_end_offset == 7
-    assert test_element.gene_descriptor.id == "gene:G1"
-    assert test_element.gene_descriptor.label == "G1"
-    assert test_element.gene_descriptor.gene.gene_id == "hgnc:9339"
-    test_region_start = test_element.element_genomic_start
-    assert test_region_start.location.species_id == "taxonomy:9606"
-    assert test_region_start.location.type == "ChromosomeLocation"
-    assert test_region_start.location.chr == "12"
-    assert test_region_start.location.interval.start == "p12.1"
-    assert test_region_start.location.interval.end == "p12.1"
-    test_region_end = test_element.element_genomic_end
-    assert test_region_end.location.species_id == "taxonomy:9606"
-    assert test_region_end.location.type == "ChromosomeLocation"
-    assert test_region_end.location.chr == "12"
-    assert test_region_end.location.interval.start == "p12.2"
-    assert test_region_end.location.interval.end == "p12.2"
+    assert test_element.exonStart == 1
+    assert test_element.exonStartOffset == -9
+    assert test_element.exonEnd == 8
+    assert test_element.exonEndOffset == 7
+    assert test_element.gene.id == "hgnc:9339"
+    assert test_element.gene.label == "G1"
+    test_region_start = test_element.elementGenomicStart
+    assert test_region_start.type == "SequenceLocation"
+    test_region_end = test_element.elementGenomicEnd
+    assert test_region_end.type == "SequenceLocation"
 
     test_element = TranscriptSegmentElement(**transcript_segments[3])
     assert test_element.transcript == "refseq:NM_938439.4"
-    assert test_element.exon_start == 7
-    assert test_element.exon_start_offset == 0
-    assert test_element.exon_end is None
-    assert test_element.exon_end_offset is None
+    assert test_element.exonStart == 7
+    assert test_element.exonStartOffset == 0
+    assert test_element.exonEnd is None
+    assert test_element.exonEndOffset is None
 
     # check CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
         TranscriptSegmentElement(
             transcript="NM_152263.3",
-            exon_start="1",
-            exon_start_offset="-9",
-            exon_end="8",
-            exon_end_offset="7",
-            gene_descriptor={
-                "id": "test:1",
-                "gene": {"id": "hgnc:1"},
+            exonStart="1",
+            exonStartOffset="-9",
+            exonEnd="8",
+            exonEndOffset="7",
+            gene={
+                "id": "hgnc:1",
                 "label": "G1",
             },
-            element_genomic_start={
+            # TODO: get updated values for this from Jeremy
+            elementGenomicStart={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.1"},
                 }
             },
-            element_genomic_end={
+            elementGenomicEnd={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
@@ -382,23 +421,23 @@ def test_transcript_segment_element(transcript_segments):
         assert TranscriptSegmentElement(
             type="TemplatedSequenceElement",
             transcript="NM_152263.3",
-            exon_start="1",
-            exon_start_offset="-9",
-            exon_end="8",
-            exon_end_offset="7",
+            exonStart="1",
+            exonStartOffset="-9",
+            exonEnd="8",
+            exonEndOffset="7",
             gene_descriptor={
                 "id": "test:1",
                 "gene": {"id": "hgnc:1"},
                 "label": "G1",
             },
-            element_genomic_start={
+            elementGenomicStart={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.2"},
                 }
             },
-            element_genomic_end={
+            elementGenomicEnd={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
@@ -414,37 +453,37 @@ def test_transcript_segment_element(transcript_segments):
         assert TranscriptSegmentElement(
             element_type="templated_sequence",
             transcript="NM_152263.3",
-            exon_start="1",
-            exon_start_offset="-9",
+            exonStart="1",
+            exonStartOffset="-9",
             gene_descriptor={
                 "id": "test:1",
                 "gene": {"id": "hgnc:1"},
                 "label": "G1",
             },
         )
-    msg = "Value error, Must give `element_genomic_start` if `exon_start` is given"
+    msg = "Value error, Must give `elementGenomicStart` if `exonStart` is given"
     check_validation_error(exc_info, msg)
 
-    # Neither exon_start or exon_end given
+    # Neither exonStart or exonEnd given
     with pytest.raises(ValidationError) as exc_info:
         assert TranscriptSegmentElement(
             type="TranscriptSegmentElement",
             transcript="NM_152263.3",
-            exon_start_offset="-9",
-            exon_end_offset="7",
+            exonStartOffset="-9",
+            exonEndOffset="7",
             gene_descriptor={
                 "id": "test:1",
                 "gene": {"id": "hgnc:1"},
                 "label": "G1",
             },
-            element_genomic_start={
+            elementGenomicStart={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.2"},
                 }
             },
-            element_genomic_end={
+            elementGenomicEnd={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
@@ -452,7 +491,7 @@ def test_transcript_segment_element(transcript_segments):
                 }
             },
         )
-    msg = "Value error, Must give values for either `exon_start`, `exon_end`, or both"
+    msg = "Value error, Must give values for either `exonStart`, `exonEnd`, or both"
     check_validation_error(exc_info, msg)
 
 
@@ -461,10 +500,9 @@ def test_linker_element(linkers):
 
     def check_linker(actual, expected_id, expected_sequence):
         assert actual.type == "LinkerSequenceElement"
-        assert actual.linker_sequence.id == expected_id
-        assert actual.linker_sequence.sequence == expected_sequence
-        assert actual.linker_sequence.type == "SequenceDescriptor"
-        assert actual.linker_sequence.residue_type == "SO:0000348"
+        assert actual.linkerSequence.id == expected_id
+        assert actual.linkerSequence.sequence.root == expected_sequence
+        assert actual.linkerSequence.type == "LiteralSequenceExpression"
 
     for args in (
         (LinkerElement(**linkers[0]), "sequence:ACGT", "ACGT"),
@@ -475,7 +513,13 @@ def test_linker_element(linkers):
 
     # check base validation
     with pytest.raises(ValidationError) as exc_info:
-        LinkerElement(linker_sequence={"id": "sequence:ACT1", "sequence": "ACT1"})
+        LinkerElement(linkerSequence={"id": "sequence:ACT1", "sequence": "ACT1"})
+    msg = "String should match pattern '^[A-Z*\\-]*$'"
+    check_validation_error(exc_info, msg)
+
+    # check valid literal sequence expression
+    with pytest.raises(ValidationError) as exc_info:
+        LinkerElement(linkerSequence={"id": "sequence:actgu", "sequence": "actgu"})
     msg = "String should match pattern '^[A-Z*\\-]*$'"
     check_validation_error(exc_info, msg)
 
@@ -483,7 +527,7 @@ def test_linker_element(linkers):
     with pytest.raises(ValidationError) as exc_info:
         assert LinkerElement(
             type="TemplatedSequenceElement",
-            linker_sequence={"id": "sequence:ATG", "sequence": "ATG"},
+            linkerSequence={"id": "sequence:ATG", "sequence": "ATG"},
         )
     msg = (
         "Input should be <FUSORTypes.LINKER_SEQUENCE_ELEMENT: 'LinkerSequenceElement'>"
@@ -494,7 +538,7 @@ def test_linker_element(linkers):
     with pytest.raises(ValidationError) as exc_info:
         assert LinkerElement(
             type="LinkerSequenceElement",
-            linker_sequence={"id": "sequence:G", "sequence": "G"},
+            linkerSequence={"id": "sequence:G", "sequence": "G"},
             bonus_value="bonus",
         )
     msg = "Extra inputs are not permitted"
@@ -716,7 +760,7 @@ def test_fusion(
             structural_elements=[
                 {
                     "type": "LinkerSequenceElement",
-                    "linker_sequence": {
+                    "linkerSequence": {
                         "id": "a:b",
                         "type": "SequenceDescriptor",
                         "sequence": "AC",
@@ -725,7 +769,7 @@ def test_fusion(
                 },
                 {
                     "type": "LinkerSequenceElement",
-                    "linker_sequence": {
+                    "linkerSequence": {
                         "id": "a:b",
                         "type": "SequenceDescriptor",
                         "sequence": "AC",
