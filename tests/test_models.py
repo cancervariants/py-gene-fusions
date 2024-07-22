@@ -1,7 +1,5 @@
 """Module for testing the fusion model."""
 
-import copy
-
 import pytest
 from pydantic import ValidationError
 
@@ -554,25 +552,13 @@ def test_genomic_region_element(templated_sequence_elements, sequence_locations)
         """
         assert test.type == "TemplatedSequenceElement"
         assert test.strand.value == "+"
-        assert test.region.id == "chr12:p12.1-p12.2"
-        assert test.region.type == "LocationDescriptor"
-        assert test.region.location.species_id == "taxonomy:9606"
-        assert test.region.location.chr == "12"
-        assert test.region.location.interval.start == "p12.1"
-        assert test.region.location.interval.end == "p12.2"
-        assert test.region.label == "chr12:p12.1-p12.2"
+        assert "ga4gh:SL" in test.region.id
+        assert test.region.type == "SequenceLocation"
+        test_ref = test.region.sequenceReference
+        assert "refseq:" in test_ref.id
+        assert "SQ." in test_ref.refgetAccession
 
     test_element = TemplatedSequenceElement(**templated_sequence_elements[0])
-    assert_genomic_region_test_element(test_element)
-
-    genomic_region_elements_cpy = copy.deepcopy(templated_sequence_elements[0])
-    genomic_region_elements_cpy["region"]["location"]["_id"] = "location:1"
-    test_element = TemplatedSequenceElement(**genomic_region_elements_cpy)
-    assert_genomic_region_test_element(test_element)
-
-    genomic_region_elements_cpy = copy.deepcopy(templated_sequence_elements[0])
-    genomic_region_elements_cpy["region"]["location_id"] = "location:1"
-    test_element = TemplatedSequenceElement(**genomic_region_elements_cpy)
     assert_genomic_region_test_element(test_element)
 
     with pytest.raises(ValidationError) as exc_info:
@@ -594,23 +580,10 @@ def test_genomic_region_element(templated_sequence_elements, sequence_locations)
 
 def test_gene_element(gene_examples):
     """Test that Gene Element initializes correctly."""
-    test_element = GeneElement(gene_descriptor=gene_examples[0])
+    test_element = GeneElement(gene=gene_examples[0])
     assert test_element.type == "GeneElement"
-    assert test_element.gene_descriptor.id == "gene:G1"
-    assert test_element.gene_descriptor.label == "G1"
-    assert test_element.gene_descriptor.gene.gene_id == "hgnc:9339"
-
-    # test CURIE requirement
-    with pytest.raises(ValidationError) as exc_info:
-        GeneElement(
-            gene_descriptor={
-                "id": "G1",
-                "gene": {"gene_id": "hgnc:9339"},
-                "label": "G1",
-            }
-        )
-    msg = "String should match pattern '^\\w[^:]*:.+$'"
-    check_validation_error(exc_info, msg)
+    assert test_element.gene.id == "hgnc:9339"
+    assert test_element.gene.label == "G1"
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
@@ -646,34 +619,33 @@ def test_mult_gene_element():
 def test_event():
     """Test Event object initializes correctly"""
     rearrangement = EventType.REARRANGEMENT
-    test_event = CausativeEvent(event_type=rearrangement, event_description=None)
-    assert test_event.event_type == rearrangement
+    test_event = CausativeEvent(eventType=rearrangement, eventDescription=None)
+    assert test_event.eventType == rearrangement
 
     with pytest.raises(ValueError):  # noqa: PT011
-        CausativeEvent(event_type="combination")
+        CausativeEvent(eventType="combination")
 
 
 def test_regulatory_element(regulatory_elements, gene_examples):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
-    assert test_reg_elmt.regulatory_class.value == "promoter"
-    assert test_reg_elmt.associated_gene.id == "gene:G1"
-    assert test_reg_elmt.associated_gene.gene.gene_id == "hgnc:9339"
-    assert test_reg_elmt.associated_gene.label == "G1"
+    assert test_reg_elmt.regulatoryClass.value == "promoter"
+    assert test_reg_elmt.associatedGene.id == "hgnc:9339"
+    assert test_reg_elmt.associatedGene.label == "G1"
 
     # check type constraint
     with pytest.raises(ValidationError) as exc_info:
         RegulatoryElement(
-            regulatory_class="notpromoter", associated_gene=gene_examples[0]
+            regulatoryClass="notpromoter", associatedGene=gene_examples[0]
         )
     assert exc_info.value.errors()[0]["msg"].startswith("Input should be")
 
     # require minimum input
     with pytest.raises(ValidationError) as exc_info:
-        RegulatoryElement(regulatory_class="enhancer")
+        RegulatoryElement(regulatoryClass="enhancer")
     assert (
         exc_info.value.errors()[0]["msg"]
-        == "Value error, Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
+        == "Value error, Must set 1 of {`featureId`, `associatedGene`} and/or `featureLocation`"
     )
 
 
@@ -689,80 +661,77 @@ def test_fusion(
     """Test that Fusion object initializes correctly"""
     # test valid object
     fusion = CategoricalFusion(
-        reading_frame_preserved=True,
-        critical_functional_domains=[functional_domains[0]],
-        structural_elements=[transcript_segments[1], transcript_segments[2]],
-        regulatory_element=regulatory_elements[0],
+        readingFramePreserved=True,
+        criticalFunctionalDomains=[functional_domains[0]],
+        structure=[transcript_segments[1], transcript_segments[2]],
+        regulatoryElement=regulatory_elements[0],
     )
 
-    assert fusion.structural_elements[0].transcript == "refseq:NM_034348.3"
+    assert fusion.structure[0].transcript == "refseq:NM_034348.3"
 
     # check correct parsing of nested items
     fusion = CategoricalFusion(
-        structural_elements=[
+        structure=[
             {
                 "type": "GeneElement",
-                "gene_descriptor": {
-                    "type": "GeneDescriptor",
-                    "id": "gene:NTRK1",
+                "gene": {
+                    "type": "Gene",
+                    "id": "hgnc:8031",
                     "label": "NTRK1",
-                    "gene_id": "hgnc:8031",
                 },
             },
             {
                 "type": "GeneElement",
-                "gene_descriptor": {
-                    "type": "GeneDescriptor",
-                    "id": "gene:ABL1",
+                "gene": {
+                    "type": "Gene",
+                    "id": "hgnc:76",
                     "label": "ABL1",
-                    "gene_id": "hgnc:76",
                 },
             },
         ],
         regulatory_element=None,
     )
-    assert fusion.structural_elements[0].type == "GeneElement"
-    assert fusion.structural_elements[0].gene_descriptor.id == "gene:NTRK1"
-    assert fusion.structural_elements[1].type == "GeneElement"
-    assert fusion.structural_elements[1].gene_descriptor.type == "GeneDescriptor"
+    assert fusion.structure[0].type == "GeneElement"
+    assert fusion.structure[0].gene.label == "NTRK1"
+    assert fusion.structure[0].gene.id == "hgnc:8031"
+    assert fusion.structure[1].type == "GeneElement"
+    assert fusion.structure[1].gene.type == "Gene"
 
     # test that non-element properties are optional
-    assert CategoricalFusion(
-        structural_elements=[transcript_segments[1], transcript_segments[2]]
-    )
+    assert CategoricalFusion(structure=[transcript_segments[1], transcript_segments[2]])
 
     # test variety of element types
     assert AssayedFusion(
         type="AssayedFusion",
-        structural_elements=[
+        structure=[
             unknown_element,
             gene_elements[0],
             transcript_segments[2],
             templated_sequence_elements[1],
             linkers[0],
         ],
-        causative_event={
+        causativeEvent={
             "type": "CausativeEvent",
-            "event_type": "rearrangement",
-            "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+            "eventType": "rearrangement",
+            "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
         },
         assay={
             "type": "Assay",
-            "method_uri": "pmid:33576979",
-            "assay_id": "obi:OBI_0003094",
-            "assay_name": "fluorescence in-situ hybridization assay",
-            "fusion_detection": "inferred",
+            "methodUri": "pmid:33576979",
+            "assayId": "obi:OBI_0003094",
+            "assayName": "fluorescence in-situ hybridization assay",
+            "fusionDetection": "inferred",
         },
     )
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(
             type="CategoricalFusion",
-            structural_elements=[
+            structure=[
                 {
                     "type": "LinkerSequenceElement",
                     "linkerSequence": {
                         "id": "a:b",
-                        "type": "SequenceDescriptor",
+                        "type": "LiteralSequenceExpression",
                         "sequence": "AC",
                         "residue_type": "SO:0000348",
                     },
@@ -771,7 +740,7 @@ def test_fusion(
                     "type": "LinkerSequenceElement",
                     "linkerSequence": {
                         "id": "a:b",
-                        "type": "SequenceDescriptor",
+                        "type": "LiteralSequenceExpression",
                         "sequence": "AC",
                         "residue_type": "SO:0000348",
                     },
@@ -794,9 +763,9 @@ def test_fusion_element_count(
     # elements are mandatory
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
-            functional_domains=[functional_domains[1]],
-            causative_event="rearrangement",
-            regulatory_elements=[regulatory_elements[0]],
+            functionalDomains=[functional_domains[1]],
+            causativeEvent="rearrangement",
+            regulatoryElement=[regulatory_elements[0]],
         )
     element_ct_msg = (
         "Value error, Fusions must contain >= 2 structural elements, or >=1 structural element "
@@ -807,8 +776,8 @@ def test_fusion_element_count(
     # must have >= 2 elements + regulatory elements
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
-            structural_elements=[unknown_element],
-            causative_event={
+            structure=[unknown_element],
+            causativeEvent={
                 "type": "CausativeEvent",
                 "event_type": "rearrangement",
                 "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
@@ -826,21 +795,17 @@ def test_fusion_element_count(
     # unique gene requirements
     uq_gene_error_msg = "Value error, Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
     with pytest.raises(ValidationError) as exc_info:
-        assert CategoricalFusion(
-            structural_elements=[gene_elements[0], gene_elements[0]]
-        )
+        assert CategoricalFusion(structure=[gene_elements[0], gene_elements[0]])
+    check_validation_error(exc_info, uq_gene_error_msg)
+
+    with pytest.raises(ValidationError) as exc_info:
+        assert CategoricalFusion(structure=[gene_elements[1], transcript_segments[0]])
     check_validation_error(exc_info, uq_gene_error_msg)
 
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(
-            structural_elements=[gene_elements[1], transcript_segments[0]]
-        )
-    check_validation_error(exc_info, uq_gene_error_msg)
-
-    with pytest.raises(ValidationError) as exc_info:
-        assert CategoricalFusion(
-            regulatory_element=regulatory_elements[0],
-            structural_elements=[transcript_segments[0]],
+            regulatoryElement=regulatory_elements[0],
+            structure=[transcript_segments[0]],
         )
     check_validation_error(exc_info, uq_gene_error_msg)
 
@@ -848,7 +813,7 @@ def test_fusion_element_count(
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
             type="AssayedFusion",
-            structural_elements=[
+            structure=[
                 {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
                 {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
             ],
@@ -867,10 +832,10 @@ def test_fusion_element_count(
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
             type="AssayedFusion",
-            structural_elements=[
+            structure=[
                 {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
             ],
-            regulatory_element={
+            regulatoryElement={
                 "type": "RegulatoryElement",
                 "regulatory_class": "enhancer",
                 "feature_id": "EH111111111",
@@ -894,7 +859,7 @@ def test_fusion_abstraction_validator(transcript_segments, linkers):
     """Test that instantiation of abstract fusion fails."""
     # can't create base fusion
     with pytest.raises(ValidationError) as exc_info:
-        assert AbstractFusion(structural_elements=[transcript_segments[2], linkers[0]])
+        assert AbstractFusion(structure=[transcript_segments[2], linkers[0]])
     check_validation_error(
         exc_info, "Value error, Cannot instantiate Fusion abstract class"
     )

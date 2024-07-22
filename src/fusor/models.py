@@ -453,14 +453,19 @@ class AbstractFusion(BaseModel, ABC):
     def _fetch_gene_id(
         cls,
         obj: dict | BaseModel,
+        alt_field: str | None,
     ) -> str | None:
         """Get gene ID if element includes a gene annotation.
 
         :param obj: element to fetch gene from. Might not contain a gene (e.g. it's a
             TemplatedSequenceElement) so we have to use safe checks to fetch.
+        :param alt_field: the field to fetch the gene from, if it is not called "gene" (ex: associatedGene instead)
         :return: gene ID if gene is defined
         """
-        gene_info = cls._access_object_attr(obj, "gene")
+        if alt_field:
+            gene_info = cls._access_object_attr(obj, alt_field)
+        else:
+            gene_info = cls._access_object_attr(obj, "gene")
         if gene_info:
             gene_id = cls._access_object_attr(gene_info, "id")
             if gene_id:
@@ -499,7 +504,7 @@ class AbstractFusion(BaseModel, ABC):
         uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
         gene_ids = []
         if reg_element:
-            gene_id = cls._fetch_gene_id(obj=reg_element)
+            gene_id = cls._fetch_gene_id(obj=reg_element, alt_field="associatedGene")
             if gene_id:
                 gene_ids.append(gene_id)
 
