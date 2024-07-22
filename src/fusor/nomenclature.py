@@ -35,15 +35,15 @@ def reg_element_nomenclature(element: RegulatoryElement, sr: SeqRepo) -> str:
     if element.featureId:
         feature_string += f"_{element.featureId}"
     elif element.featureLocation:
-        start = element.featureLocation
+        feature_location = element.featureLocation
         # TODO: update this with new model
-        sequence_id = start.location.sequence_id
+        sequence_id = feature_location.sequenceReference.id
         refseq_id = str(translate_identifier(sr, sequence_id, "refseq")).split(":")[1]
         try:
             chrom = str(translate_identifier(sr, sequence_id, "GRCh38")).split(":")[1]
         except IDTranslationException as e:
             raise ValueError from e
-        feature_string += f"_{refseq_id}(chr {chrom}):g.{start.location.interval.start.value}_{start.location.interval.end.value}"
+        feature_string += f"_{refseq_id}(chr {chrom}):g.{feature_location.start}_{feature_location.end}"
     if element.associatedGene:
         if element.associatedGene.id:
             gene_id = element.associatedGene.id
@@ -95,13 +95,14 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
     :raises ValueError: if location isn't a SequenceLocation or if unable
         to retrieve region or location
     """
-    if element.region and element.region.location:
-        location = element.region.location
-        if isinstance(location, SequenceLocation):
-            sequence_id = str(location.sequence_id)
+    region = element.region
+    if region:
+        sequence_reference = element.region.sequenceReference
+        if isinstance(sequence_reference, SequenceLocation):
+            sequence_id = str(sequence_reference.id)
             refseq_id = str(translate_identifier(sr, sequence_id, "refseq"))
-            start = location.interval.start.value
-            end = location.interval.end.value
+            start = region.start
+            end = region.end
             try:
                 chrom = str(translate_identifier(sr, sequence_id, "GRCh38")).split(":")[
                     1
