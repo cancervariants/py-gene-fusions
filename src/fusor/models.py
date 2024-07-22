@@ -78,9 +78,9 @@ class FunctionalDomain(BaseModel):
                     "type": "Gene",
                 },
                 "sequenceLocation": {
-                    "id": "ga4gh:SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                    "id": "ga4gh:SL.ywhUSfEUrwG0E29Q3c47bbuc6gkqTGlO",
                     "start": 510,
-                    "end": "781",
+                    "end": 781,
                     "type": "SequenceLocation",
                     "sequenceReference": {
                         "id": "NC_000022.11",
@@ -156,7 +156,6 @@ class TranscriptSegmentElement(BaseStructuralElement):
         return values
 
     model_config = ConfigDict(
-        # TODO: verify this example
         json_schema_extra={
             "example": {
                 "type": "TranscriptSegmentElement",
@@ -240,22 +239,17 @@ class TemplatedSequenceElement(BaseStructuralElement):
     strand: Strand
 
     model_config = ConfigDict(
-        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "TemplatedSequenceElement",
                 "region": {
-                    "id": "chr12:44908821-44908822(+)",
+                    "id": "ga4gh:SL.q_LeFVIakQtxnGHgxC4yehpLUxd6QsEr",
                     "type": "SequenceLocation",
-                    "location_id": "ga4gh:VSL.AG54ZRBhg6pwpPLafF4KgaAHpdFio6l5",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 44908821},
-                            "end": {"type": "Number", "value": 44908822},
-                        },
+                    "start": 44908821,
+                    "end": 44908822,
+                    "sequenceReference": {
+                        "id": "refseq:NC_000012.12",
+                        "refgetAccession": "SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
                     },
                     "label": "chr12:44908821-44908822(+)",
                 },
@@ -378,23 +372,19 @@ class RegulatoryElement(BaseModel):
         return values
 
     model_config = ConfigDict(
-        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "RegulatoryElement",
-                "regulatory_class": "promoter",
-                "feature_location": {
-                    "type": "LocationDescriptor",
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "location": {
-                        "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                        "type": "SequenceLocation",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 155593},
-                            "end": {"type": "Number", "value": 155610},
-                        },
+                "regulatoryClass": "promoter",
+                "featureLocation": {
+                    "id": "ga4gh:SL.9hqdPDfXC-m_t_bDH75FZHfaM6OKDtRw",
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
+                    "start": 155593,
+                    "end": 155610,
                 },
             }
         },
@@ -453,7 +443,7 @@ class AbstractFusion(BaseModel, ABC):
     def _fetch_gene_id(
         cls,
         obj: dict | BaseModel,
-        alt_field: str | None,
+        alt_field: str | None = None,
     ) -> str | None:
         """Get gene ID if element includes a gene annotation.
 
@@ -566,7 +556,6 @@ class Assay(BaseModelForbidExtra):
     fusionDetection: Evidence | None = None
 
     model_config = ConfigDict(
-        # TODO: verify this example json once models approved
         json_schema_extra={
             "example": {
                 "methodUri": "pmid:33576979",
@@ -608,7 +597,6 @@ class CausativeEvent(BaseModelForbidExtra):
     eventDescription: StrictStr | None = None
 
     model_config = ConfigDict(
-        # TODO: verify this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "CausativeEvent",
@@ -632,29 +620,27 @@ class AssayedFusion(AbstractFusion):
     assay: Assay | None = None
 
     model_config = ConfigDict(
-        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "AssayedFusion",
-                "causative_event": {
+                "causativeEvent": {
                     "type": "CausativeEvent",
-                    "event_type": "rearrangement",
-                    "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+                    "eventType": "rearrangement",
+                    "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
                 },
                 "assay": {
                     "type": "Assay",
-                    "method_uri": "pmid:33576979",
-                    "assay_id": "obi:OBI_0003094",
-                    "assay_name": "fluorescence in-situ hybridization assay",
-                    "fusion_detection": "inferred",
+                    "methodUri": "pmid:33576979",
+                    "assayId": "obi:OBI_0003094",
+                    "assayName": "fluorescence in-situ hybridization assay",
+                    "fusionDetection": "inferred",
                 },
                 "structure": [
                     {
                         "type": "GeneElement",
                         "gene": {
                             "type": "Gene",
-                            "id": "gene:EWSR1",
-                            "gene_id": "hgnc:3058",
+                            "id": "hgnc:3058",
                             "label": "EWSR1",
                         },
                     },
@@ -686,22 +672,20 @@ class CategoricalFusion(AbstractFusion):
     structure: CategoricalFusionElements
 
     model_config = ConfigDict(
-        # TODO: update this example json once models approved
         json_schema_extra={
             "example": {
                 "type": "CategoricalFusion",
-                "reading_frame_preserved": True,
-                "critical_functional_domains": [
+                "readingFramePreserved": True,
+                "criticalFunctionalDomains": [
                     {
                         "type": "FunctionalDomain",
                         "status": "lost",
                         "label": "cystatin domain",
                         "id": "interpro:IPR000010",
-                        "associated_gene": {
-                            "id": "gene:CST1",
-                            "gene_id": "hgnc:2743",
+                        "associatedGene": {
+                            "id": "hgnc:2743",
                             "label": "CST1",
-                            "type": "GeneDescriptor",
+                            "type": "Gene",
                         },
                     }
                 ],
@@ -709,59 +693,42 @@ class CategoricalFusion(AbstractFusion):
                     {
                         "type": "TranscriptSegmentElement",
                         "transcript": "refseq:NM_152263.3",
-                        "exon_start": 1,
-                        "exon_start_offset": 0,
-                        "exon_end": 8,
-                        "exon_end_offset": 0,
-                        "gene_descriptor": {
-                            "id": "gene:TPM3",
-                            "gene_id": "hgnc:12012",
-                            "type": "GeneDescriptor",
+                        "exonStart": 1,
+                        "exonStartOffset": 0,
+                        "exonEnd": 8,
+                        "exonEndOffset": 0,
+                        "gene": {
+                            "id": "hgnc:12012",
+                            "type": "Gene",
                             "label": "TPM3",
                         },
-                        "element_genomic_start": {
+                        "elementGenomicStart": {
                             "id": "TPM3:exon1",
-                            "type": "LocationDescriptor",
-                            "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",
-                            "location": {
-                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
-                                "type": "SequenceLocation",
-                                "interval": {
-                                    "start": {"type": "Number", "value": 154192135},
-                                    "end": {"type": "Number", "value": 154192136},
-                                    "type": "SequenceInterval",
-                                },
-                            },
+                            "type": "SequenceLocation",
+                            "start": 154192135,
+                            "end": 154192136,
                         },
-                        "element_genomic_end": {
+                        "elementGenomicEnd": {
                             "id": "TPM3:exon8",
-                            "type": "LocationDescriptor",
-                            "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",
-                            "location": {
-                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
-                                "type": "SequenceLocation",
-                                "interval": {
-                                    "start": {"type": "Number", "value": 154170398},
-                                    "end": {"type": "Number", "value": 154170399},
-                                    "type": "SequenceInterval",
-                                },
-                            },
+                            "type": "SequenceLocation",
+                            "start": 154170398,
+                            "end": 154170399,
                         },
                     },
                     {
-                        "type": "Gene",
-                        "id": "gene:ALK",
-                        "gene_id": "hgnc:427",
-                        "label": "ALK",
+                        "type": "GeneElement",
+                        "gene": {
+                            "id": "hgnc:427",
+                            "label": "ALK",
+                        },
                     },
                 ],
-                "regulatory_element": {
+                "regulatoryElement": {
                     "type": "RegulatoryElement",
-                    "regulatory_class": "promoter",
-                    "associated_gene": {
-                        "id": "gene:BRAF",
-                        "type": "GeneDescriptor",
-                        "gene_id": "hgnc:1097",
+                    "regulatoryClass": "promoter",
+                    "associatedGene": {
+                        "type": "Gene",
+                        "id": "hgnc:1097",
                         "label": "BRAF",
                     },
                 },
