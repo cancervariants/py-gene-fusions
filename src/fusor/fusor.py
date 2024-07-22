@@ -297,7 +297,6 @@ class FUSOR:
                     genomic_data.start,
                     genomic_data.start + 1,
                     genomic_data.chr,
-                    label=genomic_data.transcript,
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
                 if genomic_data.start
@@ -306,7 +305,6 @@ class FUSOR:
                     genomic_data.end,
                     genomic_data.end + 1,
                     genomic_data.chr,
-                    label=genomic_data.transcript,
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
                 if genomic_data.end
@@ -334,7 +332,6 @@ class FUSOR:
         end: int,
         sequence_id: str,
         strand: Strand,
-        label: str | None = None,
         add_location_id: bool = False,
         residue_mode: ResidueMode = ResidueMode.RESIDUE,
         seq_id_target_namespace: str | None = None,
@@ -345,7 +342,6 @@ class FUSOR:
         :param end: Genomic end
         :param sequence_id: Chromosome accession for sequence
         :param strand: Strand
-        :param label: Label for genomic location
         :param add_location_id: ``True`` if ``location_id`` will be added to ``region``.
             ``False`` otherwise.
         :param residue_mode: Determines coordinate base used. Must be one of ``residue``
@@ -361,7 +357,6 @@ class FUSOR:
             start,
             end,
             sequence_id,
-            label=label,
             seq_id_target_namespace=seq_id_target_namespace,
         )
 
@@ -548,7 +543,7 @@ class FUSOR:
         sequence_location = SequenceLocation(
             start=start,
             end=end,
-            sequence_reference=SequenceReference(
+            sequenceReference=SequenceReference(
                 id=sequence_id, refgetAccession=refget_accession.replace("ga4gh:", "")
             ),
         )
