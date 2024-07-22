@@ -9,7 +9,12 @@ from cool_seq_tool.schemas import ResidueMode
 from ga4gh.core import ga4gh_identify
 from ga4gh.core.domain_models import Gene
 from ga4gh.vrs import models
-from ga4gh.vrs.models import LiteralSequenceExpression, SequenceLocation, SequenceString
+from ga4gh.vrs.models import (
+    LiteralSequenceExpression,
+    SequenceLocation,
+    SequenceReference,
+    SequenceString,
+)
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.query import QueryHandler
@@ -190,7 +195,7 @@ class FUSOR:
     ) -> AssayedFusion:
         """Construct an assayed fusion object
         :param structure: elements constituting the fusion
-        :param causativeEvent: event causing the fusion
+        :param causative_event: event causing the fusion
         :param assay: how knowledge of the fusion was obtained
         :param regulatory_element: affected regulatory elements
         :param reading_frame_preserved: ``True`` if reading frame is preserved.
@@ -272,7 +277,6 @@ class FUSOR:
             return None, data.warnings
 
         genomic_data = data.genomic_data
-        # should we be doing this before the call to cool_seq_tool? if the namespace prefix is present, that call will fail
         genomic_data.transcript = coerce_namespace(genomic_data.transcript)
 
         normalized_gene_response = self._normalized_gene(
@@ -293,7 +297,7 @@ class FUSOR:
                     genomic_data.start,
                     genomic_data.start + 1,
                     genomic_data.chr,
-                    label=genomic_data.chr,
+                    label=genomic_data.transcript,
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
                 if genomic_data.start
@@ -302,7 +306,7 @@ class FUSOR:
                     genomic_data.end,
                     genomic_data.end + 1,
                     genomic_data.chr,
-                    label=genomic_data.chr,
+                    label=genomic_data.transcript,
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
                 if genomic_data.end
@@ -543,11 +547,22 @@ class FUSOR:
             else:
                 sequence_id = seq_id
 
+        # TODO: unsure if this is correct - I'm getting SQ's instead of SL's
+        refget_accession = translate_identifier(
+            self.seqrepo,
+            label,
+            "ga4gh",
+        )
+
         return SequenceLocation(
             id=sequence_id,
             label=label,
             start=start,
             end=end,
+            # TODO: pretty sure this isn't quite right but along the right track for what we want, would love some guidance on this later
+            sequence_reference=SequenceReference(
+                id=label, refgetAccession=refget_accession.replace("ga4gh:", "")
+            ),
         )
 
     def add_additional_fields(
