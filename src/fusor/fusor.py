@@ -705,8 +705,7 @@ class FUSOR:
             gene = gene_norm_resp.gene
             if use_minimal_gene_descr:
                 return gene, None
-            # TODO: remove normalize.gene from id
-            return Gene(id=gene.id, label=gene.label)
+            return Gene(id=gene_norm_resp.normalized_id, label=gene.label)
         return None, f"gene-normalizer unable to normalize {query}"
 
     def generate_nomenclature(self, fusion: Fusion) -> str:
