@@ -171,8 +171,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     "label": "TPM3",
                 },
                 "elementGenomicStart": {
-                    # TODO: this digest may not be correct, but putting a placeholder example here for now
-                    "id": "SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                    "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
                     "type": "SequenceLocation",
                     "label": "NC_000001.11",
                     "sequenceReference": {
