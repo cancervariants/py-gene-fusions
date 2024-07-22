@@ -73,18 +73,17 @@ class FunctionalDomain(BaseModel):
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "id": "interpro:IPR020635",
                 "associatedGene": {
-                    "id": "gene:NTRK1",
-                    "gene_id": "hgnc:8031",
-                    "label": "8031",
+                    "id": "hgnc:8031",
+                    "label": "NTRK1",
                     "type": "Gene",
                 },
                 "sequenceLocation": {
-                    "id": "SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                    "id": "ga4gh:SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
                     "start": 510,
                     "end": "781",
                     "type": "SequenceLocation",
                     "sequenceReference": {
-                        "id": "NP_002520.2",
+                        "id": "NC_000022.11",
                         "label": "GRCh38:chr22",
                         "type": "SequenceReference",
                         "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
@@ -172,8 +171,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     "label": "TPM3",
                 },
                 "elementGenomicStart": {
-                    # TODO: this digest may not be correct, but putting a placeholder example here for now
-                    "id": "SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                    "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
                     "type": "SequenceLocation",
                     "label": "NC_000001.11",
                     "sequenceReference": {
@@ -184,8 +182,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
                     "end": 154192136,
                 },
                 "elementGenomicEnd": {
-                    # TODO: this digest may not be correct, but putting a placeholder example here for now
-                    "id": "SL.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                    "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
                     "type": "SequenceLocation",
                     "label": "NC_000001.11",
                     "sequenceReference": {
