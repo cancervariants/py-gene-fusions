@@ -50,79 +50,59 @@ def sequence_locations():
     """Provide possible sequence_location input."""
     return [
         {
-            "id": "NC_000001.11",
+            "id": "ga4gh:SL.-xC3omZDIKZEuotbbHWQMTC8sS3nOxTb",
             "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceLocation",
+            },
             "start": 15455,
             "end": 15456,
-            # TODO what to put for sequence reference here?? or other places in these examples?
         },
         {
-            "id": "NC_000001.11",
+            "id": "ga4gh:SL.-xC3omZDIKZEuotbbHWQMTC8sS3nOxTb",
             "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceLocation",
+            },
             "start": 15565,
             "end": 15566,
         },
-        # TODO: no clue what to do here - SequenceLocations don't support anything other than integers for start/end
         {
-            "id": "chr12:p12.1",
+            "id": "ga4gh:SL.-xC3omZDIKZEuotbbHWQMTC8sS3nOxTb",
             "type": "SequenceLocation",
-            "location": {
-                "species_id": "taxonomy:9606",
-                "chr": "12",
-                "interval": {"start": "p12.1", "end": "p12.1"},
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceLocation",
             },
-            "label": "chr12:p12.1",
-        },
-        {
-            "id": "chr12:p12.2",
-            "type": "SequenceLocation",
-            "location": {
-                "species_id": "taxonomy:9606",
-                "chr": "12",
-                "interval": {"start": "p12.2", "end": "p12.2"},
-            },
-            "label": "chr12:p12.2",
-        },
-        {
-            "id": "NC_000001.11",
-            "type": "SequenceLocation",
             "start": 15455,
             "end": 15566,
-            "label": "NC_000001.11:15455-15566",
         },
         {
-            "id": "chr12:p12.1-p12.2",
+            "id": "ga4gh:SL.VJLxl42yYoa-0ZMa8dfakhZfcP0nWgpl",
             "type": "SequenceLocation",
-            "location": {
-                "species_id": "taxonomy:9606",
-                "chr": "12",
-                "interval": {"start": "p12.1", "end": "p12.2"},
+            "sequenceReference": {
+                "id": "refseq:NP_001123617.1",
+                "refgetAccession": "SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
+                "type": "SequenceLocation",
             },
-            "label": "chr12:p12.1-p12.2",
-        },
-        {
-            "id": "NP_001123617.1",
-            "type": "SequenceLocation",
             "start": 171,
             "end": 204,
-            "label": "NP_001123617.1",
-            "sequenceReference": {
-                "id": "placeholder",
-                "refgetAccession": "SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
-                "type": "SequenceReference",
-            },
         },
         {
-            "id": "NP_002520.2",
+            "id": "ga4gh:SL.fZQW-qJwKlrVdae-idN_XXee5VTfEOgA",
             "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NP_002520.2",
+                "refgetAccession": "SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                "type": "SequenceLocation",
+            },
             "start": 510,
             "end": 781,
-            "label": "NP_002520.2",
-            "sequenceReference": {
-                "id": "placeholder",
-                "refgetAccession": "SQ.61McMQgrnlFJ2Vxh3SJ34hTzpxdubu--",
-                "type": "SequenceReference",
-            },
         },
     ]
 
