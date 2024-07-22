@@ -213,7 +213,7 @@ class FUSOR:
     async def transcript_segment_element(
         self,
         tx_to_genomic_coords: bool = True,
-        use_minimal_gene_descr: bool = True,
+        use_minimal_gene: bool = True,
         seq_id_target_namespace: str | None = None,
         **kwargs,
     ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
@@ -221,7 +221,7 @@ class FUSOR:
 
         :param tx_to_genomic_coords: `True` if going from transcript to genomic
             coordinates. ``False`` if going from genomic to transcript exon coordinates.
-        :param use_minimal_gene_descr: `True` if minimal gene object
+        :param use_minimal_gene: `True` if minimal gene object
             (``id``, ``label``) will be used. ``False`` if
             gene-normalizer's entire gene object will be used
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
@@ -276,7 +276,7 @@ class FUSOR:
         genomic_data.transcript = coerce_namespace(genomic_data.transcript)
 
         normalized_gene_response = self._normalized_gene(
-            genomic_data.gene, use_minimal_gene_descr=use_minimal_gene_descr
+            genomic_data.gene, use_minimal_gene=use_minimal_gene
         )
         if not normalized_gene_response[0] and normalized_gene_response[1]:
             return None, [normalized_gene_response[1]]
@@ -412,7 +412,7 @@ class FUSOR:
         sequence_id: str,
         start: int,
         end: int,
-        use_minimal_gene_descr: bool = True,
+        use_minimal_gene: bool = True,
         seq_id_target_namespace: str | None = None,
     ) -> tuple[FunctionalDomain | None, str | None]:
         """Build functional domain instance.
@@ -424,7 +424,7 @@ class FUSOR:
         :param sequence_id: protein sequence on which provided coordinates are located
         :param start: start position on sequence
         :param end: end position on sequence
-        :param use_minimal_gene_descr: ``True`` if minimal gene object (``id``,
+        :param use_minimal_gene: ``True`` if minimal gene object (``id``,
             ``gene_id``, ``label``) will be used. ``False`` if gene-normalizer's gene
             object will be used
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
@@ -448,7 +448,7 @@ class FUSOR:
             return None, warning
 
         gene_descr, warning = self._normalized_gene(
-            gene, use_minimal_gene_descr=use_minimal_gene_descr
+            gene, use_minimal_gene=use_minimal_gene
         )
         if not gene_descr:
             return None, warning
@@ -477,17 +477,17 @@ class FUSOR:
         self,
         regulatory_class: RegulatoryClass,
         gene: str,
-        use_minimal_gene_descr: bool = True,
+        use_minimal_gene: bool = True,
     ) -> tuple[RegulatoryElement | None, str | None]:
         """Create RegulatoryElement
         :param regulatory_class: one of {"promoter", "enhancer"}
         :param gene: gene term to fetch normalized gene object for
-        :param use_minimal_gene_descr: whether to use the minimal gene object
+        :param use_minimal_gene: whether to use the minimal gene object
         :return: Tuple with RegulatoryElement instance and None value for warnings if
             successful, or a None value and warning message if unsuccessful
         """
         gene_descr, warning = self._normalized_gene(
-            gene, use_minimal_gene_descr=use_minimal_gene_descr
+            gene, use_minimal_gene=use_minimal_gene
         )
         if not gene_descr:
             return None, warning

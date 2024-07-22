@@ -59,7 +59,7 @@ class FunctionalDomain(BaseModel):
 
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
-    gene: Gene
+    associatedGene: Gene
     id: CURIE | None
     label: StrictStr | None = None
     sequenceLocation: SequenceLocation | None = None
@@ -72,7 +72,7 @@ class FunctionalDomain(BaseModel):
                 "status": "lost",
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "id": "interpro:IPR020635",
-                "gene": {
+                "associatedGene": {
                     "id": "gene:NTRK1",
                     "gene_id": "hgnc:8031",
                     "label": "8031",
