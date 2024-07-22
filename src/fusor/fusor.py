@@ -297,6 +297,7 @@ class FUSOR:
                     genomic_data.start,
                     genomic_data.start + 1,
                     genomic_data.chr,
+                    transcript=genomic_data.transcript,
                     label=genomic_data.transcript,
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
@@ -306,6 +307,7 @@ class FUSOR:
                     genomic_data.end,
                     genomic_data.end + 1,
                     genomic_data.chr,
+                    transcript=genomic_data.transcript,
                     label=genomic_data.transcript,
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
@@ -513,6 +515,7 @@ class FUSOR:
         start: int,
         end: int,
         sequence_id: str,
+        transcript: str | None = None,
         label: str | None = None,
         seq_id_target_namespace: str | None = None,
     ) -> SequenceLocation:
@@ -521,9 +524,10 @@ class FUSOR:
         :param start: Start position
         :param end: End position
         :param sequence_id: Accession for sequence
-        :param label: label for location. If ``None``, ``sequence_id`` will be used as
-            Sequence Location's ``id`` Else, label will be used as Sequence Location's
-            ``id``.
+        :param transcript: Associated transcript for the sequence
+        :param label: label for Sequence Location. If ``None``, ``sequence_id`` will be used as
+            Sequence Location's ``id`` and ``label`` Else, label will be used as Sequence Location's Sequence Reference's
+            ``id`` if no transcript is provided.
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         """
@@ -549,18 +553,20 @@ class FUSOR:
 
         refget_accession = translate_identifier(
             self.seqrepo,
-            label,
+            transcript,
             "ga4gh",
         )
 
         return SequenceLocation(
+            # TODO: I think we want id here to be the ga4gh_identified SequenceLocation object here instead, but in order to get that,
+            # I need to make this object first? if I make the object to get that id and then make a new object with that id, that seems a bit too roundabout...
             id=sequence_id,
+            # TODO: and I think this is supposed to be sequence_id
             label=label,
             start=start,
             end=end,
-            # TODO: pretty sure this isn't quite right but along the right track for what we want, would love some guidance on this later
             sequence_reference=SequenceReference(
-                id=label, refgetAccession=refget_accession.replace("ga4gh:", "")
+                id=transcript, refgetAccession=refget_accession.replace("ga4gh:", "")
             ),
         )
 
