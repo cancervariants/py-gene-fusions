@@ -318,7 +318,7 @@ class FUSOR:
 
         :param str gene: Gene
         :param bool use_minimal_gene: `True` if minimal gene object
-            (`id`, `gene_id`, `label`) will be used. `False` if
+            (`id` and `label`) will be used. `False` if
             gene-normalizer's gene object will be used
         :return: GeneElement, warning
         """
