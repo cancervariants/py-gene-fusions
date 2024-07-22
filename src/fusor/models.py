@@ -83,7 +83,7 @@ class FunctionalDomain(BaseModel):
                     "end": "781",
                     "type": "SequenceLocation",
                     "sequenceReference": {
-                        "id": "NP_002520.2",
+                        "id": "NC_000022.11",
                         "label": "GRCh38:chr22",
                         "type": "SequenceReference",
                         "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
