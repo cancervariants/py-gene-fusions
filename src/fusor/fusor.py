@@ -297,7 +297,6 @@ class FUSOR:
                     genomic_data.start,
                     genomic_data.start + 1,
                     genomic_data.chr,
-                    transcript=genomic_data.transcript,
                     label=genomic_data.transcript,
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
@@ -307,7 +306,6 @@ class FUSOR:
                     genomic_data.end,
                     genomic_data.end + 1,
                     genomic_data.chr,
-                    transcript=genomic_data.transcript,
                     label=genomic_data.transcript,
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
@@ -515,8 +513,6 @@ class FUSOR:
         start: int,
         end: int,
         sequence_id: str,
-        transcript: str | None = None,
-        label: str | None = None,
         seq_id_target_namespace: str | None = None,
     ) -> SequenceLocation:
         """Create sequence location
@@ -524,10 +520,6 @@ class FUSOR:
         :param start: Start position
         :param end: End position
         :param sequence_id: Accession for sequence
-        :param transcript: Associated transcript for the sequence
-        :param label: label for Sequence Location. If ``None``, ``sequence_id`` will be used as
-            Sequence Location's ``id`` and ``label`` Else, label will be used as Sequence Location's Sequence Reference's
-            ``id`` if no transcript is provided.
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         """
@@ -551,19 +543,13 @@ class FUSOR:
             else:
                 sequence_id = seq_id
 
-        refget_accession = translate_identifier(
-            self.seqrepo,
-            transcript,
-            "ga4gh",
-        )
+        refget_accession = translate_identifier(self.seqrepo, sequence_id)
 
-        sequence_location_label = label if label else sequence_id
         sequence_location = SequenceLocation(
-            label=sequence_location_label,
             start=start,
             end=end,
             sequence_reference=SequenceReference(
-                id=transcript, refgetAccession=refget_accession.replace("ga4gh:", "")
+                id=sequence_id, refgetAccession=refget_accession.replace("ga4gh:", "")
             ),
         )
         sequence_location_id = ga4gh_identify(sequence_location)
@@ -689,7 +675,6 @@ class FUSOR:
                                 continue
                             loc_descr.location.sequence_id = new_id
         if fusion.type == "CategoricalFusion" and fusion.criticalFunctionalDomains:
-            # TODO: unreachable code?
             for domain in fusion.criticalFunctionalDomains:
                 if (
                     domain.sequence_location
