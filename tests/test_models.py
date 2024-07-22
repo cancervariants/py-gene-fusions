@@ -107,7 +107,7 @@ def sequence_locations():
             "end": 204,
             "label": "NP_001123617.1",
             "sequenceReference": {
-                "id": "NM_001130145.3",
+                "id": "placeholder",
                 "refgetAccession": "SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
                 "type": "SequenceReference",
             },
@@ -119,7 +119,7 @@ def sequence_locations():
             "end": 781,
             "label": "NP_002520.2",
             "sequenceReference": {
-                "id": "NM_001130145.3",
+                "id": "placeholder",
                 "refgetAccession": "SQ.61McMQgrnlFJ2Vxh3SJ34hTzpxdubu--",
                 "type": "SequenceReference",
             },
