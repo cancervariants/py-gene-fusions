@@ -1,6 +1,7 @@
 """Test nomenclature generation."""
 
 import pytest
+from ga4gh.core.domain_models import Gene
 
 from fusor.models import AssayedFusion, CategoricalFusion, TranscriptSegmentElement
 from fusor.nomenclature import tx_segment_nomenclature
@@ -11,38 +12,36 @@ def reg_example():
     """Nonsense fusion testing correct regulatory element description."""
     return AssayedFusion(
         type="AssayedFusion",
-        regulatory_element={
+        regulatoryElement={
             "type": "RegulatoryElement",
-            "regulatory_class": "riboswitch",
-            "associated_gene": {
-                "id": "normalize.gene:ABL1",
-                "type": "GeneDescriptor",
+            "regulatoryClass": "riboswitch",
+            "associatedGene": {
+                "type": "Gene",
                 "label": "ABL1",
-                "gene_id": "hgnc:76",
+                "id": "hgnc:76",
             },
         },
-        structural_elements=[
+        structure=[
             {
                 "type": "GeneElement",
-                "gene_descriptor": {
-                    "id": "normalize.gene:BCR",
-                    "type": "GeneDescriptor",
+                "gene": {
+                    "type": "Gene",
                     "label": "BCR",
-                    "gene_id": "hgnc:1014",
+                    "id": "hgnc:1014",
                 },
             },
             {"type": "UnknownGeneElement"},
         ],
-        causative_event={
+        causativeEvent={
             "type": "CausativeEvent",
-            "event_type": "rearrangement",
+            "eventType": "rearrangement",
         },
         assay={
             "type": "Assay",
-            "assay_name": "a",
-            "assay_id": "a:b",
-            "method_uri": "a:b",
-            "fusion_detection": "observed",
+            "assayName": "a",
+            "assayId": "a:b",
+            "methodUti": "a:b",
+            "fusionDetection": "observed",
         },
     )
 
@@ -52,50 +51,45 @@ def reg_location_example():
     """Nonsense fusion testing correct regulatory element description."""
     return AssayedFusion(
         type="AssayedFusion",
-        regulatory_element={
+        regulatoryElement={
             "type": "RegulatoryElement",
-            "regulatory_class": "promoter",
-            "associated_gene": {
-                "id": "normalize.gene:P2RY8",
-                "type": "GeneDescriptor",
+            "regulatoryClass": "promoter",
+            "associatedGene": {
+                "type": "Gene",
                 "label": "P2RY8",
-                "gene_id": "hgnc:15524",
+                "id": "hgnc:15524",
             },
-            "feature_location": {
-                "type": "LocationDescriptor",
-                "id": "fusor.location_descriptor:NC_000023.11",
-                "location": {
-                    "sequence_id": "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
-                    "type": "SequenceLocation",
-                    "interval": {
-                        "type": "SequenceInterval",
-                        "start": {"type": "Number", "value": 1462581},
-                        "end": {"type": "Number", "value": 1534182},
-                    },
+            "featureLocation": {
+                "type": "SequenceLocation",
+                "id": "ga4gh:SL.KMHXvX8m5fD8PcGlQu2Vja3m7bt2iqfK",
+                "sequenceReference": {
+                    "id": "refseq:NC_000023.11",
+                    "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
                 },
+                "start": 1462581,
+                "end": 1534182,
             },
         },
         structural_elements=[
             {
                 "type": "GeneElement",
-                "gene_descriptor": {
-                    "id": "normalize.gene:SOX5",
-                    "type": "GeneDescriptor",
+                "gene": {
+                    "type": "Gene",
                     "label": "SOX5",
-                    "gene_id": "hgnc:11201",
+                    "id": "hgnc:11201",
                 },
             },
         ],
         causative_event={
             "type": "CausativeEvent",
-            "event_type": "rearrangement",
+            "eventType": "rearrangement",
         },
         assay={
             "type": "Assay",
-            "assay_name": "a",
-            "assay_id": "a:b",
-            "method_uri": "a:b",
-            "fusion_detection": "observed",
+            "assayName": "a",
+            "assayId": "a:b",
+            "methodUri": "a:b",
+            "fusionDetection": "observed",
         },
     )
 
@@ -108,37 +102,31 @@ def exon_offset_example():
         structural_elements=[
             {
                 "type": "GeneElement",
-                "gene_descriptor": {
-                    "id": "normalize.gene:BRAF",
-                    "type": "GeneDescriptor",
+                "gene": {
+                    "type": "Gene",
                     "label": "BRAF",
-                    "gene_id": "hgnc:1097",
+                    "id": "hgnc:1097",
                 },
             },
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_002529.3",
-                "exon_start": 2,
-                "exon_start_offset": 20,
-                "gene_descriptor": {
-                    "id": "normalize.gene:NTRK1",
-                    "type": "GeneDescriptor",
+                "exonStart": 2,
+                "exonStartOffset": 20,
+                "gene": {
+                    "type": "Gene",
                     "label": "NTRK1",
-                    "gene_id": "hgnc:8031",
+                    "id": "hgnc:8031",
                 },
-                "element_genomic_start": {
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "type": "LocationDescriptor",
-                    "label": "NC_000001.11",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NC_000001.11",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 156864428},
-                            "end": {"type": "Number", "value": 156864429},
-                        },
+                "elementGenomicStart": {
+                    "id": "ga4gh:SL.XEvDpRaKgoeQuQrhRwGzGK2uanHY4en8",
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
+                    "start": {"type": "Number", "value": 156864428},
+                    "end": {"type": "Number", "value": 156864429},
                 },
             },
         ],
@@ -155,12 +143,7 @@ def tx_seg_example():
         exon_start_offset=0,
         exon_end=8,
         exon_end_offset=0,
-        gene_descriptor={
-            "id": "normalize.gene:TPM3",
-            "type": "GeneDescriptor",
-            "label": "TPM3",
-            "gene_id": "hgnc:12012",
-        },
+        gene=Gene(id="hgnc:12012", label="TPM3"),
         element_genomic_start={
             "id": "fusor.location_descriptor:NC_000001.11",
             "type": "LocationDescriptor",
