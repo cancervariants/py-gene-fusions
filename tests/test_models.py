@@ -553,7 +553,7 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
         expected values.
         """
         assert test.type == "TemplatedSequenceElement"
-        assert test.strand.value == 1
+        assert test.strand == Strand.POSITIVE
         assert test.region.id == "chr12:p12.1-p12.2"
         assert test.region.type == "LocationDescriptor"
         assert test.region.location.species_id == "taxonomy:9606"
