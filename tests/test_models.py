@@ -3,6 +3,7 @@
 import copy
 
 import pytest
+from cool_seq_tool.schemas import Strand
 from pydantic import ValidationError
 
 from fusor.models import (
@@ -231,12 +232,12 @@ def templated_sequence_elements(location_descriptors):
     return [
         {
             "type": "TemplatedSequenceElement",
-            "strand": "+",
+            "strand": 1,
             "region": location_descriptors[5],
         },
         {
             "type": "TemplatedSequenceElement",
-            "strand": "-",
+            "strand": -1,
             "region": location_descriptors[4],
         },
     ]
@@ -552,7 +553,7 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
         expected values.
         """
         assert test.type == "TemplatedSequenceElement"
-        assert test.strand.value == "+"
+        assert test.strand.value == 1
         assert test.region.id == "chr12:p12.1-p12.2"
         assert test.region.type == "LocationDescriptor"
         assert test.region.location.species_id == "taxonomy:9606"
@@ -585,7 +586,7 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert TemplatedSequenceElement(
-            type="GeneElement", region=location_descriptors[0], strand="+"
+            type="GeneElement", region=location_descriptors[0], strand=Strand.POSITIVE
         )
     msg = "Input should be <FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT: 'TemplatedSequenceElement'>"
     check_validation_error(exc_info, msg)

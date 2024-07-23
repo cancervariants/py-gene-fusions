@@ -3,6 +3,7 @@
 import copy
 
 import pytest
+from cool_seq_tool.schemas import Strand
 from ga4gh.vrsatile.pydantic.vrsatile_models import GeneDescriptor, LocationDescriptor
 
 from fusor.exceptions import FUSORParametersException
@@ -186,7 +187,7 @@ def templated_sequence_element():
                 },
             },
         },
-        "strand": "+",
+        "strand": 1,
     }
     return TemplatedSequenceElement(**params)
 
@@ -209,7 +210,7 @@ def templated_sequence_element_ensg():
                 },
             },
         },
-        "strand": "-",
+        "strand": -1,
     }
     return TemplatedSequenceElement(**params)
 
@@ -234,7 +235,7 @@ def templated_sequence_element_custom_id():
                 },
             },
         },
-        "strand": "+",
+        "strand": 1,
     }
     return TemplatedSequenceElement(**params)
 
@@ -808,12 +809,12 @@ def test_templated_sequence_element(
 ):
     """Test that templated sequence element works correctly"""
     tsg = fusor_instance.templated_sequence_element(
-        100, 150, "NC_000001.11", "+", residue_mode="residue"
+        100, 150, "NC_000001.11", Strand.POSITIVE, residue_mode="residue"
     )
     assert tsg.model_dump() == templated_sequence_element.model_dump()
 
     tsg = fusor_instance.templated_sequence_element(
-        99, 150, "NC_000001.11", "+", residue_mode="inter-residue"
+        99, 150, "NC_000001.11", Strand.POSITIVE, residue_mode="inter-residue"
     )
     assert tsg.model_dump() == templated_sequence_element.model_dump()
 
@@ -826,14 +827,14 @@ def test_templated_sequence_element(
         100,
         150,
         "NC_000001.11",
-        "+",
+        Strand.POSITIVE,
         add_location_id=True,
         seq_id_target_namespace="ga4gh",
     )
     assert tsg.model_dump() == expected
 
     tsg = fusor_instance.templated_sequence_element(
-        140719329, 140719400, "ENSG00000157764", "-"
+        140719329, 140719400, "ENSG00000157764", Strand.NEGATIVE
     )
     assert tsg.model_dump() == templated_sequence_element_ensg.model_dump()
 
@@ -841,7 +842,11 @@ def test_templated_sequence_element(
     # adds "ensembl" namespace but unable to translate to ga4gh digest ID
     expected = copy.deepcopy(templated_sequence_element_ensg.model_dump())
     tsg = fusor_instance.templated_sequence_element(
-        140719329, 140719400, "ENSG00000157764", "-", seq_id_target_namespace="ga4gh"
+        140719329,
+        140719400,
+        "ENSG00000157764",
+        Strand.NEGATIVE,
+        seq_id_target_namespace="ga4gh",
     )
     assert tsg.model_dump() == expected
 
@@ -852,7 +857,7 @@ def test_templated_sequence_element(
         200,
         300,
         "custom_ID__1",
-        "+",
+        Strand.POSITIVE,
         residue_mode="inter-residue",
         seq_id_target_namespace="ga4gh",
     )
