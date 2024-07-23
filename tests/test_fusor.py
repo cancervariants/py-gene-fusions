@@ -52,9 +52,13 @@ def linker_element():
 def location_descriptor_braf_domain():
     """Create location descriptor fixture for BRAF catalytic domain"""
     params = {
-        "id": "fusor.location_descriptor:NP_004324.2",
+        "id": "ga4gh:SL.Lm-hzZHlA8FU_cYaOtAIbMLdf4Kk-SF8",
         "type": "SequenceLocation",
-        "sequenceReference": {"id": "", "refgetAccession": ""},
+        "sequenceReference": {
+            "id": "refseq:NP_004324.2",
+            "refgetAccession": "SQ.cQvw4UsHHRRlogxbWCB8W-mKD4AraM9y",
+            "type": "SequenceReference",
+        },
         "start": 458,
         "end": 712,
     }
@@ -65,9 +69,13 @@ def location_descriptor_braf_domain():
 def location_descriptor_braf_domain_seq_id():
     """Create location descriptor fixture for BRAF catalytic domain"""
     params = {
-        "id": "fusor.location_descriptor:NP_004324.2",
+        "id": "ga4gh:SL.Lm-hzZHlA8FU_cYaOtAIbMLdf4Kk-SF8",
         "type": "SequenceLocation",
-        "sequenceReference": {"id": "", "refgetAccession": ""},
+        "sequenceReference": {
+            "id": "refseq:NP_004324.2",
+            "refgetAccession": "SQ.cQvw4UsHHRRlogxbWCB8W-mKD4AraM9y",
+            "type": "SequenceReference",
+        },
         "start": 458,
         "end": 712,
     }
@@ -137,9 +145,13 @@ def regulatory_element_min(braf_gene_descr_min):
 def location_descriptor_tpm3():
     """Create location descriptor test fixture."""
     params = {
-        "id": "fusor.location_descriptor:NM_152263.3",
+        "id": "ga4gh:SL.0cMJgKuY32ate6k95oLua6vv8JAJ4PzO",
         "type": "SequenceLocation",
-        "sequenceReference": {"id": "", "refgetAccession": ""},
+        "sequenceReference": {
+            "id": "NM_152263.3",
+            "refgetAccession": "SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
+            "type": "SequenceReference",
+        },
         "start": 154170398,
         "end": 154170399,
     }
@@ -152,9 +164,13 @@ def templated_sequence_element():
     params = {
         "type": "TemplatedSequenceElement",
         "region": {
-            "id": "fusor.location_descriptor:NC_000001.11",
+            "id": "ga4gh:SL.U7-HtnKxK9kKI1ZINiDM_m4I6O-p4Dc9",
             "type": "SequenceLocation",
-            "sequenceReference": {"id": "", "refgetAccession": ""},
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceReference",
+            },
             "start": 99,
             "end": 150,
         },
@@ -169,17 +185,10 @@ def templated_sequence_element_ensg():
     params = {
         "type": "TemplatedSequenceElement",
         "region": {
-            "id": "fusor.location_descriptor:ENSG00000157764",
-            "type": "LocationDescriptor",
-            "location": {
-                "type": "SequenceLocation",
-                "sequence_id": "ensembl:ENSG00000157764",
-                "interval": {
-                    "type": "SequenceInterval",
-                    "start": {"type": "Number", "value": 140719328},
-                    "end": {"type": "Number", "value": 140719400},
-                },
-            },
+            "id": "ENSG00000157764",
+            "type": "SequenceLocation",
+            "start": 140719328,
+            "end": 140719400,
         },
         "strand": "-",
     }
@@ -448,8 +457,8 @@ def test_add_location_id(fusor_instance, fusion_example, exhaustive_example):
     )
 
 
-def test__normalized_gene_descriptor(fusor_instance):
-    """Test that _normalized_gene_descriptor works correctly."""
+def test__normalized_gene(fusor_instance):
+    """Test that _normalized_gene works correctly."""
     # Actual response is tested in test_add_gene_descriptor
     resp = fusor_instance._normalized_gene("BRAF")
     assert resp[0]
