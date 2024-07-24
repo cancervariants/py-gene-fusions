@@ -290,8 +290,8 @@ def mane_transcript_segment_element():
             "label": "NC_000011.10",
             "location": {
                 "interval": {
-                    "end": {"type": "Number", "value": 9576094},
-                    "start": {"type": "Number", "value": 9576093},
+                    "end": {"type": "Number", "value": 9575887},
+                    "start": {"type": "Number", "value": 9575886},
                     "type": "SequenceInterval",
                 },
                 "sequence_id": "refseq:NC_000011.10",
@@ -750,7 +750,7 @@ async def test_transcript_segment_element(
     tsg = await fusor_instance.transcript_segment_element(
         tx_to_genomic_coords=False,
         chromosome="NC_000011.10",
-        start=9576094,
+        start=9575887,
         gene="WEE1",
     )
     assert tsg[0]
