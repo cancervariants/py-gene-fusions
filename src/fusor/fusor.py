@@ -23,7 +23,6 @@ from pydantic import ValidationError
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
 from fusor.models import (
-    AdditionalFields,
     Assay,
     AssayedFusion,
     AssayedFusionElements,
@@ -544,40 +543,6 @@ class FUSOR:
 
         return sequence_location
 
-    def add_additional_fields(
-        self,
-        fusion: Fusion,
-        add_all: bool = True,
-        fields: list[AdditionalFields] | None = None,
-        target_namespace: str = "ga4gh",
-    ) -> Fusion:
-        """Add additional fields to Fusion object.
-
-        Possible fields are shown in ``AdditionalFields``
-
-        :param fusion: A valid Fusion object
-        :param add_all: ``True`` if all additional fields  will be added in fusion
-            object. ``False`` if only select fields will be provided. If set to
-            ``True``, will always take precedence over ``fields``.
-        :param fields: Select fields that will be set. Must be a subset of
-            ``AdditionalFields``
-        :param target_namespace: The namespace of identifiers to return for
-            ``sequence_id``. Default is ``ga4gh``
-        :return: Updated fusion with specified fields set
-        """
-        if add_all:
-            self.add_translated_sequence_id(fusion, target_namespace)
-        else:
-            if fields:
-                for field in fields:
-                    if field == AdditionalFields.SEQUENCE_ID.value:
-                        self.add_translated_sequence_id(
-                            fusion, target_namespace=target_namespace
-                        )
-                    else:
-                        _logger.warning("Invalid field: %s", field)
-        return fusion
-
     @staticmethod
     def _location_id(location: dict) -> CURIE:
         """Return GA4GH digest for location
@@ -587,62 +552,8 @@ class FUSOR:
         """
         return ga4gh_identify(models.Location(**location))
 
-    def add_translated_sequence_id(
-        self, fusion: Fusion, target_namespace: str = "ga4gh"
-    ) -> Fusion:
-        """Translate sequence_ids in fusion object.
-
-        :param fusion: A valid Fusion object
-        :param target_namespace: ID namespace to translate sequence IDs to
-        :return: Updated fusion with ``sequence_id`` fields set
-        """
-        for element in fusion.structure:
-            if isinstance(element, TemplatedSequenceElement):
-                location = element.region.location
-                if location.type == SequenceLocation:
-                    try:
-                        new_id = translate_identifier(
-                            self.seqrepo, location.sequence_id, target_namespace
-                        )
-                    except IDTranslationException:
-                        pass
-                    else:
-                        element.region.location.sequence_id = new_id
-            elif isinstance(element, TranscriptSegmentElement):
-                for loc_descr in [
-                    element.elementGenomicStart,
-                    element.elementGenomicEnd,
-                ]:
-                    if loc_descr:
-                        location = loc_descr.location
-                        if location.type == SequenceLocation:
-                            try:
-                                new_id = translate_identifier(
-                                    self.seqrepo, location.sequence_id, target_namespace
-                                )
-                            except IDTranslationException:
-                                continue
-                            loc_descr.location.sequence_id = new_id
-        if fusion.type == "CategoricalFusion" and fusion.criticalFunctionalDomains:
-            for domain in fusion.criticalFunctionalDomains:
-                if (
-                    domain.sequence_location
-                    and domain.sequence_location.location
-                    and (domain.sequence_location.location.type == "SequenceLocation")
-                ):
-                    try:
-                        new_id = translate_identifier(
-                            self.seqrepo,
-                            domain.sequence_location.location.sequence_id,
-                            target_namespace,
-                        )
-                    except IDTranslationException:
-                        continue
-                    domain.sequence_location.location.sequence_id = new_id
-        return fusion
-
     def _normalized_gene(
-        self, query: str, use_minimal_gene: bool
+        self, query: str, use_minimal_gene: bool | None = None
     ) -> tuple[Gene | None, str | None]:
         """Return gene from normalized response.
 
@@ -654,9 +565,9 @@ class FUSOR:
         gene_norm_resp = self.gene_normalizer.normalize(query)
         if gene_norm_resp.match_type:
             gene = gene_norm_resp.gene
-            if not use_minimal_gene:
-                return gene, None
-            return Gene(id=gene_norm_resp.normalized_id, label=gene.label), None
+            if use_minimal_gene:
+                return Gene(id=gene_norm_resp.normalized_id, label=gene.label), None
+            return gene, None
         return None, f"gene-normalizer unable to normalize {query}"
 
     def generate_nomenclature(self, fusion: Fusion) -> str:
