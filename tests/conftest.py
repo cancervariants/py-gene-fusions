@@ -172,16 +172,16 @@ def braf_gene_descriptor():
 def alk_gene_descriptor():
     """Create test fixture for ALK gene descriptor params"""
     return {
-        "id": "normalize.gene.hgnc:1097",
+        "id": "normalize.gene.hgnc:427",
         "type": "Gene",
-        "label": "BRAF",
+        "label": "ALK",
         "description": None,
-        "alternativeLabels": ["BRAF1", "B-raf", "B-RAF1", "BRAF-1", "NS7", "RAFB1"],
+        "alternativeLabels": ["NBLST3", "CD246", "ALK1"],
         "extensions": [
             {"name": "symbol_status", "value": "approved", "description": None},
             {
                 "name": "approved_name",
-                "value": "B-Raf proto-oncogene, serine/threonine kinase",
+                "value": "ALK receptor tyrosine kinase",
                 "description": None,
             },
             {"name": "strand", "value": "-", "description": None},
@@ -189,15 +189,15 @@ def alk_gene_descriptor():
                 "name": "ensembl_locations",
                 "value": [
                     {
-                        "id": "ga4gh:SL.fUv91vYrVHBMg-B_QW7UpOQj50g_49hb",
+                        "id": "ga4gh:SL.V-yTsF-F4eHxeDHeU5KZIF3ZOzE2vUnG",
                         "type": "SequenceLocation",
-                        "digest": "fUv91vYrVHBMg-B_QW7UpOQj50g_49hb",
+                        "digest": "V-yTsF-F4eHxeDHeU5KZIF3ZOzE2vUnG",
                         "sequenceReference": {
                             "type": "SequenceReference",
-                            "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
+                            "refgetAccession": "SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g",
                         },
-                        "start": 140719326,
-                        "end": 140924929,
+                        "start": 29192773,
+                        "end": 29921586,
                     }
                 ],
                 "description": None,
@@ -206,15 +206,15 @@ def alk_gene_descriptor():
                 "name": "ncbi_locations",
                 "value": [
                     {
-                        "id": "ga4gh:SL.0nPwKHYNnTmJ06G-gSmz8BEhB_NTp-0B",
+                        "id": "ga4gh:SL.V-yTsF-F4eHxeDHeU5KZIF3ZOzE2vUnG",
                         "type": "SequenceLocation",
-                        "digest": "0nPwKHYNnTmJ06G-gSmz8BEhB_NTp-0B",
+                        "digest": "V-yTsF-F4eHxeDHeU5KZIF3ZOzE2vUnG",
                         "sequenceReference": {
                             "type": "SequenceReference",
-                            "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
+                            "refgetAccession": "SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g",
                         },
-                        "start": 140713327,
-                        "end": 140924929,
+                        "start": 29192773,
+                        "end": 29921586,
                     }
                 ],
                 "description": None,
@@ -233,7 +233,7 @@ def alk_gene_descriptor():
                     "label": None,
                     "system": "ensembl",
                     "version": None,
-                    "code": "ENSG00000157764",
+                    "code": "ENSG00000171094",
                 },
                 "relation": "relatedMatch",
             },
@@ -242,97 +242,7 @@ def alk_gene_descriptor():
                     "label": None,
                     "system": "ncbigene",
                     "version": None,
-                    "code": "673",
-                },
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {
-                    "label": None,
-                    "system": "cosmic",
-                    "version": None,
-                    "code": "BRAF",
-                },
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {
-                    "label": None,
-                    "system": "ena.embl",
-                    "version": None,
-                    "code": "M95712",
-                },
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {
-                    "label": None,
-                    "system": "omim",
-                    "version": None,
-                    "code": "164757",
-                },
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {
-                    "label": None,
-                    "system": "iuphar",
-                    "version": None,
-                    "code": "1943",
-                },
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {
-                    "label": None,
-                    "system": "ucsc",
-                    "version": None,
-                    "code": "uc003vwc.5",
-                },
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {
-                    "label": None,
-                    "system": "vega",
-                    "version": None,
-                    "code": "OTTHUMG00000157457",
-                },
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {
-                    "label": None,
-                    "system": "ccds",
-                    "version": None,
-                    "code": "CCDS87555",
-                },
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {
-                    "label": None,
-                    "system": "uniprot",
-                    "version": None,
-                    "code": "P15056",
-                },
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {
-                    "label": None,
-                    "system": "refseq",
-                    "version": None,
-                    "code": "NM_004333",
-                },
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {
-                    "label": None,
-                    "system": "pubmed",
-                    "version": None,
-                    "code": "1565476",
+                    "code": "238",
                 },
                 "relation": "relatedMatch",
             },
@@ -341,16 +251,34 @@ def alk_gene_descriptor():
                     "label": None,
                     "system": "orphanet",
                     "version": None,
-                    "code": "119066",
+                    "code": "160020",
                 },
                 "relation": "relatedMatch",
             },
             {
                 "coding": {
                     "label": None,
-                    "system": "pubmed",
+                    "system": "hcdmdb",
                     "version": None,
-                    "code": "2284096",
+                    "code": "CD246",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ucsc",
+                    "version": None,
+                    "code": "uc002rmy.4",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "refseq",
+                    "version": None,
+                    "code": "NM_004304",
                 },
                 "relation": "relatedMatch",
             },
@@ -359,7 +287,79 @@ def alk_gene_descriptor():
                     "label": None,
                     "system": "ccds",
                     "version": None,
-                    "code": "CCDS5863",
+                    "code": "CCDS33172",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "omim",
+                    "version": None,
+                    "code": "105590",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ena.embl",
+                    "version": None,
+                    "code": "D45915",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "vega",
+                    "version": None,
+                    "code": "OTTHUMG00000152034",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "uniprot",
+                    "version": None,
+                    "code": "Q9UM73",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "iuphar",
+                    "version": None,
+                    "code": "1839",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "pubmed",
+                    "version": None,
+                    "code": "8122112",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "cosmic",
+                    "version": None,
+                    "code": "ALK",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS86828",
                 },
                 "relation": "relatedMatch",
             },
