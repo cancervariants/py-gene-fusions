@@ -40,7 +40,7 @@ def linker_element():
     """Create linker element test fixture."""
     params = {
         "linkerSequence": {
-            "id": "fusor.sequence:ACT",
+            "id": "fusor.sequence:act",
             "sequence": "ACT",
             "type": "LiteralSequenceExpression",
         },
@@ -57,6 +57,23 @@ def sequence_location_braf_domain():
         "type": "SequenceLocation",
         "sequenceReference": {
             "id": "refseq:NP_004324.2",
+            "refgetAccession": "SQ.cQvw4UsHHRRlogxbWCB8W-mKD4AraM9y",
+            "type": "SequenceReference",
+        },
+        "start": 458,
+        "end": 712,
+    }
+    return SequenceLocation(**params)
+
+
+@pytest.fixture(scope="module")
+def sequence_location_braf_ref_id_ga4gh():
+    """Create sequence location fixture for BRAF catalytic domain"""
+    params = {
+        "id": "ga4gh:SL.Lm-hzZHlA8FU_cYaOtAIbMLdf4Kk-SF8",
+        "type": "SequenceLocation",
+        "sequenceReference": {
+            "id": "ga4gh:SQ.cQvw4UsHHRRlogxbWCB8W-mKD4AraM9y",
             "refgetAccession": "SQ.cQvw4UsHHRRlogxbWCB8W-mKD4AraM9y",
             "type": "SequenceReference",
         },
@@ -93,14 +110,14 @@ def functional_domain(braf_gene_obj, sequence_location_braf_domain):
 
 
 @pytest.fixture(scope="module")
-def functional_domain_seq_id(braf_gene_obj_min, sequence_location_braf_domain):
+def functional_domain_seq_id(braf_gene_obj_min, sequence_location_braf_ref_id_ga4gh):
     """Create functional domain test fixture."""
     params = {
         "status": "preserved",
         "label": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "id": "interpro:IPR001245",
         "associatedGene": braf_gene_obj_min,
-        "sequenceLocation": sequence_location_braf_domain,
+        "sequenceLocation": sequence_location_braf_ref_id_ga4gh,
     }
     return FunctionalDomain(**params)
 
@@ -626,14 +643,13 @@ def test_templated_sequence_element(
 
     expected = copy.deepcopy(templated_sequence_element.model_dump())
     expected["region"]["sequenceReference"]["refgetAccession"] = (
-        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+        "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
     )
     tsg = fusor_instance.templated_sequence_element(
         100,
         150,
         "NC_000001.11",
         Strand.POSITIVE,
-        seq_id_target_namespace="ga4gh",
     )
     assert tsg.model_dump() == expected
 
@@ -707,23 +723,21 @@ def test_functional_domain(
         for key in expected:
             if key == "associatedGene":
                 compare_gene_obj(actual[key], expected[key])
-            elif key == "sequence_location":
-                act_ld = actual["sequence_location"]
-                exp_ld = expected["sequence_location"]
-                assert act_ld["id"] == exp_ld["id"]
-                assert act_ld["type"] == exp_ld["type"]
-                assert act_ld["location"]["type"] == exp_ld["location"]["type"]
+            elif key == "sequenceLocation":
+                act_sl = actual["sequenceLocation"]
+                exp_sl = expected["sequenceLocation"]
+                assert act_sl["id"] == exp_sl["id"]
+                assert act_sl["type"] == exp_sl["type"]
                 assert (
-                    act_ld["location"]["sequence_id"]
-                    == exp_ld["location"]["sequence_id"]
+                    act_sl["sequenceReference"]["type"]
+                    == exp_sl["sequenceReference"]["type"]
                 )
-                act_int = act_ld["location"]["interval"]
-                exp_int = exp_ld["location"]["interval"]
-                assert act_int["type"] == exp_int["type"]
-                assert act_int["start"]["type"] == exp_int["start"]["type"]
-                assert act_int["start"]["value"] == exp_int["start"]["value"]
-                assert act_int["end"]["type"] == exp_int["end"]["type"]
-                assert act_int["end"]["value"] == exp_int["end"]["value"]
+                assert (
+                    act_sl["sequenceReference"]["id"]
+                    == exp_sl["sequenceReference"]["id"]
+                )
+                assert exp_sl.get("start") == act_sl.get("start")
+                assert exp_sl.get("end") == act_sl.get("end")
             else:
                 assert actual[key] == expected[key]
 
@@ -822,6 +836,7 @@ def test_functional_domain(
         use_minimal_gene=True,
     )
     assert cd[0] is None
+    # TODO: this is now off by one after updating seqrepo (response is now: End inter-residue coordinate (712000) is out of index on NP_004324.2)
     assert (
         "End inter-residue coordinate (711999) is out of index on "
         "NP_004324.2" in cd[1]

@@ -313,7 +313,7 @@ class FUSOR:
 
     def gene_element(
         self, gene: str, use_minimal_gene: bool = True
-    ) -> tuple[Gene | None, str | None]:
+    ) -> tuple[GeneElement | None, str | None]:
         """Create gene element
 
         :param str gene: Gene
@@ -322,7 +322,10 @@ class FUSOR:
             gene-normalizer's gene object will be used
         :return: GeneElement, warning
         """
-        return self._normalized_gene(gene, use_minimal_gene=use_minimal_gene)
+        gene_resp = self._normalized_gene(gene, use_minimal_gene=use_minimal_gene)
+        if gene_resp[0]:
+            return GeneElement(gene=gene_resp[0]), None
+        return None, gene_resp[1]
 
     def templated_sequence_element(
         self,
@@ -370,7 +373,9 @@ class FUSOR:
         try:
             upper_seq = sequence.upper()
             seq = SequenceString(upper_seq)
-            linker_sequence = LiteralSequenceExpression(sequence=seq)
+            linker_sequence = LiteralSequenceExpression(
+                sequence=seq, id=f"fusor.sequence:{sequence}"
+            )
             return LinkerElement(linkerSequence=linker_sequence), None
         except ValidationError as e:
             msg = str(e)
@@ -453,7 +458,7 @@ class FUSOR:
                     label=name,
                     status=status,
                     associatedGene=gene_descr,
-                    sequence_location=loc_descr,
+                    sequenceLocation=loc_descr,
                 ),
                 None,
             )
