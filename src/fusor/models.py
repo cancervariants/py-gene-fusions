@@ -206,7 +206,6 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
     linkerSequence: LiteralSequenceExpression
 
     model_config = ConfigDict(
-        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "type": "LinkerSequenceElement",
@@ -511,7 +510,7 @@ class AbstractFusion(BaseModel, ABC):
         """
         elements = values.structure
         if isinstance(elements[0], TranscriptSegmentElement):
-            if elements[0].exonEnd is None and not values["regulatory_element"]:
+            if elements[0].exonEnd is None and not values["regulatoryElement"]:
                 msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
                 raise ValueError(msg)
         elif isinstance(elements[0], LinkerElement):
