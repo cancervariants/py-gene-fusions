@@ -1,124 +1,86 @@
 {
   "type": "AssayedFusion",
-  "structural_elements": [
+  "structure": [
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_152263.3",
-      "exon_start": 1,
-      "exon_start_offset": 0,
-      "exon_end": 8,
-      "exon_end_offset": 0,
-      "gene_descriptor": {
-        "id": "normalize.gene:TPM3",
-        "type": "GeneDescriptor",
+      "exonStart": 1,
+      "exonStartOffset": 0,
+      "exonEnd": 8,
+      "exonEndOffset": 0,
+      "gene": {
+        "type": "Gene",
         "label": "TPM3",
-        "gene_id": "hgnc:12012"
+        "id": "hgnc:12012"
       },
-      "element_genomic_start": {
-        "id": "fusor.location_descriptor:NC_000001.11",
-        "type": "LocationDescriptor",
-        "label": "NC_000001.11",
-        "location": {
-          "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000001.11",
-          "interval": {
-            "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 154192135
-            },
-            "end": {
-              "type": "Number",
-              "value": 154192136
-            }
-          }
-        }
+      "elementGenomicStart": {
+        "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+        "type": "SequenceLocation",
+        "sequenceReference": {
+          "id": "refseq:NC_000001.11",
+          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+          "type": "SequenceReference"
+        },
+        "start": 154192135,
+        "end": 154192136
       },
-      "element_genomic_end": {
-        "id": "fusor.location_descriptor:NC_000001.11",
-        "type": "LocationDescriptor",
-        "label": "NC_000001.11",
-        "location": {
-          "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000001.11",
-          "interval": {
-            "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 154170399
-            },
-            "end": {
-              "type": "Number",
-              "value": 154170400
-            }
-          }
-        }
+      "elementGenomicEnd": {
+        "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+        "type": "SequenceLocation",
+        "sequenceReference": {
+          "id": "refseq:NC_000001.11",
+          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+          "type": "SequenceReference"
+        },
+        "start": 154170399,
+        "end": 154170400
       }
     },
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_002609.3",
-      "exon_start": 11,
-      "exon_start_offset": 0,
-      "exon_end": 22,
-      "exon_end_offset": 0,
-      "gene_descriptor": {
-        "id": "normalize.gene:PDGFRB",
-        "type": "GeneDescriptor",
+      "exonStart": 11,
+      "exonStartOffset": 0,
+      "exonEnd": 22,
+      "exonEndOffset": 0,
+      "gene": {
+        "type": "Gene",
         "label": "PDGFRB",
-        "gene_id": "hgnc:8804"
+        "id": "hgnc:8804"
       },
-      "element_genomic_start": {
-        "id": "fusor.location_descriptor:NC_000005.10",
-        "type": "LocationDescriptor",
-        "label": "NC_000005.10",
-        "location": {
-          "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000005.10",
-          "interval": {
-            "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 150125577
-            },
-            "end": {
-              "type": "Number",
-              "value": 150125578
-            }
-          }
-        }
+      "elementGenomicStart": {
+        "id": "ga4gh:SL.1mONzR4j65OuPg1yMgF-w-W2qu03qEc-",
+        "type": "SequenceLocation",
+        "sequenceReference": {
+          "id": "refseq:NC_000005.10",
+          "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
+          "type": "SequenceReference"
+        },
+        "start": 150125577,
+        "end": 150125578
       },
-      "element_genomic_end": {
-        "id": "fusor.location_descriptor:NC_000005.10",
-        "type": "LocationDescriptor",
-        "label": "NC_000005.10",
-        "location": {
-          "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000005.10",
-          "interval": {
-            "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 150113838
-            },
-            "end": {
-              "type": "Number",
-              "value": 150113839
-            }
-          }
-        }
+      "elementGenomicEnd": {
+        "id": "ga4gh:SL.QFVGHvvSFg-9q_Tv04DjMbvTRnGs1kEr",
+        "type": "SequenceLocation",
+        "sequenceReference": {
+          "id": "refseq:NC_000005.10",
+          "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
+          "type": "SequenceReference"
+        },
+        "start": 150113838,
+        "end": 150113839
       }
     }
   ],
-  "causative_event": {
+  "causativeEvent": {
     "type": "CausativeEvent",
-    "event_type": "rearrangement"
+    "eventType": "rearrangement"
   },
   "assay": {
     "type": "Assay",
-    "assay_name": "RT-PCR",
-    "assay_id": "obi:OBI_0000552",
-    "method_uri": "pmid:24034314",
-    "fusion_detection": "observed"
+    "assayName": "RT-PCR",
+    "assayId": "obi:OBI_0000552",
+    "methodUri": "pmid:24034314",
+    "fusionDetection": "observed"
   }
 }

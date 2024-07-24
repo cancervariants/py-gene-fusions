@@ -233,10 +233,10 @@ def transcript_segment_element():
             "gene_id": "hgnc:12012",
             "id": "normalize.gene:TPM3",
             "label": "TPM3",
-            "type": "GeneDescriptor",
+            "type": "Gene",
         },
         "transcript": "refseq:NM_152263.3",
-        "element_genomic_end": {
+        "elementGenomicEnd": {
             "id": "fusor.location_descriptor:NC_000001.11",
             "label": "NC_000001.11",
             "location": {
@@ -250,7 +250,7 @@ def transcript_segment_element():
             },
             "type": "LocationDescriptor",
         },
-        "element_genomic_start": {
+        "elementGenomicStart": {
             "id": "fusor.location_descriptor:NC_000001.11",
             "label": "NC_000001.11",
             "location": {
@@ -281,11 +281,11 @@ def mane_transcript_segment_element():
             "gene_id": "hgnc:12761",
             "id": "normalize.gene:WEE1",
             "label": "WEE1",
-            "type": "GeneDescriptor",
+            "type": "Gene",
         },
         "transcript": "refseq:NM_003390.4",
-        "element_genomic_end": None,
-        "element_genomic_start": {
+        "elementGenomicEnd": None,
+        "elementGenomicStart": {
             "id": "fusor.location_descriptor:NC_000011.10",
             "label": "NC_000011.10",
             "location": {
@@ -308,7 +308,7 @@ def fusion_ensg_sequence_id(templated_sequence_element_ensg):
     """Create fixture using Ensemble gene ID."""
     params = {
         "type": "CategoricalFusion",
-        "structural_elements": [
+        "structure": [
             templated_sequence_element_ensg,
             {"type": "MultiplePossibleGenesElement"},
         ],
@@ -364,34 +364,34 @@ def test_add_additional_fields(fusor_instance, fusion_example, fusion_ensg_seque
     fusion = CategoricalFusion(**fusion_example)
 
     expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.critical_functional_domains[
+    expected_fusion.criticalFunctionalDomains[
         0
     ].sequence_location.location_id = "ga4gh:VSL.2CWYzSpOJfZq7KW4VIUKeP5SJtepRar0"
-    expected_fusion.critical_functional_domains[
+    expected_fusion.criticalFunctionalDomains[
         0
     ].sequence_location.location.sequence_id = (
         "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"
     )
-    expected_fusion.structural_elements[
+    expected_fusion.structure[
         0
-    ].element_genomic_start.location_id = "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW"
-    expected_fusion.structural_elements[
+    ].elementGenomicStart.location_id = "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW"
+    expected_fusion.structure[
         0
-    ].element_genomic_start.location.sequence_id = (
+    ].elementGenomicStart.location.sequence_id = (
         "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
     )
-    expected_fusion.structural_elements[
+    expected_fusion.structure[
         0
-    ].element_genomic_end.location_id = "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq"
-    expected_fusion.structural_elements[
+    ].elementGenomicEnd.location_id = "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq"
+    expected_fusion.structure[
         0
-    ].element_genomic_end.location.sequence_id = (
+    ].elementGenomicEnd.location.sequence_id = (
         "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
     )
-    expected_fusion.structural_elements[
+    expected_fusion.structure[
         3
     ].region.location_id = "ga4gh:VSL.zd12pX_ju2gLq9a9UOYgM8AtbkuhnyUu"
-    expected_fusion.structural_elements[
+    expected_fusion.structure[
         3
     ].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
 
@@ -401,7 +401,7 @@ def test_add_additional_fields(fusor_instance, fusion_example, fusion_ensg_seque
     # test handling of unrecognized sequence IDs
     expected_fusion = copy.deepcopy(fusion_ensg_sequence_id)
     fusion = fusor_instance.add_additional_fields(fusion_ensg_sequence_id)
-    ts_reg = fusion.structural_elements[0].region
+    ts_reg = fusion.structure[0].region
     assert ts_reg.location.sequence_id == "ensembl:ENSG00000157764"
     assert ts_reg.location_id == "ga4gh:VSL.dUll0TA05efQf0TsmcP03mtdGcpP9jPH"
 
@@ -411,22 +411,22 @@ def test_add_translated_sequence_id(fusor_instance, fusion_example):
     fusion = CategoricalFusion(**fusion_example)
 
     expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.critical_functional_domains[
+    expected_fusion.criticalFunctionalDomains[
         0
     ].sequence_location.location.sequence_id = (
         "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"
     )
-    expected_fusion.structural_elements[
+    expected_fusion.structure[
         0
-    ].element_genomic_start.location.sequence_id = (
+    ].elementGenomicStart.location.sequence_id = (
         "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
     )
-    expected_fusion.structural_elements[
+    expected_fusion.structure[
         0
-    ].element_genomic_end.location.sequence_id = (
+    ].elementGenomicEnd.location.sequence_id = (
         "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
     )
-    expected_fusion.structural_elements[
+    expected_fusion.structure[
         3
     ].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
 
@@ -440,20 +440,19 @@ def test_add_location_id(fusor_instance, fusion_example, exhaustive_example):
     actual = CategoricalFusion(**exhaustive_example)
 
     assert (
-        fusion.critical_functional_domains[0].sequence_location.location_id
-        == actual.critical_functional_domains[0].sequence_location.location_id
+        fusion.criticalFunctionalDomains[0].sequence_location.location_id
+        == actual.criticalFunctionalDomains[0].sequence_location.location_id
     )
     assert (
-        fusion.structural_elements[0].element_genomic_start.location_id
-        == actual.structural_elements[0].element_genomic_start.location_id
+        fusion.structure[0].elementGenomicStart.location_id
+        == actual.structure[0].elementGenomicStart.location_id
     )
     assert (
-        fusion.structural_elements[0].element_genomic_end.location_id
-        == actual.structural_elements[0].element_genomic_end.location_id
+        fusion.structure[0].elementGenomicEnd.location_id
+        == actual.structure[0].elementGenomicEnd.location_id
     )
     assert (
-        fusion.structural_elements[3].region.location_id
-        == actual.structural_elements[3].region.location_id
+        fusion.structure[3].region.location_id == actual.structure[3].region.location_id
     )
 
 
@@ -481,10 +480,10 @@ def test_add_gene_descriptor(fusor_instance, exhaustive_example, fusion_example)
     e_gds = set()
     t_gds = set()
     for e_field in [
-        expected_fusion.critical_functional_domains,
-        expected_fusion.structural_elements,
+        expected_fusion.criticalFunctionalDomains,
+        expected_fusion.structure,
     ]:
-        for t_field in [actual.critical_functional_domains, actual.structural_elements]:
+        for t_field in [actual.criticalFunctionalDomains, actual.structure]:
             for e_obj in e_field:
                 for t_obj in t_field:
                     if "gene_descriptor" in e_obj.model_fields:
@@ -501,8 +500,8 @@ def test_add_gene_descriptor(fusor_instance, exhaustive_example, fusion_example)
     assert t_gds == e_gds
 
     compare_gene_descriptor(
-        actual.regulatory_element.associated_gene.model_dump(),
-        expected_fusion.regulatory_element.associated_gene.model_dump(),
+        actual.regulatory_element.associatedGene.model_dump(),
+        expected_fusion.regulatory_element.associatedGene.model_dump(),
     )
 
 
@@ -516,50 +515,50 @@ def test_fusion(
     """Test that fusion methods work correctly."""
     # infer type from properties
     f = fusor_instance.fusion(
-        structural_elements=[
+        structure=[
             templated_sequence_element,
             linker_element,
             UnknownGeneElement(),
         ],
-        causative_event={
+        causativeEvent={
             "type": "CausativeEvent",
-            "event_type": "rearrangement",
+            "eventType": "rearrangement",
             "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
         },
         assay={
             "type": "Assay",
-            "method_uri": "pmid:33576979",
-            "assay_id": "obi:OBI_0003094",
-            "assay_name": "fluorescence in-situ hybridization assay",
-            "fusion_detection": "inferred",
+            "methodUri": "pmid:33576979",
+            "assayId": "obi:OBI_0003094",
+            "assayName": "fluorescence in-situ hybridization assay",
+            "fusionDetection": "inferred",
         },
     )
     assert isinstance(f, AssayedFusion)
     f = fusor_instance.fusion(
-        structural_elements=[
+        structure=[
             transcript_segment_element,
             MultiplePossibleGenesElement(),
         ],
-        critical_functional_domains=[functional_domain],
+        criticalFunctionalDomains=[functional_domain],
     )
     assert isinstance(f, CategoricalFusion)
 
     # catch conflicting property args
     with pytest.raises(FUSORParametersException) as excinfo:
         f = fusor_instance.fusion(
-            structural_elements=[
+            structure=[
                 transcript_segment_element,
                 UnknownGeneElement(),
             ],
-            causative_event="rearrangement",
-            critical_functional_domains=[functional_domain],
+            causativeEvent="rearrangement",
+            criticalFunctionalDomains=[functional_domain],
         )
     assert str(excinfo.value) == "Received conflicting attributes"
 
     # handle indeterminate type
     with pytest.raises(FUSORParametersException) as excinfo:
         f = fusor_instance.fusion(
-            structural_elements=[
+            structure=[
                 transcript_segment_element,
                 templated_sequence_element,
             ]
@@ -569,38 +568,38 @@ def test_fusion(
     # handle both type parameter options
     f = fusor_instance.fusion(
         fusion_type="AssayedFusion",
-        structural_elements=[
+        structure=[
             templated_sequence_element,
             linker_element,
             UnknownGeneElement(),
         ],
-        causative_event={
+        causativeEvent={
             "type": "CausativeEvent",
-            "event_type": "rearrangement",
+            "eventType": "rearrangement",
         },
         assay={
             "type": "Assay",
-            "method_uri": "pmid:33576979",
-            "assay_id": "obi:OBI_0003094",
-            "assay_name": "fluorescence in-situ hybridization assay",
-            "fusion_detection": "inferred",
+            "methodUri": "pmid:33576979",
+            "assayId": "obi:OBI_0003094",
+            "assayName": "fluorescence in-situ hybridization assay",
+            "fusionDetection": "inferred",
         },
     )
     assert isinstance(f, AssayedFusion)
     f = fusor_instance.fusion(
         type="CategoricalFusion",
-        structural_elements=[
+        structure=[
             transcript_segment_element,
             MultiplePossibleGenesElement(),
         ],
-        critical_functional_domains=[functional_domain],
+        criticalFunctionalDomains=[functional_domain],
     )
     assert isinstance(f, CategoricalFusion)
 
     # catch and pass on validation errors
     with pytest.raises(FUSORParametersException) as excinfo:
         f = fusor_instance.fusion(
-            fusion_type="CategoricalFusion", structural_elements=[linker_element]
+            fusion_type="CategoricalFusion", structure=[linker_element]
         )
     msg = "Fusions must contain >= 2 structural elements, or >=1 structural element and a regulatory element"
     assert msg in str(excinfo.value)
@@ -657,11 +656,11 @@ async def test_transcript_segment_element(
     assert tsg[0].model_dump() == transcript_segment_element.model_dump()
 
     expected = copy.deepcopy(transcript_segment_element)
-    expected.element_genomic_start.location.sequence_id = (
+    expected.elementGenomicStart.location.sequence_id = (
         "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
     )
-    expected.element_genomic_end.location.sequence_id = (
-        expected.element_genomic_start.location.sequence_id
+    expected.elementGenomicEnd.location.sequence_id = (
+        expected.elementGenomicStart.location.sequence_id
     )
 
     # Transcript Input
@@ -690,8 +689,8 @@ async def test_transcript_segment_element(
     assert tsg[0].model_dump() == expected.model_dump()
 
     expected.exon_end_offset = -5
-    expected.element_genomic_end.location.interval.start.value = 154170404
-    expected.element_genomic_end.location.interval.end.value = 154170405
+    expected.elementGenomicEnd.location.interval.start.value = 154170404
+    expected.elementGenomicEnd.location.interval.end.value = 154170405
 
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
@@ -721,7 +720,7 @@ async def test_transcript_segment_element(
 
     expected.exon_end = None
     expected.exon_end_offset = None
-    expected.element_genomic_end = None
+    expected.elementGenomicEnd = None
 
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
@@ -877,7 +876,7 @@ def test_functional_domain(
         expected = expected.model_dump()
         assert actual.keys() == expected.keys()
         for key in expected:
-            if key == "associated_gene":
+            if key == "associatedGene":
                 compare_gene_descriptor(actual[key], expected[key])
             elif key == "sequence_location":
                 act_ld = actual["sequence_location"]
@@ -1011,7 +1010,7 @@ def test_regulatory_element(fusor_instance, regulatory_element, regulatory_eleme
         expected = expected.model_dump()
         assert actual.keys() == expected.keys()
         assert actual["type"] == expected["type"]
-        compare_gene_descriptor(actual["associated_gene"], expected["associated_gene"])
+        compare_gene_descriptor(actual["associatedGene"], expected["associatedGene"])
 
     re = fusor_instance.regulatory_element(RegulatoryClass.PROMOTER, "BRAF")
     compare_re(re, regulatory_element_min)

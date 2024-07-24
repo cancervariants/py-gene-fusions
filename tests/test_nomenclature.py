@@ -65,12 +65,13 @@ def reg_location_example():
                 "sequenceReference": {
                     "id": "refseq:NC_000023.11",
                     "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+                    "type": "SequenceReference",
                 },
                 "start": 1462581,
                 "end": 1534182,
             },
         },
-        structural_elements=[
+        structure=[
             {
                 "type": "GeneElement",
                 "gene": {
@@ -80,7 +81,7 @@ def reg_location_example():
                 },
             },
         ],
-        causative_event={
+        causativeEvent={
             "type": "CausativeEvent",
             "eventType": "rearrangement",
         },
@@ -99,7 +100,7 @@ def exon_offset_example():
     """Provide example of tx segment with positive exon end offset"""
     return CategoricalFusion(
         type="CategoricalFusion",
-        structural_elements=[
+        structure=[
             {
                 "type": "GeneElement",
                 "gene": {
@@ -124,9 +125,10 @@ def exon_offset_example():
                     "sequenceReference": {
                         "id": "refseq:NC_000001.11",
                         "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        "type": "SequenceReference",
                     },
-                    "start": {"type": "Number", "value": 156864428},
-                    "end": {"type": "Number", "value": 156864429},
+                    "start": 156864428,
+                    "end": 156864429,
                 },
             },
         ],
@@ -139,38 +141,32 @@ def tx_seg_example():
     return TranscriptSegmentElement(
         type="TranscriptSegmentElement",
         transcript="refseq:NM_152263.3",
-        exon_start=1,
-        exon_start_offset=0,
-        exon_end=8,
-        exon_end_offset=0,
+        exonStart=1,
+        exonStartOffset=0,
+        exonEnd=8,
+        exonEndOffset=0,
         gene=Gene(id="hgnc:12012", label="TPM3"),
-        element_genomic_start={
-            "id": "fusor.location_descriptor:NC_000001.11",
-            "type": "LocationDescriptor",
-            "label": "NC_000001.11",
-            "location": {
-                "type": "SequenceLocation",
-                "sequence_id": "refseq:NC_000001.11",
-                "interval": {
-                    "type": "SequenceInterval",
-                    "start": {"type": "Number", "value": 154192135},
-                    "end": {"type": "Number", "value": 154192136},
-                },
+        elementGenomicStart={
+            "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceReference",
             },
+            "start": {"type": "Number", "value": 154192135},
+            "end": {"type": "Number", "value": 154192136},
         },
-        element_genomic_end={
-            "id": "fusor.location_descriptor:NC_000001.11",
-            "type": "LocationDescriptor",
-            "label": "NC_000001.11",
-            "location": {
-                "type": "SequenceLocation",
-                "sequence_id": "refseq:NC_000001.11",
-                "interval": {
-                    "type": "SequenceInterval",
-                    "start": {"type": "Number", "value": 154170399},
-                    "end": {"type": "Number", "value": 154170400},
-                },
+        elementGenomicEnd={
+            "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceReference",
             },
+            "start": {"type": "Number", "value": 154170399},
+            "end": {"type": "Number", "value": 154170400},
         },
     )
 
@@ -181,27 +177,23 @@ def junction_example():
     return TranscriptSegmentElement(
         type="TranscriptSegmentElement",
         transcript="refseq:NM_152263.3",
-        exon_end=8,
-        exon_end_offset=0,
-        gene_descriptor={
-            "id": "normalize.gene:TPM3",
-            "type": "GeneDescriptor",
+        exonEnd=8,
+        exonEndOffset=0,
+        gene={
+            "type": "Gene",
             "label": "TPM3",
-            "gene_id": "hgnc:12012",
+            "id": "hgnc:12012",
         },
-        element_genomic_end={
-            "id": "fusor.location_descriptor:NC_000001.11",
-            "type": "LocationDescriptor",
-            "label": "NC_000001.11",
-            "location": {
-                "type": "SequenceLocation",
-                "sequence_id": "refseq:NC_000001.11",
-                "interval": {
-                    "type": "SequenceInterval",
-                    "start": {"type": "Number", "value": 154170399},
-                    "end": {"type": "Number", "value": 154170400},
-                },
+        elementGenomicEnd={
+            "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceReference",
             },
+            "start": {"type": "Number", "value": 154170399},
+            "end": {"type": "Number", "value": 154170400},
         },
     )
 

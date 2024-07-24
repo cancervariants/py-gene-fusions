@@ -50,7 +50,7 @@ def braf_gene_descriptor():
     """Create gene descriptor params for BRAF."""
     return {
         "id": "normalize.gene:BRAF",
-        "type": "GeneDescriptor",
+        "type": "Gene",
         "label": "BRAF",
         "xrefs": ["ensembl:ENSG00000157764", "ncbigene:673"],
         "alternate_labels": ["BRAF1", "BRAF-1", "NS7", "B-raf", "B-RAF1", "RAFB1"],
@@ -158,7 +158,7 @@ def alk_gene_descriptor():
     """Create test fixture for ALK gene descriptor params"""
     return {
         "id": "normalize.gene:ALK",
-        "type": "GeneDescriptor",
+        "type": "Gene",
         "label": "ALK",
         "description": None,
         "xrefs": ["ensembl:ENSG00000171094", "ncbigene:238"],
@@ -288,7 +288,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                 "_id": "interpro:IPR020635",
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "status": "lost",
-                "associated_gene": alk_gene_descriptor,
+                "associatedGene": alk_gene_descriptor,
                 "sequence_location": {
                     "id": "fusor.location_descriptor:NP_004295.2",
                     "type": "LocationDescriptor",
@@ -311,7 +311,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                 },
             }
         ],
-        "structural_elements": [
+        "structure": [
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
@@ -321,7 +321,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                 "exon_end_offset": 0,
                 "gene_descriptor": {
                     "id": "normalize.gene:TPM3",
-                    "type": "GeneDescriptor",
+                    "type": "Gene",
                     "label": "TPM3",
                     "description": None,
                     "xrefs": ["ensembl:ENSG00000143549", "ncbigene:7170"],
@@ -464,7 +464,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                     "gene_id": "hgnc:12012",
                     "gene": None,
                 },
-                "element_genomic_start": {
+                "elementGenomicStart": {
                     "id": "fusor.location_descriptor:NC_000001.11",
                     "type": "LocationDescriptor",
                     "label": "NC_000001.11",
@@ -484,7 +484,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
                         },
                     },
                 },
-                "element_genomic_end": {
+                "elementGenomicEnd": {
                     "id": "fusor.location_descriptor:NC_000001.11",
                     "type": "LocationDescriptor",
                     "label": "NC_000001.11",
@@ -553,7 +553,7 @@ def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
         "regulatory_element": {
             "type": "RegulatoryElement",
             "regulatory_class": "promoter",
-            "associated_gene": braf_gene_descriptor,
+            "associatedGene": braf_gene_descriptor,
         },
     }
 
@@ -570,9 +570,9 @@ def fusion_example():
                 "_id": "interpro:IPR020635",
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "status": "lost",
-                "associated_gene": {
+                "associatedGene": {
                     "id": "normalize.gene:hgnc%3A427",
-                    "type": "GeneDescriptor",
+                    "type": "Gene",
                     "label": "ALK",
                     "gene_id": "hgnc:427",
                 },
@@ -591,7 +591,7 @@ def fusion_example():
                 },
             }
         ],
-        "structural_elements": [
+        "structure": [
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
@@ -601,11 +601,11 @@ def fusion_example():
                 "exon_end_offset": 0,
                 "gene_descriptor": {
                     "id": "normalize.gene:TPM3",
-                    "type": "GeneDescriptor",
+                    "type": "Gene",
                     "label": "TPM3",
                     "gene_id": "hgnc:12012",
                 },
-                "element_genomic_start": {
+                "elementGenomicStart": {
                     "id": "fusor.location_descriptor:NC_000001.11",
                     "type": "LocationDescriptor",
                     "label": "NC_000001.11",
@@ -619,7 +619,7 @@ def fusion_example():
                         },
                     },
                 },
-                "element_genomic_end": {
+                "elementGenomicEnd": {
                     "id": "fusor.location_descriptor:NC_000001.11",
                     "type": "LocationDescriptor",
                     "label": "NC_000001.11",
@@ -638,7 +638,7 @@ def fusion_example():
                 "type": "GeneElement",
                 "gene_descriptor": {
                     "id": "normalize.gene:ALK",
-                    "type": "GeneDescriptor",
+                    "type": "Gene",
                     "label": "ALK",
                     "gene_id": "hgnc:427",
                 },
@@ -675,9 +675,9 @@ def fusion_example():
         "regulatory_element": {
             "type": "RegulatoryElement",
             "regulatory_class": "promoter",
-            "associated_gene": {
+            "associatedGene": {
                 "id": "gene:BRAF",
-                "type": "GeneDescriptor",
+                "type": "Gene",
                 "label": "BRAF",
                 "gene_id": "hgnc:1097",
             },

@@ -779,15 +779,15 @@ def test_fusion_element_count(
             structure=[unknown_element],
             causativeEvent={
                 "type": "CausativeEvent",
-                "event_type": "rearrangement",
+                "eventType": "rearrangement",
                 "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
             },
             assay={
                 "type": "Assay",
-                "method_uri": "pmid:33576979",
-                "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred",
+                "methodUri": "pmid:33576979",
+                "assayId": "obi:OBI_0003094",
+                "assayName": "fluorescence in-situ hybridization assay",
+                "fusionDetection": "inferred",
             },
         )
     check_validation_error(exc_info, element_ct_msg)
@@ -817,16 +817,16 @@ def test_fusion_element_count(
                 {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
                 {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
             ],
-            causative_event={
+            causativeEvent={
                 "type": "CausativeEvent",
-                "event_type": "read-through",
+                "eventType": "read-through",
             },
             assay={
                 "type": "Assay",
-                "method_uri": "pmid:33576979",
-                "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred",
+                "methodUri": "pmid:33576979",
+                "assayId": "obi:OBI_0003094",
+                "assayName": "fluorescence in-situ hybridization assay",
+                "fusionDetection": "inferred",
             },
         )
     with pytest.raises(ValidationError) as exc_info:
@@ -839,18 +839,18 @@ def test_fusion_element_count(
                 "type": "RegulatoryElement",
                 "regulatory_class": "enhancer",
                 "feature_id": "EH111111111",
-                "associated_gene": gene_examples[6],
+                "associatedGene": gene_examples[6],
             },
-            causative_event={
+            causativeEvent={
                 "type": "CausativeEvent",
-                "event_type": "read-through",
+                "eventType": "read-through",
             },
             assay={
                 "type": "Assay",
-                "method_uri": "pmid:33576979",
-                "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred",
+                "methodUri": "pmid:33576979",
+                "assayId": "obi:OBI_0003094",
+                "assayName": "fluorescence in-situ hybridization assay",
+                "fusionDetection": "inferred",
             },
         )
 

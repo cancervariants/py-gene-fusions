@@ -724,7 +724,7 @@ class FUSOR:
             elif isinstance(element, UnknownGeneElement):
                 parts.append("?")
             elif isinstance(element, LinkerElement):
-                parts.append(element.linker_sequence.sequence)
+                parts.append(element.linkerSequence.sequence)
             elif isinstance(element, TranscriptSegmentElement):
                 if not any(
                     [gene == element.gene.label for gene in element_genes]  # noqa: C419
@@ -742,7 +742,7 @@ class FUSOR:
         if (
             isinstance(fusion, AssayedFusion)
             and fusion.assay
-            and fusion.assay.fusion_detection == Evidence.INFERRED
+            and fusion.assay.fusionDetection == Evidence.INFERRED
         ):
             divider = "(::)"
         else:
