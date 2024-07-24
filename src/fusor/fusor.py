@@ -564,8 +564,11 @@ class FUSOR:
         gene_norm_resp = self.gene_normalizer.normalize(query)
         if gene_norm_resp.match_type:
             gene = gene_norm_resp.gene
+            # remove normalize.gene from id (ex; 'normalize.gene.hgnc:1097' -> 'hgnc:1097')
+            gene_id = gene_norm_resp.normalized_id.replace("normalize.gene.", "")
+            gene.id = gene_id
             if use_minimal_gene:
-                return Gene(id=gene_norm_resp.normalized_id, label=gene.label), None
+                return Gene(id=gene_id, label=gene.label), None
             return gene, None
         return None, f"gene-normalizer unable to normalize {query}"
 

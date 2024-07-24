@@ -49,90 +49,26 @@ def fusor_instance():
 def braf_gene():
     """Create gene params for BRAF."""
     return {
-        "type": "Gene",
         "id": "hgnc:1097",
+        "type": "Gene",
         "label": "BRAF",
-        "mappings": [
-            {
-                "coding": {"code": "673", "system": "ncbigene"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "ENSG00000157764", "system": "ensembl"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "CCDS5863", "system": "ccds"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "1943", "system": "iuphar"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "119066", "system": "orphanet"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "BRAF", "system": "cosmic"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "2284096", "system": "pubmed"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "uc003vwc.5", "system": "ucsc"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "164757", "system": "omim"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "NM_004333", "system": "refseq"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "CCDS87555", "system": "ccds"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "P15056", "system": "uniprot"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "M95712", "system": "ena.embl"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "OTTHUMG00000157457", "system": "vega"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "1565476", "system": "pubmed"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "CCDS94219", "system": "ccds"},
-                "relation": "relatedMatch",
-            },
-            {
-                "coding": {"code": "CCDS94218", "system": "ccds"},
-                "relation": "relatedMatch",
-            },
-        ],
-        "alternativeLabels": ["BRAF1", "BRAF-1", "RAFB1", "NS7", "B-RAF1", "B-raf"],
+        "description": None,
+        "alternativeLabels": ["NS7", "BRAF1", "RAFB1", "B-RAF1", "BRAF-1", "B-raf"],
         "extensions": [
+            {"name": "symbol_status", "value": "approved", "description": None},
             {
                 "name": "approved_name",
                 "value": "B-Raf proto-oncogene, serine/threonine kinase",
+                "description": None,
             },
+            {"name": "strand", "value": "-", "description": None},
             {
                 "name": "ensembl_locations",
                 "value": [
                     {
+                        "id": "ga4gh:SL.fUv91vYrVHBMg-B_QW7UpOQj50g_49hb",
                         "type": "SequenceLocation",
+                        "digest": "fUv91vYrVHBMg-B_QW7UpOQj50g_49hb",
                         "sequenceReference": {
                             "type": "SequenceReference",
                             "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
@@ -141,12 +77,15 @@ def braf_gene():
                         "end": 140924929,
                     }
                 ],
+                "description": None,
             },
             {
                 "name": "ncbi_locations",
                 "value": [
                     {
+                        "id": "ga4gh:SL.0nPwKHYNnTmJ06G-gSmz8BEhB_NTp-0B",
                         "type": "SequenceLocation",
+                        "digest": "0nPwKHYNnTmJ06G-gSmz8BEhB_NTp-0B",
                         "sequenceReference": {
                             "type": "SequenceReference",
                             "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
@@ -155,15 +94,152 @@ def braf_gene():
                         "end": 140924929,
                     }
                 ],
+                "description": None,
             },
-            {"name": "ncbi_gene_type", "value": "protein-coding"},
             {
                 "name": "hgnc_locus_type",
                 "value": "gene with protein product",
+                "description": None,
             },
-            {"name": "ensembl_biotype", "value": "protein_coding"},
-            {"name": "strand", "value": "-"},
-            {"name": "symbol_status", "value": "approved"},
+            {"name": "ncbi_gene_type", "value": "protein-coding", "description": None},
+            {"name": "ensembl_biotype", "value": "protein_coding", "description": None},
+        ],
+        "mappings": [
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ensembl",
+                    "version": None,
+                    "code": "ENSG00000157764",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ncbigene",
+                    "version": None,
+                    "code": "673",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "cosmic",
+                    "version": None,
+                    "code": "BRAF",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ena.embl",
+                    "version": None,
+                    "code": "M95712",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "omim",
+                    "version": None,
+                    "code": "164757",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "iuphar",
+                    "version": None,
+                    "code": "1943",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ucsc",
+                    "version": None,
+                    "code": "uc003vwc.5",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "vega",
+                    "version": None,
+                    "code": "OTTHUMG00000157457",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS87555",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "uniprot",
+                    "version": None,
+                    "code": "P15056",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "refseq",
+                    "version": None,
+                    "code": "NM_004333",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "pubmed",
+                    "version": None,
+                    "code": "1565476",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "orphanet",
+                    "version": None,
+                    "code": "119066",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "pubmed",
+                    "version": None,
+                    "code": "2284096",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS5863",
+                },
+                "relation": "relatedMatch",
+            },
         ],
     }
 
@@ -757,10 +833,9 @@ def fusion_example():
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "status": "lost",
                 "associatedGene": {
-                    "id": "normalize.gene:hgnc%3A427",
                     "type": "Gene",
                     "label": "ALK",
-                    "gene_id": "hgnc:427",
+                    "id": "hgnc:427",
                 },
                 "sequenceLocation": {
                     "id": "ga4gh:SL.aYx-iUOFEw7GVZb4fwrQLkQQahpiIAVp",

@@ -3,9 +3,9 @@
 import copy
 
 import pytest
+from cool_seq_tool.schemas import Strand
 from ga4gh.core.domain_models import Gene
 from ga4gh.vrs.models import SequenceLocation
-from cool_seq_tool.schemas import Strand
 
 from fusor.exceptions import FUSORParametersException
 from fusor.models import (
@@ -147,6 +147,7 @@ def templated_sequence_element():
         "type": "TemplatedSequenceElement",
         "region": {
             "id": "ga4gh:SL.U7-HtnKxK9kKI1ZINiDM_m4I6O-p4Dc9",
+            "digest": "U7-HtnKxK9kKI1ZINiDM_m4I6O-p4Dc9",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
@@ -287,10 +288,10 @@ def compare_gene_obj(actual: dict, expected: dict):
     assert actual["id"] == expected["id"]
     assert actual["type"] == expected["type"]
     assert actual["label"] == expected["label"]
-    if expected["xrefs"]:
-        assert set(actual["xrefs"]) == set(expected["xrefs"]), "xrefs"
+    if expected.get("xrefs"):
+        assert set(actual.get("xrefs")) == set(expected["xrefs"]), "xrefs"
     else:
-        assert actual["xrefs"] == expected["xrefs"]
+        assert actual.get("xrefs") == expected.get("xrefs")
     if expected["alternativeLabels"]:
         assert set(actual["alternativeLabels"]) == set(
             expected["alternativeLabels"]
@@ -315,7 +316,7 @@ def compare_gene_obj(actual: dict, expected: dict):
                         ), f"{expected_ext['value']} value"
                     else:
                         assert actual_ext["value"] == expected_ext["value"]
-                    assert actual_ext["type"] == expected_ext["type"]
+                    assert actual_ext.get("type") == expected_ext.get("type")
                     n_ext_correct += 1
         assert n_ext_correct == len(
             expected["extensions"]
@@ -441,6 +442,7 @@ async def test_transcript_segment_element(
 ):
     """Test that transcript_segment_element method works correctly"""
     # Transcript Input
+    # TODO: this test is now off by one after updating cool-seq-tool - need Jeremy's help in determining if the issue lies in fusor or CST
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", exon_start=1, exon_end=8, tx_to_genomic_coords=True
     )
@@ -485,11 +487,11 @@ async def test_transcript_segment_element(
     assert tsg[0].model_dump() == transcript_segment_element.model_dump()
 
     expected = copy.deepcopy(transcript_segment_element)
-    expected.elementGenomicStart.location.sequence_id = (
+    expected.elementGenomicStart.sequenceReference.refgetAccession = (
         "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
     )
-    expected.elementGenomicEnd.location.sequence_id = (
-        expected.elementGenomicStart.location.sequence_id
+    expected.elementGenomicEnd.sequenceReference.refgetAccession = (
+        expected.elementGenomicStart.sequenceReference.refgetAccession
     )
 
     # Transcript Input
@@ -623,10 +625,9 @@ def test_templated_sequence_element(
     assert tsg.model_dump() == templated_sequence_element.model_dump()
 
     expected = copy.deepcopy(templated_sequence_element.model_dump())
-    expected["region"]["location"]["sequence_id"] = (
+    expected["region"]["sequenceReference"]["refgetAccession"] = (
         "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
     )
-    expected["region"]["location_id"] = "ga4gh:VSL.bL1N-PQfp4dGlEz6PEd34fGxdxo82Zkb"
     tsg = fusor_instance.templated_sequence_element(
         100,
         150,
