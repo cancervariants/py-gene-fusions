@@ -2,6 +2,7 @@
 
 from biocommons.seqrepo.seqrepo import SeqRepo
 from ga4gh.vrs.models import SequenceReference
+from cool_seq_tool.schemas import Strand
 
 from fusor.exceptions import IDTranslationException
 from fusor.models import (
@@ -95,6 +96,7 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
         to retrieve region or location
     """
     region = element.region
+    strand_value = "+" if element.strand == Strand.POSITIVE else "-"
     if region:
         sequence_reference = element.region.sequenceReference
         if isinstance(sequence_reference, SequenceReference):
@@ -108,7 +110,7 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
                 ]
             except IDTranslationException as e:
                 raise ValueError from e
-            return f"{refseq_id.split(':')[1]}(chr {chrom}):g.{start}_{end}({element.strand.value})"
+            return f"{refseq_id.split(':')[1]}(chr {chrom}):g.{start}_{end}({strand_value})"
         raise ValueError
     raise ValueError
 

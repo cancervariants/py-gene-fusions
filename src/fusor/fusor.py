@@ -5,7 +5,7 @@ import re
 
 from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
-from cool_seq_tool.schemas import ResidueMode
+from cool_seq_tool.schemas import ResidueMode, Strand
 from ga4gh.core import ga4gh_identify
 from ga4gh.core.domain_models import Gene
 from ga4gh.vrs import models
@@ -40,7 +40,6 @@ from fusor.models import (
     MultiplePossibleGenesElement,
     RegulatoryClass,
     RegulatoryElement,
-    Strand,
     StructuralElementType,
     TemplatedSequenceElement,
     TranscriptSegmentElement,
