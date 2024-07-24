@@ -39,7 +39,7 @@
       "type": "LinkerSequenceElement",
       "linkerSequence": {
         "id": "sequence:ACTAAAGCG",
-        "type": "SequenceDescriptor",
+        "type": "LiteralSequenceExpression",
         "label": null,
         "description": null,
         "xrefs": null,

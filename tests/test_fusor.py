@@ -434,28 +434,6 @@ def test_add_translated_sequence_id(fusor_instance, fusion_example):
     assert actual_fusion.model_dump() == expected_fusion.model_dump()
 
 
-def test_add_location_id(fusor_instance, fusion_example, exhaustive_example):
-    """Test that add_location_id method works correctly."""
-    fusion = fusor_instance.add_location_id(CategoricalFusion(**fusion_example))
-    actual = CategoricalFusion(**exhaustive_example)
-
-    assert (
-        fusion.criticalFunctionalDomains[0].sequence_location.location_id
-        == actual.criticalFunctionalDomains[0].sequence_location.location_id
-    )
-    assert (
-        fusion.structure[0].elementGenomicStart.location_id
-        == actual.structure[0].elementGenomicStart.location_id
-    )
-    assert (
-        fusion.structure[0].elementGenomicEnd.location_id
-        == actual.structure[0].elementGenomicEnd.location_id
-    )
-    assert (
-        fusion.structure[3].region.location_id == actual.structure[3].region.location_id
-    )
-
-
 def test__normalized_gene(fusor_instance):
     """Test that _normalized_gene works correctly."""
     # Actual response is tested in test_add_gene_descriptor
@@ -474,7 +452,6 @@ def test_add_gene_descriptor(fusor_instance, exhaustive_example, fusion_example)
     expected_fusion = CategoricalFusion(**exhaustive_example)
     actual = CategoricalFusion(**fusion_example)
     fusor_instance.add_translated_sequence_id(actual)
-    fusor_instance.add_location_id(actual)
     fusor_instance.add_gene_descriptor(actual)
 
     e_gds = set()
@@ -807,7 +784,6 @@ def test_templated_sequence_element(
         150,
         "NC_000001.11",
         "+",
-        add_location_id=True,
         seq_id_target_namespace="ga4gh",
     )
     assert tsg.model_dump() == expected

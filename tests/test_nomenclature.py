@@ -40,7 +40,7 @@ def reg_example():
             "type": "Assay",
             "assayName": "a",
             "assayId": "a:b",
-            "methodUti": "a:b",
+            "methodUri": "a:b",
             "fusionDetection": "observed",
         },
     )

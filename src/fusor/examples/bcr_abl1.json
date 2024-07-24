@@ -31,7 +31,7 @@
       "type": "LinkerSequenceElement",
       "linkerSequence": {
         "id": "sequence:ACTAAAGCG",
-        "type": "SequenceDescriptor",
+        "type": "LiteralSequenceExpression",
         "sequence": "ACTAAAGCG"
       }
     },

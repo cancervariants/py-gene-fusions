@@ -332,7 +332,6 @@ class FUSOR:
         end: int,
         sequence_id: str,
         strand: Strand,
-        add_location_id: bool = False,
         residue_mode: ResidueMode = ResidueMode.RESIDUE,
         seq_id_target_namespace: str | None = None,
     ) -> TemplatedSequenceElement:
@@ -342,8 +341,6 @@ class FUSOR:
         :param end: Genomic end
         :param sequence_id: Chromosome accession for sequence
         :param strand: Strand
-        :param add_location_id: ``True`` if ``location_id`` will be added to ``region``.
-            ``False`` otherwise.
         :param residue_mode: Determines coordinate base used. Must be one of ``residue``
             or ``inter-residue``.
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
@@ -359,10 +356,6 @@ class FUSOR:
             sequence_id,
             seq_id_target_namespace=seq_id_target_namespace,
         )
-
-        if add_location_id:
-            location_id = self._location_id(region.location.model_dump())
-            region.location_id = location_id
 
         return TemplatedSequenceElement(region=region, strand=strand)
 
@@ -575,7 +568,6 @@ class FUSOR:
         """
         if add_all:
             self.add_translated_sequence_id(fusion, target_namespace)
-            self.add_location_id(fusion)
         else:
             if fields:
                 for field in fields:
@@ -583,45 +575,8 @@ class FUSOR:
                         self.add_translated_sequence_id(
                             fusion, target_namespace=target_namespace
                         )
-                    elif field == AdditionalFields.LOCATION_ID.value:
-                        self.add_location_id(fusion)
                     else:
                         _logger.warning("Invalid field: %s", field)
-        return fusion
-
-    def add_location_id(self, fusion: Fusion) -> Fusion:
-        """Add `location_id` in fusion object.
-
-        :param fusion: A valid Fusion object.
-        :return: Updated fusion with `location_id` fields set
-        """
-        for structural_element in fusion.structure:
-            if isinstance(structural_element, TemplatedSequenceElement):
-                location = structural_element.region.location
-                location_id = self._location_id(location.model_dump())
-                structural_element.region.location_id = location_id
-            elif isinstance(structural_element, TranscriptSegmentElement):
-                for element_genomic in [
-                    structural_element.elementGenomicStart,
-                    structural_element.elementGenomicEnd,
-                ]:
-                    if element_genomic:
-                        location = element_genomic.location
-                        if location.type == SequenceLocation:
-                            location_id = self._location_id(location.model_dump())
-                            element_genomic.location_id = location_id
-        if isinstance(fusion, CategoricalFusion) and fusion.criticalFunctionalDomains:
-            for domain in fusion.criticalFunctionalDomains:
-                location = domain.sequence_location.location
-                location_id = self._location_id(location.model_dump())
-                domain.sequence_location.location_id = location_id
-        if fusion.regulatoryElement:
-            element = fusion.regulatoryElement
-            if element.feature_location:
-                location = element.feature_location
-                if location.type == SequenceLocation:
-                    location_id = self._location_id(location.model_dump())
-                    element.feature_location.location_id = location_id
         return fusion
 
     @staticmethod

@@ -423,9 +423,8 @@ def test_transcript_segment_element(transcript_segments):
             exonStartOffset="-9",
             exonEnd="8",
             exonEndOffset="7",
-            gene_descriptor={
+            gene={
                 "id": "test:1",
-                "gene": {"id": "hgnc:1"},
                 "label": "G1",
             },
             elementGenomicStart={
@@ -453,9 +452,8 @@ def test_transcript_segment_element(transcript_segments):
             transcript="NM_152263.3",
             exonStart="1",
             exonStartOffset="-9",
-            gene_descriptor={
+            gene={
                 "id": "test:1",
-                "gene": {"id": "hgnc:1"},
                 "label": "G1",
             },
         )
@@ -469,9 +467,8 @@ def test_transcript_segment_element(transcript_segments):
             transcript="NM_152263.3",
             exonStartOffset="-9",
             exonEndOffset="7",
-            gene_descriptor={
+            gene={
                 "id": "test:1",
-                "gene": {"id": "hgnc:1"},
                 "label": "G1",
             },
             elementGenomicStart={
@@ -587,7 +584,7 @@ def test_gene_element(gene_examples):
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert GeneElement(type="UnknownGeneElement", gene_descriptor=gene_examples[0])
+        assert GeneElement(type="UnknownGeneElement", gene=gene_examples[0])
     msg = "Input should be <FUSORTypes.GENE_ELEMENT: 'GeneElement'>"
     check_validation_error(exc_info, msg)
 
@@ -809,13 +806,13 @@ def test_fusion_element_count(
         )
     check_validation_error(exc_info, uq_gene_error_msg)
 
-    # use alternate gene descriptor structure
+    # use alternate gene structure
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
             type="AssayedFusion",
             structure=[
-                {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
-                {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
+                {"type": "GeneElement", "gene": gene_examples[6]},
+                {"type": "GeneElement", "gene": gene_examples[6]},
             ],
             causativeEvent={
                 "type": "CausativeEvent",
@@ -833,7 +830,7 @@ def test_fusion_element_count(
         assert AssayedFusion(
             type="AssayedFusion",
             structure=[
-                {"type": "GeneElement", "gene_descriptor": gene_examples[6]},
+                {"type": "GeneElement", "gene": gene_examples[6]},
             ],
             regulatoryElement={
                 "type": "RegulatoryElement",
