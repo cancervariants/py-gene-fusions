@@ -1,6 +1,7 @@
 """Provide helper methods for fusion nomenclature generation."""
 
 from biocommons.seqrepo.seqrepo import SeqRepo
+from cool_seq_tool.schemas import Strand
 from ga4gh.vrsatile.pydantic.vrs_models import SequenceLocation
 
 from fusor.exceptions import IDTranslationException
@@ -98,6 +99,7 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
     :raises ValueError: if location isn't a SequenceLocation or if unable
         to retrieve region or location
     """
+    strand_value = "+" if element.strand == Strand.POSITIVE else "-"
     if element.region and element.region.location:
         location = element.region.location
         if isinstance(location, SequenceLocation):
@@ -111,7 +113,7 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
                 ]
             except IDTranslationException as e:
                 raise ValueError from e
-            return f"{refseq_id.split(':')[1]}(chr {chrom}):g.{start}_{end}({element.strand.value})"
+            return f"{refseq_id.split(':')[1]}(chr {chrom}):g.{start}_{end}({strand_value})"
         raise ValueError
     raise ValueError
 

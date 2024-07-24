@@ -6,7 +6,7 @@ from urllib.parse import quote
 
 from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
-from cool_seq_tool.schemas import ResidueMode
+from cool_seq_tool.schemas import ResidueMode, Strand
 from ga4gh.core import ga4gh_identify
 from ga4gh.vrs import models
 from ga4gh.vrsatile.pydantic.vrs_models import (
@@ -42,7 +42,6 @@ from fusor.models import (
     MultiplePossibleGenesElement,
     RegulatoryClass,
     RegulatoryElement,
-    Strand,
     StructuralElementType,
     TemplatedSequenceElement,
     TranscriptSegmentElement,

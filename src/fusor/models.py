@@ -4,6 +4,7 @@ from abc import ABC
 from enum import Enum
 from typing import Any, Literal
 
+from cool_seq_tool.schemas import Strand
 from ga4gh.vrsatile.pydantic import return_value
 from ga4gh.vrsatile.pydantic.vrsatile_models import (
     CURIE,
@@ -248,13 +249,6 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
     )
 
 
-class Strand(str, Enum):
-    """Define possible values for strand"""
-
-    POSITIVE = "+"
-    NEGATIVE = "-"
-
-
 class TemplatedSequenceElement(BaseStructuralElement):
     """Define Templated Sequence Element class.
     A templated sequence is a contiguous genomic sequence found in the gene
@@ -286,7 +280,7 @@ class TemplatedSequenceElement(BaseStructuralElement):
                     },
                     "label": "chr12:44908821-44908822(+)",
                 },
-                "strand": "+",
+                "strand": 1,
             }
         },
     )
