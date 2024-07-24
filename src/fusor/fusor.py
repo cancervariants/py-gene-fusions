@@ -126,7 +126,7 @@ class FUSOR:
             # try to infer from provided attributes
             categorical_attributes = any(
                 [
-                    "criticalFunctionalDomains" in kwargs,
+                    "critical_functional_domains" in kwargs,
                     self._contains_element_type(
                         kwargs, StructuralElementType.MULTIPLE_POSSIBLE_GENES_ELEMENT
                     ),
@@ -134,7 +134,7 @@ class FUSOR:
             )
             assayed_attributes = any(
                 [
-                    "causativeEvent" in kwargs,
+                    "causative_event" in kwargs,
                     "assay" in kwargs,
                     self._contains_element_type(
                         kwargs, StructuralElementType.UNKNOWN_GENE_ELEMENT
@@ -208,7 +208,7 @@ class FUSOR:
                 regulatoryElement=regulatory_element,
                 causativeEvent=causative_event,
                 assay=assay,
-                reading_frame_preserved=reading_frame_preserved,
+                readingFramePreserved=reading_frame_preserved,
             )
         except ValidationError as e:
             raise FUSORParametersException(str(e)) from e

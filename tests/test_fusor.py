@@ -23,15 +23,15 @@ from fusor.models import (
 
 
 @pytest.fixture(scope="module")
-def braf_gene_descr_min():
-    """Create minimal gene descriptor for BRAF"""
+def braf_gene_obj_min():
+    """Create minimal gene object for BRAF"""
     return Gene(label="BRAF", id="hgnc:1097")
 
 
 @pytest.fixture(scope="module")
-def braf_gene_descr(braf_gene_descriptor):
-    """Create gene descriptor object for braf"""
-    return Gene(**braf_gene_descriptor)
+def braf_gene_obj(braf_gene):
+    """Create gene object for braf"""
+    return Gene(**braf_gene)
 
 
 @pytest.fixture(scope="module")
@@ -49,8 +49,8 @@ def linker_element():
 
 
 @pytest.fixture(scope="module")
-def location_descriptor_braf_domain():
-    """Create location descriptor fixture for BRAF catalytic domain"""
+def sequence_location_braf_domain():
+    """Create sequence location fixture for BRAF catalytic domain"""
     params = {
         "id": "ga4gh:SL.Lm-hzZHlA8FU_cYaOtAIbMLdf4Kk-SF8",
         "type": "SequenceLocation",
@@ -66,84 +66,65 @@ def location_descriptor_braf_domain():
 
 
 @pytest.fixture(scope="module")
-def location_descriptor_braf_domain_seq_id():
-    """Create location descriptor fixture for BRAF catalytic domain"""
-    params = {
-        "id": "ga4gh:SL.Lm-hzZHlA8FU_cYaOtAIbMLdf4Kk-SF8",
-        "type": "SequenceLocation",
-        "sequenceReference": {
-            "id": "refseq:NP_004324.2",
-            "refgetAccession": "SQ.cQvw4UsHHRRlogxbWCB8W-mKD4AraM9y",
-            "type": "SequenceReference",
-        },
-        "start": 458,
-        "end": 712,
-    }
-    return SequenceLocation(**params)
-
-
-@pytest.fixture(scope="module")
-def functional_domain_min(braf_gene_descr_min, location_descriptor_braf_domain):
+def functional_domain_min(braf_gene_obj_min, sequence_location_braf_domain):
     """Create functional domain test fixture."""
     params = {
         "status": "preserved",
         "label": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "id": "interpro:IPR001245",
-        "associatedGene": braf_gene_descr_min,
-        "sequenceLocation": location_descriptor_braf_domain,
+        "associatedGene": braf_gene_obj_min,
+        "sequenceLocation": sequence_location_braf_domain,
     }
     return FunctionalDomain(**params)
 
 
 @pytest.fixture(scope="module")
-def functional_domain(braf_gene_descr, location_descriptor_braf_domain):
+def functional_domain(braf_gene_obj, sequence_location_braf_domain):
     """Create functional domain test fixture."""
     params = {
         "status": "preserved",
         "label": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "id": "interpro:IPR001245",
-        "associatedGene": braf_gene_descr,
-        "sequenceLocation": location_descriptor_braf_domain,
+        "associatedGene": braf_gene_obj,
+        "sequenceLocation": sequence_location_braf_domain,
     }
     return FunctionalDomain(**params)
 
 
 @pytest.fixture(scope="module")
-def functional_domain_seq_id(
-    braf_gene_descr_min, location_descriptor_braf_domain_seq_id
-):
+def functional_domain_seq_id(braf_gene_obj_min, sequence_location_braf_domain):
     """Create functional domain test fixture."""
     params = {
         "status": "preserved",
         "label": "Serine-threonine/tyrosine-protein kinase, catalytic domain",
         "id": "interpro:IPR001245",
-        "associatedGene": braf_gene_descr_min,
-        "sequenceLocation": location_descriptor_braf_domain_seq_id,
+        "associatedGene": braf_gene_obj_min,
+        "sequenceLocation": sequence_location_braf_domain,
     }
     return FunctionalDomain(**params)
 
 
 @pytest.fixture(scope="module")
-def regulatory_element(braf_gene_descr):
+def regulatory_element(braf_gene_obj):
     """Create regulatory element test fixture."""
     params = {
         "type": "RegulatoryElement",
         "regulatoryClass": "promoter",
-        "associatedGene": braf_gene_descr,
+        "associatedGene": braf_gene_obj,
     }
     return RegulatoryElement(**params)
 
 
 @pytest.fixture(scope="module")
-def regulatory_element_min(braf_gene_descr_min):
-    """Create regulatory element test fixture with minimal gene descriptor."""
-    params = {"regulatoryClass": "promoter", "associatedGene": braf_gene_descr_min}
+def regulatory_element_min(braf_gene_obj_min):
+    """Create regulatory element test fixture with minimal gene object."""
+    params = {"regulatoryClass": "promoter", "associatedGene": braf_gene_obj_min}
     return RegulatoryElement(**params)
 
 
 @pytest.fixture(scope="module")
-def location_descriptor_tpm3():
-    """Create location descriptor test fixture."""
+def sequence_location_tpm3():
+    """Create sequence location for TPM3 test fixture."""
     params = {
         "id": "ga4gh:SL.0cMJgKuY32ate6k95oLua6vv8JAJ4PzO",
         "type": "SequenceLocation",
@@ -203,17 +184,10 @@ def templated_sequence_element_custom_id():
     params = {
         "type": "TemplatedSequenceElement",
         "region": {
-            "id": "fusor.location_descriptor:custom_ID__1",
-            "type": "LocationDescriptor",
-            "location": {
-                "type": "SequenceLocation",
-                "sequence_id": "sequence.id:custom_ID__1",
-                "interval": {
-                    "type": "SequenceInterval",
-                    "start": {"type": "Number", "value": 200},
-                    "end": {"type": "Number", "value": 300},
-                },
-            },
+            "id": "custom_ID__1",
+            "type": "SequenceLocation",
+            "start": 200,
+            "end": 300,
         },
         "strand": "+",
     }
@@ -225,44 +199,37 @@ def transcript_segment_element():
     """Create transcript segment element test fixture"""
     params = {
         "type": "TranscriptSegmentElement",
-        "exon_end": 8,
-        "exon_end_offset": 0,
-        "exon_start": 1,
-        "exon_start_offset": 0,
-        "gene_descriptor": {
-            "gene_id": "hgnc:12012",
-            "id": "normalize.gene:TPM3",
+        "exonEnd": 8,
+        "exonEndOffset": 0,
+        "exonStart": 1,
+        "exonStartOffset": 0,
+        "gene": {
+            "id": "hgnc:12012",
             "label": "TPM3",
             "type": "Gene",
         },
         "transcript": "refseq:NM_152263.3",
         "elementGenomicEnd": {
-            "id": "fusor.location_descriptor:NC_000001.11",
-            "label": "NC_000001.11",
-            "location": {
-                "interval": {
-                    "end": {"type": "Number", "value": 154170400},
-                    "start": {"type": "Number", "value": 154170399},
-                    "type": "SequenceInterval",
-                },
-                "sequence_id": "refseq:NC_000001.11",
-                "type": "SequenceLocation",
+            "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceReference",
             },
-            "type": "LocationDescriptor",
+            "start": 154170399,
+            "end": 154170400,
         },
         "elementGenomicStart": {
-            "id": "fusor.location_descriptor:NC_000001.11",
-            "label": "NC_000001.11",
-            "location": {
-                "interval": {
-                    "end": {"type": "Number", "value": 154192136},
-                    "start": {"type": "Number", "value": 154192135},
-                    "type": "SequenceInterval",
-                },
-                "sequence_id": "refseq:NC_000001.11",
-                "type": "SequenceLocation",
+            "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceReference",
             },
-            "type": "LocationDescriptor",
+            "start": 154192135,
+            "end": 154192136,
         },
     }
     return TranscriptSegmentElement(**params)
@@ -273,31 +240,27 @@ def mane_transcript_segment_element():
     """Create transcript segment element test fixture"""
     params = {
         "type": "TranscriptSegmentElement",
-        "exon_end": None,
-        "exon_end_offset": None,
-        "exon_start": 2,
-        "exon_start_offset": 0,
-        "gene_descriptor": {
-            "gene_id": "hgnc:12761",
-            "id": "normalize.gene:WEE1",
+        "exonEnd": None,
+        "exonEndOffset": None,
+        "exonStart": 2,
+        "exonStartOffset": 0,
+        "gene": {
+            "id": "hgnc:12761",
             "label": "WEE1",
             "type": "Gene",
         },
         "transcript": "refseq:NM_003390.4",
         "elementGenomicEnd": None,
         "elementGenomicStart": {
-            "id": "fusor.location_descriptor:NC_000011.10",
-            "label": "NC_000011.10",
-            "location": {
-                "interval": {
-                    "end": {"type": "Number", "value": 9575887},
-                    "start": {"type": "Number", "value": 9575886},
-                    "type": "SequenceInterval",
-                },
-                "sequence_id": "refseq:NC_000011.10",
-                "type": "SequenceLocation",
+            "id": "ga4gh:SL.ge9FDGyBXkKhEMR6RUMFg3u13j85WmMd",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000011.10",
+                "refgetAccession": "SQ.2NkFm8HK88MqeNkCgj78KidCAXgnsfV1",
+                "type": "SequenceReference",
             },
-            "type": "LocationDescriptor",
+            "start": 9575887,
+            "end": 9575886,
         },
     }
     return TranscriptSegmentElement(**params)
@@ -312,17 +275,16 @@ def fusion_ensg_sequence_id(templated_sequence_element_ensg):
             templated_sequence_element_ensg,
             {"type": "MultiplePossibleGenesElement"},
         ],
-        "reading_frame_preserved": True,
-        "regulatory_element": None,
+        "readingFramePreserved": True,
+        "regulatoryElement": None,
     }
     return CategoricalFusion(**params)
 
 
-def compare_gene_descriptor(actual: dict, expected: dict):
-    """Test that actual and expected gene descriptors match."""
+def compare_gene_obj(actual: dict, expected: dict):
+    """Test that actual and expected gene objects match."""
     assert actual["id"] == expected["id"]
     assert actual["type"] == expected["type"]
-    assert actual["gene_id"] == expected["gene_id"]
     assert actual["label"] == expected["label"]
     if expected["xrefs"]:
         assert set(actual["xrefs"]) == set(expected["xrefs"]), "xrefs"
@@ -359,84 +321,9 @@ def compare_gene_descriptor(actual: dict, expected: dict):
         ), "number of correct extensions"
 
 
-def test_add_additional_fields(fusor_instance, fusion_example, fusion_ensg_sequence_id):
-    """Test that add_additional_fields method works correctly."""
-    fusion = CategoricalFusion(**fusion_example)
-
-    expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.criticalFunctionalDomains[
-        0
-    ].sequence_location.location_id = "ga4gh:VSL.2CWYzSpOJfZq7KW4VIUKeP5SJtepRar0"
-    expected_fusion.criticalFunctionalDomains[
-        0
-    ].sequence_location.location.sequence_id = (
-        "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"
-    )
-    expected_fusion.structure[
-        0
-    ].elementGenomicStart.location_id = "ga4gh:VSL.H0IOyJ-DB4jTbbSBjQFvuPvMrZHAWSrW"
-    expected_fusion.structure[
-        0
-    ].elementGenomicStart.location.sequence_id = (
-        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
-    )
-    expected_fusion.structure[
-        0
-    ].elementGenomicEnd.location_id = "ga4gh:VSL.aarSLdMOQ8LoooPB2EoSth41yG_qRmDq"
-    expected_fusion.structure[
-        0
-    ].elementGenomicEnd.location.sequence_id = (
-        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
-    )
-    expected_fusion.structure[
-        3
-    ].region.location_id = "ga4gh:VSL.zd12pX_ju2gLq9a9UOYgM8AtbkuhnyUu"
-    expected_fusion.structure[
-        3
-    ].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
-
-    actual_fusion = fusor_instance.add_additional_fields(fusion)
-    assert actual_fusion.model_dump() == expected_fusion.model_dump()
-
-    # test handling of unrecognized sequence IDs
-    expected_fusion = copy.deepcopy(fusion_ensg_sequence_id)
-    fusion = fusor_instance.add_additional_fields(fusion_ensg_sequence_id)
-    ts_reg = fusion.structure[0].region
-    assert ts_reg.location.sequence_id == "ensembl:ENSG00000157764"
-    assert ts_reg.location_id == "ga4gh:VSL.dUll0TA05efQf0TsmcP03mtdGcpP9jPH"
-
-
-def test_add_translated_sequence_id(fusor_instance, fusion_example):
-    """Test that add_translated_sequence_id method works correctly."""
-    fusion = CategoricalFusion(**fusion_example)
-
-    expected_fusion = copy.deepcopy(fusion)
-    expected_fusion.criticalFunctionalDomains[
-        0
-    ].sequence_location.location.sequence_id = (
-        "ga4gh:SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"
-    )
-    expected_fusion.structure[
-        0
-    ].elementGenomicStart.location.sequence_id = (
-        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
-    )
-    expected_fusion.structure[
-        0
-    ].elementGenomicEnd.location.sequence_id = (
-        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
-    )
-    expected_fusion.structure[
-        3
-    ].region.location.sequence_id = "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP"
-
-    actual_fusion = fusor_instance.add_translated_sequence_id(fusion)
-    assert actual_fusion.model_dump() == expected_fusion.model_dump()
-
-
 def test__normalized_gene(fusor_instance):
     """Test that _normalized_gene works correctly."""
-    # Actual response is tested in test_add_gene_descriptor
+    # TODO: test actual response
     resp = fusor_instance._normalized_gene("BRAF")
     assert resp[0]
     assert resp[1] is None
@@ -445,41 +332,6 @@ def test__normalized_gene(fusor_instance):
     resp = fusor_instance._normalized_gene("B R A F")
     assert resp[0] is None
     assert resp[1] == "gene-normalizer unable to normalize B R A F"
-
-
-def test_add_gene_descriptor(fusor_instance, exhaustive_example, fusion_example):
-    """Test that add_gene_descriptor method works correctly."""
-    expected_fusion = CategoricalFusion(**exhaustive_example)
-    actual = CategoricalFusion(**fusion_example)
-    fusor_instance.add_translated_sequence_id(actual)
-    fusor_instance.add_gene_descriptor(actual)
-
-    e_gds = set()
-    t_gds = set()
-    for e_field in [
-        expected_fusion.criticalFunctionalDomains,
-        expected_fusion.structure,
-    ]:
-        for t_field in [actual.criticalFunctionalDomains, actual.structure]:
-            for e_obj in e_field:
-                for t_obj in t_field:
-                    if "gene_descriptor" in e_obj.model_fields:
-                        e_gd = e_obj.gene_descriptor.label
-                        e_gds.add(e_gd)
-                        if "gene_descriptor" in t_obj.model_fields:
-                            t_gd = t_obj.gene_descriptor.label
-                            t_gds.add(t_gd)
-                            if e_gd == t_gd:
-                                compare_gene_descriptor(
-                                    t_obj.gene_descriptor.model_dump(),
-                                    e_obj.gene_descriptor.model_dump(),
-                                )
-    assert t_gds == e_gds
-
-    compare_gene_descriptor(
-        actual.regulatory_element.associatedGene.model_dump(),
-        expected_fusion.regulatory_element.associatedGene.model_dump(),
-    )
 
 
 def test_fusion(
@@ -497,10 +349,10 @@ def test_fusion(
             linker_element,
             UnknownGeneElement(),
         ],
-        causativeEvent={
+        causative_event={
             "type": "CausativeEvent",
             "eventType": "rearrangement",
-            "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+            "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
         },
         assay={
             "type": "Assay",
@@ -516,7 +368,7 @@ def test_fusion(
             transcript_segment_element,
             MultiplePossibleGenesElement(),
         ],
-        criticalFunctionalDomains=[functional_domain],
+        critical_functional_domains=[functional_domain],
     )
     assert isinstance(f, CategoricalFusion)
 
@@ -527,8 +379,8 @@ def test_fusion(
                 transcript_segment_element,
                 UnknownGeneElement(),
             ],
-            causativeEvent="rearrangement",
-            criticalFunctionalDomains=[functional_domain],
+            causative_event="rearrangement",
+            critical_functional_domains=[functional_domain],
         )
     assert str(excinfo.value) == "Received conflicting attributes"
 
@@ -550,7 +402,7 @@ def test_fusion(
             linker_element,
             UnknownGeneElement(),
         ],
-        causativeEvent={
+        causative_event={
             "type": "CausativeEvent",
             "eventType": "rearrangement",
         },
@@ -569,7 +421,7 @@ def test_fusion(
             transcript_segment_element,
             MultiplePossibleGenesElement(),
         ],
-        criticalFunctionalDomains=[functional_domain],
+        critical_functional_domains=[functional_domain],
     )
     assert isinstance(f, CategoricalFusion)
 
@@ -614,7 +466,6 @@ async def test_transcript_segment_element(
         end=154170399,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
-        residue_mode="inter-residue",
     )
     assert tsg[0]
     assert tsg[1] is None
@@ -695,8 +546,8 @@ async def test_transcript_segment_element(
     assert tsg[1] is None
     assert tsg[0].model_dump() == expected.model_dump()
 
-    expected.exon_end = None
-    expected.exon_end_offset = None
+    expected.exonEnd = None
+    expected.exonEndOffset = None
     expected.elementGenomicEnd = None
 
     # Transcript Input
@@ -734,25 +585,21 @@ async def test_transcript_segment_element(
     assert tsg[0].model_dump() == mane_transcript_segment_element.model_dump()
 
 
-def test_gene_element(fusor_instance, braf_gene_descr_min, braf_gene_descr):
+def test_gene_element(fusor_instance, braf_gene_obj_min, braf_gene_obj):
     """Test that gene_element works correctly."""
-    gc = fusor_instance.gene_element("BRAF", use_minimal_gene_descr=True)
+    gc = fusor_instance.gene_element("BRAF", use_minimal_gene=True)
     assert gc[0]
     assert gc[1] is None
     assert isinstance(gc[0], GeneElement)
-    compare_gene_descriptor(
-        gc[0].gene_descriptor.model_dump(), braf_gene_descr_min.model_dump()
-    )
+    compare_gene_obj(gc[0].gene.model_dump(), braf_gene_obj_min.model_dump())
 
-    gc = fusor_instance.gene_element("BRAF", use_minimal_gene_descr=False)
+    gc = fusor_instance.gene_element("BRAF", use_minimal_gene=False)
     assert gc[0]
     assert gc[1] is None
     assert isinstance(gc[0], GeneElement)
-    compare_gene_descriptor(
-        gc[0].gene_descriptor.model_dump(), braf_gene_descr.model_dump()
-    )
+    compare_gene_obj(gc[0].gene.model_dump(), braf_gene_obj.model_dump())
 
-    gc = fusor_instance.gene_element("BRA F", use_minimal_gene_descr=True)
+    gc = fusor_instance.gene_element("BRA F", use_minimal_gene=True)
     assert gc[0] is None
     assert gc[1] == "gene-normalizer unable to normalize BRA F"
 
@@ -853,7 +700,7 @@ def test_functional_domain(
         assert actual.keys() == expected.keys()
         for key in expected:
             if key == "associatedGene":
-                compare_gene_descriptor(actual[key], expected[key])
+                compare_gene_obj(actual[key], expected[key])
             elif key == "sequence_location":
                 act_ld = actual["sequence_location"]
                 exp_ld = expected["sequence_location"]
@@ -882,7 +729,7 @@ def test_functional_domain(
         "NP_004324.2",
         458,
         712,
-        use_minimal_gene_descr=False,
+        use_minimal_gene=False,
     )
     compare_domains(cd, functional_domain)
 
@@ -894,7 +741,7 @@ def test_functional_domain(
         "NP_004324.2",
         458,
         712,
-        use_minimal_gene_descr=True,
+        use_minimal_gene=True,
     )
     compare_domains(cd, functional_domain_min)
 
@@ -907,7 +754,7 @@ def test_functional_domain(
         458,
         712,
         seq_id_target_namespace="ga4gh",
-        use_minimal_gene_descr=True,
+        use_minimal_gene=True,
     )
     compare_domains(cd, functional_domain_seq_id)
 
@@ -920,7 +767,7 @@ def test_functional_domain(
         458,
         712,
         seq_id_target_namespace="ga4gh",
-        use_minimal_gene_descr=True,
+        use_minimal_gene=True,
     )
     assert cd[0] is None
     assert "Input should be 'lost' or 'preserved'" in cd[1]
@@ -935,7 +782,7 @@ def test_functional_domain(
         458,
         712,
         seq_id_target_namespace="ga4gh",
-        use_minimal_gene_descr=True,
+        use_minimal_gene=True,
     )
     assert cd[0] is None
     assert "Sequence_id must be a protein accession." in cd[1]
@@ -951,7 +798,7 @@ def test_functional_domain(
         458,
         712,
         seq_id_target_namespace="ga4gh",
-        use_minimal_gene_descr=True,
+        use_minimal_gene=True,
     )
     assert cd[0] is None
     assert f"Accession, {accession}, not found in SeqRepo" in cd[1]
@@ -966,7 +813,7 @@ def test_functional_domain(
         458,
         712000,
         seq_id_target_namespace="ga4gh",
-        use_minimal_gene_descr=True,
+        use_minimal_gene=True,
     )
     assert cd[0] is None
     assert (
@@ -986,45 +833,10 @@ def test_regulatory_element(fusor_instance, regulatory_element, regulatory_eleme
         expected = expected.model_dump()
         assert actual.keys() == expected.keys()
         assert actual["type"] == expected["type"]
-        compare_gene_descriptor(actual["associatedGene"], expected["associatedGene"])
+        compare_gene_obj(actual["associatedGene"], expected["associatedGene"])
 
     re = fusor_instance.regulatory_element(RegulatoryClass.PROMOTER, "BRAF")
     compare_re(re, regulatory_element_min)
 
     re = fusor_instance.regulatory_element(RegulatoryClass.PROMOTER, "BRAF", False)
     compare_re(re, regulatory_element)
-
-
-def test__location_descriptor(fusor_instance, location_descriptor_tpm3):
-    """Test that _location_descriptor method works correctly."""
-    ld = fusor_instance._location_descriptor(154170398, 154170399, "NM_152263.3")
-    assert ld.model_dump() == location_descriptor_tpm3.model_dump()
-
-    expected = copy.deepcopy(location_descriptor_tpm3)
-    expected.location.sequence_id = "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT"
-    ld = fusor_instance._location_descriptor(
-        154170398, 154170399, "NM_152263.3", seq_id_target_namespace="ga4gh"
-    )
-    assert ld.model_dump() == expected.model_dump()
-
-    expected.id = "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa"
-    ld = fusor_instance._location_descriptor(
-        154170398,
-        154170399,
-        "NM_152263.3",
-        seq_id_target_namespace="ga4gh",
-        use_location_id=True,
-    )
-    assert ld.model_dump() == expected.model_dump()
-
-    expected.location.sequence_id = "refseq:NM_152263.3"
-    expected.id = "fusor.location_descriptor:refseq%3ANM_152263.3"
-    ld = fusor_instance._location_descriptor(154170398, 154170399, "refseq:NM_152263.3")
-    assert ld.model_dump() == expected.model_dump()
-
-    expected.id = "fusor.location_descriptor:example_label"
-    expected.label = "example_label"
-    ld = fusor_instance._location_descriptor(
-        154170398, 154170399, "refseq:NM_152263.3", label="example_label"
-    )
-    assert ld.model_dump() == expected.model_dump()
