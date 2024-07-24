@@ -416,8 +416,7 @@ class FUSOR:
         :param sequence_id: protein sequence on which provided coordinates are located
         :param start: start position on sequence
         :param end: end position on sequence
-        :param use_minimal_gene: ``True`` if minimal gene object (``id``,
-            ``gene_id``, ``label``) will be used. ``False`` if gene-normalizer's gene
+        :param use_minimal_gene: ``True`` if minimal gene object (``id``, ``label``) will be used. ``False`` if gene-normalizer's gene
             object will be used
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
@@ -679,7 +678,7 @@ class FUSOR:
             elif isinstance(element, UnknownGeneElement):
                 parts.append("?")
             elif isinstance(element, LinkerElement):
-                parts.append(element.linkerSequence.sequence)
+                parts.append(element.linkerSequence.sequence.root)
             elif isinstance(element, TranscriptSegmentElement):
                 if not any(
                     [gene == element.gene.label for gene in element_genes]  # noqa: C419

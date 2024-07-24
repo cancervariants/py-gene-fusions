@@ -14,7 +14,7 @@
         "label": "BCR",
         "description": null,
         "xrefs": null,
-        "alternate_labels": null,
+        "alternativeLabels": null,
         "extensions": null,
         "id": "hgnc:1014"
       },
@@ -24,7 +24,7 @@
         "type": "SequenceLocation",
         "description": null,
         "xrefs": null,
-        "alternate_labels": null,
+        "alternativeLabels": null,
         "extensions": null,
         "sequenceReference": {
           "id": "refseq:NC_000022.11",
@@ -43,7 +43,7 @@
         "label": null,
         "description": null,
         "xrefs": null,
-        "alternate_labels": null,
+        "alternativeLabels": null,
         "extensions": null,
         "sequence": "ACTAAAGCG"
       }
@@ -60,7 +60,7 @@
         "label": "ABL1",
         "description": null,
         "xrefs": null,
-        "alternate_labels": null,
+        "alternativeLabels": null,
         "extensions": null,
         "id": "hgnc:76"
       },
@@ -68,7 +68,7 @@
         "id": "ga4gh:SL.tZYgaEJP2-d4Guv-n5gyhqOc07qH9xr6",
         "description": null,
         "xrefs": null,
-        "alternate_labels": null,
+        "alternativeLabels": null,
         "extensions": null,
         "type": "SequenceLocation",
         "sequenceReference": {
@@ -92,7 +92,7 @@
         "label": "ABL1",
         "description": null,
         "xrefs": null,
-        "alternate_labels": null,
+        "alternativeLabels": null,
         "extensions": null,
         "id": "hgnc:76"
       },
@@ -102,7 +102,7 @@
         "id": "ga4gh:SL.VQe2sf2aYArPcvjygq38JvFxRuDniE15",
         "description": null,
         "xrefs": null,
-        "alternate_labels": null,
+        "alternativeLabels": null,
         "extensions": null,
         "type": "SequenceLocation",
         "sequenceReference": {

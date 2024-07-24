@@ -1,7 +1,7 @@
 """Provide helper methods for fusion nomenclature generation."""
 
 from biocommons.seqrepo.seqrepo import SeqRepo
-from ga4gh.vrs.models import SequenceLocation
+from ga4gh.vrs.models import SequenceReference
 
 from fusor.exceptions import IDTranslationException
 from fusor.models import (
@@ -97,7 +97,7 @@ def templated_seq_nomenclature(element: TemplatedSequenceElement, sr: SeqRepo) -
     region = element.region
     if region:
         sequence_reference = element.region.sequenceReference
-        if isinstance(sequence_reference, SequenceLocation):
+        if isinstance(sequence_reference, SequenceReference):
             sequence_id = str(sequence_reference.id)
             refseq_id = str(translate_identifier(sr, sequence_id, "refseq"))
             start = region.start

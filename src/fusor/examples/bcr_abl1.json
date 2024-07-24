@@ -14,7 +14,7 @@
         "type": "SequenceLocation",
         "description": null,
         "xrefs": null,
-        "alternate_labels": null,
+        "alternativeLabels": null,
         "extensions": null,
         "sequenceReference": {
           "id": "refseq:NC_000022.11",
@@ -49,7 +49,7 @@
         "id": "ga4gh:SL.tZYgaEJP2-d4Guv-n5gyhqOc07qH9xr6",
         "description": null,
         "xrefs": null,
-        "alternate_labels": null,
+        "alternativeLabels": null,
         "extensions": null,
         "type": "SequenceLocation",
         "sequenceReference": {
@@ -78,7 +78,7 @@
         "id": "ga4gh:SL.VQe2sf2aYArPcvjygq38JvFxRuDniE15",
         "description": null,
         "xrefs": null,
-        "alternate_labels": null,
+        "alternativeLabels": null,
         "extensions": null,
         "type": "SequenceLocation",
         "sequenceReference": {

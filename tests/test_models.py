@@ -730,7 +730,6 @@ def test_fusion(
                         "id": "a:b",
                         "type": "LiteralSequenceExpression",
                         "sequence": "AC",
-                        "residue_type": "SO:0000348",
                     },
                 },
                 {
@@ -739,7 +738,6 @@ def test_fusion(
                         "id": "a:b",
                         "type": "LiteralSequenceExpression",
                         "sequence": "AC",
-                        "residue_type": "SO:0000348",
                     },
                 },
             ],

@@ -154,8 +154,8 @@ def tx_seg_example():
                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                 "type": "SequenceReference",
             },
-            "start": {"type": "Number", "value": 154192135},
-            "end": {"type": "Number", "value": 154192136},
+            "start": 154192135,
+            "end": 154192136,
         },
         elementGenomicEnd={
             "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
@@ -165,8 +165,8 @@ def tx_seg_example():
                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                 "type": "SequenceReference",
             },
-            "start": {"type": "Number", "value": 154170399},
-            "end": {"type": "Number", "value": 154170400},
+            "start": 154170399,
+            "end": 154170400,
         },
     )
 
@@ -192,8 +192,8 @@ def junction_example():
                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                 "type": "SequenceReference",
             },
-            "start": {"type": "Number", "value": 154170399},
-            "end": {"type": "Number", "value": 154170400},
+            "start": 154170399,
+            "end": 154170400,
         },
     )
 

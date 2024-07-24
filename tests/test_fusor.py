@@ -328,12 +328,12 @@ def compare_gene_descriptor(actual: dict, expected: dict):
         assert set(actual["xrefs"]) == set(expected["xrefs"]), "xrefs"
     else:
         assert actual["xrefs"] == expected["xrefs"]
-    if expected["alternate_labels"]:
-        assert set(actual["alternate_labels"]) == set(
-            expected["alternate_labels"]
+    if expected["alternativeLabels"]:
+        assert set(actual["alternativeLabels"]) == set(
+            expected["alternativeLabels"]
         ), "alt labels"
     else:
-        assert actual["alternate_labels"] == expected["alternate_labels"]
+        assert actual["alternativeLabels"] == expected["alternativeLabels"]
     assert "extensions" in actual
     if expected["extensions"]:
         assert len(actual["extensions"]) == len(
