@@ -203,7 +203,6 @@ def transcript_segment_element():
                 "type": "SequenceReference",
             },
             "start": 154170399,
-            "end": 154170400,
         },
         "elementGenomicStart": {
             "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
@@ -213,8 +212,7 @@ def transcript_segment_element():
                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                 "type": "SequenceReference",
             },
-            "start": 154192135,
-            "end": 154192136,
+            "end": 154192135,
         },
     }
     return TranscriptSegmentElement(**params)
@@ -245,7 +243,6 @@ def mane_transcript_segment_element():
                 "type": "SequenceReference",
             },
             "start": 9575887,
-            "end": 9575886,
         },
     }
     return TranscriptSegmentElement(**params)
