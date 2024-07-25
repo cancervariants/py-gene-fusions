@@ -1,8 +1,8 @@
 """Provide helper methods for fusion nomenclature generation."""
 
 from biocommons.seqrepo.seqrepo import SeqRepo
-from ga4gh.vrs.models import SequenceReference
 from cool_seq_tool.schemas import Strand
+from ga4gh.vrs.models import SequenceReference
 
 from fusor.exceptions import IDTranslationException
 from fusor.models import (
