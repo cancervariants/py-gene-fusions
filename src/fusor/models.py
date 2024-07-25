@@ -243,7 +243,6 @@ class TemplatedSequenceElement(BaseStructuralElement):
                         "id": "refseq:NC_000012.12",
                         "refgetAccession": "SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
                     },
-                    "label": "chr12:44908821-44908822(+)",
                 },
                 "strand": 1,
             }
