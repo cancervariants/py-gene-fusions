@@ -7,7 +7,7 @@ from cool_seq_tool.schemas import Strand
 from ga4gh.core.domain_models import Gene
 from ga4gh.vrs.models import SequenceLocation
 
-from fusor.exceptions import FUSORParametersException
+from fusor.exceptions import FUSORParametersException, IDTranslationException
 from fusor.models import (
     AssayedFusion,
     CategoricalFusion,
@@ -173,40 +173,6 @@ def templated_sequence_element():
             },
             "start": 99,
             "end": 150,
-        },
-        "strand": 1,
-    }
-    return TemplatedSequenceElement(**params)
-
-
-@pytest.fixture()
-def templated_sequence_element_ensg():
-    """Create test fixture using non-seqrepo-recognized sequence ID"""
-    params = {
-        "type": "TemplatedSequenceElement",
-        "region": {
-            "id": "ENSG00000157764",
-            "type": "SequenceLocation",
-            "start": 140719328,
-            "end": 140719400,
-        },
-        "strand": -1,
-    }
-    return TemplatedSequenceElement(**params)
-
-
-@pytest.fixture(scope="module")
-def templated_sequence_element_custom_id():
-    """Create test fixture using custom (ie unable to coerce namespace)
-    sequence identifier.
-    """
-    params = {
-        "type": "TemplatedSequenceElement",
-        "region": {
-            "id": "custom_ID__1",
-            "type": "SequenceLocation",
-            "start": 200,
-            "end": 300,
         },
         "strand": 1,
     }
@@ -627,8 +593,6 @@ def test_gene_element(fusor_instance, braf_gene_obj_min, braf_gene_obj):
 def test_templated_sequence_element(
     fusor_instance,
     templated_sequence_element,
-    templated_sequence_element_ensg,
-    templated_sequence_element_custom_id,
 ):
     """Test that templated sequence element works correctly"""
     tsg = fusor_instance.templated_sequence_element(
@@ -653,35 +617,17 @@ def test_templated_sequence_element(
     )
     assert tsg.model_dump() == expected
 
-    tsg = fusor_instance.templated_sequence_element(
-        140719329, 140719400, "ENSG00000157764", Strand.NEGATIVE
-    )
-    assert tsg.model_dump() == templated_sequence_element_ensg.model_dump()
-
-    # test untranslateable sequence ID
-    # adds "ensembl" namespace but unable to translate to ga4gh digest ID
-    expected = copy.deepcopy(templated_sequence_element_ensg.model_dump())
-    tsg = fusor_instance.templated_sequence_element(
-        140719329,
-        140719400,
-        "ENSG00000157764",
-        Strand.NEGATIVE,
-        seq_id_target_namespace="ga4gh",
-    )
-    assert tsg.model_dump() == expected
-
     # test in-house/bespoke sequence ID
     # can't coerce namespace or translate to ga4gh ID
-    expected = copy.deepcopy(templated_sequence_element_custom_id.model_dump())
-    tsg = fusor_instance.templated_sequence_element(
-        200,
-        300,
-        "custom_ID__1",
-        Strand.POSITIVE,
-        residue_mode="inter-residue",
-        seq_id_target_namespace="ga4gh",
-    )
-    assert tsg.model_dump() == expected
+    with pytest.raises(IDTranslationException):
+        fusor_instance.templated_sequence_element(
+            200,
+            300,
+            "custom_ID__1",
+            Strand.POSITIVE,
+            residue_mode="inter-residue",
+            seq_id_target_namespace="ga4gh",
+        )
 
 
 def test_linker_element(fusor_instance, linker_element):
