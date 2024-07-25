@@ -84,8 +84,7 @@ class FunctionalDomain(BaseModel):
                     "end": 781,
                     "type": "SequenceLocation",
                     "sequenceReference": {
-                        "id": "NC_000022.11",
-                        "label": "GRCh38:chr22",
+                        "id": "refseq:NC_000022.11",
                         "type": "SequenceReference",
                         "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
                         "residueAlphabet": "na",
@@ -173,8 +172,8 @@ class TranscriptSegmentElement(BaseStructuralElement):
                 "elementGenomicStart": {
                     "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
                     "type": "SequenceLocation",
-                    "label": "NC_000001.11",
                     "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
                         "type": "SequenceReference",
                         "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
@@ -184,8 +183,8 @@ class TranscriptSegmentElement(BaseStructuralElement):
                 "elementGenomicEnd": {
                     "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
                     "type": "SequenceLocation",
-                    "label": "NC_000001.11",
                     "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
                         "type": "SequenceReference",
                         "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
