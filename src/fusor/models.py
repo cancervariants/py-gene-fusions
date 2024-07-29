@@ -87,7 +87,6 @@ class FunctionalDomain(BaseModel):
                         "id": "refseq:NC_000022.11",
                         "type": "SequenceReference",
                         "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
-                        "residueAlphabet": "na",
                     },
                 },
             }
@@ -694,24 +693,31 @@ class CategoricalFusion(AbstractFusion):
                             "label": "TPM3",
                         },
                         "elementGenomicStart": {
-                            "id": "TPM3:exon1",
+                            "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
                             "type": "SequenceLocation",
+                            "sequenceReference": {
+                                "id": "refseq:NC_000001.11",
+                                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                                "type": "SequenceReference",
+                            },
                             "start": 154192135,
                             "end": 154192136,
                         },
                         "elementGenomicEnd": {
-                            "id": "TPM3:exon8",
+                            "id": "ga4gh:SL.m5_Spfzt1v4sfVw9u4kmuYn7dM7gyNeb",
                             "type": "SequenceLocation",
+                            "sequenceReference": {
+                                "id": "refseq:NC_000001.11",
+                                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                                "type": "SequenceReference",
+                            },
                             "start": 154170398,
                             "end": 154170399,
                         },
                     },
                     {
                         "type": "GeneElement",
-                        "gene": {
-                            "id": "hgnc:427",
-                            "label": "ALK",
-                        },
+                        "gene": {"id": "hgnc:427", "label": "ALK", "type": "Gene"},
                     },
                 ],
                 "regulatoryElement": {
