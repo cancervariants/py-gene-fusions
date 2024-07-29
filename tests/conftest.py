@@ -891,7 +891,7 @@ def fusion_example():
                         "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                         "type": "SequenceReference",
                     },
-                    "start": 154170399
+                    "start": 154170399,
                 },
             },
             {
