@@ -443,10 +443,7 @@ class AbstractFusion(BaseModel, ABC):
         :param alt_field: the field to fetch the gene from, if it is not called "gene" (ex: associatedGene instead)
         :return: gene ID if gene is defined
         """
-        if alt_field:
-            gene_info = cls._access_object_attr(obj, alt_field)
-        else:
-            gene_info = cls._access_object_attr(obj, "gene")
+        gene_info = cls._access_object_attr(obj, alt_field if alt_field else "gene")
         if gene_info:
             gene_id = cls._access_object_attr(gene_info, "id")
             if gene_id:
