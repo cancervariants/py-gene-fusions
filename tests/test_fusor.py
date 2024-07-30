@@ -334,7 +334,7 @@ def test_fusion(
             linker_element,
             UnknownGeneElement(),
         ],
-        causativeEvent={
+        causative_event={
             "type": "CausativeEvent",
             "eventType": "rearrangement",
             "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
@@ -353,7 +353,7 @@ def test_fusion(
             transcript_segment_element,
             MultiplePossibleGenesElement(),
         ],
-        criticalFunctionalDomains=[functional_domain],
+        critical_functional_domains=[functional_domain],
     )
     assert isinstance(f, CategoricalFusion)
 
@@ -364,8 +364,8 @@ def test_fusion(
                 transcript_segment_element,
                 UnknownGeneElement(),
             ],
-            causativeEvent="rearrangement",
-            criticalFunctionalDomains=[functional_domain],
+            causative_event="rearrangement",
+            critical_functional_domains=[functional_domain],
         )
     assert str(excinfo.value) == "Received conflicting attributes"
 
@@ -387,7 +387,7 @@ def test_fusion(
             linker_element,
             UnknownGeneElement(),
         ],
-        causativeEvent={
+        causative_event={
             "type": "CausativeEvent",
             "eventType": "rearrangement",
         },
@@ -406,7 +406,7 @@ def test_fusion(
             transcript_segment_element,
             MultiplePossibleGenesElement(),
         ],
-        criticalFunctionalDomains=[functional_domain],
+        critical_functional_domains=[functional_domain],
     )
     assert isinstance(f, CategoricalFusion)
 

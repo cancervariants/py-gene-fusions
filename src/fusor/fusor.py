@@ -125,7 +125,7 @@ class FUSOR:
             # try to infer from provided attributes
             categorical_attributes = any(
                 [
-                    "criticalFunctionalDomains" in kwargs,
+                    "critical_functional_domains" in kwargs,
                     self._contains_element_type(
                         kwargs, StructuralElementType.MULTIPLE_POSSIBLE_GENES_ELEMENT
                     ),
@@ -133,7 +133,7 @@ class FUSOR:
             )
             assayed_attributes = any(
                 [
-                    "causativeEvent" in kwargs,
+                    "causative_event" in kwargs,
                     "assay" in kwargs,
                     self._contains_element_type(
                         kwargs, StructuralElementType.UNKNOWN_GENE_ELEMENT
@@ -159,15 +159,15 @@ class FUSOR:
     @staticmethod
     def categorical_fusion(
         structure: CategoricalFusionElements,
-        regulatoryElement: RegulatoryElement | None = None,
-        criticalFunctionalDomains: list[FunctionalDomain] | None = None,
-        readingFramePreserved: bool | None = None,
+        regulatory_element: RegulatoryElement | None = None,
+        critical_functional_domains: list[FunctionalDomain] | None = None,
+        reading_frame_preserved: bool | None = None,
     ) -> CategoricalFusion:
         """Construct a categorical fusion object
         :param structure: elements constituting the fusion
-        :param regulatoryElement: affected regulatory element
-        :param criticalFunctionalDomains: lost or preserved functional domains
-        :param readingFramePreserved: ``True`` if reading frame is preserved.
+        :param regulatory_element: affected regulatory element
+        :param critical_functional_domains: lost or preserved functional domains
+        :param reading_frame_preserved: ``True`` if reading frame is preserved.
             ``False`` otherwise
         :return: CategoricalFusion if construction successful
         :raise: FUSORParametersException if given incorrect fusion properties
@@ -175,9 +175,9 @@ class FUSOR:
         try:
             fusion = CategoricalFusion(
                 structure=structure,
-                criticalFunctionalDomains=criticalFunctionalDomains,
-                readingFramePreserved=readingFramePreserved,
-                regulatoryElement=regulatoryElement,
+                criticalFunctionalDomains=critical_functional_domains,
+                readingFramePreserved=reading_frame_preserved,
+                regulatoryElement=regulatory_element,
             )
         except ValidationError as e:
             raise FUSORParametersException(str(e)) from e
@@ -186,17 +186,17 @@ class FUSOR:
     @staticmethod
     def assayed_fusion(
         structure: AssayedFusionElements,
-        causativeEvent: CausativeEvent | None = None,
+        causative_event: CausativeEvent | None = None,
         assay: Assay | None = None,
-        regulatoryElement: RegulatoryElement | None = None,
-        readingFramePreserved: bool | None = None,
+        regulatory_element: RegulatoryElement | None = None,
+        reading_frame_preserved: bool | None = None,
     ) -> AssayedFusion:
         """Construct an assayed fusion object
         :param structure: elements constituting the fusion
-        :param causativeEvent: event causing the fusion
+        :param causative_event: event causing the fusion
         :param assay: how knowledge of the fusion was obtained
-        :param regulatoryElement: affected regulatory elements
-        :param readingFramePreserved: ``True`` if reading frame is preserved.
+        :param regulatory_element: affected regulatory elements
+        :param reading_frame_preserved: ``True`` if reading frame is preserved.
             ``False`` otherwise
         :return: Tuple containing optional AssayedFusion if construction successful,
             and any relevant validation warnings
@@ -204,10 +204,10 @@ class FUSOR:
         try:
             fusion = AssayedFusion(
                 structure=structure,
-                regulatoryElement=regulatoryElement,
-                causativeEvent=causativeEvent,
+                regulatoryElement=regulatory_element,
+                causativeEvent=causative_event,
                 assay=assay,
-                readingFramePreserved=readingFramePreserved,
+                readingFramePreserved=reading_frame_preserved,
             )
         except ValidationError as e:
             raise FUSORParametersException(str(e)) from e
