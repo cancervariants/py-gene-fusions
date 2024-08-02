@@ -5,23 +5,20 @@ from enum import Enum
 from typing import Any, Literal
 
 from cool_seq_tool.schemas import Strand
-from ga4gh.vrsatile.pydantic import return_value
-from ga4gh.vrsatile.pydantic.vrsatile_models import (
-    CURIE,
-    GeneDescriptor,
-    LocationDescriptor,
-    SequenceDescriptor,
+from ga4gh.core.domain_models import Gene
+from ga4gh.vrs.models import (
+    LiteralSequenceExpression,
+    SequenceLocation,
 )
+from gene.schemas import CURIE
 from pydantic import (
     BaseModel,
     ConfigDict,
     StrictBool,
     StrictInt,
     StrictStr,
-    field_validator,
     model_validator,
 )
-from pydantic.fields import Field
 
 
 class BaseModelForbidExtra(BaseModel, extra="forbid"):
@@ -49,7 +46,6 @@ class AdditionalFields(str, Enum):
 
     SEQUENCE_ID = "sequence_id"
     LOCATION_ID = "location_id"
-    GENE_DESCRIPTOR = "gene_descriptor"
 
 
 class DomainStatus(str, Enum):
@@ -64,12 +60,10 @@ class FunctionalDomain(BaseModel):
 
     type: Literal[FUSORTypes.FUNCTIONAL_DOMAIN] = FUSORTypes.FUNCTIONAL_DOMAIN
     status: DomainStatus
-    associated_gene: GeneDescriptor
-    id: CURIE | None = Field(None, alias="_id")
+    associatedGene: Gene
+    id: CURIE | None
     label: StrictStr | None = None
-    sequence_location: LocationDescriptor | None = None
-
-    _get_id_val = field_validator("id")(return_value)
+    sequenceLocation: SequenceLocation | None = None
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -78,23 +72,21 @@ class FunctionalDomain(BaseModel):
                 "type": "FunctionalDomain",
                 "status": "lost",
                 "label": "Tyrosine-protein kinase, catalytic domain",
-                "_id": "interpro:IPR020635",
-                "associated_gene": {
-                    "id": "gene:NTRK1",
-                    "gene_id": "hgnc:8031",
-                    "label": "8031",
-                    "type": "GeneDescriptor",
+                "id": "interpro:IPR020635",
+                "associatedGene": {
+                    "id": "hgnc:8031",
+                    "label": "NTRK1",
+                    "type": "Gene",
                 },
-                "sequence_location": {
-                    "id": "fusor.location_descriptor:NP_002520.2",
-                    "type": "LocationDescriptor",
-                    "location": {
-                        "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
-                        "type": "SequenceLocation",
-                        "interval": {
-                            "start": {"type": "Number", "value": 510},
-                            "end": {"type": "Number", "value": 781},
-                        },
+                "sequenceLocation": {
+                    "id": "ga4gh:SL.ywhUSfEUrwG0E29Q3c47bbuc6gkqTGlO",
+                    "start": 510,
+                    "end": 781,
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000022.11",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
                     },
                 },
             }
@@ -126,85 +118,77 @@ class TranscriptSegmentElement(BaseStructuralElement):
         FUSORTypes.TRANSCRIPT_SEGMENT_ELEMENT
     )
     transcript: CURIE
-    exon_start: StrictInt | None = None
-    exon_start_offset: StrictInt | None = 0
-    exon_end: StrictInt | None = None
-    exon_end_offset: StrictInt | None = 0
-    gene_descriptor: GeneDescriptor
-    element_genomic_start: LocationDescriptor | None = None
-    element_genomic_end: LocationDescriptor | None = None
+    exonStart: StrictInt | None = None
+    exonStartOffset: StrictInt | None = 0
+    exonEnd: StrictInt | None = None
+    exonEndOffset: StrictInt | None = 0
+    gene: Gene
+    elementGenomicStart: SequenceLocation | None = None
+    elementGenomicEnd: SequenceLocation | None = None
 
     @model_validator(mode="before")
     def check_exons(cls, values):
-        """Check that at least one of {`exon_start`, `exon_end`} is set.
-        If set, check that the corresponding `element_genomic` field is set.
+        """Check that at least one of {`exonStart`, `exonEnd`} is set.
+        If set, check that the corresponding `elementGenomic` field is set.
         If not set, set corresponding offset to `None`
 
         """
-        msg = "Must give values for either `exon_start`, `exon_end`, or both"
-        exon_start = values.get("exon_start")
-        exon_end = values.get("exon_end")
+        msg = "Must give values for either `exonStart`, `exonEnd`, or both"
+        exon_start = values.get("exonStart")
+        exon_end = values.get("exonEnd")
         if (not exon_start) and (not exon_end):
             raise ValueError(msg)
 
         if exon_start:
-            if not values.get("element_genomic_start"):
-                msg = "Must give `element_genomic_start` if `exon_start` is given"
+            if not values.get("elementGenomicStart"):
+                msg = "Must give `elementGenomicStart` if `exonStart` is given"
                 raise ValueError(msg)
         else:
-            values["exon_start_offset"] = None
+            values["exonStartOffset"] = None
 
         if exon_end:
-            if not values.get("element_genomic_end"):
-                msg = "Must give `element_genomic_end` if `exon_end` is given"
+            if not values.get("elementGenomicEnd"):
+                msg = "Must give `elementGenomicEnd` if `exonEnd` is given"
                 raise ValueError(msg)
         else:
-            values["exon_end_offset"] = None
+            values["exonEndOffset"] = None
         return values
 
-    _get_transcript_val = field_validator("transcript")(return_value)
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
-                "exon_start": 1,
-                "exon_start_offset": 0,
-                "exon_end": 8,
-                "exon_end_offset": 0,
-                "gene_descriptor": {
-                    "id": "normalize.gene:TPM3",
-                    "type": "GeneDescriptor",
+                "exonStart": 1,
+                "exonStartOffset": 0,
+                "exonEnd": 8,
+                "exonEndOffset": 0,
+                "gene": {
+                    "id": "hgnc:12012",
+                    "type": "Gene",
                     "label": "TPM3",
-                    "gene_id": "hgnc:12012",
                 },
-                "element_genomic_start": {
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "type": "LocationDescriptor",
-                    "label": "NC_000001.11",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NC_000001.11",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 154192135},
-                            "end": {"type": "Number", "value": 154192136},
-                        },
+                "elementGenomicStart": {
+                    "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
+                    "start": 154192135,
+                    "end": 154192136,
                 },
-                "element_genomic_end": {
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "type": "LocationDescriptor",
-                    "label": "NC_000001.11",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NC_000001.11",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 154170399},
-                            "end": {"type": "Number", "value": 154170400},
-                        },
+                "elementGenomicEnd": {
+                    "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
+                    "start": 154170399,
+                    "end": 154170400,
                 },
             }
         },
@@ -217,32 +201,16 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
     type: Literal[FUSORTypes.LINKER_SEQUENCE_ELEMENT] = (
         FUSORTypes.LINKER_SEQUENCE_ELEMENT
     )
-    linker_sequence: SequenceDescriptor
-
-    @field_validator("linker_sequence", mode="before")
-    def validate_sequence(cls, v):
-        """Enforce nucleotide base code requirements on sequence literals."""
-        if isinstance(v, dict):
-            try:
-                v["sequence"] = v["sequence"].upper()
-            except KeyError as e:
-                raise TypeError from e
-        elif isinstance(v, SequenceDescriptor):
-            v.sequence = v.sequence.upper()
-        else:
-            raise TypeError
-
-        return v
+    linkerSequence: LiteralSequenceExpression
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "type": "LinkerSequenceElement",
-                "linker_sequence": {
+                "linkerSequence": {
                     "id": "sequence:ACGT",
-                    "type": "SequenceDescriptor",
+                    "type": "LiteralSequenceExpression",
                     "sequence": "ACGT",
-                    "residue_type": "SO:0000348",
                 },
             }
         },
@@ -258,7 +226,7 @@ class TemplatedSequenceElement(BaseStructuralElement):
     type: Literal[FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT] = (
         FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT
     )
-    region: LocationDescriptor
+    region: SequenceLocation
     strand: Strand
 
     model_config = ConfigDict(
@@ -266,19 +234,14 @@ class TemplatedSequenceElement(BaseStructuralElement):
             "example": {
                 "type": "TemplatedSequenceElement",
                 "region": {
-                    "id": "chr12:44908821-44908822(+)",
-                    "type": "LocationDescriptor",
-                    "location_id": "ga4gh:VSL.AG54ZRBhg6pwpPLafF4KgaAHpdFio6l5",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 44908821},
-                            "end": {"type": "Number", "value": 44908822},
-                        },
+                    "id": "ga4gh:SL.q_LeFVIakQtxnGHgxC4yehpLUxd6QsEr",
+                    "type": "SequenceLocation",
+                    "start": 44908821,
+                    "end": 44908822,
+                    "sequenceReference": {
+                        "id": "refseq:NC_000012.12",
+                        "refgetAccession": "SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
                     },
-                    "label": "chr12:44908821-44908822(+)",
                 },
                 "strand": 1,
             }
@@ -290,17 +253,16 @@ class GeneElement(BaseStructuralElement):
     """Define Gene Element class."""
 
     type: Literal[FUSORTypes.GENE_ELEMENT] = FUSORTypes.GENE_ELEMENT
-    gene_descriptor: GeneDescriptor
+    gene: Gene
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "type": "GeneElement",
-                "gene_descriptor": {
-                    "id": "gene:BRAF",
-                    "gene_id": "hgnc:1097",
+                "gene": {
+                    "id": "hgnc:1097",
                     "label": "BRAF",
-                    "type": "GeneDescriptor",
+                    "type": "Gene",
                 },
             }
         },
@@ -374,28 +336,28 @@ class RegulatoryClass(str, Enum):
 class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class.
 
-    `feature_id` would ideally be constrained as a CURIE, but Encode, our preferred
+    `featureId` would ideally be constrained as a CURIE, but Encode, our preferred
     feature ID source, doesn't currently have a registered CURIE structure for EH_
     identifiers. Consequently, we permit any kind of free text.
     """
 
     type: Literal[FUSORTypes.REGULATORY_ELEMENT] = FUSORTypes.REGULATORY_ELEMENT
-    regulatory_class: RegulatoryClass
-    feature_id: str | None = None
-    associated_gene: GeneDescriptor | None = None
-    feature_location: LocationDescriptor | None = None
-
-    _get_ref_id_val = field_validator("feature_id")(return_value)
+    regulatoryClass: RegulatoryClass
+    featureId: str | None = None
+    associatedGene: Gene | None = None
+    featureLocation: SequenceLocation | None = None
 
     @model_validator(mode="before")
     def ensure_min_values(cls, values):
-        """Ensure that one of {`feature_id`, `feature_location`}, and/or
-        `associated_gene` is set.
+        """Ensure that one of {`featureId`, `featureLocation`}, and/or
+        `associatedGene` is set.
         """
         if not (
-            bool(values.get("feature_id")) ^ bool(values.get("feature_location"))
-        ) and not (values.get("associated_gene")):
-            msg = "Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
+            bool(values.get("featureId")) ^ bool(values.get("featureLocation"))
+        ) and not (values.get("associatedGene")):
+            msg = (
+                "Must set 1 of {`featureId`, `associatedGene`} and/or `featureLocation`"
+            )
             raise ValueError(msg)
         return values
 
@@ -403,19 +365,16 @@ class RegulatoryElement(BaseModel):
         json_schema_extra={
             "example": {
                 "type": "RegulatoryElement",
-                "regulatory_class": "promoter",
-                "feature_location": {
-                    "type": "LocationDescriptor",
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "location": {
-                        "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                        "type": "SequenceLocation",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 155593},
-                            "end": {"type": "Number", "value": 155610},
-                        },
+                "regulatoryClass": "promoter",
+                "featureLocation": {
+                    "id": "ga4gh:SL.9hqdPDfXC-m_t_bDH75FZHfaM6OKDtRw",
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
+                    "start": 155593,
+                    "end": 155610,
                 },
             }
         },
@@ -438,9 +397,9 @@ class AbstractFusion(BaseModel, ABC):
     """Define Fusion class"""
 
     type: FusionType
-    reading_frame_preserved: StrictBool | None = None
-    regulatory_element: RegulatoryElement | None = None
-    structural_elements: list[BaseStructuralElement]
+    regulatoryElement: RegulatoryElement | None = None
+    structure: list[BaseStructuralElement]
+    readingFramePreserved: StrictBool | None = None
 
     @classmethod
     def _access_object_attr(
@@ -474,23 +433,18 @@ class AbstractFusion(BaseModel, ABC):
     def _fetch_gene_id(
         cls,
         obj: dict | BaseModel,
-        gene_descriptor_field: str,
+        alt_field: str | None = None,
     ) -> str | None:
         """Get gene ID if element includes a gene annotation.
 
         :param obj: element to fetch gene from. Might not contain a gene (e.g. it's a
             TemplatedSequenceElement) so we have to use safe checks to fetch.
-        :param gene_descriptor_field: name of gene_descriptor field
+        :param alt_field: the field to fetch the gene from, if it is not called "gene" (ex: associatedGene instead)
         :return: gene ID if gene is defined
         """
-        gene_descriptor = cls._access_object_attr(obj, gene_descriptor_field)
-        if gene_descriptor:
-            gene_value = cls._access_object_attr(gene_descriptor, "gene")
-            if gene_value:
-                gene_id = cls._access_object_attr(gene_value, "gene_id")
-                if gene_id:
-                    return gene_id
-            gene_id = cls._access_object_attr(gene_descriptor, "gene_id")
+        gene_info = cls._access_object_attr(obj, alt_field if alt_field else "gene")
+        if gene_info:
+            gene_id = cls._access_object_attr(gene_info, "id")
             if gene_id:
                 return gene_id
         return None
@@ -516,45 +470,41 @@ class AbstractFusion(BaseModel, ABC):
             "Fusions must contain >= 2 structural elements, or >=1 structural element "
             "and a regulatory element"
         )
-        structural_elements = values.get("structural_elements", [])
-        if not structural_elements:
+        structure = values.get("structure", [])
+        if not structure:
             raise ValueError(qt_error_msg)
-        num_structural_elements = len(structural_elements)
-        reg_element = values.get("regulatory_element")
-        if (num_structural_elements + bool(reg_element)) < 2:
+        num_structure = len(structure)
+        reg_element = values.get("regulatoryElement")
+        if (num_structure + bool(reg_element)) < 2:
             raise ValueError(qt_error_msg)
 
         uq_gene_msg = "Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
         gene_ids = []
         if reg_element:
-            gene_id = cls._fetch_gene_id(
-                obj=reg_element, gene_descriptor_field="associated_gene"
-            )
+            gene_id = cls._fetch_gene_id(obj=reg_element, alt_field="associatedGene")
             if gene_id:
                 gene_ids.append(gene_id)
 
-        for element in structural_elements:
-            gene_id = cls._fetch_gene_id(
-                obj=element, gene_descriptor_field="gene_descriptor"
-            )
+        for element in structure:
+            gene_id = cls._fetch_gene_id(obj=element)
             if gene_id:
                 gene_ids.append(gene_id)
 
         unique_gene_ids = set(gene_ids)
         if len(unique_gene_ids) == 1 and len(gene_ids) == (
-            num_structural_elements + bool(reg_element)
+            num_structure + bool(reg_element)
         ):
             raise ValueError(uq_gene_msg)
         return values
 
     @model_validator(mode="after")
-    def structural_elements_ends(cls, values):
+    def structure_ends(cls, values):
         """Ensure start/end elements are of legal types and have fields
         required by their position.
         """
-        elements = values.structural_elements
+        elements = values.structure
         if isinstance(elements[0], TranscriptSegmentElement):
-            if elements[0].exon_end is None and not values["regulatory_element"]:
+            if elements[0].exonEnd is None and not values["regulatoryElement"]:
                 msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
                 raise ValueError(msg)
         elif isinstance(elements[0], LinkerElement):
@@ -564,12 +514,12 @@ class AbstractFusion(BaseModel, ABC):
         if len(elements) > 2:
             for element in elements[1:-1]:
                 if isinstance(element, TranscriptSegmentElement) and (
-                    element.exon_start is None or element.exon_end is None
+                    element.exonStart is None or element.exonEnd is None
                 ):
                     msg = "Connective TranscriptSegmentElement must include both start and end positions"
                     raise ValueError(msg)
         if isinstance(elements[-1], TranscriptSegmentElement) and (
-            elements[-1].exon_start is None
+            elements[-1].exonStart is None
         ):
             msg = "3' fusion partner junction must include " "starting position"
             raise ValueError
@@ -587,21 +537,18 @@ class Assay(BaseModelForbidExtra):
     """Information pertaining to the assay used in identifying the fusion."""
 
     type: Literal["Assay"] = "Assay"
-    assay_name: StrictStr | None = None
-    assay_id: CURIE | None = None
-    method_uri: CURIE | None = None
-    fusion_detection: Evidence | None = None
-
-    _get_assay_id_val = field_validator("assay_id")(return_value)
-    _get_method_uri_val = field_validator("method_uri")(return_value)
+    assayName: StrictStr | None = None
+    assayId: CURIE | None = None
+    methodUri: CURIE | None = None
+    fusionDetection: Evidence | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "method_uri": "pmid:33576979",
-                "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred",
+                "methodUri": "pmid:33576979",
+                "assayId": "obi:OBI_0003094",
+                "assayName": "fluorescence in-situ hybridization assay",
+                "fusionDetection": "inferred",
             }
         }
     )
@@ -633,15 +580,15 @@ class CausativeEvent(BaseModelForbidExtra):
     """
 
     type: Literal[FUSORTypes.CAUSATIVE_EVENT] = FUSORTypes.CAUSATIVE_EVENT
-    event_type: EventType
-    event_description: StrictStr | None = None
+    eventType: EventType
+    eventDescription: StrictStr | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "type": "CausativeEvent",
-                "event_type": "rearrangement",
-                "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+                "eventType": "rearrangement",
+                "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
             }
         },
     )
@@ -655,34 +602,33 @@ class AssayedFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
-    structural_elements: AssayedFusionElements
-    causative_event: CausativeEvent | None = None
+    structure: AssayedFusionElements
+    causativeEvent: CausativeEvent | None = None
     assay: Assay | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "type": "AssayedFusion",
-                "causative_event": {
+                "causativeEvent": {
                     "type": "CausativeEvent",
-                    "event_type": "rearrangement",
-                    "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+                    "eventType": "rearrangement",
+                    "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
                 },
                 "assay": {
                     "type": "Assay",
-                    "method_uri": "pmid:33576979",
-                    "assay_id": "obi:OBI_0003094",
-                    "assay_name": "fluorescence in-situ hybridization assay",
-                    "fusion_detection": "inferred",
+                    "methodUri": "pmid:33576979",
+                    "assayId": "obi:OBI_0003094",
+                    "assayName": "fluorescence in-situ hybridization assay",
+                    "fusionDetection": "inferred",
                 },
-                "structural_elements": [
+                "structure": [
                     {
                         "type": "GeneElement",
-                        "gene_descriptor": {
-                            "id": "gene:EWSR1",
-                            "gene_id": "hgnc:3058",
+                        "gene": {
+                            "type": "Gene",
+                            "id": "hgnc:3058",
                             "label": "EWSR1",
-                            "type": "GeneDescriptor",
                         },
                     },
                     {"type": "UnknownGeneElement"},
@@ -709,88 +655,74 @@ class CategoricalFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
-    critical_functional_domains: list[FunctionalDomain] | None = None
-    structural_elements: CategoricalFusionElements
+    criticalFunctionalDomains: list[FunctionalDomain] | None = None
+    structure: CategoricalFusionElements
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "type": "CategoricalFusion",
-                "reading_frame_preserved": True,
-                "critical_functional_domains": [
+                "readingFramePreserved": True,
+                "criticalFunctionalDomains": [
                     {
                         "type": "FunctionalDomain",
                         "status": "lost",
                         "label": "cystatin domain",
                         "id": "interpro:IPR000010",
-                        "associated_gene": {
-                            "id": "gene:CST1",
-                            "gene_id": "hgnc:2743",
+                        "associatedGene": {
+                            "id": "hgnc:2743",
                             "label": "CST1",
-                            "type": "GeneDescriptor",
+                            "type": "Gene",
                         },
                     }
                 ],
-                "structural_elements": [
+                "structure": [
                     {
                         "type": "TranscriptSegmentElement",
                         "transcript": "refseq:NM_152263.3",
-                        "exon_start": 1,
-                        "exon_start_offset": 0,
-                        "exon_end": 8,
-                        "exon_end_offset": 0,
-                        "gene_descriptor": {
-                            "id": "gene:TPM3",
-                            "gene_id": "hgnc:12012",
-                            "type": "GeneDescriptor",
+                        "exonStart": 1,
+                        "exonStartOffset": 0,
+                        "exonEnd": 8,
+                        "exonEndOffset": 0,
+                        "gene": {
+                            "id": "hgnc:12012",
+                            "type": "Gene",
                             "label": "TPM3",
                         },
-                        "element_genomic_start": {
-                            "id": "TPM3:exon1",
-                            "type": "LocationDescriptor",
-                            "location_id": "ga4gh:VSL.vyyyExx4enSZdWZr3z67-T8uVKH50uLi",
-                            "location": {
-                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
-                                "type": "SequenceLocation",
-                                "interval": {
-                                    "start": {"type": "Number", "value": 154192135},
-                                    "end": {"type": "Number", "value": 154192136},
-                                    "type": "SequenceInterval",
-                                },
+                        "elementGenomicStart": {
+                            "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+                            "type": "SequenceLocation",
+                            "sequenceReference": {
+                                "id": "refseq:NC_000001.11",
+                                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                                "type": "SequenceReference",
                             },
+                            "start": 154192135,
+                            "end": 154192136,
                         },
-                        "element_genomic_end": {
-                            "id": "TPM3:exon8",
-                            "type": "LocationDescriptor",
-                            "location_id": "ga4gh:VSL._1bRdL4I6EtpBvVK5RUaXb0NN3k0gpqa",
-                            "location": {
-                                "sequence_id": "ga4gh:SQ.ijXOSP3XSsuLWZhXQ7_TJ5JXu4RJO6VT",
-                                "type": "SequenceLocation",
-                                "interval": {
-                                    "start": {"type": "Number", "value": 154170398},
-                                    "end": {"type": "Number", "value": 154170399},
-                                    "type": "SequenceInterval",
-                                },
+                        "elementGenomicEnd": {
+                            "id": "ga4gh:SL.m5_Spfzt1v4sfVw9u4kmuYn7dM7gyNeb",
+                            "type": "SequenceLocation",
+                            "sequenceReference": {
+                                "id": "refseq:NC_000001.11",
+                                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                                "type": "SequenceReference",
                             },
+                            "start": 154170398,
+                            "end": 154170399,
                         },
                     },
                     {
                         "type": "GeneElement",
-                        "gene_descriptor": {
-                            "id": "gene:ALK",
-                            "type": "GeneDescriptor",
-                            "gene_id": "hgnc:427",
-                            "label": "ALK",
-                        },
+                        "gene": {"id": "hgnc:427", "label": "ALK", "type": "Gene"},
                     },
                 ],
-                "regulatory_element": {
+                "regulatoryElement": {
                     "type": "RegulatoryElement",
-                    "regulatory_class": "promoter",
-                    "associated_gene": {
-                        "id": "gene:BRAF",
-                        "type": "GeneDescriptor",
-                        "gene_id": "hgnc:1097",
+                    "regulatoryClass": "promoter",
+                    "associatedGene": {
+                        "type": "Gene",
+                        "id": "hgnc:1097",
                         "label": "BRAF",
                     },
                 },

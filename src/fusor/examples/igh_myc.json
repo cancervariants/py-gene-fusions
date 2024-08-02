@@ -1,24 +1,22 @@
 {
   "type": "CategoricalFusion",
-  "regulatory_element": {
+  "regulatoryElement": {
     "type": "RegulatoryElement",
-    "regulatory_class": "enhancer",
-    "associated_gene": {
-      "type": "GeneDescriptor",
+    "regulatoryClass": "enhancer",
+    "associatedGene": {
+      "type": "Gene",
       "label": "IGH",
-      "gene_id": "hgnc:5477",
-      "id": "normalize.gene:IGH"
+      "id": "hgnc:5477"
     },
-    "feature_id": "EH38E3121735"
+    "featureId": "EH38E3121735"
   },
-  "structural_elements": [
+  "structure": [
     {
       "type": "GeneElement",
-      "gene_descriptor": {
-        "type": "GeneDescriptor",
+      "gene": {
+        "type": "Gene",
         "label": "MYC",
-        "gene_id": "hgnc:7553",
-        "id": "normalize.gene:MYC"
+        "id": "hgnc:7553"
       }
     }
   ]

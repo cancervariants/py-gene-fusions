@@ -1,111 +1,93 @@
 {
   "type": "CategoricalFusion",
-  "structural_elements": [
+  "structure": [
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_004327.3",
-      "gene_descriptor": {
-        "type": "GeneDescriptor",
-        "id": "normalize.gene:BCR",
-        "gene_id": "hgnc:1014",
+      "gene": {
+        "type": "Gene",
+        "id": "hgnc:1014",
         "label": "BCR"
       },
-      "element_genomic_end": {
-        "id": "fusor.location_descriptor:NC_000022.11",
-        "type": "LocationDescriptor",
-        "label": "NC_000022.11",
-        "location": {
-          "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000022.11",
-          "interval": {
-            "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 23253980
-            },
-            "end": {
-              "type": "Number",
-              "value": 23253981
-            }
-          }
-        }
+      "elementGenomicEnd": {
+        "id": "ga4gh:SL.5f5OVC3zReewA4S78X1eO0oJwWNbGYsY",
+        "type": "SequenceLocation",
+        "description": null,
+        "xrefs": null,
+        "alternativeLabels": null,
+        "extensions": null,
+        "sequenceReference": {
+          "id": "refseq:NC_000022.11",
+          "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
+          "type": "SequenceReference"
+        },
+        "start": 23253980,
+        "end": 23253981
       },
-      "exon_end": 2,
-      "exon_end_offset": 182
+      "exonEnd": 2,
+      "exonEndOffset": 182
     },
     {
       "type": "LinkerSequenceElement",
-      "linker_sequence": {
+      "linkerSequence": {
         "id": "sequence:ACTAAAGCG",
-        "type": "SequenceDescriptor",
-        "sequence": "ACTAAAGCG",
-        "residue_type": "SO:0000348"
+        "type": "LiteralSequenceExpression",
+        "sequence": "ACTAAAGCG"
       }
     },
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_005157.5",
-      "exon_start": 2,
-      "exon_start_offset": -173,
-      "gene_descriptor": {
-        "id": "normalize.gene:ABL1",
-        "type": "GeneDescriptor",
+      "exonStart": 2,
+      "exonStartOffset": -173,
+      "gene": {
+        "type": "Gene",
         "label": "ABL1",
-        "gene_id": "hgnc:76"
+        "id": "hgnc:76"
       },
-      "element_genomic_start": {
-        "id": "fusor.location_descriptor:NC_000009.12",
-        "type": "LocationDescriptor",
-        "label": "NC_000009.12",
-        "location": {
-          "type": "SequenceLocation",
-          "sequence_id": "refseq:NC_000009.12",
-          "interval": {
-            "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 130854064
-            },
-            "end": {
-              "type": "Number",
-              "value": 130854065
-            }
-          }
-        }
+      "elementGenomicStart": {
+        "id": "ga4gh:SL.tZYgaEJP2-d4Guv-n5gyhqOc07qH9xr6",
+        "description": null,
+        "xrefs": null,
+        "alternativeLabels": null,
+        "extensions": null,
+        "type": "SequenceLocation",
+        "sequenceReference": {
+          "id": "refseq:NC_000009.12",
+          "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
+          "type": "SequenceReference"
+        },
+        "start": 130854064,
+        "end": 130854065
       }
     }
   ],
-  "reading_frame_preserved": true,
-  "critical_functional_domains": [
+  "readingFramePreserved": true,
+  "criticalFunctionalDomains": [
     {
       "type": "FunctionalDomain",
       "status": "preserved",
-      "associated_gene": {
-        "id": "normalize.gene:hgnc%3A76",
-        "type": "GeneDescriptor",
+      "associatedGene": {
+        "type": "Gene",
         "label": "ABL1",
-        "gene_id": "hgnc:76"
+        "id": "hgnc:76"
       },
-      "_id": "interpro:IPR000980",
+      "id": "interpro:IPR000980",
       "label": "SH2 domain",
-      "sequence_location": {
-        "id": "fusor.location_descriptor:NP_005148.2",
-        "type": "LocationDescriptor",
-        "location": {
-          "type": "SequenceLocation",
-          "sequence_id": "refseq:NP_005148.2",
-          "interval": {
-            "type": "SequenceInterval",
-            "start": {
-              "type": "Number",
-              "value": 127
-            },
-            "end": {
-              "type": "Number",
-              "value": 202
-            }
-          }
-        }
+      "sequenceLocation": {
+        "id": "ga4gh:SL.VQe2sf2aYArPcvjygq38JvFxRuDniE15",
+        "description": null,
+        "xrefs": null,
+        "alternativeLabels": null,
+        "extensions": null,
+        "type": "SequenceLocation",
+        "sequenceReference": {
+          "id": "refseq:NP_005148.2",
+          "refgetAccession": "SQ.dmFigTG-0fY6I54swb7PoDuxCeT6O3Wg",
+          "type": "SequenceReference"
+        },
+        "start": 127,
+        "end": 202
       }
     }
   ]

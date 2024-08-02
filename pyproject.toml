@@ -24,12 +24,12 @@ classifiers = [
 requires-python = ">=3.10"
 description = "Computable object representation and validation for gene fusions"
 license = {file = "LICENSE"}
+# pydantic is pinned to 2.4.2 for now, since there is a change in later versions that causes a validation error for test_fusion in test_fusor.py
 dependencies = [
-    "pydantic == 2.*",
-    "ga4gh.vrsatile.pydantic ~=0.2.0",
-    "ga4gh.vrs ~=0.8.1",
+    "pydantic ==2.4.2",
+    "ga4gh.vrs ~=2.0.0a10",
     "biocommons.seqrepo",
-    "gene-normalizer ~=0.1.40-dev1",
+    "gene-normalizer ==0.4.0",
     "cool-seq-tool ~=0.5.1",
 ]
 dynamic=["version"]
@@ -153,11 +153,13 @@ ignore = [
 # ANN102 - missing-type-cls
 # S101 - assert
 # B011 - assert-false
+# N803 - invalid-argument-name
 # N805 - invalid-first-argument-name-for-method
+# N815 - mixed-case-variable-in-class-scope
 # INP001 - implicit-namespace-package
 # SLF001 - private-member-access
 "tests/*" = ["ANN001", "ANN2", "ANN102", "S101", "B011", "INP001", "SLF001"]
-"src/fusor/models.py" = ["ANN201", "N805", "ANN001", "ANN2", "ANN102"]
+"src/fusor/models.py" = ["ANN201", "N803", "N805", "N815", "ANN001", "ANN2", "ANN102"]
 
 [tool.ruff.format]
 docstring-code-format = true

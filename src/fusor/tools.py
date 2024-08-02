@@ -3,7 +3,7 @@
 import logging
 
 from biocommons.seqrepo.seqrepo import SeqRepo
-from ga4gh.vrsatile.pydantic.vrs_models import CURIE
+from gene.schemas import CURIE
 
 from fusor.exceptions import IDTranslationException
 
