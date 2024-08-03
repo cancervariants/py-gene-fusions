@@ -585,7 +585,7 @@ class FUSOR:
         """
         parts = []
         element_genes = []
-        if fusion.regulatoryElement:
+        if fusion.get("regulatoryElement"):
             parts.append(
                 reg_element_nomenclature(fusion.regulatoryElement, self.seqrepo)
             )
