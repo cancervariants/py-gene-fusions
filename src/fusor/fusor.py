@@ -158,7 +158,7 @@ class FUSOR:
 
     @staticmethod
     def categorical_fusion(
-        structure: CategoricalFusionElement,
+        structure: list[CategoricalFusionElement],
         regulatory_element: RegulatoryElement | None = None,
         critical_functional_domains: list[FunctionalDomain] | None = None,
         reading_frame_preserved: bool | None = None,
@@ -185,7 +185,7 @@ class FUSOR:
 
     @staticmethod
     def assayed_fusion(
-        structure: AssayedFusionElement,
+        structure: list[AssayedFusionElement],
         causative_event: CausativeEvent | None = None,
         assay: Assay | None = None,
         regulatory_element: RegulatoryElement | None = None,
