@@ -8,7 +8,7 @@ __all__ = ["__version__", "FUSOR"]
 
 
 try:
-    __version__ = version("cool_seq_tool")
+    __version__ = version("fusor")
 except PackageNotFoundError:
     __version__ = "unknown"
 finally:
