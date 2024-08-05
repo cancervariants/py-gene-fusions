@@ -555,7 +555,7 @@ class Assay(BaseModelForbidExtra):
     )
 
 
-AssayedFusionElements = Annotated[
+AssayedFusionElement = Annotated[
     TranscriptSegmentElement
     | GeneElement
     | TemplatedSequenceElement
@@ -604,7 +604,7 @@ class AssayedFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
-    structure: list[AssayedFusionElements]
+    structure: list[AssayedFusionElement]
     causativeEvent: CausativeEvent | None = None
     assay: Assay | None = None
 
@@ -640,7 +640,7 @@ class AssayedFusion(AbstractFusion):
     )
 
 
-CategoricalFusionElements = Annotated[
+CategoricalFusionElement = Annotated[
     TranscriptSegmentElement
     | GeneElement
     | TemplatedSequenceElement
@@ -659,7 +659,7 @@ class CategoricalFusion(AbstractFusion):
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
-    structure: list[CategoricalFusionElements]
+    structure: list[CategoricalFusionElement]
 
     model_config = ConfigDict(
         json_schema_extra={
