@@ -24,9 +24,8 @@ classifiers = [
 requires-python = ">=3.10"
 description = "Computable object representation and validation for gene fusions"
 license = {file = "LICENSE"}
-# pydantic is pinned to 2.4.2 for now, since there is a change in later versions that causes a validation error for test_fusion in test_fusor.py
 dependencies = [
-    "pydantic ==2.4.2",
+    "pydantic ==2.*",
     "ga4gh.vrs ~=2.0.0a10",
     "biocommons.seqrepo",
     "gene-normalizer ==0.4.0",

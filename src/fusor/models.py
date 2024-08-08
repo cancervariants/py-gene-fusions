@@ -2,7 +2,7 @@
 
 from abc import ABC
 from enum import Enum
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from cool_seq_tool.schemas import Strand
 from ga4gh.core.domain_models import Gene
@@ -14,6 +14,7 @@ from gene.schemas import CURIE
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
     StrictBool,
     StrictInt,
     StrictStr,
@@ -554,12 +555,13 @@ class Assay(BaseModelForbidExtra):
     )
 
 
-AssayedFusionElements = list[
+AssayedFusionElement = Annotated[
     TranscriptSegmentElement
     | GeneElement
     | TemplatedSequenceElement
     | LinkerElement
-    | UnknownGeneElement
+    | UnknownGeneElement,
+    Field(discriminator="type"),
 ]
 
 
@@ -602,7 +604,7 @@ class AssayedFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
-    structure: AssayedFusionElements
+    structure: list[AssayedFusionElement]
     causativeEvent: CausativeEvent | None = None
     assay: Assay | None = None
 
@@ -638,12 +640,13 @@ class AssayedFusion(AbstractFusion):
     )
 
 
-CategoricalFusionElements = list[
+CategoricalFusionElement = Annotated[
     TranscriptSegmentElement
     | GeneElement
     | TemplatedSequenceElement
     | LinkerElement
-    | MultiplePossibleGenesElement
+    | MultiplePossibleGenesElement,
+    Field(discriminator="type"),
 ]
 
 
@@ -656,7 +659,7 @@ class CategoricalFusion(AbstractFusion):
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
-    structure: CategoricalFusionElements
+    structure: list[CategoricalFusionElement]
 
     model_config = ConfigDict(
         json_schema_extra={
