@@ -257,7 +257,7 @@ class FUSOR:
             chromosome = kwargs.get("chromosome")
             # if chromosome is a string, assume it's an accession, fix it for the kwargs since CST expects this as alt_ac
             if type(chromosome) is str:
-                kwargs["alt_ac"] = chromosome
+                kwargs["genomic_ac"] = chromosome
             data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_tx_segment(
                 **kwargs
             )
