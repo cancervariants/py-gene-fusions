@@ -4,7 +4,7 @@ import pytest
 from ga4gh.core.domain_models import Gene
 
 from fusor.models import AssayedFusion, CategoricalFusion, TranscriptSegmentElement
-from fusor.nomenclature import tx_segment_nomenclature
+from fusor.nomenclature import generate_nomenclature, tx_segment_nomenclature
 
 
 @pytest.fixture(scope="module")
@@ -208,53 +208,59 @@ def test_generate_nomenclature(
 ):
     """Test that nomenclature generation is correct."""
     fixture_nomenclature = "reg_p@BRAF(hgnc:1097)::NM_152263.3(TPM3):e.1_8::ALK(hgnc:427)::ACGT::NC_000023.11(chr X):g.44908820_44908822(+)::v"
-    nm = fusor_instance.generate_nomenclature(CategoricalFusion(**fusion_example))
+    nm = generate_nomenclature(
+        CategoricalFusion(**fusion_example), fusor_instance.seqrepo
+    )
     assert nm == fixture_nomenclature
-    nm = fusor_instance.generate_nomenclature(CategoricalFusion(**exhaustive_example))
+    nm = generate_nomenclature(
+        CategoricalFusion(**exhaustive_example), fusor_instance.seqrepo
+    )
     assert nm == fixture_nomenclature
 
     from fusor import examples
 
-    nm = fusor_instance.generate_nomenclature(examples.bcr_abl1)
+    nm = generate_nomenclature(examples.bcr_abl1, fusor_instance.seqrepo)
     assert nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
 
-    nm = fusor_instance.generate_nomenclature(examples.bcr_abl1_expanded)
+    nm = generate_nomenclature(examples.bcr_abl1_expanded, fusor_instance.seqrepo)
     assert nm == "NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173"
 
-    nm = fusor_instance.generate_nomenclature(examples.alk)
+    nm = generate_nomenclature(examples.alk, fusor_instance.seqrepo)
     assert nm == "v::ALK(hgnc:427)"
 
-    nm = fusor_instance.generate_nomenclature(examples.tpm3_ntrk1)
+    nm = generate_nomenclature(examples.tpm3_ntrk1, fusor_instance.seqrepo)
     assert nm == "NM_152263.3(TPM3):e.8(::)NM_002529.3(NTRK1):e.10"
 
-    nm = fusor_instance.generate_nomenclature(examples.tpm3_pdgfrb)
+    nm = generate_nomenclature(examples.tpm3_pdgfrb, fusor_instance.seqrepo)
     assert nm == "NM_152263.3(TPM3):e.1_8::NM_002609.3(PDGFRB):e.11_22"
 
-    nm = fusor_instance.generate_nomenclature(examples.ewsr1)
+    nm = generate_nomenclature(examples.ewsr1, fusor_instance.seqrepo)
     assert nm == "EWSR1(hgnc:3508)(::)?"
 
-    nm = fusor_instance.generate_nomenclature(examples.ewsr1_no_assay)
+    nm = generate_nomenclature(examples.ewsr1_no_assay, fusor_instance.seqrepo)
     assert nm == "EWSR1(hgnc:3508)::?"
 
-    nm = fusor_instance.generate_nomenclature(examples.ewsr1_no_causative_event)
+    nm = generate_nomenclature(
+        examples.ewsr1_no_causative_event, fusor_instance.seqrepo
+    )
     assert nm == "EWSR1(hgnc:3508)(::)?"
 
-    nm = fusor_instance.generate_nomenclature(examples.ewsr1_elements_only)
+    nm = generate_nomenclature(examples.ewsr1_elements_only, fusor_instance.seqrepo)
     assert nm == "EWSR1(hgnc:3508)::?"
 
-    nm = fusor_instance.generate_nomenclature(examples.igh_myc)
+    nm = generate_nomenclature(examples.igh_myc, fusor_instance.seqrepo)
     assert nm == "reg_e_EH38E3121735@IGH(hgnc:5477)::MYC(hgnc:7553)"
 
-    nm = fusor_instance.generate_nomenclature(reg_example)
+    nm = generate_nomenclature(reg_example, fusor_instance.seqrepo)
     assert nm == "reg_riboswitch@ABL1(hgnc:76)::BCR(hgnc:1014)::?"
 
-    nm = fusor_instance.generate_nomenclature(reg_location_example)
+    nm = generate_nomenclature(reg_location_example, fusor_instance.seqrepo)
     assert (
         nm
         == "reg_p_NC_000023.11(chr X):g.1462581_1534182@P2RY8(hgnc:15524)::SOX5(hgnc:11201)"
     )
 
-    nm = fusor_instance.generate_nomenclature(exon_offset_example)
+    nm = generate_nomenclature(exon_offset_example, fusor_instance.seqrepo)
     assert nm == "BRAF(hgnc:1097)::NM_002529.3(NTRK1):e.2+20"
 
 

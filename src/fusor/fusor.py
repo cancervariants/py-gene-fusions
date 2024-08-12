@@ -31,7 +31,6 @@ from fusor.models import (
     CategoricalFusionElement,
     CausativeEvent,
     DomainStatus,
-    Evidence,
     FunctionalDomain,
     Fusion,
     FusionType,
@@ -45,12 +44,7 @@ from fusor.models import (
     TranscriptSegmentElement,
     UnknownGeneElement,
 )
-from fusor.nomenclature import (
-    gene_nomenclature,
-    reg_element_nomenclature,
-    templated_seq_nomenclature,
-    tx_segment_nomenclature,
-)
+from fusor.nomenclature import generate_nomenclature
 from fusor.tools import translate_identifier
 
 _logger = logging.getLogger(__name__)
@@ -595,39 +589,4 @@ class FUSOR:
         :return: string summarizing fusion in human-readable way per VICC fusion
             curation nomenclature
         """
-        parts = []
-        element_genes = []
-        if fusion.regulatoryElement:
-            parts.append(
-                reg_element_nomenclature(fusion.regulatoryElement, self.seqrepo)
-            )
-        for element in fusion.structure:
-            if isinstance(element, MultiplePossibleGenesElement):
-                parts.append("v")
-            elif isinstance(element, UnknownGeneElement):
-                parts.append("?")
-            elif isinstance(element, LinkerElement):
-                parts.append(element.linkerSequence.sequence.root)
-            elif isinstance(element, TranscriptSegmentElement):
-                if not any(
-                    [gene == element.gene.label for gene in element_genes]  # noqa: C419
-                ):
-                    parts.append(tx_segment_nomenclature(element))
-            elif isinstance(element, TemplatedSequenceElement):
-                parts.append(templated_seq_nomenclature(element, self.seqrepo))
-            elif isinstance(element, GeneElement):
-                if not any(
-                    [gene == element.gene.label for gene in element_genes]  # noqa: C419
-                ):
-                    parts.append(gene_nomenclature(element))
-            else:
-                raise ValueError
-        if (
-            isinstance(fusion, AssayedFusion)
-            and fusion.assay
-            and fusion.assay.fusionDetection == Evidence.INFERRED
-        ):
-            divider = "(::)"
-        else:
-            divider = "::"
-        return divider.join(parts)
+        return generate_nomenclature(fusion, self.seqrepo)
