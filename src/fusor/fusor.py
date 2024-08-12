@@ -5,7 +5,7 @@ import re
 
 from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
-from cool_seq_tool.schemas import ResidueMode, Strand
+from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core import ga4gh_identify
 from ga4gh.core.domain_models import Gene
 from ga4gh.vrs import models
@@ -217,7 +217,6 @@ class FUSOR:
         self,
         tx_to_genomic_coords: bool = True,
         use_minimal_gene: bool = True,
-        seq_id_target_namespace: str | None = None,
         **kwargs,
     ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
         """Create transcript segment element
@@ -227,26 +226,24 @@ class FUSOR:
         :param use_minimal_gene: `True` if minimal gene object
             (``id``, ``label``) will be used. ``False`` if
             gene-normalizer's entire gene object will be used
-        :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
-            this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :param kwargs:
             If `tx_to_genomic_coords`, possible key word arguments:
-                (From cool_seq_tool.transcript_to_genomic_coords)
+                (From cool_seq_tool.tx_segment_to_genomic)
                 gene: Optional[str] = None, transcript: str = None,
                 exon_start: Optional[int] = None,
                 exon_start_offset: Optional[int] = 0,
                 exon_end: Optional[int] = None,
                 exon_end_offset: Optional[int] = 0
             else:
-                (From cool_seq_tool.genomic_to_transcript_exon_coordinates)
-                chromosome: Union[str, int], start: Optional[int] = None,
-                end: Optional[int] = None, strand: Optional[int] = None,
+                (From cool_seq_tool.genomic_to_tx_segment)
+                chromosome: Union[str, int], genomic_start: Optional[int] = None,
+                genomic_end: Optional[int] = None, strand: Optional[int] = None,
                 transcript: Optional[str] = None, gene: Optional[str] = None,
-                residue_mode: ResidueMode = ResidueMode.RESIDUE
+                coordinate_type: CoordinateType = CoordinateType.RESIDUE
         :return: Transcript Segment Element, warning
         """
         if tx_to_genomic_coords:
-            data = await self.cool_seq_tool.ex_g_coords_mapper.transcript_to_genomic_coordinates(
+            data = await self.cool_seq_tool.ex_g_coords_mapper.tx_segment_to_genomic(
                 **kwargs
             )
         else:
@@ -257,55 +254,38 @@ class FUSOR:
                 )
                 _logger.warning(msg)
                 return None, [msg]
-            residue_mode = kwargs.get("residue_mode")
-            # TODO: Remove once fixed in cool_seq_tool - need to verify that this code isn't still needed
-            if residue_mode != ResidueMode.INTER_RESIDUE:
-                start = kwargs.get("start")
-                kwargs["start"] = start - 1 if start is not None else None
-                kwargs["residue_mode"] = "inter-residue"
             chromosome = kwargs.get("chromosome")
             # if chromosome is a string, assume it's an accession, fix it for the kwargs since CST expects this as alt_ac
             if type(chromosome) is str:
                 kwargs["alt_ac"] = chromosome
-            data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_transcript_exon_coordinates(
+            data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_tx_segment(
                 **kwargs
             )
 
-        if data.genomic_data is None:
-            return None, data.warnings
-
-        genomic_data = data.genomic_data
-        genomic_data.transcript = coerce_namespace(genomic_data.transcript)
+        data.tx_ac = coerce_namespace(data.tx_ac)
 
         normalized_gene_response = self._normalized_gene(
-            genomic_data.gene, use_minimal_gene=use_minimal_gene
+            data.gene, use_minimal_gene=use_minimal_gene
         )
         if not normalized_gene_response[0] and normalized_gene_response[1]:
             return None, [normalized_gene_response[1]]
 
+        seg_start = data.seg_start
+        seg_end = data.seg_end
+
         return (
             TranscriptSegmentElement(
-                transcript=genomic_data.transcript,
-                exonStart=genomic_data.exon_start,
-                exonStartOffset=genomic_data.exon_start_offset,
-                exonEnd=genomic_data.exon_end,
-                exonEndOffset=genomic_data.exon_end_offset,
+                transcript=data.tx_ac,
+                exonStart=seg_start.exon_ord,
+                exonStartOffset=seg_start.offset,
+                exonEnd=seg_end.exon_ord,
+                exonEndOffset=seg_end.offset,
                 gene=normalized_gene_response[0],
-                elementGenomicStart=self._sequence_location(
-                    genomic_data.start,
-                    genomic_data.start + 1,
-                    genomic_data.chr,
-                    seq_id_target_namespace=seq_id_target_namespace,
-                )
-                if genomic_data.start
+                elementGenomicStart=seg_start.genomic_location
+                if seg_start.genomic_location
                 else None,
-                elementGenomicEnd=self._sequence_location(
-                    genomic_data.end,
-                    genomic_data.end + 1,
-                    genomic_data.chr,
-                    seq_id_target_namespace=seq_id_target_namespace,
-                )
-                if genomic_data.end
+                elementGenomicEnd=seg_end.genomic_location
+                if seg_end.genomic_location
                 else None,
             ),
             None,
@@ -333,7 +313,7 @@ class FUSOR:
         end: int,
         sequence_id: str,
         strand: Strand,
-        residue_mode: ResidueMode = ResidueMode.RESIDUE,
+        coordinate_type: CoordinateType = CoordinateType.RESIDUE,
         seq_id_target_namespace: str | None = None,
     ) -> TemplatedSequenceElement:
         """Create templated sequence element
@@ -342,13 +322,13 @@ class FUSOR:
         :param end: Genomic end
         :param sequence_id: Chromosome accession for sequence
         :param strand: Strand
-        :param residue_mode: Determines coordinate base used. Must be one of ``residue``
+        :param coordinate_type: Determines coordinate base used. Must be one of ``residue``
             or ``inter-residue``.
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :return: Templated Sequence Element
         """
-        if residue_mode == ResidueMode.RESIDUE:
+        if coordinate_type == CoordinateType.RESIDUE:
             start -= 1
 
         region = self._sequence_location(

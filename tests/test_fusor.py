@@ -436,8 +436,8 @@ async def test_transcript_segment_element(
     # Genomic input, residue
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        start=154192136,
-        end=154170399,
+        genomic_start=154192136,
+        genomic_end=154170399,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
     )
@@ -448,8 +448,8 @@ async def test_transcript_segment_element(
     # Genomic input, inter-residue
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        start=154192135,
-        end=154170399,
+        genomic_start=154192135,
+        genomic_end=154170399,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
     )
@@ -596,12 +596,12 @@ def test_templated_sequence_element(
 ):
     """Test that templated sequence element works correctly"""
     tsg = fusor_instance.templated_sequence_element(
-        100, 150, "NC_000001.11", Strand.POSITIVE, residue_mode="residue"
+        100, 150, "NC_000001.11", Strand.POSITIVE, coordinate_type="residue"
     )
     assert tsg.model_dump() == templated_sequence_element.model_dump()
 
     tsg = fusor_instance.templated_sequence_element(
-        99, 150, "NC_000001.11", Strand.POSITIVE, residue_mode="inter-residue"
+        99, 150, "NC_000001.11", Strand.POSITIVE, coordinate_type="inter-residue"
     )
     assert tsg.model_dump() == templated_sequence_element.model_dump()
 
@@ -625,7 +625,7 @@ def test_templated_sequence_element(
             300,
             "custom_ID__1",
             Strand.POSITIVE,
-            residue_mode="inter-residue",
+            coordinate_type="inter-residue",
             seq_id_target_namespace="ga4gh",
         )
 
