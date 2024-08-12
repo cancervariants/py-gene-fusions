@@ -605,17 +605,14 @@ def test_templated_sequence_element(
     )
     assert tsg.model_dump() == templated_sequence_element.model_dump()
 
-    expected = copy.deepcopy(templated_sequence_element.model_dump())
-    expected["region"]["sequenceReference"]["refgetAccession"] = (
-        "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
-    )
+    # test properly defaults coordinate type to inter-residue
     tsg = fusor_instance.templated_sequence_element(
-        100,
+        99,
         150,
         "NC_000001.11",
         Strand.POSITIVE,
     )
-    assert tsg.model_dump() == expected
+    assert tsg.model_dump() == templated_sequence_element.model_dump()
 
     # test in-house/bespoke sequence ID
     # can't coerce namespace or translate to ga4gh ID
