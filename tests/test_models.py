@@ -1,7 +1,5 @@
 """Module for testing the fusion model."""
 
-import copy
-
 import pytest
 from cool_seq_tool.schemas import Strand
 from pydantic import ValidationError
@@ -25,256 +23,259 @@ from fusor.models import (
 
 
 @pytest.fixture(scope="module")
-def gene_descriptors():
-    """Provide possible gene_descriptor input."""
+def gene_examples():
+    """Provide possible gene input."""
     return [
-        {"id": "gene:G1", "gene": {"gene_id": "hgnc:9339"}, "label": "G1"},
-        {"id": "gene:ABL", "gene": {"gene_id": "hgnc:76"}, "label": "ABL"},
-        {"id": "gene:BCR1", "gene": {"gene_id": "hgnc:1014"}, "label": "BCR1"},
-        {"id": "gene:NTRK1", "gene_id": "hgnc:8031", "label": "NTRK1"},
+        {"id": "hgnc:9339", "label": "G1"},
+        {"id": "hgnc:76", "label": "ABL"},
+        {"id": "hgnc:1014", "label": "BCR1"},
+        {"id": "hgnc:8031", "label": "NTRK1"},
         {
-            "id": "gene:ALK",
-            "gene_id": "hgnc:1837",
+            "id": "hgnc:1837",
             "label": "ALK",
         },
-        {"id": "gene:YAP1", "gene_id": "hgnc:16262", "label": "YAP1"},
+        {"id": "hgnc:16262", "label": "YAP1"},
         # alternate structure
         {
-            "id": "normalize.gene:BRAF",
-            "type": "GeneDescriptor",
+            "id": "hgnc:1097",
+            "type": "Gene",
             "label": "BRAF",
-            "gene_id": "hgnc:1097",
         },
     ]
 
 
 @pytest.fixture(scope="module")
-def location_descriptors():
-    """Provide possible templated_sequence input."""
+def sequence_locations():
+    """Provide possible sequence_location input."""
     return [
         {
-            "id": "NC_000001.11:15455",
-            "type": "LocationDescriptor",
-            "location": {
-                "sequence_id": "ncbi:NC_000001.11",
-                "interval": {
-                    "start": {"type": "Number", "value": 15455},
-                    "end": {"type": "Number", "value": 15456},
-                },
-                "type": "SequenceLocation",
+            "id": "ga4gh:SL.-xC3omZDIKZEuotbbHWQMTC8sS3nOxTb",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceReference",
             },
-            "label": "NC_000001.11:15455",
+            "start": 15455,
+            "end": 15456,
         },
         {
-            "id": "NC_000001.11:15566",
-            "type": "LocationDescriptor",
-            "location": {
-                "sequence_id": "ncbi:NC_000001.11",
-                "interval": {
-                    "start": {"type": "Number", "value": 15565},
-                    "end": {"type": "Number", "value": 15566},
-                },
-                "type": "SequenceLocation",
+            "id": "ga4gh:SL.-xC3omZDIKZEuotbbHWQMTC8sS3nOxTb",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceReference",
             },
-            "label": "NC_000001.11:15566",
+            "start": 15565,
+            "end": 15566,
+        },
+        # TODO: the following 3 examples were made when intervals supported strings and need updated data chr12:p12.1-p12.2. I put in placeholders for now
+        {
+            "id": "ga4gh:SL.PPQ-aYd6dsSj7ulUEeqK8xZJP-yPrfdP",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000012.12",
+                "refgetAccession": "SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+                "type": "SequenceReference",
+            },
+            "start": 1,
+            "end": 2,
         },
         {
-            "id": "chr12:p12.1",
-            "type": "LocationDescriptor",
-            "location": {
-                "species_id": "taxonomy:9606",
-                "chr": "12",
-                "interval": {"start": "p12.1", "end": "p12.1"},
+            "id": "ga4gh:SL.OBeSv2B0pURlocL7viFiRwajew_GYGqN",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000012.12",
+                "refgetAccession": "SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+                "type": "SequenceReference",
             },
-            "label": "chr12:p12.1",
+            "start": 2,
+            "end": 3,
         },
         {
-            "id": "chr12:p12.2",
-            "type": "LocationDescriptor",
-            "location": {
-                "species_id": "taxonomy:9606",
-                "chr": "12",
-                "interval": {"start": "p12.2", "end": "p12.2"},
+            "id": "ga4gh:SL.OBeSv2B0pURlocL7viFiRwajew_GYGqN",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000012.12",
+                "refgetAccession": "SQ.6wlJpONE3oNb4D69ULmEXhqyDZ4vwNfl",
+                "type": "SequenceReference",
             },
-            "label": "chr12:p12.2",
+            "start": 1,
+            "end": 3,
         },
         {
-            "id": "NC_000001.11:15455-15566",
-            "type": "LocationDescriptor",
-            "location": {
-                "sequence_id": "ncbi:NC_000001.11",
-                "interval": {
-                    "start": {"type": "Number", "value": 15455},
-                    "end": {"type": "Number", "value": 15566},
-                },
-                "type": "SequenceLocation",
+            "id": "ga4gh:SL.-xC3omZDIKZEuotbbHWQMTC8sS3nOxTb",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceReference",
             },
-            "label": "NC_000001.11:15455-15566",
+            "start": 15455,
+            "end": 15566,
         },
         {
-            "id": "chr12:p12.1-p12.2",
-            "type": "LocationDescriptor",
-            "location": {
-                "species_id": "taxonomy:9606",
-                "chr": "12",
-                "interval": {"start": "p12.1", "end": "p12.2"},
+            "id": "ga4gh:SL.VJLxl42yYoa-0ZMa8dfakhZfcP0nWgpl",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NP_001123617.1",
+                "refgetAccession": "SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
+                "type": "SequenceReference",
             },
-            "label": "chr12:p12.1-p12.2",
+            "start": 171,
+            "end": 204,
         },
         {
-            "id": "fusor.location_descriptor:NP_001123617.1",
-            "type": "LocationDescriptor",
-            "location": {
-                "sequence_id": "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7",
-                "type": "SequenceLocation",
-                "interval": {
-                    "start": {"type": "Number", "value": 171},
-                    "end": {"type": "Number", "value": 204},
-                },
+            "id": "ga4gh:SL.fZQW-qJwKlrVdae-idN_XXee5VTfEOgA",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NP_002520.2",
+                "refgetAccession": "SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
+                "type": "SequenceReference",
             },
-        },
-        {
-            "id": "fusor.location_descriptor:NP_002520.2",
-            "type": "LocationDescriptor",
-            "location": {
-                "sequence_id": "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6",
-                "type": "SequenceLocation",
-                "interval": {
-                    "start": {"type": "Number", "value": 510},
-                    "end": {"type": "Number", "value": 781},
-                },
-            },
+            "start": 510,
+            "end": 781,
         },
     ]
 
 
 @pytest.fixture(scope="module")
-def functional_domains(gene_descriptors, location_descriptors):
+def functional_domains(gene_examples, sequence_locations):
     """Provide possible functional_domains input."""
     return [
         {
             "type": "FunctionalDomain",
             "status": "preserved",
             "label": "WW domain",
-            "_id": "interpro:IPR001202",
-            "associated_gene": gene_descriptors[5],
-            "sequence_location": location_descriptors[6],
+            "id": "interpro:IPR001202",
+            "associatedGene": gene_examples[5],
+            "sequenceLocation": sequence_locations[6],
         },
         {
             "status": "lost",
             "label": "Tyrosine-protein kinase, catalytic domain",
-            "_id": "interpro:IPR020635",
-            "associated_gene": gene_descriptors[3],
-            "sequence_location": location_descriptors[7],
+            "id": "interpro:IPR020635",
+            "associatedGene": gene_examples[3],
+            "sequenceLocation": sequence_locations[7],
         },
     ]
 
 
 @pytest.fixture(scope="module")
-def transcript_segments(location_descriptors, gene_descriptors):
+def transcript_segments(sequence_locations, gene_examples):
     """Provide possible transcript_segment input."""
     return [
         {
             "transcript": "refseq:NM_152263.3",
-            "exon_start": 1,
-            "exon_start_offset": -9,
-            "exon_end": 8,
-            "exon_end_offset": 7,
-            "gene_descriptor": gene_descriptors[0],
-            "element_genomic_start": location_descriptors[2],
-            "element_genomic_end": location_descriptors[3],
+            "exonStart": 1,
+            "exonStartOffset": -9,
+            "exonEnd": 8,
+            "exonEndOffset": 7,
+            "gene": gene_examples[0],
+            "elementGenomicStart": sequence_locations[2],
+            "elementGenomicEnd": sequence_locations[3],
         },
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_034348.3",
-            "exon_start": 1,
-            "exon_end": 8,
-            "gene_descriptor": gene_descriptors[3],
-            "element_genomic_start": location_descriptors[0],
-            "element_genomic_end": location_descriptors[1],
+            "exonStart": 1,
+            "exonEnd": 8,
+            "gene": gene_examples[3],
+            "elementGenomicStart": sequence_locations[0],
+            "elementGenomicEnd": sequence_locations[1],
         },
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_938439.4",
-            "exon_start": 7,
-            "exon_end": 14,
-            "exon_end_offset": -5,
-            "gene_descriptor": gene_descriptors[4],
-            "element_genomic_start": location_descriptors[0],
-            "element_genomic_end": location_descriptors[1],
+            "exonStart": 7,
+            "exonEnd": 14,
+            "exonEndOffset": -5,
+            "gene": gene_examples[4],
+            "elementGenomicStart": sequence_locations[0],
+            "elementGenomicEnd": sequence_locations[1],
         },
         {
             "type": "TranscriptSegmentElement",
             "transcript": "refseq:NM_938439.4",
-            "exon_start": 7,
-            "gene_descriptor": gene_descriptors[4],
-            "element_genomic_start": location_descriptors[0],
+            "exonStart": 7,
+            "gene": gene_examples[4],
+            "elementGenomicStart": sequence_locations[0],
         },
     ]
 
 
 @pytest.fixture(scope="module")
-def gene_elements(gene_descriptors):
+def gene_elements(gene_examples):
     """Provide possible gene element input data."""
     return [
         {
             "type": "GeneElement",
-            "gene_descriptor": gene_descriptors[1],
+            "gene": gene_examples[1],
         },
-        {"type": "GeneElement", "gene_descriptor": gene_descriptors[0]},
+        {"type": "GeneElement", "gene": gene_examples[0]},
         {"type"},
     ]
 
 
 @pytest.fixture(scope="module")
-def templated_sequence_elements(location_descriptors):
+def templated_sequence_elements(sequence_locations):
     """Provide possible templated sequence element input data."""
     return [
         {
             "type": "TemplatedSequenceElement",
             "strand": 1,
-            "region": location_descriptors[5],
+            "region": sequence_locations[5],
         },
         {
             "type": "TemplatedSequenceElement",
             "strand": -1,
-            "region": location_descriptors[4],
+            "region": sequence_locations[4],
         },
     ]
 
 
 @pytest.fixture(scope="module")
-def sequence_descriptors():
-    """Provide possible SequenceDescriptor input data"""
+def literal_sequence_expressions():
+    """Provide possible LiteralSequenceExpression input data"""
     return [
         {
             "id": "sequence:ACGT",
-            "type": "SequenceDescriptor",
+            "type": "LiteralSequenceExpression",
             "sequence": "ACGT",
-            "residue_type": "SO:0000348",
+            "residueType": "SO:0000348",
         },
         {
             "id": "sequence:T",
-            "type": "SequenceDescriptor",
+            "type": "LiteralSequenceExpression",
             "sequence": "T",
-            "residue_type": "SO:0000348",
+            "residueType": "SO:0000348",
         },
         {
             "id": "sequence:actgu",
-            "type": "SequenceDescriptor",
-            "sequence": "actgu",
-            "residue_type": "SO:0000348",
+            "type": "LiteralSequenceExpression",
+            "sequence": "ACTGU",
+            "residueType": "SO:0000348",
         },
     ]
 
 
 @pytest.fixture(scope="module")
-def linkers(sequence_descriptors):
+def linkers(literal_sequence_expressions):
     """Provide possible linker element input data."""
     return [
-        {"type": "LinkerSequenceElement", "linker_sequence": sequence_descriptors[0]},
-        {"type": "LinkerSequenceElement", "linker_sequence": sequence_descriptors[1]},
-        {"type": "LinkerSequenceElement", "linker_sequence": sequence_descriptors[2]},
+        {
+            "type": "LinkerSequenceElement",
+            "linkerSequence": literal_sequence_expressions[0],
+        },
+        {
+            "type": "LinkerSequenceElement",
+            "linkerSequence": literal_sequence_expressions[1],
+        },
+        {
+            "type": "LinkerSequenceElement",
+            "linkerSequence": literal_sequence_expressions[2],
+        },
     ]
 
 
@@ -285,9 +286,9 @@ def unknown_element():
 
 
 @pytest.fixture(scope="module")
-def regulatory_elements(gene_descriptors):
+def regulatory_elements(gene_examples):
     """Provide possible regulatory_element input data."""
-    return [{"regulatory_class": "promoter", "associated_gene": gene_descriptors[0]}]
+    return [{"regulatoryClass": "promoter", "associatedGene": gene_examples[0]}]
 
 
 def check_validation_error(exc_info, expected_msg: str, index: int = 0):
@@ -302,39 +303,41 @@ def check_validation_error(exc_info, expected_msg: str, index: int = 0):
     assert exc_info.value.errors()[index]["msg"] == expected_msg
 
 
-def test_functional_domain(functional_domains, gene_descriptors):
+def test_functional_domain(functional_domains, gene_examples):
     """Test FunctionalDomain object initializes correctly"""
     test_domain = FunctionalDomain(**functional_domains[0])
     assert test_domain.type == "FunctionalDomain"
     assert test_domain.status == "preserved"
     assert test_domain.label == "WW domain"
     assert test_domain.id == "interpro:IPR001202"
-    assert test_domain.associated_gene.id == "gene:YAP1"
-    assert test_domain.associated_gene.gene_id == "hgnc:16262"
-    assert test_domain.associated_gene.label == "YAP1"
-    test_loc = test_domain.sequence_location
-    assert test_loc.id == "fusor.location_descriptor:NP_001123617.1"
-    assert test_loc.type == "LocationDescriptor"
-    assert test_loc.location.sequence_id == "ga4gh:SQ.sv5egNzqN5koJQH6w0M4tIK9tEDEfJl7"
-    assert test_loc.location.interval.type == "SequenceInterval"
-    assert test_loc.location.interval.start.value == 171
-    assert test_loc.location.interval.end.value == 204
+    assert test_domain.associatedGene.id == "hgnc:16262"
+    assert test_domain.associatedGene.label == "YAP1"
+    test_loc = test_domain.sequenceLocation
+    assert "ga4gh:SL" in test_loc.id
+    assert test_loc.type == "SequenceLocation"
+    assert test_loc.start == 171
+    assert test_loc.end == 204
+    test_ref = test_loc.sequenceReference
+    assert test_ref.id == "refseq:NP_001123617.1"
+    assert "SQ." in test_ref.refgetAccession
+    assert test_ref.type == "SequenceReference"
 
     test_domain = FunctionalDomain(**functional_domains[1])
     assert test_domain.type == "FunctionalDomain"
     assert test_domain.status == "lost"
     assert test_domain.label == "Tyrosine-protein kinase, catalytic domain"
     assert test_domain.id == "interpro:IPR020635"
-    assert test_domain.associated_gene.id == "gene:NTRK1"
-    assert test_domain.associated_gene.gene_id == "hgnc:8031"
-    assert test_domain.associated_gene.label == "NTRK1"
-    test_loc = test_domain.sequence_location
-    assert test_loc.id == "fusor.location_descriptor:NP_002520.2"
-    assert test_loc.type == "LocationDescriptor"
-    assert test_loc.location.sequence_id == "ga4gh:SQ.vJvm06Wl5J7DXHynR9ksW7IK3_3jlFK6"
-    assert test_loc.location.interval.type == "SequenceInterval"
-    assert test_loc.location.interval.start.value == 510
-    assert test_loc.location.interval.end.value == 781
+    assert test_domain.associatedGene.id == "hgnc:8031"
+    assert test_domain.associatedGene.label == "NTRK1"
+    test_loc = test_domain.sequenceLocation
+    assert "ga4gh:SL" in test_loc.id
+    assert test_loc.type == "SequenceLocation"
+    assert test_loc.start == 510
+    assert test_loc.end == 781
+    test_ref = test_loc.sequenceReference
+    assert test_ref.id == "refseq:NP_002520.2"
+    assert "SQ." in test_ref.refgetAccession
+    assert test_ref.type == "SequenceReference"
 
     # test status string
     with pytest.raises(ValidationError) as exc_info:
@@ -342,7 +345,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
             status="gained",
             name="tyrosine kinase catalytic domain",
             id="interpro:IPR020635",
-            associated_gene=gene_descriptors[0],
+            associatedGene=gene_examples[0],
         )
     msg = "Input should be 'lost' or 'preserved'"
     check_validation_error(exc_info, msg)
@@ -353,7 +356,7 @@ def test_functional_domain(functional_domains, gene_descriptors):
             status="lost",
             label="tyrosine kinase catalytic domain",
             id="interpro_IPR020635",
-            associated_gene=gene_descriptors[0],
+            associatedGene=gene_examples[0],
         )
     msg = "String should match pattern '^\\w[^:]*:.+$'"
     check_validation_error(exc_info, msg)
@@ -363,54 +366,45 @@ def test_transcript_segment_element(transcript_segments):
     """Test TranscriptSegmentElement object initializes correctly"""
     test_element = TranscriptSegmentElement(**transcript_segments[0])
     assert test_element.transcript == "refseq:NM_152263.3"
-    assert test_element.exon_start == 1
-    assert test_element.exon_start_offset == -9
-    assert test_element.exon_end == 8
-    assert test_element.exon_end_offset == 7
-    assert test_element.gene_descriptor.id == "gene:G1"
-    assert test_element.gene_descriptor.label == "G1"
-    assert test_element.gene_descriptor.gene.gene_id == "hgnc:9339"
-    test_region_start = test_element.element_genomic_start
-    assert test_region_start.location.species_id == "taxonomy:9606"
-    assert test_region_start.location.type == "ChromosomeLocation"
-    assert test_region_start.location.chr == "12"
-    assert test_region_start.location.interval.start == "p12.1"
-    assert test_region_start.location.interval.end == "p12.1"
-    test_region_end = test_element.element_genomic_end
-    assert test_region_end.location.species_id == "taxonomy:9606"
-    assert test_region_end.location.type == "ChromosomeLocation"
-    assert test_region_end.location.chr == "12"
-    assert test_region_end.location.interval.start == "p12.2"
-    assert test_region_end.location.interval.end == "p12.2"
+    assert test_element.exonStart == 1
+    assert test_element.exonStartOffset == -9
+    assert test_element.exonEnd == 8
+    assert test_element.exonEndOffset == 7
+    assert test_element.gene.id == "hgnc:9339"
+    assert test_element.gene.label == "G1"
+    test_region_start = test_element.elementGenomicStart
+    assert test_region_start.type == "SequenceLocation"
+    test_region_end = test_element.elementGenomicEnd
+    assert test_region_end.type == "SequenceLocation"
 
     test_element = TranscriptSegmentElement(**transcript_segments[3])
     assert test_element.transcript == "refseq:NM_938439.4"
-    assert test_element.exon_start == 7
-    assert test_element.exon_start_offset == 0
-    assert test_element.exon_end is None
-    assert test_element.exon_end_offset is None
+    assert test_element.exonStart == 7
+    assert test_element.exonStartOffset == 0
+    assert test_element.exonEnd is None
+    assert test_element.exonEndOffset is None
 
     # check CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
         TranscriptSegmentElement(
             transcript="NM_152263.3",
-            exon_start="1",
-            exon_start_offset="-9",
-            exon_end="8",
-            exon_end_offset="7",
-            gene_descriptor={
-                "id": "test:1",
-                "gene": {"id": "hgnc:1"},
+            exonStart="1",
+            exonStartOffset="-9",
+            exonEnd="8",
+            exonEndOffset="7",
+            gene={
+                "id": "hgnc:1",
                 "label": "G1",
             },
-            element_genomic_start={
+            # TODO: get updated values for this from Jeremy
+            elementGenomicStart={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.1"},
                 }
             },
-            element_genomic_end={
+            elementGenomicEnd={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
@@ -426,23 +420,22 @@ def test_transcript_segment_element(transcript_segments):
         assert TranscriptSegmentElement(
             type="TemplatedSequenceElement",
             transcript="NM_152263.3",
-            exon_start="1",
-            exon_start_offset="-9",
-            exon_end="8",
-            exon_end_offset="7",
-            gene_descriptor={
+            exonStart="1",
+            exonStartOffset="-9",
+            exonEnd="8",
+            exonEndOffset="7",
+            gene={
                 "id": "test:1",
-                "gene": {"id": "hgnc:1"},
                 "label": "G1",
             },
-            element_genomic_start={
+            elementGenomicStart={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.2"},
                 }
             },
-            element_genomic_end={
+            elementGenomicEnd={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
@@ -458,37 +451,35 @@ def test_transcript_segment_element(transcript_segments):
         assert TranscriptSegmentElement(
             element_type="templated_sequence",
             transcript="NM_152263.3",
-            exon_start="1",
-            exon_start_offset="-9",
-            gene_descriptor={
+            exonStart="1",
+            exonStartOffset="-9",
+            gene={
                 "id": "test:1",
-                "gene": {"id": "hgnc:1"},
                 "label": "G1",
             },
         )
-    msg = "Value error, Must give `element_genomic_start` if `exon_start` is given"
+    msg = "Value error, Must give `elementGenomicStart` if `exonStart` is given"
     check_validation_error(exc_info, msg)
 
-    # Neither exon_start or exon_end given
+    # Neither exonStart or exonEnd given
     with pytest.raises(ValidationError) as exc_info:
         assert TranscriptSegmentElement(
             type="TranscriptSegmentElement",
             transcript="NM_152263.3",
-            exon_start_offset="-9",
-            exon_end_offset="7",
-            gene_descriptor={
+            exonStartOffset="-9",
+            exonEndOffset="7",
+            gene={
                 "id": "test:1",
-                "gene": {"id": "hgnc:1"},
                 "label": "G1",
             },
-            element_genomic_start={
+            elementGenomicStart={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
                     "interval": {"start": "p12.1", "end": "p12.2"},
                 }
             },
-            element_genomic_end={
+            elementGenomicEnd={
                 "location": {
                     "species_id": "taxonomy:9606",
                     "chr": "12",
@@ -496,7 +487,7 @@ def test_transcript_segment_element(transcript_segments):
                 }
             },
         )
-    msg = "Value error, Must give values for either `exon_start`, `exon_end`, or both"
+    msg = "Value error, Must give values for either `exonStart`, `exonEnd`, or both"
     check_validation_error(exc_info, msg)
 
 
@@ -505,10 +496,9 @@ def test_linker_element(linkers):
 
     def check_linker(actual, expected_id, expected_sequence):
         assert actual.type == "LinkerSequenceElement"
-        assert actual.linker_sequence.id == expected_id
-        assert actual.linker_sequence.sequence == expected_sequence
-        assert actual.linker_sequence.type == "SequenceDescriptor"
-        assert actual.linker_sequence.residue_type == "SO:0000348"
+        assert actual.linkerSequence.id == expected_id
+        assert actual.linkerSequence.sequence.root == expected_sequence
+        assert actual.linkerSequence.type == "LiteralSequenceExpression"
 
     for args in (
         (LinkerElement(**linkers[0]), "sequence:ACGT", "ACGT"),
@@ -519,7 +509,13 @@ def test_linker_element(linkers):
 
     # check base validation
     with pytest.raises(ValidationError) as exc_info:
-        LinkerElement(linker_sequence={"id": "sequence:ACT1", "sequence": "ACT1"})
+        LinkerElement(linkerSequence={"id": "sequence:ACT1", "sequence": "ACT1"})
+    msg = "String should match pattern '^[A-Z*\\-]*$'"
+    check_validation_error(exc_info, msg)
+
+    # check valid literal sequence expression
+    with pytest.raises(ValidationError) as exc_info:
+        LinkerElement(linkerSequence={"id": "sequence:actgu", "sequence": "actgu"})
     msg = "String should match pattern '^[A-Z*\\-]*$'"
     check_validation_error(exc_info, msg)
 
@@ -527,7 +523,7 @@ def test_linker_element(linkers):
     with pytest.raises(ValidationError) as exc_info:
         assert LinkerElement(
             type="TemplatedSequenceElement",
-            linker_sequence={"id": "sequence:ATG", "sequence": "ATG"},
+            linkerSequence={"id": "sequence:ATG", "sequence": "ATG"},
         )
     msg = (
         "Input should be <FUSORTypes.LINKER_SEQUENCE_ELEMENT: 'LinkerSequenceElement'>"
@@ -538,14 +534,14 @@ def test_linker_element(linkers):
     with pytest.raises(ValidationError) as exc_info:
         assert LinkerElement(
             type="LinkerSequenceElement",
-            linker_sequence={"id": "sequence:G", "sequence": "G"},
+            linkerSequence={"id": "sequence:G", "sequence": "G"},
             bonus_value="bonus",
         )
     msg = "Extra inputs are not permitted"
     check_validation_error(exc_info, msg)
 
 
-def test_genomic_region_element(templated_sequence_elements, location_descriptors):
+def test_genomic_region_element(templated_sequence_elements, sequence_locations):
     """Test that TemplatedSequenceElement initializes correctly."""
 
     def assert_genomic_region_test_element(test):
@@ -554,25 +550,13 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
         """
         assert test.type == "TemplatedSequenceElement"
         assert test.strand == Strand.POSITIVE
-        assert test.region.id == "chr12:p12.1-p12.2"
-        assert test.region.type == "LocationDescriptor"
-        assert test.region.location.species_id == "taxonomy:9606"
-        assert test.region.location.chr == "12"
-        assert test.region.location.interval.start == "p12.1"
-        assert test.region.location.interval.end == "p12.2"
-        assert test.region.label == "chr12:p12.1-p12.2"
+        assert "ga4gh:SL" in test.region.id
+        assert test.region.type == "SequenceLocation"
+        test_ref = test.region.sequenceReference
+        assert "refseq:" in test_ref.id
+        assert "SQ." in test_ref.refgetAccession
 
     test_element = TemplatedSequenceElement(**templated_sequence_elements[0])
-    assert_genomic_region_test_element(test_element)
-
-    genomic_region_elements_cpy = copy.deepcopy(templated_sequence_elements[0])
-    genomic_region_elements_cpy["region"]["location"]["_id"] = "location:1"
-    test_element = TemplatedSequenceElement(**genomic_region_elements_cpy)
-    assert_genomic_region_test_element(test_element)
-
-    genomic_region_elements_cpy = copy.deepcopy(templated_sequence_elements[0])
-    genomic_region_elements_cpy["region"]["location_id"] = "location:1"
-    test_element = TemplatedSequenceElement(**genomic_region_elements_cpy)
     assert_genomic_region_test_element(test_element)
 
     with pytest.raises(ValidationError) as exc_info:
@@ -586,37 +570,22 @@ def test_genomic_region_element(templated_sequence_elements, location_descriptor
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert TemplatedSequenceElement(
-            type="GeneElement", region=location_descriptors[0], strand=Strand.POSITIVE
+            type="GeneElement", region=sequence_locations[0], strand=Strand.POSITIVE
         )
     msg = "Input should be <FUSORTypes.TEMPLATED_SEQUENCE_ELEMENT: 'TemplatedSequenceElement'>"
     check_validation_error(exc_info, msg)
 
 
-def test_gene_element(gene_descriptors):
+def test_gene_element(gene_examples):
     """Test that Gene Element initializes correctly."""
-    test_element = GeneElement(gene_descriptor=gene_descriptors[0])
+    test_element = GeneElement(gene=gene_examples[0])
     assert test_element.type == "GeneElement"
-    assert test_element.gene_descriptor.id == "gene:G1"
-    assert test_element.gene_descriptor.label == "G1"
-    assert test_element.gene_descriptor.gene.gene_id == "hgnc:9339"
-
-    # test CURIE requirement
-    with pytest.raises(ValidationError) as exc_info:
-        GeneElement(
-            gene_descriptor={
-                "id": "G1",
-                "gene": {"gene_id": "hgnc:9339"},
-                "label": "G1",
-            }
-        )
-    msg = "String should match pattern '^\\w[^:]*:.+$'"
-    check_validation_error(exc_info, msg)
+    assert test_element.gene.id == "hgnc:9339"
+    assert test_element.gene.label == "G1"
 
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
-        assert GeneElement(
-            type="UnknownGeneElement", gene_descriptor=gene_descriptors[0]
-        )
+        assert GeneElement(type="UnknownGeneElement", gene=gene_examples[0])
     msg = "Input should be <FUSORTypes.GENE_ELEMENT: 'GeneElement'>"
     check_validation_error(exc_info, msg)
 
@@ -648,34 +617,33 @@ def test_mult_gene_element():
 def test_event():
     """Test Event object initializes correctly"""
     rearrangement = EventType.REARRANGEMENT
-    test_event = CausativeEvent(event_type=rearrangement, event_description=None)
-    assert test_event.event_type == rearrangement
+    test_event = CausativeEvent(eventType=rearrangement, eventDescription=None)
+    assert test_event.eventType == rearrangement
 
     with pytest.raises(ValueError):  # noqa: PT011
-        CausativeEvent(event_type="combination")
+        CausativeEvent(eventType="combination")
 
 
-def test_regulatory_element(regulatory_elements, gene_descriptors):
+def test_regulatory_element(regulatory_elements, gene_examples):
     """Test RegulatoryElement object initializes correctly"""
     test_reg_elmt = RegulatoryElement(**regulatory_elements[0])
-    assert test_reg_elmt.regulatory_class.value == "promoter"
-    assert test_reg_elmt.associated_gene.id == "gene:G1"
-    assert test_reg_elmt.associated_gene.gene.gene_id == "hgnc:9339"
-    assert test_reg_elmt.associated_gene.label == "G1"
+    assert test_reg_elmt.regulatoryClass.value == "promoter"
+    assert test_reg_elmt.associatedGene.id == "hgnc:9339"
+    assert test_reg_elmt.associatedGene.label == "G1"
 
     # check type constraint
     with pytest.raises(ValidationError) as exc_info:
         RegulatoryElement(
-            regulatory_class="notpromoter", associated_gene=gene_descriptors[0]
+            regulatoryClass="notpromoter", associatedGene=gene_examples[0]
         )
     assert exc_info.value.errors()[0]["msg"].startswith("Input should be")
 
     # require minimum input
     with pytest.raises(ValidationError) as exc_info:
-        RegulatoryElement(regulatory_class="enhancer")
+        RegulatoryElement(regulatoryClass="enhancer")
     assert (
         exc_info.value.errors()[0]["msg"]
-        == "Value error, Must set 1 of {`feature_id`, `associated_gene`} and/or `feature_location`"
+        == "Value error, Must set 1 of {`featureId`, `associatedGene`} and/or `featureLocation`"
     )
 
 
@@ -691,91 +659,86 @@ def test_fusion(
     """Test that Fusion object initializes correctly"""
     # test valid object
     fusion = CategoricalFusion(
-        reading_frame_preserved=True,
-        critical_functional_domains=[functional_domains[0]],
-        structural_elements=[transcript_segments[1], transcript_segments[2]],
-        regulatory_element=regulatory_elements[0],
+        readingFramePreserved=True,
+        criticalFunctionalDomains=[functional_domains[0]],
+        structure=[transcript_segments[1], transcript_segments[2]],
+        regulatoryElement=regulatory_elements[0],
     )
 
-    assert fusion.structural_elements[0].transcript == "refseq:NM_034348.3"
+    assert fusion.structure[0].transcript == "refseq:NM_034348.3"
 
     # check correct parsing of nested items
     fusion = CategoricalFusion(
-        structural_elements=[
+        structure=[
             {
                 "type": "GeneElement",
-                "gene_descriptor": {
-                    "type": "GeneDescriptor",
-                    "id": "gene:NTRK1",
+                "gene": {
+                    "type": "Gene",
+                    "id": "hgnc:8031",
                     "label": "NTRK1",
-                    "gene_id": "hgnc:8031",
                 },
             },
             {
                 "type": "GeneElement",
-                "gene_descriptor": {
-                    "type": "GeneDescriptor",
-                    "id": "gene:ABL1",
+                "gene": {
+                    "type": "Gene",
+                    "id": "hgnc:76",
                     "label": "ABL1",
-                    "gene_id": "hgnc:76",
                 },
             },
         ],
         regulatory_element=None,
     )
-    assert fusion.structural_elements[0].type == "GeneElement"
-    assert fusion.structural_elements[0].gene_descriptor.id == "gene:NTRK1"
-    assert fusion.structural_elements[1].type == "GeneElement"
-    assert fusion.structural_elements[1].gene_descriptor.type == "GeneDescriptor"
+    assert fusion.structure[0].type == "GeneElement"
+    assert fusion.structure[0].gene.label == "NTRK1"
+    assert fusion.structure[0].gene.id == "hgnc:8031"
+    assert fusion.structure[1].type == "GeneElement"
+    assert fusion.structure[1].gene.type == "Gene"
 
     # test that non-element properties are optional
-    assert CategoricalFusion(
-        structural_elements=[transcript_segments[1], transcript_segments[2]]
-    )
+    assert CategoricalFusion(structure=[transcript_segments[1], transcript_segments[2]])
 
     # test variety of element types
     assert AssayedFusion(
         type="AssayedFusion",
-        structural_elements=[
+        structure=[
             unknown_element,
             gene_elements[0],
             transcript_segments[2],
             templated_sequence_elements[1],
             linkers[0],
         ],
-        causative_event={
+        causativeEvent={
             "type": "CausativeEvent",
-            "event_type": "rearrangement",
-            "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+            "eventType": "rearrangement",
+            "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
         },
         assay={
             "type": "Assay",
-            "method_uri": "pmid:33576979",
-            "assay_id": "obi:OBI_0003094",
-            "assay_name": "fluorescence in-situ hybridization assay",
-            "fusion_detection": "inferred",
+            "methodUri": "pmid:33576979",
+            "assayId": "obi:OBI_0003094",
+            "assayName": "fluorescence in-situ hybridization assay",
+            "fusionDetection": "inferred",
         },
     )
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(
             type="CategoricalFusion",
-            structural_elements=[
+            structure=[
                 {
                     "type": "LinkerSequenceElement",
-                    "linker_sequence": {
+                    "linkerSequence": {
                         "id": "a:b",
-                        "type": "SequenceDescriptor",
+                        "type": "LiteralSequenceExpression",
                         "sequence": "AC",
-                        "residue_type": "SO:0000348",
                     },
                 },
                 {
                     "type": "LinkerSequenceElement",
-                    "linker_sequence": {
+                    "linkerSequence": {
                         "id": "a:b",
-                        "type": "SequenceDescriptor",
+                        "type": "LiteralSequenceExpression",
                         "sequence": "AC",
-                        "residue_type": "SO:0000348",
                     },
                 },
             ],
@@ -790,15 +753,15 @@ def test_fusion_element_count(
     unknown_element,
     gene_elements,
     transcript_segments,
-    gene_descriptors,
+    gene_examples,
 ):
     """Test fusion element count requirements."""
     # elements are mandatory
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
-            functional_domains=[functional_domains[1]],
-            causative_event="rearrangement",
-            regulatory_elements=[regulatory_elements[0]],
+            functionalDomains=[functional_domains[1]],
+            causativeEvent="rearrangement",
+            regulatoryElement=[regulatory_elements[0]],
         )
     element_ct_msg = (
         "Value error, Fusions must contain >= 2 structural elements, or >=1 structural element "
@@ -809,18 +772,18 @@ def test_fusion_element_count(
     # must have >= 2 elements + regulatory elements
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
-            structural_elements=[unknown_element],
-            causative_event={
+            structure=[unknown_element],
+            causativeEvent={
                 "type": "CausativeEvent",
-                "event_type": "rearrangement",
+                "eventType": "rearrangement",
                 "event_description": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
             },
             assay={
                 "type": "Assay",
-                "method_uri": "pmid:33576979",
-                "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred",
+                "methodUri": "pmid:33576979",
+                "assayId": "obi:OBI_0003094",
+                "assayName": "fluorescence in-situ hybridization assay",
+                "fusionDetection": "inferred",
             },
         )
     check_validation_error(exc_info, element_ct_msg)
@@ -828,66 +791,62 @@ def test_fusion_element_count(
     # unique gene requirements
     uq_gene_error_msg = "Value error, Fusions must form a chimeric transcript from two or more genes, or a novel interaction between a rearranged regulatory element with the expressed product of a partner gene."
     with pytest.raises(ValidationError) as exc_info:
-        assert CategoricalFusion(
-            structural_elements=[gene_elements[0], gene_elements[0]]
-        )
+        assert CategoricalFusion(structure=[gene_elements[0], gene_elements[0]])
+    check_validation_error(exc_info, uq_gene_error_msg)
+
+    with pytest.raises(ValidationError) as exc_info:
+        assert CategoricalFusion(structure=[gene_elements[1], transcript_segments[0]])
     check_validation_error(exc_info, uq_gene_error_msg)
 
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(
-            structural_elements=[gene_elements[1], transcript_segments[0]]
+            regulatoryElement=regulatory_elements[0],
+            structure=[transcript_segments[0]],
         )
     check_validation_error(exc_info, uq_gene_error_msg)
 
-    with pytest.raises(ValidationError) as exc_info:
-        assert CategoricalFusion(
-            regulatory_element=regulatory_elements[0],
-            structural_elements=[transcript_segments[0]],
-        )
-    check_validation_error(exc_info, uq_gene_error_msg)
-
-    # use alternate gene descriptor structure
+    # use alternate gene structure
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
             type="AssayedFusion",
-            structural_elements=[
-                {"type": "GeneElement", "gene_descriptor": gene_descriptors[6]},
-                {"type": "GeneElement", "gene_descriptor": gene_descriptors[6]},
+            structure=[
+                {"type": "GeneElement", "gene": gene_examples[6]},
+                {"type": "GeneElement", "gene": gene_examples[6]},
             ],
-            causative_event={
+            causativeEvent={
                 "type": "CausativeEvent",
-                "event_type": "read-through",
+                "eventType": "read-through",
             },
             assay={
                 "type": "Assay",
-                "method_uri": "pmid:33576979",
-                "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred",
+                "methodUri": "pmid:33576979",
+                "assayId": "obi:OBI_0003094",
+                "assayName": "fluorescence in-situ hybridization assay",
+                "fusionDetection": "inferred",
             },
         )
     with pytest.raises(ValidationError) as exc_info:
         assert AssayedFusion(
             type="AssayedFusion",
-            structural_elements=[
-                {"type": "GeneElement", "gene_descriptor": gene_descriptors[6]},
+            structure=[
+                {"type": "GeneElement", "gene": gene_examples[6]},
             ],
-            regulatory_element={
+            regulatoryElement={
                 "type": "RegulatoryElement",
                 "regulatory_class": "enhancer",
                 "feature_id": "EH111111111",
-                "associated_gene": gene_descriptors[6],
+                "associatedGene": gene_examples[6],
             },
-            causative_event={
+            causativeEvent={
                 "type": "CausativeEvent",
-                "event_type": "read-through",
+                "eventType": "read-through",
             },
             assay={
                 "type": "Assay",
-                "method_uri": "pmid:33576979",
-                "assay_id": "obi:OBI_0003094",
-                "assay_name": "fluorescence in-situ hybridization assay",
-                "fusion_detection": "inferred",
+                "methodUri": "pmid:33576979",
+                "assayId": "obi:OBI_0003094",
+                "assayName": "fluorescence in-situ hybridization assay",
+                "fusionDetection": "inferred",
             },
         )
 
@@ -896,7 +855,7 @@ def test_fusion_abstraction_validator(transcript_segments, linkers):
     """Test that instantiation of abstract fusion fails."""
     # can't create base fusion
     with pytest.raises(ValidationError) as exc_info:
-        assert AbstractFusion(structural_elements=[transcript_segments[2], linkers[0]])
+        assert AbstractFusion(structure=[transcript_segments[2], linkers[0]])
     check_validation_error(
         exc_info, "Value error, Cannot instantiate Fusion abstract class"
     )
