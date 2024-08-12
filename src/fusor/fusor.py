@@ -217,6 +217,7 @@ class FUSOR:
         self,
         tx_to_genomic_coords: bool = True,
         use_minimal_gene: bool = True,
+        seq_id_target_namespace: str | None = None,
         **kwargs,
     ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
         """Create transcript segment element
@@ -226,6 +227,8 @@ class FUSOR:
         :param use_minimal_gene: `True` if minimal gene object
             (``id``, ``label``) will be used. ``False`` if
             gene-normalizer's entire gene object will be used
+        :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
+            this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :param kwargs:
             If `tx_to_genomic_coords`, possible key word arguments:
                 (From cool_seq_tool.tx_segment_to_genomic)
@@ -271,7 +274,10 @@ class FUSOR:
             return None, [normalized_gene_response[1]]
 
         seg_start = data.seg_start
+        genomic_start_location = seg_start.genomic_location
+
         seg_end = data.seg_end
+        genomic_end_location = seg_end.genomic_location
 
         return (
             TranscriptSegmentElement(
@@ -281,10 +287,20 @@ class FUSOR:
                 exonEnd=seg_end.exon_ord,
                 exonEndOffset=seg_end.offset,
                 gene=normalized_gene_response[0],
-                elementGenomicStart=seg_start.genomic_location
+                elementGenomicStart=self._sequence_location(
+                    genomic_start_location.start,
+                    genomic_start_location.end,
+                    data.genomic_ac,
+                    seq_id_target_namespace=seq_id_target_namespace,
+                )
                 if seg_start.genomic_location
                 else None,
-                elementGenomicEnd=seg_end.genomic_location
+                elementGenomicEnd=self._sequence_location(
+                    genomic_end_location.start,
+                    genomic_end_location.end,
+                    data.genomic_ac,
+                    seq_id_target_namespace=seq_id_target_namespace,
+                )
                 if seg_end.genomic_location
                 else None,
             ),
