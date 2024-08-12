@@ -309,8 +309,7 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
 
 class RegulatoryClass(str, Enum):
     """Define possible classes of Regulatory Elements. Options are the possible values
-    for /regulatory_class value property in the INSDC controlled vocabulary:
-    https://www.insdc.org/controlled-vocabulary-regulatoryclass
+    for ``/regulatory_class`` value property in the `INSDC controlled vocabulary <https://www.insdc.org/controlled-vocabulary-regulatoryclass>`_
     """
 
     ATTENUATOR = "attenuator"
@@ -337,8 +336,8 @@ class RegulatoryClass(str, Enum):
 class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class.
 
-    `featureId` would ideally be constrained as a CURIE, but Encode, our preferred
-    feature ID source, doesn't currently have a registered CURIE structure for EH_
+    ``featureId`` would ideally be constrained as a CURIE, but Encode, our preferred
+    feature ID source, doesn't currently have a registered CURIE structure for ``EH_``
     identifiers. Consequently, we permit any kind of free text.
     """
 
