@@ -329,7 +329,7 @@ class FUSOR:
         end: int,
         sequence_id: str,
         strand: Strand,
-        coordinate_type: CoordinateType = CoordinateType.RESIDUE,
+        coordinate_type: CoordinateType = CoordinateType.INTER_RESIDUE,
         seq_id_target_namespace: str | None = None,
     ) -> TemplatedSequenceElement:
         """Create templated sequence element
