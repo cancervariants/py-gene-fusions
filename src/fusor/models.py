@@ -129,9 +129,9 @@ class TranscriptSegmentElement(BaseStructuralElement):
 
     @model_validator(mode="before")
     def check_exons(cls, values):
-        """Check that at least one of {`exonStart`, `exonEnd`} is set.
-        If set, check that the corresponding `elementGenomic` field is set.
-        If not set, set corresponding offset to `None`
+        """Check that at least one of {``exonStart``, ``exonEnd``} is set.
+        If set, check that the corresponding ``elementGenomic`` field is set.
+        If not set, set corresponding offset to ``None``
 
         """
         msg = "Must give values for either `exonStart`, `exonEnd`, or both"
@@ -220,6 +220,7 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
 
 class TemplatedSequenceElement(BaseStructuralElement):
     """Define Templated Sequence Element class.
+
     A templated sequence is a contiguous genomic sequence found in the gene
     product.
     """
@@ -271,7 +272,9 @@ class GeneElement(BaseStructuralElement):
 
 
 class UnknownGeneElement(BaseStructuralElement):
-    """Define UnknownGene class. This is primarily intended to represent a
+    """Define UnknownGene class.
+
+    This is primarily intended to represent a
     partner in the result of a fusion partner-agnostic assay, which identifies
     the absence of an expected gene. For example, a FISH break-apart probe may
     indicate rearrangement of an MLL gene, but by design, the test cannot
@@ -288,7 +291,9 @@ class UnknownGeneElement(BaseStructuralElement):
 
 
 class MultiplePossibleGenesElement(BaseStructuralElement):
-    """Define MultiplePossibleGenesElement class. This is primarily intended to
+    """Define MultiplePossibleGenesElement class.
+
+    This is primarily intended to
     represent a partner in a categorical fusion, typifying generalizable
     characteristics of a class of fusions such as retained or lost regulatory elements
     and/or functional domains, often curated from biomedical literature for use in
@@ -308,8 +313,10 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
 
 
 class RegulatoryClass(str, Enum):
-    """Define possible classes of Regulatory Elements. Options are the possible values
-    for ``/regulatory_class`` value property in the `INSDC controlled vocabulary <https://www.insdc.org/controlled-vocabulary-regulatoryclass>`_
+    """Define possible classes of Regulatory Elements.
+
+    Options are the possible values for ``/regulatory_class`` value property in the
+    `INSDC controlled vocabulary <https://www.insdc.org/controlled-vocabulary-regulatoryclass>`_.
     """
 
     ATTENUATOR = "attenuator"
@@ -407,8 +414,10 @@ class AbstractFusion(BaseModel, ABC):
         obj: dict | BaseModel,
         attr_name: str,
     ) -> Any | None:  # noqa: ANN401
-        """Help enable safe access of object properties while performing
-        validation for Pydantic class objects. Because the validator could be handling either
+        """Help enable safe access of object properties while performing validation for
+        Pydantic class objects.
+
+        Because the validator could be handling either
         existing Pydantic class objects, or candidate dictionaries, we need a flexible
         accessor function.
 
@@ -499,8 +508,8 @@ class AbstractFusion(BaseModel, ABC):
 
     @model_validator(mode="after")
     def structure_ends(cls, values):
-        """Ensure start/end elements are of legal types and have fields
-        required by their position.
+        """Ensure start/end elements are of legal types and have fields required by
+        their position.
         """
         elements = values.structure
         if isinstance(elements[0], TranscriptSegmentElement):
@@ -575,7 +584,9 @@ class EventType(str, Enum):
 
 
 class CausativeEvent(BaseModelForbidExtra):
-    """The evaluation of a fusion may be influenced by the underlying mechanism that
+    """Define causative event information for a fusion.
+
+    The evaluation of a fusion may be influenced by the underlying mechanism that
     generated the fusion. Often this will be a DNA rearrangement, but it could also be
     a read-through or trans-splicing event.
     """

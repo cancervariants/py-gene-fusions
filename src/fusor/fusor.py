@@ -186,14 +186,14 @@ class FUSOR:
         regulatory_element: RegulatoryElement | None = None,
         reading_frame_preserved: bool | None = None,
     ) -> AssayedFusion:
-        """Construct an assayed fusion object
+        """Construct an assayed fusion object.
 
         :param structure: elements constituting the fusion
         :param causative_event: event causing the fusion
         :param assay: how knowledge of the fusion was obtained
         :param regulatory_element: affected regulatory elements
         :param reading_frame_preserved: ``True`` if reading frame is preserved.
-            ``False`` otherwise
+            ``False`` otherwise.
         :return: Tuple containing optional ``AssayedFusion`` if construction successful,
             and any relevant validation warnings
         """
@@ -216,7 +216,7 @@ class FUSOR:
         seq_id_target_namespace: str | None = None,
         **kwargs,
     ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
-        """Create transcript segment element
+        """Create transcript segment element.
 
         :param tx_to_genomic_coords: ``True`` if going from transcript to genomic
             coordinates. ``False`` if going from genomic to transcript exon coordinates.
@@ -236,7 +236,8 @@ class FUSOR:
                 * **exon_start_offset**: Optional[int] = 0
                 * **exon_end**: Optional[int] = None
                 * **exon_end_offset**: (``Optional[int] = 0``)
-            else**:
+
+            else:
 
                 (From `cool_seq_tool.genomic_to_transcript_exon_coordinates <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
 
