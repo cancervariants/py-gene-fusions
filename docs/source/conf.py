@@ -60,9 +60,9 @@ sys.path.insert(0, os.path.abspath("../../"))
 autodoc_preserve_defaults = True
 
 # -- get version -------------------------------------------------------------
-from importlib.metadata import version
+from fusor import __version__
 
-release = version = version("fusor")
+release = version = __version__
 
 # -- linkcode ----------------------------------------------------------------
 def linkcode_resolve(domain, info):
