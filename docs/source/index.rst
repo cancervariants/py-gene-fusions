@@ -29,6 +29,7 @@ FUSOR is developed primarily by the `Wagner Lab <https://www.nationwidechildrens
 
     Installation<install>
     Usage<usage>
+    Data Model<data_model>
     API Reference<reference/index>
     Changelog<changelog>
     Contributing<contributing>

@@ -64,6 +64,14 @@ from fusor import __version__
 
 release = version = __version__
 
+from importlib.metadata import version as lib_version
+
+vrs_python_version = lib_version("ga4gh.vrs")
+
+rst_epilog = f"""
+.. |vrs_python_version| replace:: {vrs_python_version}
+"""
+
 # -- linkcode ----------------------------------------------------------------
 def linkcode_resolve(domain, info):
     if domain != "py":
