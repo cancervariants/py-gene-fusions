@@ -76,13 +76,16 @@ async def check_data_resources(
         gene_database = create_db()
 
     gene_status = False
-    if not gene_database.check_schema_initialized():
-        _logger.error("Health check failed: gene DB schema uninitialized")
-    else:
-        if not gene_database.check_tables_populated():
-            _logger.error("Health check failed: gene DB is incompletely populated")
+    try:
+        if not gene_database.check_schema_initialized():
+            _logger.error("Health check failed: gene DB schema uninitialized")
         else:
-            gene_status = True
+            if not gene_database.check_tables_populated():
+                _logger.error("Health check failed: gene DB is incompletely populated")
+            else:
+                gene_status = True
+    except Exception as e:
+        _logger.error("Encountered error while creating gene DB: %s", e)
     return FusorDataResourceStatus(
         cool_seq_tool=all(cst_status), gene_normalizer=gene_status
     )
