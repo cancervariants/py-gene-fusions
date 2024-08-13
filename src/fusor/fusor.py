@@ -158,6 +158,7 @@ class FUSOR:
         reading_frame_preserved: bool | None = None,
     ) -> CategoricalFusion:
         """Construct a categorical fusion object
+
         :param structure: elements constituting the fusion
         :param regulatory_element: affected regulatory element
         :param critical_functional_domains: lost or preserved functional domains
@@ -185,14 +186,15 @@ class FUSOR:
         regulatory_element: RegulatoryElement | None = None,
         reading_frame_preserved: bool | None = None,
     ) -> AssayedFusion:
-        """Construct an assayed fusion object
+        """Construct an assayed fusion object.
+
         :param structure: elements constituting the fusion
         :param causative_event: event causing the fusion
         :param assay: how knowledge of the fusion was obtained
         :param regulatory_element: affected regulatory elements
         :param reading_frame_preserved: ``True`` if reading frame is preserved.
-            ``False`` otherwise
-        :return: Tuple containing optional AssayedFusion if construction successful,
+            ``False`` otherwise.
+        :return: Tuple containing optional ``AssayedFusion`` if construction successful,
             and any relevant validation warnings
         """
         try:
@@ -214,9 +216,9 @@ class FUSOR:
         seq_id_target_namespace: str | None = None,
         **kwargs,
     ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
-        """Create transcript segment element
+        """Create transcript segment element.
 
-        :param tx_to_genomic_coords: `True` if going from transcript to genomic
+        :param tx_to_genomic_coords: ``True`` if going from transcript to genomic
             coordinates. ``False`` if going from genomic to transcript exon coordinates.
         :param use_minimal_gene: `True` if minimal gene object
             (``id``, ``label``) will be used. ``False`` if
@@ -224,19 +226,29 @@ class FUSOR:
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :param kwargs:
-            If `tx_to_genomic_coords`, possible key word arguments:
-                (From cool_seq_tool.transcript_to_genomic_coords)
-                gene: Optional[str] = None, transcript: str = None,
-                exon_start: Optional[int] = None,
-                exon_start_offset: Optional[int] = 0,
-                exon_end: Optional[int] = None,
-                exon_end_offset: Optional[int] = 0
+            If ``tx_to_genomic_coords``, possible key word arguments:
+
+                (From `cool_seq_tool.transcript_to_genomic_coords <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
+
+                * **gene** (``str | None = None``)
+                * **transcript** (``str | None = None``)
+                * **exon_start** (``int | None = None``)
+                * **exon_start_offset**: Optional[int] = 0
+                * **exon_end**: Optional[int] = None
+                * **exon_end_offset**: (``Optional[int] = 0``)
+
             else:
-                (From cool_seq_tool.genomic_to_transcript_exon_coordinates)
-                chromosome: Union[str, int], start: Optional[int] = None,
-                end: Optional[int] = None, strand: Optional[int] = None,
-                transcript: Optional[str] = None, gene: Optional[str] = None,
-                residue_mode: ResidueMode = ResidueMode.RESIDUE
+
+                (From `cool_seq_tool.genomic_to_transcript_exon_coordinates <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
+
+                * **chromosome**: (``Union[str, int]``)
+                * **start**: (``Optional[int] = None``)
+                * **end**: (``Optional[int] = None``)
+                * **strand**: (``Optional[int] = None``)
+                * **transcript**: (``Optional[str] = None``)
+                * **gene**: (``Optional[str] = None``)
+                * **residue_mode**: (``ResidueMode = ResidueMode.RESIDUE``)
+
         :return: Transcript Segment Element, warning
         """
         if tx_to_genomic_coords:
@@ -468,6 +480,7 @@ class FUSOR:
         use_minimal_gene: bool = True,
     ) -> tuple[RegulatoryElement | None, str | None]:
         """Create RegulatoryElement
+
         :param regulatory_class: one of {"promoter", "enhancer"}
         :param gene: gene term to fetch normalized gene object for
         :param use_minimal_gene: whether to use the minimal gene object
