@@ -40,7 +40,7 @@ Constructing fusions
 Validating fusions
 ------------------
 
-``fusor.models`` defines classes for fusions, as well as the associated subcomponents described in the `fusions minimal information model <https://fusions.cancervariants.org/en/latest/information_model.html>`_. These are implemented as `Pydantic <https://docs.pydantic.dev/latest/>`_, enabling runtime validation. In this example, a fusion is constructed with only one structural element, even though fusions are defined as `"the joining of two or more genes" <https://fusions.cancervariants.org/en/latest/terminology.html#gene-fusions>`_:
+``fusor.models`` defines classes for fusions, as well as the associated subcomponents described in the `fusions minimal information model <https://fusions.cancervariants.org/en/latest/information_model.html>`_. These are implemented as `Pydantic <https://docs.pydantic.dev/latest/>`_ classes, enabling runtime validation. In this example, a fusion is constructed with only one structural element, even though fusions are defined as `"the joining of two or more genes" <https://fusions.cancervariants.org/en/latest/terminology.html#gene-fusions>`_:
 
 .. code-block:: pycon
 

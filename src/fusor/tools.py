@@ -40,7 +40,7 @@ def translate_identifier(
 
 
 FusorDataResourceStatus = namedtuple(
-    "FusorDataResources", ("cool_seq_tool", "gene_normalizer")
+    "FusorDataResourceStatus", ("cool_seq_tool", "gene_normalizer")
 )
 
 
