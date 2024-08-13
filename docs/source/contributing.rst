@@ -28,6 +28,8 @@ We use `pre-commit <https://pre-commit.com/#usage>`_ to run conformance tests be
 * Added large files
 * AWS credentials
 * Private keys
+* Merge conflicts
+* EOF normalization
 
 Before your first commit, run: ::
 
