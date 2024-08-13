@@ -1,13 +1,8 @@
 """Provide miscellaneous tools for fusion modeling."""
 
 import logging
-from collections import namedtuple
 
 from biocommons.seqrepo.seqrepo import SeqRepo
-from cool_seq_tool.app import CoolSeqTool
-from cool_seq_tool.resources.status import check_status as check_cst_status
-from gene.database import AbstractDatabase as GeneDatabase
-from gene.database import create_db
 from gene.schemas import CURIE
 
 from fusor.exceptions import IDTranslationException
@@ -37,52 +32,3 @@ def translate_identifier(
     if not target_ids:
         raise IDTranslationException
     return target_ids[0]
-
-
-FusorDataResourceStatus = namedtuple(
-    "FusorDataResources", ("cool_seq_tool", "gene_normalizer")
-)
-
-
-async def check_data_resources(
-    gene_database: GeneDatabase | None = None,
-    cool_seq_tool: CoolSeqTool | None = None,
-) -> FusorDataResourceStatus:
-    """Perform basic status checks on known data requirements.
-
-    Mirroring the input structure of the :py:class:`fusor.fusor.FUSOR` class, existing
-    instances of the Gene Normalizer database and Cool-Seq-Tool can be passed as
-    arguments. Otherwise, resource construction is attempted in the same manner as it
-    would be with the FUSOR class, relying on environment variables and defaults.
-
-    >>> from fusor.tools import check_data_resources
-    >>> status = await check_data_resources()
-    >>> assert all(status)  # passes if all resources can be acquired successfully
-
-    The return object is a broad description of resource availability, grouped by
-    library. For a more granular description to support debugging, all failures are
-    logged as ``logging.ERROR`` by respective upstream libraries.
-
-    :param gene_database: gene normalizer DB instance
-    :param cool_seq_tool: Cool-Seq-Tool instance
-    :return: namedtuple describing whether Cool-Seq-Tool and Gene Normalizer resources
-        are all available
-    """
-    if cool_seq_tool is None:
-        cool_seq_tool = CoolSeqTool()
-    cst_status = await check_cst_status()
-
-    if gene_database is None:
-        gene_database = create_db()
-
-    gene_status = False
-    if not gene_database.check_schema_initialized():
-        _logger.error("Health check failed: gene DB schema uninitialized")
-    else:
-        if not gene_database.check_tables_populated():
-            _logger.error("Health check failed: gene DB is incompletely populated")
-        else:
-            gene_status = True
-    return FusorDataResourceStatus(
-        cool_seq_tool=all(cst_status), gene_normalizer=gene_status
-    )
