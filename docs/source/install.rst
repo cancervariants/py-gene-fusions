@@ -46,3 +46,11 @@ Connection information for the normalizer database can be set using the environm
 
 Check data availability
 +++++++++++++++++++++++
+
+Use the :py:meth:`fusor.tools.check_data_resources` method to verify that all data dependencies are available:
+
+.. code-block:: pycon
+
+   >>> from fusor.tools import check_data_resources
+   >>> status = await check_data_resources()
+   >>> assert all(status)  # passes if all resources can be acquired successfully
