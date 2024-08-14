@@ -37,13 +37,42 @@ Constructing fusions
    >>> fusion.type
    <FUSORTypes.ASSAYED_FUSION: 'AssayedFusion'>
 
-Validating fusions
-------------------
-
-``fusor.models`` defines classes for fusions, as well as the associated subcomponents described in the `fusions minimal information model <https://fusions.cancervariants.org/en/latest/information_model.html>`_. These are implemented as `Pydantic <https://docs.pydantic.dev/latest/>`_ classes, enabling runtime validation. In this example, a fusion is constructed with only one structural element, even though fusions are defined as `"the joining of two or more genes" <https://fusions.cancervariants.org/en/latest/terminology.html#gene-fusions>`_:
+As seen in the example above, :py:meth:`fusor.fusor.FUSOR.fusion()` can infer fusion context (i.e. whether it is `categorical or assayed <https://fusions.cancervariants.org/en/latest/terminology.html#gene-fusion-contexts>`_), assuming the provided arguments are sufficient for Pydantic to discern which kind of fusion it would have to be. In cases where the type is inherently ambiguous, an explicit type parameter can be passed, or the fusion's ``type`` property can be included:
 
 .. code-block:: pycon
 
+   >>> from fusor import FUSOR
+   >>> f = FUSOR()
+   >>> structure = [
+   ...     {"gene": {"id": "hgnc:3508", "label": "EWSR1"}, "type": "GeneElement"},
+   ...     {"gene": {"id": "hgnc:3446", "label": "ERG"}, "type": "GeneElement"}
+   ... ]
+   >>> fusion = f.fusion(**{"structure": structure, "type": "CategoricalFusion"})
+   >>> fusion.type
+   <FUSORTypes.Categorical_FUSION: 'CategoricalFusion'>
+   >>> from fusor.models import FusionType
+   >>> fusion = f.fusion(fusion_type=FusionType.Categorical_FUSION, **{"structure": structure})
+   >>> fusion.type
+   <FUSORTypes.CATEGORICAL_FUSION: 'CategoricalFusion'>
+
+Validating fusions
+------------------
+
+``fusor.models`` defines classes for fusions, as well as the associated subcomponents described in the `fusions minimal information model <https://fusions.cancervariants.org/en/latest/information_model.html>`_. These are implemented as `Pydantic <https://docs.pydantic.dev/latest/>`_ classes, enabling runtime type validation.
+
+.. code-block:: pycon
+
+   >>> from fusor.models import GeneElement, UnknownGeneElement, AssayedFusion
+   >>> gene = GeneElement(gene={"id": "hgnc:1097", "label": "BRAF"})
+   >>> fusion = AssayedFusion(structure=[UnknownGeneElement(), gene])
+   >>> fusion
+   AssayedFusion(type=<FUSORTypes.ASSAYED_FUSION: 'AssayedFusion'>, regulatoryElement=None, structure=[UnknownGeneElement(type=<FUSORTypes.UNKNOWN_GENE_ELEMENT: 'UnknownGeneElement'>), GeneElement(type=<FUSORTypes.GENE_ELEMENT: 'GeneElement'>, gene=Gene(id='hgnc:1097', type='Gene', label='BRAF', description=None, alternativeLabels=None, extensions=None, mappings=None))], readingFramePreserved=None, causativeEvent=None, assay=None)
+
+In this example, a fusion is constructed with only one structural element, even though fusions are defined as `"the joining of two or more genes" <https://fusions.cancervariants.org/en/latest/terminology.html#gene-fusions>`_:
+
+.. code-block:: pycon
+
+   >>> from fusor.models import AssayedFusion
    >>> AssayedFusion(**{"structure": [{"type": "GeneElement", "gene": {"label": "EWSR1", "id": "hgnc:3508"}}]})
    Traceback (most recent call last):
      File "<stdin>", line 1, in <module>
@@ -53,8 +82,8 @@ Validating fusions
      Value error, Fusions must contain >= 2 structural elements, or >=1 structural element and a regulatory element [type=value_error, input_value={'structure': [{'type': '...', 'id': 'hgnc:3508'}}]}, input_type=dict]
        For further information visit https://errors.pydantic.dev/2.1/v/value_error
 
-Viewing examples
-----------------
+Example fusions
+---------------
 
 ``fusor.examples`` contains pre-defined fusion objects intended to illustrate various aspects of the information model and nomenclature. ``fusor.examples.alk`` represents the category of fusions between the ALK gene and any other partner, where the `protein kinase, ATP binding site domain <https://www.ebi.ac.uk/interpro/entry/InterPro/IPR017441/>`_ is preserved:
 
@@ -72,7 +101,7 @@ Viewing examples
    >>> examples.alk.criticalFunctionalDomains[0].id
    'interpro:IPR017441'
 
-Other examples include:
+Provided examples include:
 
 * ``examples.bcr_abl1``: Example BCR-ABL1 categorical fusion drawn from [COSF1780](https://cancer.sanger.ac.uk/cosmic/fusion/summary?id=1780). Demonstrates structure of junction components, a linker sequence segment, critical functional domains, and reading frame preservation. Represented in nomenclature as ``NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173``.
 * ``examples.bcr_abl1_expanded``: Equivalent fusion to the above, but with expanded descriptions of genes, locations, and sequences provided by SeqRepo and the VICC Gene Normalizer.
@@ -81,7 +110,6 @@ Other examples include:
 * ``examples.tpm3_ntrk1``: Example TPM3-NTRK1 assayed fusion drawn from previous VICC Fusion Curation draft material. Represented in nomenclature as ``NM_152263.3(TPM3):e.1_8::NM_002529.3(NTRK1):e.10_22``.
 * ``examples.tpm3_pdgfrb``: Example TPM3-PDGFRB assayed fusion identified via RT-PCR. Represented in nomenclature as ``NM_152263.3(TPM3):e.8::NM_002609.3(PDGFRB):e.11_22``.
 * ``examples.igh_myc``: Example of an enhancer-driven IGH-MYC categorical fusion. Represented in nomenclature as ``reg_e_EH38E3121735@IGH(hgnc:5477)::MYC(hgnc:7553)``.
-
 
 
 Generating nomenclature
