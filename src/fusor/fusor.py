@@ -91,6 +91,9 @@ class FUSOR:
     def fusion(self, fusion_type: FusionType | None = None, **kwargs) -> Fusion:
         """Construct fusion object.
 
+        Fusion type (assayed vs categorical) can be inferred based on provided kwargs,
+        assuming they can sufficiently discriminate the type.
+
         :param fusion_type: explicitly specify fusion type. Unnecessary if providing
             fusion object in keyword args that includes ``type`` attribute.
         :return: constructed fusion object if successful
