@@ -274,10 +274,14 @@ class FUSOR:
             return None, [normalized_gene_response[1]]
 
         seg_start = data.seg_start
-        genomic_start_location = seg_start.genomic_location
+        genomic_start_location = None
+        if seg_start:
+            genomic_start_location = seg_start.genomic_location
 
         seg_end = data.seg_end
-        genomic_end_location = seg_end.genomic_location
+        genomic_end_location = None
+        if seg_end:
+            genomic_end_location = seg_end.genomic_location
 
         return (
             TranscriptSegmentElement(
@@ -293,7 +297,7 @@ class FUSOR:
                     data.genomic_ac,
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
-                if seg_start.genomic_location
+                if genomic_start_location
                 else None,
                 elementGenomicEnd=self._sequence_location(
                     genomic_end_location.start,
@@ -301,7 +305,7 @@ class FUSOR:
                     data.genomic_ac,
                     seq_id_target_namespace=seq_id_target_namespace,
                 )
-                if seg_end.genomic_location
+                if genomic_end_location
                 else None,
             ),
             None,
