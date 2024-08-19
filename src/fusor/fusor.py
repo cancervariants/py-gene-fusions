@@ -239,10 +239,9 @@ class FUSOR:
                 exon_end_offset: Optional[int] = 0
             else:
                 (From cool_seq_tool.genomic_to_tx_segment)
-                chromosome: Union[str, int], genomic_start: Optional[int] = None,
-                genomic_end: Optional[int] = None, strand: Optional[int] = None,
-                transcript: Optional[str] = None, gene: Optional[str] = None,
-                coordinate_type: CoordinateType = CoordinateType.RESIDUE
+                chromosome: Union[str, int], seg_start_genomic: Optional[int] = None,
+                seg_end_genomic: Optional[int] = None, transcript: Optional[str] = None,
+                gene: Optional[str] = None
         :return: Transcript Segment Element, warning
         """
         if tx_to_genomic_coords:
@@ -258,7 +257,7 @@ class FUSOR:
                 _logger.warning(msg)
                 return None, [msg]
             chromosome = kwargs.get("chromosome")
-            # if chromosome is a string, assume it's an accession, fix it for the kwargs since CST expects this as alt_ac
+            # if chromosome is a string, assume it's an accession, fix it for the kwargs since CST expects this as genomic_ac
             if type(chromosome) is str:
                 kwargs["genomic_ac"] = chromosome
             data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_tx_segment(

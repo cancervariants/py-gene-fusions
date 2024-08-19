@@ -436,8 +436,8 @@ async def test_transcript_segment_element(
     # Genomic input, residue
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        genomic_start=154192136,
-        genomic_end=154170399,
+        seg_start_genomic=154192136,
+        seg_end_genomic=154170399,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
     )
@@ -448,8 +448,8 @@ async def test_transcript_segment_element(
     # Genomic input, inter-residue
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        genomic_start=154192135,
-        genomic_end=154170399,
+        seg_start_genomic=154192135,
+        seg_end_genomic=154170399,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
     )
