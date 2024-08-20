@@ -1,8 +1,11 @@
 """Module for testing the FUSOR class."""
 
 import copy
+import datetime
+from unittest.mock import AsyncMock, patch
 
 import pytest
+from cool_seq_tool.mappers.exon_genomic_coords import GenomicTxSegService
 from cool_seq_tool.schemas import Strand
 from ga4gh.core.domain_models import Gene
 from ga4gh.vrs.models import SequenceLocation
@@ -177,6 +180,84 @@ def templated_sequence_element():
         "strand": 1,
     }
     return TemplatedSequenceElement(**params)
+
+
+@pytest.fixture(scope="module")
+def tpm3_tx_to_genomic_mock_response():
+    """Create mock response for tx_segment_to_genomic cool-seq-tool call"""
+    params = {
+        "gene": "TPM3",
+        "genomic_ac": "NC_000001.11",
+        "tx_ac": "NM_152263.3",
+        "seg_start": {
+            "exon_ord": 1,
+            "offset": 0,
+            "genomic_location": {
+                "id": None,
+                "type": "SequenceLocation",
+                "label": None,
+                "description": None,
+                "alternativeLabels": None,
+                "extensions": None,
+                "mappings": None,
+                "digest": None,
+                "sequenceReference": {
+                    "id": None,
+                    "type": "SequenceReference",
+                    "label": None,
+                    "description": None,
+                    "alternativeLabels": None,
+                    "extensions": None,
+                    "mappings": None,
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                    "residueAlphabet": None,
+                    "circular": None,
+                },
+                "start": None,
+                "end": 154192135,
+                "sequence": None,
+            },
+        },
+        "seg_end": {
+            "exon_ord": 8,
+            "offset": 0,
+            "genomic_location": {
+                "id": None,
+                "type": "SequenceLocation",
+                "label": None,
+                "description": None,
+                "alternativeLabels": None,
+                "extensions": None,
+                "mappings": None,
+                "digest": None,
+                "sequenceReference": {
+                    "id": None,
+                    "type": "SequenceReference",
+                    "label": None,
+                    "description": None,
+                    "alternativeLabels": None,
+                    "extensions": None,
+                    "mappings": None,
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                    "residueAlphabet": None,
+                    "circular": None,
+                },
+                "start": 154170399,
+                "end": None,
+                "sequence": None,
+            },
+        },
+        "errors": [],
+        "service_meta": {
+            "name": "cool_seq_tool",
+            "version": "0.6.1.dev55+g0534304",
+            "response_datetime": datetime.datetime(
+                2024, 8, 20, 16, 34, 30, 342103, tzinfo=datetime.timezone.utc
+            ),
+            "url": "https://github.com/GenomicMedLab/cool-seq-tool",
+        },
+    }
+    return GenomicTxSegService(**params)
 
 
 @pytest.fixture(scope="module")
@@ -421,17 +502,29 @@ def test_fusion(
 
 @pytest.mark.asyncio()
 async def test_transcript_segment_element(
-    fusor_instance, transcript_segment_element, mane_transcript_segment_element
+    fusor_instance,
+    tpm3_tx_to_genomic_mock_response,
+    transcript_segment_element,
+    mane_transcript_segment_element,
 ):
     """Test that transcript_segment_element method works correctly"""
     # Transcript Input
     # TODO: this test is now off by one after updating cool-seq-tool - need Jeremy's help in determining if the issue lies in fusor or CST
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3", exon_start=1, exon_end=8, tx_to_genomic_coords=True
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == transcript_segment_element.model_dump()
+    with patch.object(
+        fusor_instance.cool_seq_tool.ex_g_coords_mapper,
+        "tx_segment_to_genomic",
+        new_callable=AsyncMock,
+    ) as mock_tx_segment_to_genomic:
+        mock_tx_segment_to_genomic.return_value = tpm3_tx_to_genomic_mock_response
+        tsg = await fusor_instance.transcript_segment_element(
+            transcript="NM_152263.3",
+            exon_start=1,
+            exon_end=8,
+            tx_to_genomic_coords=True,
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        assert tsg[0].model_dump() == transcript_segment_element.model_dump()
 
     # Genomic input, residue
     tsg = await fusor_instance.transcript_segment_element(
