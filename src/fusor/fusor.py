@@ -247,7 +247,6 @@ class FUSOR:
                 * **genomic_ac**: (``str``)
                 * **seg_start_genomic**: (``Optional[int] = None``)
                 * **seg_end_genomic**: (``Optional[int] = None``)
-                * **strand**: (``Optional[int] = None``)
                 * **transcript**: (``Optional[str] = None``)
                 * **gene**: (``Optional[str] = None``)
 
