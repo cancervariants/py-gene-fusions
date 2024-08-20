@@ -6,11 +6,17 @@ from ga4gh.vrs.models import SequenceReference
 
 from fusor.exceptions import IDTranslationException
 from fusor.models import (
+    AssayedFusion,
+    Evidence,
+    Fusion,
     GeneElement,
+    LinkerElement,
+    MultiplePossibleGenesElement,
     RegulatoryClass,
     RegulatoryElement,
     TemplatedSequenceElement,
     TranscriptSegmentElement,
+    UnknownGeneElement,
 )
 from fusor.tools import translate_identifier
 
@@ -127,3 +133,55 @@ def gene_nomenclature(element: GeneElement) -> str:
     else:
         raise ValueError
     return f"{element.gene.label}({gene_id})"
+
+
+def generate_nomenclature(fusion: Fusion, sr: SeqRepo) -> str:
+    """Generate human-readable nomenclature describing provided fusion
+
+    >>> from fusor.nomenclature import generate_nomenclature
+    >>> from fusor.examples import alk
+    >>> from biocommons.seqrepo import SeqRepo
+    >>> generate_nomenclature(alk, SeqRepo("/usr/local/share/seqrepo/latest"))
+    'v::ALK(hgnc:427)'
+
+    :param fusion: a valid assayed or categorial fusion object
+    :param sr: SeqRepo instance. Used for some sequence reference lookups.
+    :return: string summarizing fusion in human-readable way per VICC fusion
+        curation nomenclature
+    :raise ValueError: if fusion structure contains unrecognized element types. This
+        should be impossible thanks to Pydantic validation.
+    """
+    parts = []
+    element_genes = []
+    if fusion.regulatoryElement:
+        parts.append(reg_element_nomenclature(fusion.regulatoryElement, sr))
+    for element in fusion.structure:
+        if isinstance(element, MultiplePossibleGenesElement):
+            parts.append("v")
+        elif isinstance(element, UnknownGeneElement):
+            parts.append("?")
+        elif isinstance(element, LinkerElement):
+            parts.append(element.linkerSequence.sequence.root)
+        elif isinstance(element, TranscriptSegmentElement):
+            if not any(
+                [gene == element.gene.label for gene in element_genes]  # noqa: C419
+            ):
+                parts.append(tx_segment_nomenclature(element))
+        elif isinstance(element, TemplatedSequenceElement):
+            parts.append(templated_seq_nomenclature(element, sr))
+        elif isinstance(element, GeneElement):
+            if not any(
+                [gene == element.gene.label for gene in element_genes]  # noqa: C419
+            ):
+                parts.append(gene_nomenclature(element))
+        else:
+            raise ValueError
+    if (
+        isinstance(fusion, AssayedFusion)
+        and fusion.assay
+        and fusion.assay.fusionDetection == Evidence.INFERRED
+    ):
+        divider = "(::)"
+    else:
+        divider = "::"
+    return divider.join(parts)

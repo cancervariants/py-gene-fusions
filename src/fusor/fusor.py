@@ -31,7 +31,6 @@ from fusor.models import (
     CategoricalFusionElement,
     CausativeEvent,
     DomainStatus,
-    Evidence,
     FunctionalDomain,
     Fusion,
     FusionType,
@@ -45,12 +44,7 @@ from fusor.models import (
     TranscriptSegmentElement,
     UnknownGeneElement,
 )
-from fusor.nomenclature import (
-    gene_nomenclature,
-    reg_element_nomenclature,
-    templated_seq_nomenclature,
-    tx_segment_nomenclature,
-)
+from fusor.nomenclature import generate_nomenclature
 from fusor.tools import translate_identifier
 
 _logger = logging.getLogger(__name__)
@@ -96,6 +90,9 @@ class FUSOR:
 
     def fusion(self, fusion_type: FusionType | None = None, **kwargs) -> Fusion:
         """Construct fusion object.
+
+        Fusion type (assayed vs categorical) can be inferred based on provided kwargs,
+        assuming they can sufficiently discriminate the type.
 
         :param fusion_type: explicitly specify fusion type. Unnecessary if providing
             fusion object in keyword args that includes ``type`` attribute.
@@ -164,6 +161,7 @@ class FUSOR:
         reading_frame_preserved: bool | None = None,
     ) -> CategoricalFusion:
         """Construct a categorical fusion object
+
         :param structure: elements constituting the fusion
         :param regulatory_element: affected regulatory element
         :param critical_functional_domains: lost or preserved functional domains
@@ -191,14 +189,15 @@ class FUSOR:
         regulatory_element: RegulatoryElement | None = None,
         reading_frame_preserved: bool | None = None,
     ) -> AssayedFusion:
-        """Construct an assayed fusion object
+        """Construct an assayed fusion object.
+
         :param structure: elements constituting the fusion
         :param causative_event: event causing the fusion
         :param assay: how knowledge of the fusion was obtained
         :param regulatory_element: affected regulatory elements
         :param reading_frame_preserved: ``True`` if reading frame is preserved.
-            ``False`` otherwise
-        :return: Tuple containing optional AssayedFusion if construction successful,
+            ``False`` otherwise.
+        :return: Tuple containing optional ``AssayedFusion`` if construction successful,
             and any relevant validation warnings
         """
         try:
@@ -220,9 +219,9 @@ class FUSOR:
         seq_id_target_namespace: str | None = None,
         **kwargs,
     ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
-        """Create transcript segment element
+        """Create transcript segment element.
 
-        :param tx_to_genomic_coords: `True` if going from transcript to genomic
+        :param tx_to_genomic_coords: ``True`` if going from transcript to genomic
             coordinates. ``False`` if going from genomic to transcript exon coordinates.
         :param use_minimal_gene: `True` if minimal gene object
             (``id``, ``label``) will be used. ``False`` if
@@ -230,18 +229,28 @@ class FUSOR:
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :param kwargs:
-            If `tx_to_genomic_coords`, possible key word arguments:
-                (From cool_seq_tool.tx_segment_to_genomic)
-                gene: Optional[str] = None, transcript: str = None,
-                exon_start: Optional[int] = None,
-                exon_start_offset: Optional[int] = 0,
-                exon_end: Optional[int] = None,
-                exon_end_offset: Optional[int] = 0
+            If ``tx_to_genomic_coords``, possible key word arguments:
+
+                (From `cool_seq_tool.transcript_to_genomic_coords <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
+
+                * **gene** (``str | None = None``)
+                * **transcript** (``str | None = None``)
+                * **exon_start** (``int | None = None``)
+                * **exon_start_offset**: Optional[int] = 0
+                * **exon_end**: Optional[int] = None
+                * **exon_end_offset**: (``Optional[int] = 0``)
+
             else:
-                (From cool_seq_tool.genomic_to_tx_segment)
-                chromosome: Union[str, int], seg_start_genomic: Optional[int] = None,
-                seg_end_genomic: Optional[int] = None, transcript: Optional[str] = None,
-                gene: Optional[str] = None
+
+                (From `cool_seq_tool.genomic_to_transcript_exon_coordinates <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
+
+                * **genomic_ac**: (``str``)
+                * **seg_start_genomic**: (``Optional[int] = None``)
+                * **seg_end_genomic**: (``Optional[int] = None``)
+                * **strand**: (``Optional[int] = None``)
+                * **transcript**: (``Optional[str] = None``)
+                * **gene**: (``Optional[str] = None``)
+
         :return: Transcript Segment Element, warning
         """
         if tx_to_genomic_coords:
@@ -469,6 +478,7 @@ class FUSOR:
         use_minimal_gene: bool = True,
     ) -> tuple[RegulatoryElement | None, str | None]:
         """Create RegulatoryElement
+
         :param regulatory_class: one of {"promoter", "enhancer"}
         :param gene: gene term to fetch normalized gene object for
         :param use_minimal_gene: whether to use the minimal gene object
@@ -578,39 +588,4 @@ class FUSOR:
         :return: string summarizing fusion in human-readable way per VICC fusion
             curation nomenclature
         """
-        parts = []
-        element_genes = []
-        if fusion.regulatoryElement:
-            parts.append(
-                reg_element_nomenclature(fusion.regulatoryElement, self.seqrepo)
-            )
-        for element in fusion.structure:
-            if isinstance(element, MultiplePossibleGenesElement):
-                parts.append("v")
-            elif isinstance(element, UnknownGeneElement):
-                parts.append("?")
-            elif isinstance(element, LinkerElement):
-                parts.append(element.linkerSequence.sequence.root)
-            elif isinstance(element, TranscriptSegmentElement):
-                if not any(
-                    [gene == element.gene.label for gene in element_genes]  # noqa: C419
-                ):
-                    parts.append(tx_segment_nomenclature(element))
-            elif isinstance(element, TemplatedSequenceElement):
-                parts.append(templated_seq_nomenclature(element, self.seqrepo))
-            elif isinstance(element, GeneElement):
-                if not any(
-                    [gene == element.gene.label for gene in element_genes]  # noqa: C419
-                ):
-                    parts.append(gene_nomenclature(element))
-            else:
-                raise ValueError
-        if (
-            isinstance(fusion, AssayedFusion)
-            and fusion.assay
-            and fusion.assay.fusionDetection == Evidence.INFERRED
-        ):
-            divider = "(::)"
-        else:
-            divider = "::"
-        return divider.join(parts)
+        return generate_nomenclature(fusion, self.seqrepo)
