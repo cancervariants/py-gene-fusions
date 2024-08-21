@@ -289,9 +289,11 @@ class FUSOR:
         return (
             TranscriptSegmentElement(
                 transcript=data.tx_ac,
-                exonStart=seg_start.exon_ord if seg_start else None,
+                # offset by 1 because in CST exons are 0-based
+                exonStart=seg_start.exon_ord + 1 if seg_start else None,
                 exonStartOffset=seg_start.offset if seg_start else None,
-                exonEnd=seg_end.exon_ord if seg_end else None,
+                # offset by 1 because in CST exons are 0-based
+                exonEnd=seg_end.exon_ord + 1 if seg_end else None,
                 exonEndOffset=seg_end.offset if seg_end else None,
                 gene=normalized_gene_response[0],
                 elementGenomicStart=self._sequence_location(

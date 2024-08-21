@@ -195,7 +195,8 @@ def transcript_segment_element():
         },
         "transcript": "refseq:NM_152263.3",
         "elementGenomicEnd": {
-            "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+            "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+            "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
@@ -203,18 +204,17 @@ def transcript_segment_element():
                 "type": "SequenceReference",
             },
             "start": 154170399,
-            "end": 154170400,
         },
         "elementGenomicStart": {
-            "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+            "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+            "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                 "type": "SequenceReference",
             },
-            "start": 154192135,
-            "end": 154192136,
+            "end": 154192135,
         },
     }
     return TranscriptSegmentElement(**params)
@@ -237,7 +237,8 @@ def mane_transcript_segment_element():
         "transcript": "refseq:NM_003390.4",
         "elementGenomicEnd": None,
         "elementGenomicStart": {
-            "id": "ga4gh:SL.ge9FDGyBXkKhEMR6RUMFg3u13j85WmMd",
+            "id": "ga4gh:SL.Dm_Rri77OtV3-FmEmGXBjWZ2PhEzdhFT",
+            "digest": "Dm_Rri77OtV3-FmEmGXBjWZ2PhEzdhFT",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000011.10",
@@ -245,7 +246,6 @@ def mane_transcript_segment_element():
                 "type": "SequenceReference",
             },
             "start": 9575887,
-            "end": 9575886,
         },
     }
     return TranscriptSegmentElement(**params)
@@ -433,18 +433,6 @@ async def test_transcript_segment_element(
     assert tsg[1] is None
     assert tsg[0].model_dump() == transcript_segment_element.model_dump()
 
-    # Genomic input, residue
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        seg_start_genomic=154192136,
-        seg_end_genomic=154170399,
-        chromosome="NC_000001.11",
-        tx_to_genomic_coords=False,
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == transcript_segment_element.model_dump()
-
     # Genomic input, inter-residue
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
@@ -471,10 +459,16 @@ async def test_transcript_segment_element(
 
     expected = copy.deepcopy(transcript_segment_element)
     expected.elementGenomicStart.sequenceReference.refgetAccession = (
-        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+        "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
     )
     expected.elementGenomicEnd.sequenceReference.refgetAccession = (
         expected.elementGenomicStart.sequenceReference.refgetAccession
+    )
+    expected.elementGenomicEnd.sequenceReference.id = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+    )
+    expected.elementGenomicStart.sequenceReference.id = (
+        expected.elementGenomicEnd.sequenceReference.id
     )
 
     # Transcript Input
@@ -492,8 +486,8 @@ async def test_transcript_segment_element(
     # Genomic input
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        start=154192136,
-        end=154170399,
+        seg_start_genomic=154192135,
+        seg_end_genomic=154170399,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
@@ -502,9 +496,11 @@ async def test_transcript_segment_element(
     assert tsg[1] is None
     assert tsg[0].model_dump() == expected.model_dump()
 
-    expected.exon_end_offset = -5
-    expected.elementGenomicEnd.location.interval.start.value = 154170404
-    expected.elementGenomicEnd.location.interval.end.value = 154170405
+    expected.exonEndOffset = -5
+    expected.elementGenomicEnd.start = 154170404
+    expected.elementGenomicEnd.end = None
+    expected.elementGenomicEnd.id = "ga4gh:SL.f2Ocn2oc7X6i9fxQrRdMonLXm-W6nyn6"
+    expected.elementGenomicEnd.digest = "f2Ocn2oc7X6i9fxQrRdMonLXm-W6nyn6"
 
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
@@ -522,8 +518,8 @@ async def test_transcript_segment_element(
     # Genomic Input
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        start=154192136,
-        end=154170404,
+        seg_start_genomic=154192135,
+        seg_end_genomic=154170404,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
@@ -550,7 +546,7 @@ async def test_transcript_segment_element(
     # Genomic Input
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        start=154192136,
+        seg_start_genomic=154192135,
         chromosome="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
@@ -563,7 +559,7 @@ async def test_transcript_segment_element(
     tsg = await fusor_instance.transcript_segment_element(
         tx_to_genomic_coords=False,
         chromosome="NC_000011.10",
-        start=9575887,
+        seg_start_genomic=9575887,
         gene="WEE1",
     )
     assert tsg[0]
@@ -779,9 +775,8 @@ def test_functional_domain(
         use_minimal_gene=True,
     )
     assert cd[0] is None
-    # TODO: this is now off by one after updating seqrepo (response is now: End inter-residue coordinate (712000) is out of index on NP_004324.2)
     assert (
-        "End inter-residue coordinate (711999) is out of index on "
+        "End inter-residue coordinate (712000) is out of index on "
         "NP_004324.2" in cd[1]
     )
 

@@ -137,7 +137,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
         msg = "Must give values for either `exonStart`, `exonEnd`, or both"
         exon_start = values.get("exonStart")
         exon_end = values.get("exonEnd")
-        if (not exon_start) and (not exon_end):
+        if (exon_start is None) and (exon_end is None):
             raise ValueError(msg)
 
         if exon_start:
