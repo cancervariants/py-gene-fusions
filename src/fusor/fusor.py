@@ -257,15 +257,13 @@ class FUSOR:
                 **kwargs
             )
         else:
-            if "chromosome" in kwargs and kwargs.get("chromosome") is None:
+            if "genomic_ac" in kwargs and kwargs.get("genomic_ac") is None:
                 msg = (
-                    "`chromosome` is required when going from genomic to"
+                    "`genomic_ac` is required when going from genomic to"
                     " transcript exon coordinates"
                 )
                 _logger.warning(msg)
                 return None, [msg]
-            chromosome = kwargs.get("chromosome")
-            kwargs["genomic_ac"] = chromosome
             data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_tx_segment(
                 **kwargs
             )

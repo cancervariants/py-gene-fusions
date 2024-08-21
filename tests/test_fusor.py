@@ -438,7 +438,7 @@ async def test_transcript_segment_element(
         transcript="NM_152263.3",
         seg_start_genomic=154192135,
         seg_end_genomic=154170399,
-        chromosome="NC_000001.11",
+        genomic_ac="NC_000001.11",
         tx_to_genomic_coords=False,
     )
     assert tsg[0]
@@ -488,7 +488,7 @@ async def test_transcript_segment_element(
         transcript="NM_152263.3",
         seg_start_genomic=154192135,
         seg_end_genomic=154170399,
-        chromosome="NC_000001.11",
+        genomic_ac="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
     )
@@ -520,7 +520,7 @@ async def test_transcript_segment_element(
         transcript="NM_152263.3",
         seg_start_genomic=154192135,
         seg_end_genomic=154170404,
-        chromosome="NC_000001.11",
+        genomic_ac="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
     )
@@ -547,7 +547,7 @@ async def test_transcript_segment_element(
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
         seg_start_genomic=154192135,
-        chromosome="NC_000001.11",
+        genomic_ac="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
     )
@@ -558,7 +558,7 @@ async def test_transcript_segment_element(
     # MANE
     tsg = await fusor_instance.transcript_segment_element(
         tx_to_genomic_coords=False,
-        chromosome="NC_000011.10",
+        genomic_ac="NC_000011.10",
         seg_start_genomic=9575887,
         gene="WEE1",
     )
