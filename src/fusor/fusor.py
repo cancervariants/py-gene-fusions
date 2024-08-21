@@ -231,7 +231,7 @@ class FUSOR:
         :param kwargs:
             If ``tx_to_genomic_coords``, possible key word arguments:
 
-                (From `cool_seq_tool.transcript_to_genomic_coords <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
+                (From `cool_seq_tool.tx_segment_to_genomic <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
 
                 * **gene** (``str | None = None``)
                 * **transcript** (``str | None = None``)
@@ -242,7 +242,7 @@ class FUSOR:
 
             else:
 
-                (From `cool_seq_tool.genomic_to_transcript_exon_coordinates <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
+                (From `cool_seq_tool.genomic_to_tx_segment <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
 
                 * **genomic_ac**: (``str``)
                 * **seg_start_genomic**: (``Optional[int] = None``)
@@ -265,9 +265,7 @@ class FUSOR:
                 _logger.warning(msg)
                 return None, [msg]
             chromosome = kwargs.get("chromosome")
-            # if chromosome is a string, assume it's an accession, fix it for the kwargs since CST expects this as genomic_ac
-            if type(chromosome) is str:
-                kwargs["genomic_ac"] = chromosome
+            kwargs["genomic_ac"] = chromosome
             data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_tx_segment(
                 **kwargs
             )
