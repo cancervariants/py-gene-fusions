@@ -261,6 +261,84 @@ def tpm3_tx_to_genomic_mock_response():
 
 
 @pytest.fixture(scope="module")
+def tpm3_genomic_to_tx_mock_response():
+    """Create mock response for genomic_to_tx_segment cool-seq-tool call"""
+    params = {
+        "gene": "TPM3",
+        "genomic_ac": "NC_000001.11",
+        "tx_ac": "NM_152263.3",
+        "seg_start": {
+            "exon_ord": 0,
+            "offset": 0,
+            "genomic_location": {
+                "id": None,
+                "type": "SequenceLocation",
+                "label": None,
+                "description": None,
+                "alternativeLabels": None,
+                "extensions": None,
+                "mappings": None,
+                "digest": None,
+                "sequenceReference": {
+                    "id": None,
+                    "type": "SequenceReference",
+                    "label": None,
+                    "description": None,
+                    "alternativeLabels": None,
+                    "extensions": None,
+                    "mappings": None,
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                    "residueAlphabet": None,
+                    "circular": None,
+                },
+                "start": None,
+                "end": 154192135,
+                "sequence": None,
+            },
+        },
+        "seg_end": {
+            "exon_ord": 7,
+            "offset": 0,
+            "genomic_location": {
+                "id": None,
+                "type": "SequenceLocation",
+                "label": None,
+                "description": None,
+                "alternativeLabels": None,
+                "extensions": None,
+                "mappings": None,
+                "digest": None,
+                "sequenceReference": {
+                    "id": None,
+                    "type": "SequenceReference",
+                    "label": None,
+                    "description": None,
+                    "alternativeLabels": None,
+                    "extensions": None,
+                    "mappings": None,
+                    "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                    "residueAlphabet": None,
+                    "circular": None,
+                },
+                "start": 154170399,
+                "end": None,
+                "sequence": None,
+            },
+        },
+        "errors": [],
+        "service_meta": {
+            "name": "cool_seq_tool",
+            "version": "0.6.1.dev55+g0534304",
+            "response_datetime": datetime.datetime(
+                2024, 8, 20, 19, 29, 57, 785763, tzinfo=datetime.timezone.utc
+            ),
+            "url": "https://github.com/GenomicMedLab/cool-seq-tool",
+        },
+    }
+    return GenomicTxSegService(**params)
+
+
+@pytest.fixture(scope="module")
 def transcript_segment_element():
     """Create transcript segment element test fixture"""
     params = {
@@ -283,7 +361,6 @@ def transcript_segment_element():
                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                 "type": "SequenceReference",
             },
-            "start": 154170399,
             "end": 154170400,
         },
         "elementGenomicStart": {
@@ -295,7 +372,6 @@ def transcript_segment_element():
                 "type": "SequenceReference",
             },
             "start": 154192135,
-            "end": 154192136,
         },
     }
     return TranscriptSegmentElement(**params)
@@ -500,10 +576,39 @@ def test_fusion(
     assert msg in str(excinfo.value)
 
 
+def verify_sequence_location(actual: dict, expected: dict):
+    """Verify fields in SequenceLocations"""
+    if not actual:
+        return
+    # we don't want to check for specific digests since they can change
+    assert "ga4gh:SL" in actual["id"]
+    # sequence reference id corresponds to the genomic accession, so we do want to ensure it is exact
+    assert actual["sequenceReference"]["id"] == expected["sequenceReference"]["id"]
+    assert "SQ." in actual["sequenceReference"]["refgetAccession"]
+
+
+def compare_tx_segment_elements(actual: dict, expected: dict):
+    """Verify the required fields are correct for transcript segment elements"""
+    assert actual["exonStart"] == expected["exonStart"]
+    assert actual["exonStartOffset"] == expected["exonStartOffset"]
+    assert actual["exonEnd"] == expected["exonEnd"]
+    assert actual["exonEndOffset"] == expected["exonEndOffset"]
+
+    # verify gene is correct
+    assert actual["gene"] == expected["gene"]
+    assert actual["transcript"] == expected["transcript"]
+
+    verify_sequence_location(
+        actual["elementGenomicStart"], expected["elementGenomicStart"]
+    )
+    verify_sequence_location(actual["elementGenomicEnd"], expected["elementGenomicEnd"])
+
+
 @pytest.mark.asyncio()
 async def test_transcript_segment_element(
     fusor_instance,
     tpm3_tx_to_genomic_mock_response,
+    tpm3_genomic_to_tx_mock_response,
     transcript_segment_element,
     mane_transcript_segment_element,
 ):
@@ -516,6 +621,7 @@ async def test_transcript_segment_element(
         new_callable=AsyncMock,
     ) as mock_tx_segment_to_genomic:
         mock_tx_segment_to_genomic.return_value = tpm3_tx_to_genomic_mock_response
+
         tsg = await fusor_instance.transcript_segment_element(
             transcript="NM_152263.3",
             exon_start=1,
@@ -524,144 +630,171 @@ async def test_transcript_segment_element(
         )
         assert tsg[0]
         assert tsg[1] is None
-        assert tsg[0].model_dump() == transcript_segment_element.model_dump()
+        compare_tx_segment_elements(
+            tsg[0].model_dump(), transcript_segment_element.model_dump()
+        )
 
-    # Genomic input, residue
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        seg_start_genomic=154192136,
-        seg_end_genomic=154170399,
-        chromosome="NC_000001.11",
-        tx_to_genomic_coords=False,
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == transcript_segment_element.model_dump()
+        # Transcript Input
+        tsg = await fusor_instance.transcript_segment_element(
+            transcript="NM_152263.3",
+            exon_start=1,
+            exon_end=8,
+            gene="TPM3",
+            tx_to_genomic_coords=True,
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        compare_tx_segment_elements(
+            tsg[0].model_dump(), transcript_segment_element.model_dump()
+        )
 
-    # Genomic input, inter-residue
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        seg_start_genomic=154192135,
-        seg_end_genomic=154170399,
-        chromosome="NC_000001.11",
-        tx_to_genomic_coords=False,
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == transcript_segment_element.model_dump()
+        expected = copy.deepcopy(transcript_segment_element)
+        expected.elementGenomicStart.sequenceReference.refgetAccession = (
+            "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+        )
+        expected.elementGenomicEnd.sequenceReference.refgetAccession = (
+            expected.elementGenomicStart.sequenceReference.refgetAccession
+        )
 
-    # Transcript Input
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        exon_start=1,
-        exon_end=8,
-        gene="TPM3",
-        tx_to_genomic_coords=True,
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == transcript_segment_element.model_dump()
+        # Transcript Input with customized namespace id for sequence reference
+        tsg = await fusor_instance.transcript_segment_element(
+            transcript="NM_152263.3",
+            exon_start=1,
+            exon_end=8,
+            tx_to_genomic_coords=True,
+            seq_id_target_namespace="ga4gh",
+        )
+        expected.elementGenomicStart.sequenceReference.id = (
+            "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+        )
+        expected.elementGenomicEnd.sequenceReference.id = (
+            "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        compare_tx_segment_elements(tsg[0].model_dump(), expected.model_dump())
 
-    expected = copy.deepcopy(transcript_segment_element)
-    expected.elementGenomicStart.sequenceReference.refgetAccession = (
-        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
-    )
-    expected.elementGenomicEnd.sequenceReference.refgetAccession = (
-        expected.elementGenomicStart.sequenceReference.refgetAccession
-    )
+        # Transcript Input with different end and offset
+        expected.exonEndOffset = -5
+        expected.elementGenomicEnd.end = 154170405
+        mock_tx_segment_to_genomic.return_value.seg_end.offset = -5
+        tsg = await fusor_instance.transcript_segment_element(
+            transcript="NM_152263.3",
+            exon_start=1,
+            exon_end=8,
+            exon_end_offset=-5,
+            tx_to_genomic_coords=True,
+            seq_id_target_namespace="ga4gh",
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        compare_tx_segment_elements(tsg[0].model_dump(), expected.model_dump())
 
-    # Transcript Input
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        exon_start=1,
-        exon_end=8,
-        tx_to_genomic_coords=True,
-        seq_id_target_namespace="ga4gh",
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == expected.model_dump()
+        expected.exonEnd = None
+        expected.exonEndOffset = None
+        expected.elementGenomicEnd = None
+        mock_tx_segment_to_genomic.return_value.seg_end = None
 
-    # Genomic input
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        start=154192136,
-        end=154170399,
-        chromosome="NC_000001.11",
-        tx_to_genomic_coords=False,
-        seq_id_target_namespace="ga4gh",
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == expected.model_dump()
+        # Transcript Input
+        tsg = await fusor_instance.transcript_segment_element(
+            transcript="NM_152263.3",
+            exon_start=1,
+            tx_to_genomic_coords=True,
+            seq_id_target_namespace="ga4gh",
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        compare_tx_segment_elements(tsg[0].model_dump(), expected.model_dump())
 
-    expected.exon_end_offset = -5
-    expected.elementGenomicEnd.location.interval.start.value = 154170404
-    expected.elementGenomicEnd.location.interval.end.value = 154170405
+    with patch.object(
+        fusor_instance.cool_seq_tool.ex_g_coords_mapper,
+        "genomic_to_tx_segment",
+        new_callable=AsyncMock,
+    ) as mock_genomic_to_tx_segment:
+        mock_genomic_to_tx_segment.return_value = tpm3_genomic_to_tx_mock_response
 
-    # Transcript Input
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        exon_start=1,
-        exon_end=8,
-        exon_end_offset=-5,
-        tx_to_genomic_coords=True,
-        seq_id_target_namespace="ga4gh",
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == expected.model_dump()
+        # Genomic input, residue
+        tsg = await fusor_instance.transcript_segment_element(
+            transcript="NM_152263.3",
+            seg_start_genomic=154192135,
+            seg_end_genomic=154170399,
+            chromosome="NC_000001.11",
+            tx_to_genomic_coords=False,
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        compare_tx_segment_elements(
+            tsg[0].model_dump(), transcript_segment_element.model_dump()
+        )
 
-    # Genomic Input
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        start=154192136,
-        end=154170404,
-        chromosome="NC_000001.11",
-        tx_to_genomic_coords=False,
-        seq_id_target_namespace="ga4gh",
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == expected.model_dump()
+        # Genomic input, inter-residue
+        tsg = await fusor_instance.transcript_segment_element(
+            transcript="NM_152263.3",
+            seg_start_genomic=154192135,
+            seg_end_genomic=154170399,
+            chromosome="NC_000001.11",
+            tx_to_genomic_coords=False,
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        compare_tx_segment_elements(
+            tsg[0].model_dump(), transcript_segment_element.model_dump()
+        )
 
-    expected.exonEnd = None
-    expected.exonEndOffset = None
-    expected.elementGenomicEnd = None
+        # Genomic Input
+        tsg = await fusor_instance.transcript_segment_element(
+            transcript="NM_152263.3",
+            start=154192135,
+            chromosome="NC_000001.11",
+            tx_to_genomic_coords=False,
+            seq_id_target_namespace="ga4gh",
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        compare_tx_segment_elements(
+            tsg[0].model_dump(), transcript_segment_element.model_dump()
+        )
 
-    # Transcript Input
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        exon_start=1,
-        tx_to_genomic_coords=True,
-        seq_id_target_namespace="ga4gh",
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == expected.model_dump()
+        # Genomic Input
+        tsg = await fusor_instance.transcript_segment_element(
+            transcript="NM_152263.3",
+            start=154192135,
+            end=154170404,
+            chromosome="NC_000001.11",
+            tx_to_genomic_coords=False,
+            seq_id_target_namespace="ga4gh",
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        compare_tx_segment_elements(
+            tsg[0].model_dump(), transcript_segment_element.model_dump()
+        )
 
-    # Genomic Input
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        start=154192136,
-        chromosome="NC_000001.11",
-        tx_to_genomic_coords=False,
-        seq_id_target_namespace="ga4gh",
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == expected.model_dump()
+        # Genomic input
+        tsg = await fusor_instance.transcript_segment_element(
+            transcript="NM_152263.3",
+            seg_genomic_start=154192135,
+            seg_genomic_end=154170399,
+            chromosome="NC_000001.11",
+            tx_to_genomic_coords=False,
+            seq_id_target_namespace="ga4gh",
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        compare_tx_segment_elements(tsg[0].model_dump(), expected.model_dump())
 
-    # MANE
-    tsg = await fusor_instance.transcript_segment_element(
-        tx_to_genomic_coords=False,
-        chromosome="NC_000011.10",
-        start=9575887,
-        gene="WEE1",
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == mane_transcript_segment_element.model_dump()
+        # MANE
+        tsg = await fusor_instance.transcript_segment_element(
+            tx_to_genomic_coords=False,
+            chromosome="NC_000011.10",
+            start=9575887,
+            gene="WEE1",
+        )
+        assert tsg[0]
+        assert tsg[1] is None
+        compare_tx_segment_elements(
+            tsg[0].model_dump(), mane_transcript_segment_element.model_dump()
+        )
 
 
 def test_gene_element(fusor_instance, braf_gene_obj_min, braf_gene_obj):
