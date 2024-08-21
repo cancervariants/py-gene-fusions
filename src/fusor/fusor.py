@@ -512,25 +512,9 @@ class FUSOR:
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         """
-        try:
-            sequence_id = coerce_namespace(sequence_id)
-        except ValueError:
-            if not re.match(CURIE.__metadata__[0].pattern, sequence_id):
-                sequence_id = f"sequence.id:{sequence_id}"
-
-        if seq_id_target_namespace:
-            try:
-                seq_id = translate_identifier(
-                    self.seqrepo, sequence_id, target_namespace=seq_id_target_namespace
-                )
-            except IDTranslationException:
-                _logger.warning(
-                    "Unable to translate %s using %s as the target namespace",
-                    sequence_id,
-                    seq_id_target_namespace,
-                )
-            else:
-                sequence_id = seq_id
+        sequence_id = self._get_coerced_sequence_id(
+            sequence_id, seq_id_target_namespace
+        )
 
         refget_accession = translate_identifier(self.seqrepo, sequence_id)
 
@@ -582,27 +566,46 @@ class FUSOR:
         seq_id_target_namespace: str | None = None,
     ) -> None:
         """Modify the sequence_location to have ga4gh_identified id and its sequenceReference with id from target namespace (refseq default)
-        :param sequence_location: the SequenceLocation to add/modify id's of
-        :param seq_id_target_namespace: the target namespace for the SequenceLocation's sequenceReference id, which is the genomic_ac (defaults to refseq if none given)
-        """
-        seq_ref_id = coerce_namespace(genomic_ac)
 
-        if seq_id_target_namespace:
-            try:
-                seq_ref_id = translate_identifier(
-                    self.seqrepo, seq_ref_id, target_namespace=seq_id_target_namespace
-                )
-            except IDTranslationException:
-                _logger.warning(
-                    "Unable to translate %s using %s as the target namespace",
-                    seq_ref_id,
-                    seq_id_target_namespace,
-                )
+        :param sequence_location: the SequenceLocation to add/modify id's of
+        :param seq_id_target_namespace: the target namespace for the SequenceLocation's sequenceReference id, which is the genomic_ac
+        (defaults to refseq if none given)
+        """
+        seq_ref_id = self._get_coerced_sequence_id(genomic_ac, seq_id_target_namespace)
 
         if sequence_location:
             sequence_location.id = ga4gh_identify(sequence_location)
             if sequence_location.sequenceReference:
                 sequence_location.sequenceReference.id = seq_ref_id
+
+    def _get_coerced_sequence_id(
+        self, sequence_id: str, seq_id_target_namespace: str | None = None
+    ) -> str:
+        """Get the coerced sequence_id using a target namespace and log any errors
+
+        :param sequence_id: the sequence id to coerce
+        :param seq_id_target_namespace: the target namespace
+        """
+        try:
+            sequence_id = coerce_namespace(sequence_id)
+        except ValueError:
+            if not re.match(CURIE.__metadata__[0].pattern, sequence_id):
+                sequence_id = f"sequence.id:{sequence_id}"
+
+        if seq_id_target_namespace:
+            try:
+                seq_id = translate_identifier(
+                    self.seqrepo, sequence_id, target_namespace=seq_id_target_namespace
+                )
+            except IDTranslationException:
+                _logger.warning(
+                    "Unable to translate %s using %s as the target namespace",
+                    sequence_id,
+                    seq_id_target_namespace,
+                )
+            else:
+                sequence_id = seq_id
+        return sequence_id
 
     def generate_nomenclature(self, fusion: Fusion) -> str:
         """Generate human-readable nomenclature describing provided fusion
