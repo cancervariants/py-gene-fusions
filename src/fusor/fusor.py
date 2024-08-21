@@ -281,9 +281,17 @@ class FUSOR:
 
         seg_start = data.seg_start
         genomic_start_location = seg_start.genomic_location if seg_start else None
+        if genomic_start_location:
+            self._add_ids_to_sequence_location(
+                genomic_start_location, data.genomic_ac, seq_id_target_namespace
+            )
 
         seg_end = data.seg_end
         genomic_end_location = seg_end.genomic_location if seg_end else None
+        if genomic_end_location:
+            self._add_ids_to_sequence_location(
+                genomic_end_location, data.genomic_ac, seq_id_target_namespace
+            )
 
         return (
             TranscriptSegmentElement(
@@ -295,22 +303,8 @@ class FUSOR:
                 exonEnd=seg_end.exon_ord + 1 if seg_end else None,
                 exonEndOffset=seg_end.offset if seg_end else None,
                 gene=normalized_gene_response[0],
-                elementGenomicStart=self._sequence_location(
-                    genomic_start_location.start,
-                    genomic_start_location.end,
-                    data.genomic_ac,
-                    seq_id_target_namespace=seq_id_target_namespace,
-                )
-                if genomic_start_location
-                else None,
-                elementGenomicEnd=self._sequence_location(
-                    genomic_end_location.start,
-                    genomic_end_location.end,
-                    data.genomic_ac,
-                    seq_id_target_namespace=seq_id_target_namespace,
-                )
-                if genomic_end_location
-                else None,
+                elementGenomicStart=genomic_start_location,
+                elementGenomicEnd=genomic_end_location,
             ),
             None,
         )
@@ -580,6 +574,35 @@ class FUSOR:
             gene.id = gene_id
             return gene, None
         return None, f"gene-normalizer unable to normalize {query}"
+
+    def _add_ids_to_sequence_location(
+        self,
+        sequence_location: SequenceLocation,
+        genomic_ac: str,
+        seq_id_target_namespace: str | None = None,
+    ) -> None:
+        """Modify the sequence_location to have ga4gh_identified id and its sequenceReference with id from target namespace (refseq default)
+        :param sequence_location: the SequenceLocation to add/modify id's of
+        :param seq_id_target_namespace: the target namespace for the SequenceLocation's sequenceReference id, which is the genomic_ac (defaults to refseq if none given)
+        """
+        seq_ref_id = coerce_namespace(genomic_ac)
+
+        if seq_id_target_namespace:
+            try:
+                seq_ref_id = translate_identifier(
+                    self.seqrepo, seq_ref_id, target_namespace=seq_id_target_namespace
+                )
+            except IDTranslationException:
+                _logger.warning(
+                    "Unable to translate %s using %s as the target namespace",
+                    seq_ref_id,
+                    seq_id_target_namespace,
+                )
+
+        if sequence_location:
+            sequence_location.id = ga4gh_identify(sequence_location)
+            if sequence_location.sequenceReference:
+                sequence_location.sequenceReference.id = seq_ref_id
 
     def generate_nomenclature(self, fusion: Fusion) -> str:
         """Generate human-readable nomenclature describing provided fusion
