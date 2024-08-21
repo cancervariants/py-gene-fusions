@@ -268,6 +268,9 @@ class FUSOR:
                 **kwargs
             )
 
+        if data.errors:
+            return None, data.errors
+
         data.tx_ac = coerce_namespace(data.tx_ac)
 
         normalized_gene_response = self._normalized_gene(
