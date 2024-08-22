@@ -1,7 +1,4 @@
-"""Script for creating JSON examples
-
-To generate all examples: python3 src/fusor/examples/create_examples.py
-"""
+"""Script for creating JSON examples"""
 
 import asyncio
 import json
