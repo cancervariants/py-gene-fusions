@@ -3,20 +3,20 @@
   "regulatoryElement": {
     "type": "RegulatoryElement",
     "regulatoryClass": "enhancer",
+    "featureId": "EH38E3121735",
     "associatedGene": {
+      "id": "hgnc:5477",
       "type": "Gene",
-      "label": "IGH",
-      "id": "hgnc:5477"
-    },
-    "featureId": "EH38E3121735"
+      "label": "IGH"
+    }
   },
   "structure": [
     {
       "type": "GeneElement",
       "gene": {
+        "id": "hgnc:7553",
         "type": "Gene",
-        "label": "MYC",
-        "id": "hgnc:7553"
+        "label": "MYC"
       }
     }
   ]

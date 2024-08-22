@@ -9,31 +9,31 @@
       "exonEnd": 8,
       "exonEndOffset": 0,
       "gene": {
+        "id": "hgnc:12012",
         "type": "Gene",
-        "label": "TPM3",
-        "id": "hgnc:12012"
+        "label": "TPM3"
       },
       "elementGenomicStart": {
-        "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+        "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
         "type": "SequenceLocation",
+        "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
         "sequenceReference": {
           "id": "refseq:NC_000001.11",
-          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-          "type": "SequenceReference"
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
         },
-        "start": 154192135,
-        "end": 154192136
+        "end": 154192135
       },
       "elementGenomicEnd": {
-        "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+        "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
         "type": "SequenceLocation",
+        "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
         "sequenceReference": {
           "id": "refseq:NC_000001.11",
-          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-          "type": "SequenceReference"
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
         },
-        "start": 154170399,
-        "end": 154170400
+        "start": 154170399
       }
     },
     {
@@ -44,31 +44,31 @@
       "exonEnd": 22,
       "exonEndOffset": 0,
       "gene": {
+        "id": "hgnc:8804",
         "type": "Gene",
-        "label": "PDGFRB",
-        "id": "hgnc:8804"
+        "label": "PDGFRB"
       },
       "elementGenomicStart": {
-        "id": "ga4gh:SL.1mONzR4j65OuPg1yMgF-w-W2qu03qEc-",
+        "id": "ga4gh:SL.U4E8XJR2ue1PL0-GA_AlfwqhR1qbY7Ma",
         "type": "SequenceLocation",
+        "digest": "U4E8XJR2ue1PL0-GA_AlfwqhR1qbY7Ma",
         "sequenceReference": {
           "id": "refseq:NC_000005.10",
-          "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
-          "type": "SequenceReference"
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI"
         },
-        "start": 150125577,
-        "end": 150125578
+        "end": 150126614
       },
       "elementGenomicEnd": {
-        "id": "ga4gh:SL.QFVGHvvSFg-9q_Tv04DjMbvTRnGs1kEr",
+        "id": "ga4gh:SL.YJ7cXnaG52dPiu7uR60yUneqHaKHEkLP",
         "type": "SequenceLocation",
+        "digest": "YJ7cXnaG52dPiu7uR60yUneqHaKHEkLP",
         "sequenceReference": {
           "id": "refseq:NC_000005.10",
-          "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
-          "type": "SequenceReference"
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI"
         },
-        "start": 150113838,
-        "end": 150113839
+        "start": 150117617
       }
     }
   ],

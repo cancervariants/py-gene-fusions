@@ -4,33 +4,29 @@
     {
       "type": "TranscriptSegmentElement",
       "transcript": "refseq:NM_004327.3",
+      "exonEnd": 2,
+      "exonEndOffset": 182,
       "gene": {
-        "type": "Gene",
         "id": "hgnc:1014",
+        "type": "Gene",
         "label": "BCR"
       },
       "elementGenomicEnd": {
-        "id": "ga4gh:SL.5f5OVC3zReewA4S78X1eO0oJwWNbGYsY",
+        "id": "ga4gh:SL.pnPf51mTZVzI1teagtWwA4RY7ptcmbbt",
         "type": "SequenceLocation",
-        "description": null,
-        "xrefs": null,
-        "alternativeLabels": null,
-        "extensions": null,
+        "digest": "pnPf51mTZVzI1teagtWwA4RY7ptcmbbt",
         "sequenceReference": {
           "id": "refseq:NC_000022.11",
-          "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ",
-          "type": "SequenceReference"
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.7B7SHsmchAR0dFcDCuSFjJAo7tX87krQ"
         },
-        "start": 23253980,
-        "end": 23253981
-      },
-      "exonEnd": 2,
-      "exonEndOffset": 182
+        "end": 23254162
+      }
     },
     {
       "type": "LinkerSequenceElement",
       "linkerSequence": {
-        "id": "sequence:ACTAAAGCG",
+        "id": "fusor.sequence:ACTAAAGCG",
         "type": "LiteralSequenceExpression",
         "sequence": "ACTAAAGCG"
       }
@@ -41,24 +37,20 @@
       "exonStart": 2,
       "exonStartOffset": -173,
       "gene": {
+        "id": "hgnc:76",
         "type": "Gene",
-        "label": "ABL1",
-        "id": "hgnc:76"
+        "label": "ABL1"
       },
       "elementGenomicStart": {
-        "id": "ga4gh:SL.tZYgaEJP2-d4Guv-n5gyhqOc07qH9xr6",
-        "description": null,
-        "xrefs": null,
-        "alternativeLabels": null,
-        "extensions": null,
+        "id": "ga4gh:SL.eL43aHf8T0t_0WIsQE5PeWQH1V3_ZKEC",
         "type": "SequenceLocation",
+        "digest": "eL43aHf8T0t_0WIsQE5PeWQH1V3_ZKEC",
         "sequenceReference": {
           "id": "refseq:NC_000009.12",
-          "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI",
-          "type": "SequenceReference"
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.KEO-4XBcm1cxeo_DIQ8_ofqGUkp4iZhI"
         },
-        "start": 130854064,
-        "end": 130854065
+        "start": 130853890
       }
     }
   ],
@@ -68,23 +60,20 @@
       "type": "FunctionalDomain",
       "status": "preserved",
       "associatedGene": {
+        "id": "hgnc:76",
         "type": "Gene",
-        "label": "ABL1",
-        "id": "hgnc:76"
+        "label": "ABL1"
       },
       "id": "interpro:IPR000980",
       "label": "SH2 domain",
       "sequenceLocation": {
         "id": "ga4gh:SL.VQe2sf2aYArPcvjygq38JvFxRuDniE15",
-        "description": null,
-        "xrefs": null,
-        "alternativeLabels": null,
-        "extensions": null,
         "type": "SequenceLocation",
+        "digest": "VQe2sf2aYArPcvjygq38JvFxRuDniE15",
         "sequenceReference": {
           "id": "refseq:NP_005148.2",
-          "refgetAccession": "SQ.dmFigTG-0fY6I54swb7PoDuxCeT6O3Wg",
-          "type": "SequenceReference"
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.dmFigTG-0fY6I54swb7PoDuxCeT6O3Wg"
         },
         "start": 127,
         "end": 202
