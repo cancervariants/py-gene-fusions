@@ -743,7 +743,8 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                 "exonEndOffset": 0,
                 "gene": tpm3_gene,
                 "elementGenomicStart": {
-                    "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+                    "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+                    "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "description": None,
                     "xrefs": None,
                     "alternativeLabels": None,
@@ -757,7 +758,8 @@ def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
                     "end": 154192135,
                 },
                 "elementGenomicEnd": {
-                    "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+                    "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+                    "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "description": None,
                     "xrefs": None,
                     "alternativeLabels": None,
@@ -866,7 +868,8 @@ def fusion_example():
                     "id": "hgnc:12012",
                 },
                 "elementGenomicStart": {
-                    "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+                    "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+                    "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "description": None,
                     "xrefs": None,
                     "alternativeLabels": None,
@@ -880,7 +883,8 @@ def fusion_example():
                     "end": 154192135,
                 },
                 "elementGenomicEnd": {
-                    "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+                    "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+                    "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "description": None,
                     "xrefs": None,
                     "alternativeLabels": None,

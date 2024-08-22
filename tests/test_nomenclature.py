@@ -146,7 +146,7 @@ def tx_seg_example():
         exonEndOffset=0,
         gene=Gene(id="hgnc:12012", label="TPM3"),
         elementGenomicStart={
-            "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+            "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
@@ -156,7 +156,7 @@ def tx_seg_example():
             "end": 154192135,
         },
         elementGenomicEnd={
-            "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+            "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
@@ -182,7 +182,7 @@ def junction_example():
             "id": "hgnc:12012",
         },
         elementGenomicEnd={
-            "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+            "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
