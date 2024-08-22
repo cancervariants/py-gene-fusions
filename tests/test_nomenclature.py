@@ -127,8 +127,7 @@ def exon_offset_example():
                         "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                         "type": "SequenceReference",
                     },
-                    "start": 156864428,
-                    "end": 156864429,
+                    "start": 156864353,
                 },
             },
         ],
@@ -147,18 +146,17 @@ def tx_seg_example():
         exonEndOffset=0,
         gene=Gene(id="hgnc:12012", label="TPM3"),
         elementGenomicStart={
-            "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+            "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
                 "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                 "type": "SequenceReference",
             },
-            "start": 154192135,
-            "end": 154192136,
+            "end": 154192135,
         },
         elementGenomicEnd={
-            "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+            "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
@@ -166,7 +164,6 @@ def tx_seg_example():
                 "type": "SequenceReference",
             },
             "start": 154170399,
-            "end": 154170400,
         },
     )
 
@@ -185,7 +182,7 @@ def junction_example():
             "id": "hgnc:12012",
         },
         elementGenomicEnd={
-            "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+            "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
@@ -193,7 +190,6 @@ def junction_example():
                 "type": "SequenceReference",
             },
             "start": 154170399,
-            "end": 154170400,
         },
     )
 

@@ -194,17 +194,6 @@ def transcript_segment_element():
             "type": "Gene",
         },
         "transcript": "refseq:NM_152263.3",
-        "elementGenomicEnd": {
-            "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
-            "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
-            "type": "SequenceLocation",
-            "sequenceReference": {
-                "id": "refseq:NC_000001.11",
-                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                "type": "SequenceReference",
-            },
-            "start": 154170399,
-        },
         "elementGenomicStart": {
             "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
             "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
@@ -215,6 +204,17 @@ def transcript_segment_element():
                 "type": "SequenceReference",
             },
             "end": 154192135,
+        },
+        "elementGenomicEnd": {
+            "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+            "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+            "type": "SequenceLocation",
+            "sequenceReference": {
+                "id": "refseq:NC_000001.11",
+                "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                "type": "SequenceReference",
+            },
+            "start": 154170399,
         },
     }
     return TranscriptSegmentElement(**params)
