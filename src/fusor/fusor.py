@@ -161,6 +161,7 @@ class FUSOR:
         reading_frame_preserved: bool | None = None,
     ) -> CategoricalFusion:
         """Construct a categorical fusion object
+
         :param structure: elements constituting the fusion
         :param regulatory_element: affected regulatory element
         :param critical_functional_domains: lost or preserved functional domains

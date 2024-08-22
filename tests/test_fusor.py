@@ -425,6 +425,7 @@ async def test_transcript_segment_element(
 ):
     """Test that transcript_segment_element method works correctly"""
     # Transcript Input
+    # TODO: this test is now off by one after updating cool-seq-tool - need Jeremy's help in determining if the issue lies in fusor or CST
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", exon_start=1, exon_end=8, tx_to_genomic_coords=True
     )
@@ -774,7 +775,6 @@ def test_functional_domain(
         use_minimal_gene=True,
     )
     assert cd[0] is None
-    # TODO: this is now off by one after updating seqrepo (response is now: End inter-residue coordinate (712000) is out of index on NP_004324.2)
     assert (
         "End inter-residue coordinate (712000) is out of index on "
         "NP_004324.2" in cd[1]
