@@ -1,4 +1,4 @@
-"""Script for creating JSON examples"""
+"""Script for creating JSON examples in src/fusor/examples"""
 
 import asyncio
 import json
@@ -17,7 +17,7 @@ from fusor.models import (
     RegulatoryClass,
 )
 
-EXAMPLES_DIR = Path(__file__).resolve().parents[0]
+EXAMPLES_DIR = Path(__file__).resolve().parents[1] / "src" / "fusor" / "examples"
 
 
 async def _create_json(fn: str, model: BaseModel) -> None:

@@ -7,9 +7,3 @@
 * `tpm3_ntrk1.json`: Example TPM3-NTRK1 assayed fusion drawn from previous VICC Fusion Curation draft material. Represented in nomenclature as `NM_152263.3(TPM3):e.1_8::NM_002529.3(NTRK1):e.10_22`.
 * `tpm3_pdgfrb.json`: Example TPM3-PDGFRB assayed fusion identified via RT-PCR. Represented in nomenclature as `NM_152263.3(TPM3):e.8::NM_002609.3(PDGFRB):e.11_22`.
 * `igh_myc.json`: Example of an enhancer-driven IGH-MYC categorical fusion. Represented in nomenclature as `reg_e_EH38E3121735@IGH(hgnc:5477)::MYC(hgnc:7553)`.
-
-To generate all examples from examples directory, run the following:
-
-```shell
-python3 create_examples.py
-```

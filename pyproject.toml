@@ -169,6 +169,7 @@ ignore = [
 # SLF001 - private-member-access
 "tests/*" = ["ANN001", "ANN2", "ANN102", "S101", "B011", "INP001", "SLF001"]
 "src/fusor/models.py" = ["ANN201", "N803", "N805", "N815", "ANN001", "ANN2", "ANN102"]
+"scripts/*" = ["INP001"]
 
 [tool.ruff.format]
 docstring-code-format = true
