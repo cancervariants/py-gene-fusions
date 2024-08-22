@@ -195,7 +195,8 @@ def transcript_segment_element():
         },
         "transcript": "refseq:NM_152263.3",
         "elementGenomicStart": {
-            "id": "ga4gh:SL.2K1vML0ofuYrYncrzzXUQOISRFJldZrO",
+            "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+            "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
@@ -205,7 +206,8 @@ def transcript_segment_element():
             "end": 154192135,
         },
         "elementGenomicEnd": {
-            "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+            "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+            "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000001.11",
@@ -235,7 +237,8 @@ def mane_transcript_segment_element():
         "transcript": "refseq:NM_003390.4",
         "elementGenomicEnd": None,
         "elementGenomicStart": {
-            "id": "ga4gh:SL.ge9FDGyBXkKhEMR6RUMFg3u13j85WmMd",
+            "id": "ga4gh:SL.Dm_Rri77OtV3-FmEmGXBjWZ2PhEzdhFT",
+            "digest": "Dm_Rri77OtV3-FmEmGXBjWZ2PhEzdhFT",
             "type": "SequenceLocation",
             "sequenceReference": {
                 "id": "refseq:NC_000011.10",
@@ -422,21 +425,8 @@ async def test_transcript_segment_element(
 ):
     """Test that transcript_segment_element method works correctly"""
     # Transcript Input
-    # TODO: this test is now off by one after updating cool-seq-tool - need Jeremy's help in determining if the issue lies in fusor or CST
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", exon_start=1, exon_end=8, tx_to_genomic_coords=True
-    )
-    assert tsg[0]
-    assert tsg[1] is None
-    assert tsg[0].model_dump() == transcript_segment_element.model_dump()
-
-    # Genomic input, residue
-    tsg = await fusor_instance.transcript_segment_element(
-        transcript="NM_152263.3",
-        start=154192136,
-        end=154170399,
-        chromosome="NC_000001.11",
-        tx_to_genomic_coords=False,
     )
     assert tsg[0]
     assert tsg[1] is None
@@ -445,9 +435,9 @@ async def test_transcript_segment_element(
     # Genomic input, inter-residue
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        start=154192135,
-        end=154170399,
-        chromosome="NC_000001.11",
+        seg_start_genomic=154192135,
+        seg_end_genomic=154170399,
+        genomic_ac="NC_000001.11",
         tx_to_genomic_coords=False,
     )
     assert tsg[0]
@@ -468,10 +458,16 @@ async def test_transcript_segment_element(
 
     expected = copy.deepcopy(transcript_segment_element)
     expected.elementGenomicStart.sequenceReference.refgetAccession = (
-        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+        "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
     )
     expected.elementGenomicEnd.sequenceReference.refgetAccession = (
         expected.elementGenomicStart.sequenceReference.refgetAccession
+    )
+    expected.elementGenomicEnd.sequenceReference.id = (
+        "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+    )
+    expected.elementGenomicStart.sequenceReference.id = (
+        expected.elementGenomicEnd.sequenceReference.id
     )
 
     # Transcript Input
@@ -489,9 +485,9 @@ async def test_transcript_segment_element(
     # Genomic input
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        start=154192136,
-        end=154170399,
-        chromosome="NC_000001.11",
+        seg_start_genomic=154192135,
+        seg_end_genomic=154170399,
+        genomic_ac="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
     )
@@ -499,9 +495,11 @@ async def test_transcript_segment_element(
     assert tsg[1] is None
     assert tsg[0].model_dump() == expected.model_dump()
 
-    expected.exon_end_offset = -5
-    expected.elementGenomicEnd.location.interval.start.value = 154170404
-    expected.elementGenomicEnd.location.interval.end.value = 154170405
+    expected.exonEndOffset = -5
+    expected.elementGenomicEnd.start = 154170404
+    expected.elementGenomicEnd.end = None
+    expected.elementGenomicEnd.id = "ga4gh:SL.f2Ocn2oc7X6i9fxQrRdMonLXm-W6nyn6"
+    expected.elementGenomicEnd.digest = "f2Ocn2oc7X6i9fxQrRdMonLXm-W6nyn6"
 
     # Transcript Input
     tsg = await fusor_instance.transcript_segment_element(
@@ -519,9 +517,9 @@ async def test_transcript_segment_element(
     # Genomic Input
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        start=154192136,
-        end=154170404,
-        chromosome="NC_000001.11",
+        seg_start_genomic=154192135,
+        seg_end_genomic=154170404,
+        genomic_ac="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
     )
@@ -547,8 +545,8 @@ async def test_transcript_segment_element(
     # Genomic Input
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3",
-        start=154192136,
-        chromosome="NC_000001.11",
+        seg_start_genomic=154192135,
+        genomic_ac="NC_000001.11",
         tx_to_genomic_coords=False,
         seq_id_target_namespace="ga4gh",
     )
@@ -559,8 +557,8 @@ async def test_transcript_segment_element(
     # MANE
     tsg = await fusor_instance.transcript_segment_element(
         tx_to_genomic_coords=False,
-        chromosome="NC_000011.10",
-        start=9575887,
+        genomic_ac="NC_000011.10",
+        seg_start_genomic=9575887,
         gene="WEE1",
     )
     assert tsg[0]
@@ -593,26 +591,23 @@ def test_templated_sequence_element(
 ):
     """Test that templated sequence element works correctly"""
     tsg = fusor_instance.templated_sequence_element(
-        100, 150, "NC_000001.11", Strand.POSITIVE, residue_mode="residue"
+        100, 150, "NC_000001.11", Strand.POSITIVE, coordinate_type="residue"
     )
     assert tsg.model_dump() == templated_sequence_element.model_dump()
 
     tsg = fusor_instance.templated_sequence_element(
-        99, 150, "NC_000001.11", Strand.POSITIVE, residue_mode="inter-residue"
+        99, 150, "NC_000001.11", Strand.POSITIVE, coordinate_type="inter-residue"
     )
     assert tsg.model_dump() == templated_sequence_element.model_dump()
 
-    expected = copy.deepcopy(templated_sequence_element.model_dump())
-    expected["region"]["sequenceReference"]["refgetAccession"] = (
-        "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
-    )
+    # test properly defaults coordinate type to inter-residue
     tsg = fusor_instance.templated_sequence_element(
-        100,
+        99,
         150,
         "NC_000001.11",
         Strand.POSITIVE,
     )
-    assert tsg.model_dump() == expected
+    assert tsg.model_dump() == templated_sequence_element.model_dump()
 
     # test in-house/bespoke sequence ID
     # can't coerce namespace or translate to ga4gh ID
@@ -622,7 +617,7 @@ def test_templated_sequence_element(
             300,
             "custom_ID__1",
             Strand.POSITIVE,
-            residue_mode="inter-residue",
+            coordinate_type="inter-residue",
             seq_id_target_namespace="ga4gh",
         )
 
@@ -781,7 +776,7 @@ def test_functional_domain(
     assert cd[0] is None
     # TODO: this is now off by one after updating seqrepo (response is now: End inter-residue coordinate (712000) is out of index on NP_004324.2)
     assert (
-        "End inter-residue coordinate (711999) is out of index on "
+        "End inter-residue coordinate (712000) is out of index on "
         "NP_004324.2" in cd[1]
     )
 

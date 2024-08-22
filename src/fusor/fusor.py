@@ -5,7 +5,7 @@ import re
 
 from bioutils.accessions import coerce_namespace
 from cool_seq_tool.app import CoolSeqTool
-from cool_seq_tool.schemas import ResidueMode, Strand
+from cool_seq_tool.schemas import CoordinateType, Strand
 from ga4gh.core import ga4gh_identify
 from ga4gh.core.domain_models import Gene
 from ga4gh.vrs import models
@@ -25,13 +25,12 @@ from fusor.exceptions import FUSORParametersException, IDTranslationException
 from fusor.models import (
     Assay,
     AssayedFusion,
-    AssayedFusionElements,
+    AssayedFusionElement,
     BaseStructuralElement,
     CategoricalFusion,
-    CategoricalFusionElements,
+    CategoricalFusionElement,
     CausativeEvent,
     DomainStatus,
-    Evidence,
     FunctionalDomain,
     Fusion,
     FusionType,
@@ -45,12 +44,7 @@ from fusor.models import (
     TranscriptSegmentElement,
     UnknownGeneElement,
 )
-from fusor.nomenclature import (
-    gene_nomenclature,
-    reg_element_nomenclature,
-    templated_seq_nomenclature,
-    tx_segment_nomenclature,
-)
+from fusor.nomenclature import generate_nomenclature
 from fusor.tools import translate_identifier
 
 _logger = logging.getLogger(__name__)
@@ -96,6 +90,9 @@ class FUSOR:
 
     def fusion(self, fusion_type: FusionType | None = None, **kwargs) -> Fusion:
         """Construct fusion object.
+
+        Fusion type (assayed vs categorical) can be inferred based on provided kwargs,
+        assuming they can sufficiently discriminate the type.
 
         :param fusion_type: explicitly specify fusion type. Unnecessary if providing
             fusion object in keyword args that includes ``type`` attribute.
@@ -158,7 +155,7 @@ class FUSOR:
 
     @staticmethod
     def categorical_fusion(
-        structure: CategoricalFusionElements,
+        structure: list[CategoricalFusionElement],
         regulatory_element: RegulatoryElement | None = None,
         critical_functional_domains: list[FunctionalDomain] | None = None,
         reading_frame_preserved: bool | None = None,
@@ -185,20 +182,21 @@ class FUSOR:
 
     @staticmethod
     def assayed_fusion(
-        structure: AssayedFusionElements,
+        structure: list[AssayedFusionElement],
         causative_event: CausativeEvent | None = None,
         assay: Assay | None = None,
         regulatory_element: RegulatoryElement | None = None,
         reading_frame_preserved: bool | None = None,
     ) -> AssayedFusion:
-        """Construct an assayed fusion object
+        """Construct an assayed fusion object.
+
         :param structure: elements constituting the fusion
         :param causative_event: event causing the fusion
         :param assay: how knowledge of the fusion was obtained
         :param regulatory_element: affected regulatory elements
         :param reading_frame_preserved: ``True`` if reading frame is preserved.
-            ``False`` otherwise
-        :return: Tuple containing optional AssayedFusion if construction successful,
+            ``False`` otherwise.
+        :return: Tuple containing optional ``AssayedFusion`` if construction successful,
             and any relevant validation warnings
         """
         try:
@@ -220,9 +218,9 @@ class FUSOR:
         seq_id_target_namespace: str | None = None,
         **kwargs,
     ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
-        """Create transcript segment element
+        """Create transcript segment element.
 
-        :param tx_to_genomic_coords: `True` if going from transcript to genomic
+        :param tx_to_genomic_coords: ``True`` if going from transcript to genomic
             coordinates. ``False`` if going from genomic to transcript exon coordinates.
         :param use_minimal_gene: `True` if minimal gene object
             (``id``, ``label``) will be used. ``False`` if
@@ -230,83 +228,82 @@ class FUSOR:
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :param kwargs:
-            If `tx_to_genomic_coords`, possible key word arguments:
-                (From cool_seq_tool.transcript_to_genomic_coords)
-                gene: Optional[str] = None, transcript: str = None,
-                exon_start: Optional[int] = None,
-                exon_start_offset: Optional[int] = 0,
-                exon_end: Optional[int] = None,
-                exon_end_offset: Optional[int] = 0
+            If ``tx_to_genomic_coords``, possible key word arguments:
+
+                (From `cool_seq_tool.tx_segment_to_genomic <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
+
+                * **gene** (``str | None = None``)
+                * **transcript** (``str | None = None``)
+                * **exon_start** (``int | None = None``)
+                * **exon_start_offset**: Optional[int] = 0
+                * **exon_end**: Optional[int] = None
+                * **exon_end_offset**: (``Optional[int] = 0``)
+
             else:
-                (From cool_seq_tool.genomic_to_transcript_exon_coordinates)
-                chromosome: Union[str, int], start: Optional[int] = None,
-                end: Optional[int] = None, strand: Optional[int] = None,
-                transcript: Optional[str] = None, gene: Optional[str] = None,
-                residue_mode: ResidueMode = ResidueMode.RESIDUE
+
+                (From `cool_seq_tool.genomic_to_tx_segment <https://coolseqtool.readthedocs.io/stable/reference/api/mappers/cool_seq_tool.mappers.exon_genomic_coords.html>`_)
+
+                * **genomic_ac**: (``str``)
+                * **seg_start_genomic**: (``Optional[int] = None``)
+                * **seg_end_genomic**: (``Optional[int] = None``)
+                * **transcript**: (``Optional[str] = None``)
+                * **gene**: (``Optional[str] = None``)
+
         :return: Transcript Segment Element, warning
         """
         if tx_to_genomic_coords:
-            data = await self.cool_seq_tool.ex_g_coords_mapper.transcript_to_genomic_coordinates(
+            data = await self.cool_seq_tool.ex_g_coords_mapper.tx_segment_to_genomic(
                 **kwargs
             )
         else:
-            if "chromosome" in kwargs and kwargs.get("chromosome") is None:
+            if "genomic_ac" in kwargs and kwargs.get("genomic_ac") is None:
                 msg = (
-                    "`chromosome` is required when going from genomic to"
+                    "`genomic_ac` is required when going from genomic to"
                     " transcript exon coordinates"
                 )
                 _logger.warning(msg)
                 return None, [msg]
-            residue_mode = kwargs.get("residue_mode")
-            # TODO: Remove once fixed in cool_seq_tool - need to verify that this code isn't still needed
-            if residue_mode != ResidueMode.INTER_RESIDUE:
-                start = kwargs.get("start")
-                kwargs["start"] = start - 1 if start is not None else None
-                kwargs["residue_mode"] = "inter-residue"
-            chromosome = kwargs.get("chromosome")
-            # if chromosome is a string, assume it's an accession, fix it for the kwargs since CST expects this as alt_ac
-            if type(chromosome) is str:
-                kwargs["alt_ac"] = chromosome
-            data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_transcript_exon_coordinates(
+            data = await self.cool_seq_tool.ex_g_coords_mapper.genomic_to_tx_segment(
                 **kwargs
             )
 
-        if data.genomic_data is None:
-            return None, data.warnings
+        if data.errors:
+            return None, data.errors
 
-        genomic_data = data.genomic_data
-        genomic_data.transcript = coerce_namespace(genomic_data.transcript)
+        data.tx_ac = coerce_namespace(data.tx_ac)
 
         normalized_gene_response = self._normalized_gene(
-            genomic_data.gene, use_minimal_gene=use_minimal_gene
+            data.gene, use_minimal_gene=use_minimal_gene
         )
         if not normalized_gene_response[0] and normalized_gene_response[1]:
             return None, [normalized_gene_response[1]]
 
+        seg_start = data.seg_start
+        genomic_start_location = seg_start.genomic_location if seg_start else None
+        if genomic_start_location:
+            self._add_ids_to_sequence_location(
+                genomic_start_location, data.genomic_ac, seq_id_target_namespace
+            )
+
+        seg_end = data.seg_end
+        genomic_end_location = seg_end.genomic_location if seg_end else None
+        if genomic_end_location:
+            self._add_ids_to_sequence_location(
+                genomic_end_location, data.genomic_ac, seq_id_target_namespace
+            )
+
         return (
             TranscriptSegmentElement(
-                transcript=genomic_data.transcript,
-                exonStart=genomic_data.exon_start,
-                exonStartOffset=genomic_data.exon_start_offset,
-                exonEnd=genomic_data.exon_end,
-                exonEndOffset=genomic_data.exon_end_offset,
+                transcript=data.tx_ac,
+                # offset by 1 because in CST exons are 0-based
+                exonStart=seg_start.exon_ord + 1 if seg_start else None,
+                exonStartOffset=seg_start.offset if seg_start else None,
+                # offset by 1 because in CST exons are 0-based
+                exonEnd=seg_end.exon_ord + 1 if seg_end else None,
+                exonEndOffset=seg_end.offset if seg_end else None,
                 gene=normalized_gene_response[0],
-                elementGenomicStart=self._sequence_location(
-                    genomic_data.start,
-                    genomic_data.start + 1,
-                    genomic_data.chr,
-                    seq_id_target_namespace=seq_id_target_namespace,
-                )
-                if genomic_data.start
-                else None,
-                elementGenomicEnd=self._sequence_location(
-                    genomic_data.end,
-                    genomic_data.end + 1,
-                    genomic_data.chr,
-                    seq_id_target_namespace=seq_id_target_namespace,
-                )
-                if genomic_data.end
-                else None,
+                elementGenomicStart=genomic_start_location,
+                elementGenomicEnd=genomic_end_location,
             ),
             None,
         )
@@ -333,7 +330,7 @@ class FUSOR:
         end: int,
         sequence_id: str,
         strand: Strand,
-        residue_mode: ResidueMode = ResidueMode.RESIDUE,
+        coordinate_type: CoordinateType = CoordinateType.INTER_RESIDUE,
         seq_id_target_namespace: str | None = None,
     ) -> TemplatedSequenceElement:
         """Create templated sequence element
@@ -342,13 +339,13 @@ class FUSOR:
         :param end: Genomic end
         :param sequence_id: Chromosome accession for sequence
         :param strand: Strand
-        :param residue_mode: Determines coordinate base used. Must be one of ``residue``
+        :param coordinate_type: Determines coordinate base used. Must be one of ``residue``
             or ``inter-residue``.
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         :return: Templated Sequence Element
         """
-        if residue_mode == ResidueMode.RESIDUE:
+        if coordinate_type == CoordinateType.RESIDUE:
             start -= 1
 
         region = self._sequence_location(
@@ -474,6 +471,7 @@ class FUSOR:
         use_minimal_gene: bool = True,
     ) -> tuple[RegulatoryElement | None, str | None]:
         """Create RegulatoryElement
+
         :param regulatory_class: one of {"promoter", "enhancer"}
         :param gene: gene term to fetch normalized gene object for
         :param use_minimal_gene: whether to use the minimal gene object
@@ -513,25 +511,9 @@ class FUSOR:
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
         """
-        try:
-            sequence_id = coerce_namespace(sequence_id)
-        except ValueError:
-            if not re.match(CURIE.__metadata__[0].pattern, sequence_id):
-                sequence_id = f"sequence.id:{sequence_id}"
-
-        if seq_id_target_namespace:
-            try:
-                seq_id = translate_identifier(
-                    self.seqrepo, sequence_id, target_namespace=seq_id_target_namespace
-                )
-            except IDTranslationException:
-                _logger.warning(
-                    "Unable to translate %s using %s as the target namespace",
-                    sequence_id,
-                    seq_id_target_namespace,
-                )
-            else:
-                sequence_id = seq_id
+        sequence_id = self._get_coerced_sequence_id(
+            sequence_id, seq_id_target_namespace
+        )
 
         refget_accession = translate_identifier(self.seqrepo, sequence_id)
 
@@ -576,6 +558,54 @@ class FUSOR:
             return gene, None
         return None, f"gene-normalizer unable to normalize {query}"
 
+    def _add_ids_to_sequence_location(
+        self,
+        sequence_location: SequenceLocation,
+        genomic_ac: str,
+        seq_id_target_namespace: str | None = None,
+    ) -> None:
+        """Modify the sequence_location to have ga4gh_identified id and its sequenceReference with id from target namespace (refseq default)
+
+        :param sequence_location: the SequenceLocation to add/modify id's of
+        :param seq_id_target_namespace: the target namespace for the SequenceLocation's sequenceReference id, which is the genomic_ac
+        (defaults to refseq if none given)
+        """
+        seq_ref_id = self._get_coerced_sequence_id(genomic_ac, seq_id_target_namespace)
+
+        if sequence_location:
+            sequence_location.id = ga4gh_identify(sequence_location)
+            if sequence_location.sequenceReference:
+                sequence_location.sequenceReference.id = seq_ref_id
+
+    def _get_coerced_sequence_id(
+        self, sequence_id: str, seq_id_target_namespace: str | None = None
+    ) -> str:
+        """Get the coerced sequence_id using a target namespace and log any errors
+
+        :param sequence_id: the sequence id to coerce
+        :param seq_id_target_namespace: the target namespace
+        """
+        try:
+            sequence_id = coerce_namespace(sequence_id)
+        except ValueError:
+            if not re.match(CURIE.__metadata__[0].pattern, sequence_id):
+                sequence_id = f"sequence.id:{sequence_id}"
+
+        if seq_id_target_namespace:
+            try:
+                seq_id = translate_identifier(
+                    self.seqrepo, sequence_id, target_namespace=seq_id_target_namespace
+                )
+            except IDTranslationException:
+                _logger.warning(
+                    "Unable to translate %s using %s as the target namespace",
+                    sequence_id,
+                    seq_id_target_namespace,
+                )
+            else:
+                sequence_id = seq_id
+        return sequence_id
+
     def generate_nomenclature(self, fusion: Fusion) -> str:
         """Generate human-readable nomenclature describing provided fusion
 
@@ -583,39 +613,4 @@ class FUSOR:
         :return: string summarizing fusion in human-readable way per VICC fusion
             curation nomenclature
         """
-        parts = []
-        element_genes = []
-        if fusion.regulatoryElement:
-            parts.append(
-                reg_element_nomenclature(fusion.regulatoryElement, self.seqrepo)
-            )
-        for element in fusion.structure:
-            if isinstance(element, MultiplePossibleGenesElement):
-                parts.append("v")
-            elif isinstance(element, UnknownGeneElement):
-                parts.append("?")
-            elif isinstance(element, LinkerElement):
-                parts.append(element.linkerSequence.sequence.root)
-            elif isinstance(element, TranscriptSegmentElement):
-                if not any(
-                    [gene == element.gene.label for gene in element_genes]  # noqa: C419
-                ):
-                    parts.append(tx_segment_nomenclature(element))
-            elif isinstance(element, TemplatedSequenceElement):
-                parts.append(templated_seq_nomenclature(element, self.seqrepo))
-            elif isinstance(element, GeneElement):
-                if not any(
-                    [gene == element.gene.label for gene in element_genes]  # noqa: C419
-                ):
-                    parts.append(gene_nomenclature(element))
-            else:
-                raise ValueError
-        if (
-            isinstance(fusion, AssayedFusion)
-            and fusion.assay
-            and fusion.assay.fusionDetection == Evidence.INFERRED
-        ):
-            divider = "(::)"
-        else:
-            divider = "::"
-        return divider.join(parts)
+        return generate_nomenclature(fusion, self.seqrepo)

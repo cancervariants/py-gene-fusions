@@ -2,7 +2,7 @@
 
 from abc import ABC
 from enum import Enum
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from cool_seq_tool.schemas import Strand
 from ga4gh.core.domain_models import Gene
@@ -14,6 +14,7 @@ from gene.schemas import CURIE
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
     StrictBool,
     StrictInt,
     StrictStr,
@@ -128,15 +129,15 @@ class TranscriptSegmentElement(BaseStructuralElement):
 
     @model_validator(mode="before")
     def check_exons(cls, values):
-        """Check that at least one of {`exonStart`, `exonEnd`} is set.
-        If set, check that the corresponding `elementGenomic` field is set.
-        If not set, set corresponding offset to `None`
+        """Check that at least one of {``exonStart``, ``exonEnd``} is set.
+        If set, check that the corresponding ``elementGenomic`` field is set.
+        If not set, set corresponding offset to ``None``
 
         """
         msg = "Must give values for either `exonStart`, `exonEnd`, or both"
         exon_start = values.get("exonStart")
         exon_end = values.get("exonEnd")
-        if (not exon_start) and (not exon_end):
+        if (exon_start is None) and (exon_end is None):
             raise ValueError(msg)
 
         if exon_start:
@@ -219,6 +220,7 @@ class LinkerElement(BaseStructuralElement, extra="forbid"):
 
 class TemplatedSequenceElement(BaseStructuralElement):
     """Define Templated Sequence Element class.
+
     A templated sequence is a contiguous genomic sequence found in the gene
     product.
     """
@@ -270,7 +272,9 @@ class GeneElement(BaseStructuralElement):
 
 
 class UnknownGeneElement(BaseStructuralElement):
-    """Define UnknownGene class. This is primarily intended to represent a
+    """Define UnknownGene class.
+
+    This is primarily intended to represent a
     partner in the result of a fusion partner-agnostic assay, which identifies
     the absence of an expected gene. For example, a FISH break-apart probe may
     indicate rearrangement of an MLL gene, but by design, the test cannot
@@ -287,7 +291,9 @@ class UnknownGeneElement(BaseStructuralElement):
 
 
 class MultiplePossibleGenesElement(BaseStructuralElement):
-    """Define MultiplePossibleGenesElement class. This is primarily intended to
+    """Define MultiplePossibleGenesElement class.
+
+    This is primarily intended to
     represent a partner in a categorical fusion, typifying generalizable
     characteristics of a class of fusions such as retained or lost regulatory elements
     and/or functional domains, often curated from biomedical literature for use in
@@ -307,9 +313,10 @@ class MultiplePossibleGenesElement(BaseStructuralElement):
 
 
 class RegulatoryClass(str, Enum):
-    """Define possible classes of Regulatory Elements. Options are the possible values
-    for /regulatory_class value property in the INSDC controlled vocabulary:
-    https://www.insdc.org/controlled-vocabulary-regulatoryclass
+    """Define possible classes of Regulatory Elements.
+
+    Options are the possible values for ``/regulatory_class`` value property in the
+    `INSDC controlled vocabulary <https://www.insdc.org/controlled-vocabulary-regulatoryclass>`_.
     """
 
     ATTENUATOR = "attenuator"
@@ -336,8 +343,8 @@ class RegulatoryClass(str, Enum):
 class RegulatoryElement(BaseModel):
     """Define RegulatoryElement class.
 
-    `featureId` would ideally be constrained as a CURIE, but Encode, our preferred
-    feature ID source, doesn't currently have a registered CURIE structure for EH_
+    ``featureId`` would ideally be constrained as a CURIE, but Encode, our preferred
+    feature ID source, doesn't currently have a registered CURIE structure for ``EH_``
     identifiers. Consequently, we permit any kind of free text.
     """
 
@@ -407,8 +414,10 @@ class AbstractFusion(BaseModel, ABC):
         obj: dict | BaseModel,
         attr_name: str,
     ) -> Any | None:  # noqa: ANN401
-        """Help enable safe access of object properties while performing
-        validation for Pydantic class objects. Because the validator could be handling either
+        """Help enable safe access of object properties while performing validation for
+        Pydantic class objects.
+
+        Because the validator could be handling either
         existing Pydantic class objects, or candidate dictionaries, we need a flexible
         accessor function.
 
@@ -499,8 +508,8 @@ class AbstractFusion(BaseModel, ABC):
 
     @model_validator(mode="after")
     def structure_ends(cls, values):
-        """Ensure start/end elements are of legal types and have fields
-        required by their position.
+        """Ensure start/end elements are of legal types and have fields required by
+        their position.
         """
         elements = values.structure
         if isinstance(elements[0], TranscriptSegmentElement):
@@ -554,12 +563,13 @@ class Assay(BaseModelForbidExtra):
     )
 
 
-AssayedFusionElements = list[
+AssayedFusionElement = Annotated[
     TranscriptSegmentElement
     | GeneElement
     | TemplatedSequenceElement
     | LinkerElement
-    | UnknownGeneElement
+    | UnknownGeneElement,
+    Field(discriminator="type"),
 ]
 
 
@@ -574,7 +584,9 @@ class EventType(str, Enum):
 
 
 class CausativeEvent(BaseModelForbidExtra):
-    """The evaluation of a fusion may be influenced by the underlying mechanism that
+    """Define causative event information for a fusion.
+
+    The evaluation of a fusion may be influenced by the underlying mechanism that
     generated the fusion. Often this will be a DNA rearrangement, but it could also be
     a read-through or trans-splicing event.
     """
@@ -602,7 +614,7 @@ class AssayedFusion(AbstractFusion):
     """
 
     type: Literal[FUSORTypes.ASSAYED_FUSION] = FUSORTypes.ASSAYED_FUSION
-    structure: AssayedFusionElements
+    structure: list[AssayedFusionElement]
     causativeEvent: CausativeEvent | None = None
     assay: Assay | None = None
 
@@ -638,12 +650,13 @@ class AssayedFusion(AbstractFusion):
     )
 
 
-CategoricalFusionElements = list[
+CategoricalFusionElement = Annotated[
     TranscriptSegmentElement
     | GeneElement
     | TemplatedSequenceElement
     | LinkerElement
-    | MultiplePossibleGenesElement
+    | MultiplePossibleGenesElement,
+    Field(discriminator="type"),
 ]
 
 
@@ -656,7 +669,7 @@ class CategoricalFusion(AbstractFusion):
 
     type: Literal[FUSORTypes.CATEGORICAL_FUSION] = FUSORTypes.CATEGORICAL_FUSION
     criticalFunctionalDomains: list[FunctionalDomain] | None = None
-    structure: CategoricalFusionElements
+    structure: list[CategoricalFusionElement]
 
     model_config = ConfigDict(
         json_schema_extra={
