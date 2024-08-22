@@ -7,20 +7,20 @@
       "exonEnd": 8,
       "exonEndOffset": 0,
       "gene": {
+        "id": "hgnc:12012",
         "type": "Gene",
-        "label": "TPM3",
-        "id": "hgnc:12012"
+        "label": "TPM3"
       },
       "elementGenomicEnd": {
-        "id": "ga4gh:SL.rtR6x2NnJEpROlxiT_DY9C-spf6ijYQi",
+        "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
         "type": "SequenceLocation",
+        "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
         "sequenceReference": {
           "id": "refseq:NC_000001.11",
-          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-          "type": "SequenceReference"
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
         },
-        "start": 154170399,
-        "end": 154170400
+        "start": 154170399
       }
     },
     {
@@ -29,20 +29,20 @@
       "exonStart": 10,
       "exonStartOffset": 0,
       "gene": {
+        "id": "hgnc:8031",
         "type": "Gene",
-        "label": "NTRK1",
-        "id": "hgnc:8031"
+        "label": "NTRK1"
       },
       "elementGenomicStart": {
-        "id": "ga4gh:SL.vwzO5bvePEutAuXGJAQRhFZgWNSMJDeq",
+        "id": "ga4gh:SL.Hw9hRbWb7AEt3h-naNmsGvV41h9G8vQt",
         "type": "SequenceLocation",
+        "digest": "Hw9hRbWb7AEt3h-naNmsGvV41h9G8vQt",
         "sequenceReference": {
           "id": "refseq:NC_000001.11",
-          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-          "type": "SequenceReference"
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
         },
-        "start": 156874626,
-        "end": 156874627
+        "start": 156874570
       }
     }
   ],
@@ -54,7 +54,7 @@
     "type": "Assay",
     "assayName": "fluorescence in-situ hybridization assay",
     "assayId": "obi:OBI_0003094",
-    "fusionDetection": "inferred",
-    "methodUri": "pmid:33576979"
+    "methodUri": "pmid:33576979",
+    "fusionDetection": "inferred"
   }
 }

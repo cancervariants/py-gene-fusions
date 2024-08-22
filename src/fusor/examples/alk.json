@@ -1,29 +1,5 @@
 {
   "type": "CategoricalFusion",
-  "criticalFunctionalDomains": [
-    {
-      "type": "FunctionalDomain",
-      "id": "interpro:IPR017441",
-      "label": "Protein kinase, ATP binding site",
-      "status": "preserved",
-      "associatedGene": {
-        "type": "Gene",
-        "label": "ALK",
-        "id": "hgnc:427"
-      },
-      "sequenceLocation": {
-        "id": "ga4gh:SL.zKwNiezVOyfNBKwAnFuFWMdMlrcc3kBA",
-        "type": "SequenceLocation",
-        "sequenceReference": {
-          "id": "refseq:NP_004295.2",
-          "refgetAccession": "SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs",
-          "type": "SequenceReference"
-        },
-        "start": 1122,
-        "end": 1150
-      }
-    }
-  ],
   "structure": [
     {
       "type": "MultiplePossibleGenesElement"
@@ -31,9 +7,34 @@
     {
       "type": "GeneElement",
       "gene": {
+        "id": "hgnc:427",
         "type": "Gene",
-        "label": "ALK",
-        "id": "hgnc:427"
+        "label": "ALK"
+      }
+    }
+  ],
+  "criticalFunctionalDomains": [
+    {
+      "type": "FunctionalDomain",
+      "status": "preserved",
+      "associatedGene": {
+        "id": "hgnc:427",
+        "type": "Gene",
+        "label": "ALK"
+      },
+      "id": "interpro:IPR017441",
+      "label": "Protein kinase, ATP binding site",
+      "sequenceLocation": {
+        "id": "ga4gh:SL.zKwNiezVOyfNBKwAnFuFWMdMlrcc3kBA",
+        "type": "SequenceLocation",
+        "digest": "zKwNiezVOyfNBKwAnFuFWMdMlrcc3kBA",
+        "sequenceReference": {
+          "id": "refseq:NP_004295.2",
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs"
+        },
+        "start": 1122,
+        "end": 1150
       }
     }
   ]

@@ -4,9 +4,9 @@
     {
       "type": "GeneElement",
       "gene": {
+        "id": "hgnc:3508",
         "type": "Gene",
-        "label": "EWSR1",
-        "id": "hgnc:3508"
+        "label": "EWSR1"
       }
     },
     {
