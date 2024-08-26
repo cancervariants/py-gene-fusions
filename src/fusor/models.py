@@ -513,7 +513,7 @@ class AbstractFusion(BaseModel, ABC):
         """
         elements = values.structure
         if isinstance(elements[0], TranscriptSegmentElement):
-            if elements[0].exonEnd is None and not values["regulatoryElement"]:
+            if elements[0].exonEnd is None and not values.regulatoryElement:
                 msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
                 raise ValueError(msg)
         elif isinstance(elements[0], LinkerElement):
