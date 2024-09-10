@@ -1,0 +1,60 @@
+{
+  "type": "AssayedFusion",
+  "structure": [
+    {
+      "type": "TranscriptSegmentElement",
+      "transcript": "refseq:NM_152263.3",
+      "exonEnd": 8,
+      "exonEndOffset": 0,
+      "gene": {
+        "id": "hgnc:12012",
+        "type": "Gene",
+        "label": "TPM3"
+      },
+      "elementGenomicEnd": {
+        "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+        "type": "SequenceLocation",
+        "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+        "sequenceReference": {
+          "id": "refseq:NC_000001.11",
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+        },
+        "start": 154170399
+      }
+    },
+    {
+      "type": "TranscriptSegmentElement",
+      "transcript": "refseq:NM_002529.3",
+      "exonStart": 10,
+      "exonStartOffset": 0,
+      "gene": {
+        "id": "hgnc:8031",
+        "type": "Gene",
+        "label": "NTRK1"
+      },
+      "elementGenomicStart": {
+        "id": "ga4gh:SL.Hw9hRbWb7AEt3h-naNmsGvV41h9G8vQt",
+        "type": "SequenceLocation",
+        "digest": "Hw9hRbWb7AEt3h-naNmsGvV41h9G8vQt",
+        "sequenceReference": {
+          "id": "refseq:NC_000001.11",
+          "type": "SequenceReference",
+          "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO"
+        },
+        "start": 156874570
+      }
+    }
+  ],
+  "causativeEvent": {
+    "type": "CausativeEvent",
+    "eventType": "rearrangement"
+  },
+  "assay": {
+    "type": "Assay",
+    "assayName": "fluorescence in-situ hybridization assay",
+    "assayId": "obi:OBI_0003094",
+    "methodUri": "pmid:33576979",
+    "fusionDetection": "inferred"
+  }
+}

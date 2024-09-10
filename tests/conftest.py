@@ -1,16 +1,49 @@
 """Module containing methods and fixtures used throughout tests."""
-import asyncio
+
+import logging
 
 import pytest
+from cool_seq_tool.app import CoolSeqTool
 
 from fusor.fusor import FUSOR
 from fusor.translator import Translator
 
 
+def pytest_addoption(parser):
+    """Add custom commands to pytest invocation.
+    See https://docs.pytest.org/en/7.1.x/reference/reference.html#parser
+    """
+    parser.addoption(
+        "--verbose-logs",
+        action="store_true",
+        default=False,
+        help="show noisy module logs",
+    )
+
+
+def pytest_configure(config):
+    """Configure pytest setup."""
+    if not config.getoption("--verbose-logs"):
+        logging.getLogger("botocore").setLevel(logging.INFO)
+        logging.getLogger("boto3").setLevel(logging.INFO)
+        logging.getLogger("urllib3").setLevel(logging.INFO)
+        logging.getLogger("nose").setLevel(logging.INFO)
+
+
 @pytest.fixture(scope="session")
 def fusor_instance():
-    """Create test fixture for fusor object"""
-    return FUSOR()
+    """Create test fixture for fusor object
+
+    Suppresses checks for CoolSeqTool external resources. Otherwise, on CST startup,
+    it will try to check that its MANE summary file is up-to-date, which is an FTP call
+    to the NCBI servers and can hang sometimes.
+
+    If those files aren't available, create a CST instance in another session -- by
+    default, it should save files to a centralized location that this test instance can
+    access.
+    """
+    cst = CoolSeqTool(force_local_files=True)
+    return FUSOR(cool_seq_tool=cst)
 
 
 @pytest.fixture(scope="session")
@@ -19,523 +52,777 @@ def translator_instance():
     return Translator(fusor=FUSOR())
 
 
-@pytest.yield_fixture(scope="session")
-def event_loop(request):
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
 @pytest.fixture(scope="session")
-def braf_gene_descriptor():
-    """Create gene descriptor params for BRAF."""
+def braf_gene():
+    """Create gene params for BRAF."""
     return {
-        "id": "normalize.gene:BRAF",
-        "type": "GeneDescriptor",
+        "id": "hgnc:1097",
+        "type": "Gene",
         "label": "BRAF",
-        "xrefs": ["ensembl:ENSG00000157764", "ncbigene:673"],
-        "alternate_labels": ["BRAF1", "BRAF-1", "NS7", "B-raf", "B-RAF1", "RAFB1"],
+        "description": None,
+        "alternativeLabels": ["NS7", "BRAF1", "RAFB1", "B-RAF1", "BRAF-1", "B-raf"],
         "extensions": [
-            {"type": "Extension", "name": "symbol_status", "value": "approved"},
+            {"name": "symbol_status", "value": "approved", "description": None},
             {
-                "type": "Extension",
                 "name": "approved_name",
                 "value": "B-Raf proto-oncogene, serine/threonine kinase",
+                "description": None,
             },
+            {"name": "strand", "value": "-", "description": None},
             {
-                "type": "Extension",
-                "name": "hgnc_locations",
-                "value": [
-                    {
-                        "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
-                        "type": "ChromosomeLocation",
-                        "species_id": "taxonomy:9606",
-                        "chr": "7",
-                        "interval": {
-                            "end": "q34",
-                            "start": "q34",
-                            "type": "CytobandInterval",
-                        },
-                    }
-                ],
-            },
-            {
-                "type": "Extension",
                 "name": "ensembl_locations",
                 "value": [
                     {
-                        "_id": "ga4gh:VSL.amNWL6i7F2nbSZAf2QLTRTujxuDrd0pR",
+                        "id": "ga4gh:SL.fUv91vYrVHBMg-B_QW7UpOQj50g_49hb",
                         "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
-                        "interval": {
-                            "start": {"type": "Number", "value": 140719326},
-                            "end": {"type": "Number", "value": 140924929},
-                            "type": "SequenceInterval",
+                        "digest": "fUv91vYrVHBMg-B_QW7UpOQj50g_49hb",
+                        "sequenceReference": {
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
                         },
+                        "start": 140719326,
+                        "end": 140924929,
                     }
                 ],
+                "description": None,
             },
             {
-                "type": "Extension",
                 "name": "ncbi_locations",
                 "value": [
                     {
-                        "_id": "ga4gh:VCL.O6yCQ1cnThOrTfK9YUgMlTfM6HTqbrKw",
-                        "type": "ChromosomeLocation",
-                        "species_id": "taxonomy:9606",
-                        "chr": "7",
-                        "interval": {
-                            "end": "q34",
-                            "start": "q34",
-                            "type": "CytobandInterval",
-                        },
-                    },
-                    {
-                        "_id": "ga4gh:VSL.xZU3kL8F6t2ca6WH_26CWKfNW9-owhR4",
+                        "id": "ga4gh:SL.0nPwKHYNnTmJ06G-gSmz8BEhB_NTp-0B",
                         "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
-                        "interval": {
-                            "start": {"type": "Number", "value": 140713327},
-                            "end": {"type": "Number", "value": 140924929},
-                            "type": "SequenceInterval",
+                        "digest": "0nPwKHYNnTmJ06G-gSmz8BEhB_NTp-0B",
+                        "sequenceReference": {
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.F-LrLMe1SRpfUZHkQmvkVKFEGaoDeHul",
                         },
-                    },
+                        "start": 140713327,
+                        "end": 140924929,
+                    }
                 ],
+                "description": None,
             },
             {
-                "type": "Extension",
-                "name": "associated_with",
-                "value": [
-                    "pubmed:2284096",
-                    "refseq:NM_004333",
-                    "iuphar:1943",
-                    "orphanet:119066",
-                    "cosmic:BRAF",
-                    "ena.embl:M95712",
-                    "ccds:CCDS87555",
-                    "ucsc:uc003vwc.5",
-                    "pubmed:1565476",
-                    "vega:OTTHUMG00000157457",
-                    "uniprot:P15056",
-                    "ccds:CCDS5863",
-                    "omim:164757",
-                ],
-            },
-            {
-                "type": "Extension",
                 "name": "hgnc_locus_type",
                 "value": "gene with protein product",
+                "description": None,
             },
-            {"type": "Extension", "name": "ncbi_gene_type", "value": "protein-coding"},
-            {"type": "Extension", "name": "ensembl_biotype", "value": "protein_coding"},
-            {"type": "Extension", "name": "strand", "value": "-"},
+            {"name": "ncbi_gene_type", "value": "protein-coding", "description": None},
+            {"name": "ensembl_biotype", "value": "protein_coding", "description": None},
         ],
-        "gene_id": "hgnc:1097",
+        "mappings": [
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ensembl",
+                    "version": None,
+                    "code": "ENSG00000157764",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ncbigene",
+                    "version": None,
+                    "code": "673",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "cosmic",
+                    "version": None,
+                    "code": "BRAF",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ena.embl",
+                    "version": None,
+                    "code": "M95712",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "omim",
+                    "version": None,
+                    "code": "164757",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "iuphar",
+                    "version": None,
+                    "code": "1943",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ucsc",
+                    "version": None,
+                    "code": "uc003vwc.5",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "vega",
+                    "version": None,
+                    "code": "OTTHUMG00000157457",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS87555",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "uniprot",
+                    "version": None,
+                    "code": "P15056",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "refseq",
+                    "version": None,
+                    "code": "NM_004333",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "pubmed",
+                    "version": None,
+                    "code": "1565476",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "orphanet",
+                    "version": None,
+                    "code": "119066",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "pubmed",
+                    "version": None,
+                    "code": "2284096",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS5863",
+                },
+                "relation": "relatedMatch",
+            },
+        ],
     }
 
 
 @pytest.fixture(scope="session")
-def alk_gene_descriptor():
-    """Create test fixture for ALK gene descriptor params"""
+def alk_gene():
+    """Create test fixture for ALK gene params"""
     return {
-        "id": "normalize.gene:ALK",
-        "type": "GeneDescriptor",
+        "id": "hgnc:427",
+        "type": "Gene",
         "label": "ALK",
         "description": None,
-        "xrefs": ["ensembl:ENSG00000171094", "ncbigene:238"],
-        "alternate_labels": ["NBLST3", "CD246", "ALK1"],
+        "alternativeLabels": ["NBLST3", "CD246", "ALK1"],
         "extensions": [
+            {"name": "symbol_status", "value": "approved", "description": None},
             {
-                "type": "Extension",
-                "name": "symbol_status",
-                "value": "approved",
-            },
-            {
-                "type": "Extension",
                 "name": "approved_name",
                 "value": "ALK receptor tyrosine kinase",
+                "description": None,
             },
+            {"name": "strand", "value": "-", "description": None},
             {
-                "type": "Extension",
-                "name": "hgnc_locations",
-                "value": [
-                    {
-                        "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
-                        "type": "ChromosomeLocation",
-                        "species_id": "taxonomy:9606",
-                        "chr": "2",
-                        "interval": {
-                            "end": "p23.1",
-                            "start": "p23.2",
-                            "type": "CytobandInterval",
-                        },
-                    }
-                ],
-            },
-            {
-                "type": "Extension",
                 "name": "ensembl_locations",
                 "value": [
                     {
-                        "_id": "ga4gh:VSL.-k3kxW3qMyV-oBTvTffVZojkJBLs0flu",
+                        "id": "ga4gh:SL.V-yTsF-F4eHxeDHeU5KZIF3ZOzE2vUnG",
                         "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g",
-                        "interval": {
-                            "start": {"type": "Number", "value": 29192773},
-                            "end": {"type": "Number", "value": 29921586},
-                            "type": "SequenceInterval",
+                        "digest": "V-yTsF-F4eHxeDHeU5KZIF3ZOzE2vUnG",
+                        "sequenceReference": {
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g",
                         },
+                        "start": 29192773,
+                        "end": 29921586,
                     }
                 ],
+                "description": None,
             },
             {
-                "type": "Extension",
                 "name": "ncbi_locations",
                 "value": [
                     {
-                        "_id": "ga4gh:VCL.VE7uJHat7zIWFf9AzNM85jj05r1dLzsD",
-                        "type": "ChromosomeLocation",
-                        "species_id": "taxonomy:9606",
-                        "chr": "2",
-                        "interval": {
-                            "end": "p23.1",
-                            "start": "p23.2",
-                            "type": "CytobandInterval",
-                        },
-                    },
-                    {
-                        "_id": "ga4gh:VSL.-k3kxW3qMyV-oBTvTffVZojkJBLs0flu",
+                        "id": "ga4gh:SL.V-yTsF-F4eHxeDHeU5KZIF3ZOzE2vUnG",
                         "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g",
-                        "interval": {
-                            "start": {"type": "Number", "value": 29192773},
-                            "end": {"type": "Number", "value": 29921586},
-                            "type": "SequenceInterval",
+                        "digest": "V-yTsF-F4eHxeDHeU5KZIF3ZOzE2vUnG",
+                        "sequenceReference": {
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.pnAqCRBrTsUoBghSD1yp_jXWSmlbdh4g",
                         },
-                    },
+                        "start": 29192773,
+                        "end": 29921586,
+                    }
                 ],
+                "description": None,
             },
             {
-                "type": "Extension",
-                "name": "associated_with",
-                "value": [
-                    "ccds:CCDS33172",
-                    "pubmed:8122112",
-                    "orphanet:160020",
-                    "ccds:CCDS86828",
-                    "cosmic:ALK",
-                    "uniprot:Q9UM73",
-                    "omim:105590",
-                    "iuphar:1839",
-                    "hcdmdb:CD246",
-                    "vega:OTTHUMG00000152034",
-                    "ena.embl:D45915",
-                    "refseq:NM_004304",
-                    "ucsc:uc002rmy.4",
-                ],
-            },
-            {
-                "type": "Extension",
                 "name": "hgnc_locus_type",
                 "value": "gene with protein product",
+                "description": None,
             },
-            {
-                "type": "Extension",
-                "name": "ncbi_gene_type",
-                "value": "protein-coding",
-            },
-            {
-                "type": "Extension",
-                "name": "ensembl_biotype",
-                "value": "protein_coding",
-            },
-            {"type": "Extension", "name": "strand", "value": "-"},
+            {"name": "ncbi_gene_type", "value": "protein-coding", "description": None},
+            {"name": "ensembl_biotype", "value": "protein_coding", "description": None},
         ],
-        "gene_id": "hgnc:427",
-        "gene": None,
+        "mappings": [
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ensembl",
+                    "version": None,
+                    "code": "ENSG00000171094",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ncbigene",
+                    "version": None,
+                    "code": "238",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "orphanet",
+                    "version": None,
+                    "code": "160020",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "hcdmdb",
+                    "version": None,
+                    "code": "CD246",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ucsc",
+                    "version": None,
+                    "code": "uc002rmy.4",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "refseq",
+                    "version": None,
+                    "code": "NM_004304",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS33172",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "omim",
+                    "version": None,
+                    "code": "105590",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ena.embl",
+                    "version": None,
+                    "code": "D45915",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "vega",
+                    "version": None,
+                    "code": "OTTHUMG00000152034",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "uniprot",
+                    "version": None,
+                    "code": "Q9UM73",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "iuphar",
+                    "version": None,
+                    "code": "1839",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "pubmed",
+                    "version": None,
+                    "code": "8122112",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "cosmic",
+                    "version": None,
+                    "code": "ALK",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS86828",
+                },
+                "relation": "relatedMatch",
+            },
+        ],
+    }
+
+
+@pytest.fixture(scope="session")
+def tpm3_gene():
+    """Create test fixture for TPM3 gene"""
+    return {
+        "id": "hgnc:12012",
+        "type": "Gene",
+        "label": "TPM3",
+        "description": None,
+        "alternativeLabels": [
+            "TM3",
+            "NEM1~withdrawn",
+            "TM30",
+            "TM5",
+            "TRK",
+            "HEL-S-82p",
+            "NEM1",
+            "OK/SW-cl.5",
+            "TM30nm",
+            "hscp30",
+            "FLJ35371",
+            "TPMsk3",
+            "HEL-189",
+            "CFTD",
+            "TPM3nu",
+            "TM-5",
+            "CAPM1",
+        ],
+        "extensions": [
+            {"name": "symbol_status", "value": "approved", "description": None},
+            {"name": "approved_name", "value": "tropomyosin 3", "description": None},
+            {
+                "name": "previous_symbols",
+                "value": ["FLJ35371", "NEM1", "NEM1~withdrawn"],
+                "description": None,
+            },
+            {"name": "strand", "value": "-", "description": None},
+            {
+                "name": "ensembl_locations",
+                "value": [
+                    {
+                        "id": "ga4gh:SL.cgdnkG0tZq9SpwTHMWMG4sjT9JGXQ-Ap",
+                        "type": "SequenceLocation",
+                        "digest": "cgdnkG0tZq9SpwTHMWMG4sjT9JGXQ-Ap",
+                        "sequenceReference": {
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        },
+                        "start": 154155307,
+                        "end": 154194648,
+                    }
+                ],
+                "description": None,
+            },
+            {
+                "name": "ncbi_locations",
+                "value": [
+                    {
+                        "id": "ga4gh:SL.aVsAgF9lwnjLgy-DXECiDgavt5F0OsYR",
+                        "type": "SequenceLocation",
+                        "digest": "aVsAgF9lwnjLgy-DXECiDgavt5F0OsYR",
+                        "sequenceReference": {
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        },
+                        "start": 154155307,
+                        "end": 154192100,
+                    }
+                ],
+                "description": None,
+            },
+            {
+                "name": "hgnc_locus_type",
+                "value": "gene with protein product",
+                "description": None,
+            },
+            {"name": "ncbi_gene_type", "value": "protein-coding", "description": None},
+            {"name": "ensembl_biotype", "value": "protein_coding", "description": None},
+        ],
+        "mappings": [
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ensembl",
+                    "version": None,
+                    "code": "ENSG00000143549",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ncbigene",
+                    "version": None,
+                    "code": "7170",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS41403",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ucsc",
+                    "version": None,
+                    "code": "uc001fec.3",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "pubmed",
+                    "version": None,
+                    "code": "25369766",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS41401",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS60275",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "uniprot",
+                    "version": None,
+                    "code": "P06753",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "cosmic",
+                    "version": None,
+                    "code": "TPM3",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS60274",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ena.embl",
+                    "version": None,
+                    "code": "BC008425",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS41402",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS1060",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "omim",
+                    "version": None,
+                    "code": "191030",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "orphanet",
+                    "version": None,
+                    "code": "120227",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS41400",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "refseq",
+                    "version": None,
+                    "code": "NM_152263",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "vega",
+                    "version": None,
+                    "code": "OTTHUMG00000035853",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "pubmed",
+                    "version": None,
+                    "code": "1829807",
+                },
+                "relation": "relatedMatch",
+            },
+            {
+                "coding": {
+                    "label": None,
+                    "system": "ccds",
+                    "version": None,
+                    "code": "CCDS72922",
+                },
+                "relation": "relatedMatch",
+            },
+        ],
     }
 
 
 @pytest.fixture(scope="module")
-def exhaustive_example(alk_gene_descriptor, braf_gene_descriptor):
+def exhaustive_example(alk_gene, braf_gene, tpm3_gene):
     """Create test fixture for a fake fusion exemplifying most major field types, in
     'expanded' form (ie properties augmented by VICC descriptors)
     """
     return {
         "type": "CategoricalFusion",
-        "critical_functional_domains": [
+        "criticalFunctionalDomains": [
             {
                 "type": "FunctionalDomain",
-                "_id": "interpro:IPR020635",
+                "id": "interpro:IPR020635",
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "status": "lost",
-                "associated_gene": alk_gene_descriptor,
-                "sequence_location": {
-                    "id": "fusor.location_descriptor:NP_004295.2",
-                    "type": "LocationDescriptor",
-                    "label": None,
-                    "description": None,
-                    "xrefs": None,
-                    "alternate_labels": None,
-                    "extensions": None,
-                    "location_id": "ga4gh:VSL.hQKhk6ZOOYZAmShXrzhfb6H3j65ovsKu",
-                    "location": {
-                        "id": None,
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NP_004295.2",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 1116},
-                            "end": {"type": "Number", "value": 1383},
-                        },
+                "associatedGene": alk_gene,
+                "sequenceLocation": {
+                    "id": "ga4gh:SL.aYx-iUOFEw7GVZb4fwrQLkQQahpiIAVp",
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NP_004295.2",
+                        "refgetAccession": "SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs",
+                        "type": "SequenceReference",
                     },
+                    "start": 1116,
+                    "end": 1383,
                 },
             }
         ],
-        "structural_elements": [
+        "structure": [
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
-                "exon_start": 1,
-                "exon_start_offset": 0,
-                "exon_end": 8,
-                "exon_end_offset": 0,
-                "gene_descriptor": {
-                    "id": "normalize.gene:TPM3",
-                    "type": "GeneDescriptor",
-                    "label": "TPM3",
-                    "description": None,
-                    "xrefs": ["ensembl:ENSG00000143549", "ncbigene:7170"],
-                    "alternate_labels": [
-                        "TM-5",
-                        "TM5",
-                        "NEM1~withdrawn",
-                        "OK/SW-cl.5",
-                        "TM30nm",
-                        "TPMsk3",
-                        "HEL-S-82p",
-                        "TRK",
-                        "CAPM1",
-                        "TPM3nu",
-                        "FLJ35371",
-                        "TM30",
-                        "TM3",
-                        "CFTD",
-                        "NEM1",
-                        "hscp30",
-                        "HEL-189",
-                    ],
-                    "extensions": [
-                        {
-                            "type": "Extension",
-                            "name": "symbol_status",
-                            "value": "approved",
-                        },
-                        {
-                            "type": "Extension",
-                            "name": "approved_name",
-                            "value": "tropomyosin 3",
-                        },
-                        {
-                            "type": "Extension",
-                            "name": "hgnc_locations",
-                            "value": [
-                                {
-                                    "_id": "ga4gh:VCL.rmJvYV5JccRSEoMVxe5BmuHs9S2VZ4uR",
-                                    "type": "ChromosomeLocation",
-                                    "species_id": "taxonomy:9606",
-                                    "chr": "1",
-                                    "interval": {
-                                        "end": "q21.3",
-                                        "start": "q21.3",
-                                        "type": "CytobandInterval",
-                                    },
-                                }
-                            ],
-                        },
-                        {
-                            "type": "Extension",
-                            "name": "ensembl_locations",
-                            "value": [
-                                {
-                                    "_id": "ga4gh:VSL._ASa2-iBSDZSpC3JlpwJxzv4OY5M-5Ct",
-                                    "type": "SequenceLocation",
-                                    "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                                    "interval": {
-                                        "start": {"type": "Number", "value": 154155307},
-                                        "end": {"type": "Number", "value": 154194648},
-                                        "type": "SequenceInterval",
-                                    },
-                                }
-                            ],
-                        },
-                        {
-                            "type": "Extension",
-                            "name": "ncbi_locations",
-                            "value": [
-                                {
-                                    "_id": "ga4gh:VCL.rmJvYV5JccRSEoMVxe5BmuHs9S2VZ4uR",
-                                    "type": "ChromosomeLocation",
-                                    "species_id": "taxonomy:9606",
-                                    "chr": "1",
-                                    "interval": {
-                                        "end": "q21.3",
-                                        "start": "q21.3",
-                                        "type": "CytobandInterval",
-                                    },
-                                },
-                                {
-                                    "_id": "ga4gh:VSL.sGJqQhhTg3BYlndAP7nFzN7KoKID1yP_",
-                                    "type": "SequenceLocation",
-                                    "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                                    "interval": {
-                                        "start": {"type": "Number", "value": 154155307},
-                                        "end": {"type": "Number", "value": 154192100},
-                                        "type": "SequenceInterval",
-                                    },
-                                },
-                            ],
-                        },
-                        {
-                            "type": "Extension",
-                            "name": "associated_with",
-                            "value": [
-                                "vega:OTTHUMG00000035853",
-                                "ccds:CCDS41400",
-                                "ccds:CCDS1060",
-                                "ccds:CCDS41402",
-                                "ccds:CCDS41401",
-                                "pubmed:25369766",
-                                "cosmic:TPM3",
-                                "refseq:NM_152263",
-                                "orphanet:120227",
-                                "uniprot:P06753",
-                                "ccds:CCDS72922",
-                                "ccds:CCDS60274",
-                                "ucsc:uc001fec.3",
-                                "omim:191030",
-                                "ccds:CCDS41403",
-                                "ena.embl:BC008425",
-                                "ccds:CCDS60275",
-                                "pubmed:1829807",
-                            ],
-                        },
-                        {
-                            "type": "Extension",
-                            "name": "previous_symbols",
-                            "value": ["NEM1", "NEM1~withdrawn", "FLJ35371"],
-                        },
-                        {
-                            "type": "Extension",
-                            "name": "hgnc_locus_type",
-                            "value": "gene with protein product",
-                        },
-                        {
-                            "type": "Extension",
-                            "name": "ncbi_gene_type",
-                            "value": "protein-coding",
-                        },
-                        {
-                            "type": "Extension",
-                            "name": "ensembl_biotype",
-                            "value": "protein_coding",
-                        },
-                        {"type": "Extension", "name": "strand", "value": "-"},
-                    ],
-                    "gene_id": "hgnc:12012",
-                    "gene": None,
-                },
-                "element_genomic_start": {
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "type": "LocationDescriptor",
-                    "label": "NC_000001.11",
+                "exonStart": 1,
+                "exonStartOffset": 0,
+                "exonEnd": 8,
+                "exonEndOffset": 0,
+                "gene": tpm3_gene,
+                "elementGenomicStart": {
+                    "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+                    "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
                     "description": None,
                     "xrefs": None,
-                    "alternate_labels": None,
+                    "alternativeLabels": None,
                     "extensions": None,
-                    "location_id": "ga4gh:VSL.n7i6VMRAuSgAjwVopxhWAJdlPJMfk7KR",
-                    "location": {
-                        "id": None,
-                        "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 154192135},
-                            "end": {"type": "Number", "value": 154192136},
-                        },
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        "type": "SequenceReference",
                     },
+                    "end": 154192135,
                 },
-                "element_genomic_end": {
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "type": "LocationDescriptor",
-                    "label": "NC_000001.11",
+                "elementGenomicEnd": {
+                    "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+                    "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
                     "description": None,
                     "xrefs": None,
-                    "alternate_labels": None,
+                    "alternativeLabels": None,
                     "extensions": None,
-                    "location_id": "ga4gh:VSL.wQ4TpNbsTPq_A-eQTL44gbP3f4fnp0vx",
-                    "location": {
-                        "id": None,
-                        "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 154170399},
-                            "end": {"type": "Number", "value": 154170400},
-                        },
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        "type": "SequenceReference",
                     },
+                    "start": 154170399,
                 },
             },
             {
                 "type": "GeneElement",
-                "gene_descriptor": alk_gene_descriptor,
+                "gene": alk_gene,
             },
             {
                 "type": "LinkerSequenceElement",
-                "linker_sequence": {
+                "linkerSequence": {
                     "id": "fusor.sequence:ACGT",
-                    "type": "SequenceDescriptor",
+                    "type": "LiteralSequenceExpression",
                     "label": None,
                     "description": None,
                     "xrefs": None,
-                    "alternate_labels": None,
+                    "alternativeLabels": None,
                     "extensions": None,
                     "sequence_id": None,
                     "sequence": "ACGT",
-                    "residue_type": "SO:0000348",
                 },
             },
             {
                 "type": "TemplatedSequenceElement",
                 "region": {
-                    "id": "fusor.location_descriptor:NC_000023.11",
-                    "type": "LocationDescriptor",
-                    "label": None,
+                    "id": "ga4gh:SL.gb3ew2XQ-Doi1AtvlmajeZO7fS1eDPg_",
                     "description": None,
                     "xrefs": None,
-                    "alternate_labels": None,
+                    "alternativeLabels": None,
                     "extensions": None,
-                    "location_id": "ga4gh:VSL.zd12pX_ju2gLq9a9UOYgM8AtbkuhnyUu",
-                    "location": {
-                        "id": None,
-                        "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 44908820},
-                            "end": {"type": "Number", "value": 44908822},
-                        },
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000023.11",
+                        "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+                        "type": "SequenceReference",
                     },
+                    "start": 44908820,
+                    "end": 44908822,
                 },
-                "strand": "+",
+                "strand": 1,
             },
             {"type": "MultiplePossibleGenesElement"},
         ],
-        "regulatory_element": {
+        "regulatoryElement": {
             "type": "RegulatoryElement",
-            "regulatory_class": "promoter",
-            "associated_gene": braf_gene_descriptor,
+            "regulatoryClass": "promoter",
+            "associatedGene": braf_gene,
         },
     }
 
@@ -545,123 +832,123 @@ def fusion_example():
     """Create test fixture for a fake fusion without additional property expansion."""
     return {
         "type": "CategoricalFusion",
-        "r_frame_preserved": True,
-        "critical_functional_domains": [
+        "readingFramePreserved": True,
+        "criticalFunctionalDomains": [
             {
                 "type": "FunctionalDomain",
-                "_id": "interpro:IPR020635",
+                "id": "interpro:IPR020635",
                 "label": "Tyrosine-protein kinase, catalytic domain",
                 "status": "lost",
-                "associated_gene": {
-                    "id": "normalize.gene:hgnc%3A427",
-                    "type": "GeneDescriptor",
+                "associatedGene": {
+                    "type": "Gene",
                     "label": "ALK",
-                    "gene_id": "hgnc:427",
+                    "id": "hgnc:427",
                 },
-                "sequence_location": {
-                    "id": "fusor.location_descriptor:NP_004295.2",
-                    "type": "LocationDescriptor",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NP_004295.2",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 1116},
-                            "end": {"type": "Number", "value": 1383},
-                        },
+                "sequenceLocation": {
+                    "id": "ga4gh:SL.aYx-iUOFEw7GVZb4fwrQLkQQahpiIAVp",
+                    "description": None,
+                    "xrefs": None,
+                    "alternativeLabels": None,
+                    "extensions": None,
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NP_004295.2",
+                        "refgetAccession": "SQ.q9CnK-HKWh9eqhOi8FlzR7M0pCmUrWPs",
+                        "type": "SequenceReference",
                     },
+                    "start": 1116,
+                    "end": 1383,
                 },
             }
         ],
-        "structural_elements": [
+        "structure": [
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.3",
-                "exon_start": 1,
-                "exon_start_offset": 0,
-                "exon_end": 8,
-                "exon_end_offset": 0,
-                "gene_descriptor": {
-                    "id": "normalize.gene:TPM3",
-                    "type": "GeneDescriptor",
+                "exonStart": 1,
+                "exonStartOffset": 0,
+                "exonEnd": 8,
+                "exonEndOffset": 0,
+                "gene": {
+                    "type": "Gene",
                     "label": "TPM3",
-                    "gene_id": "hgnc:12012",
+                    "id": "hgnc:12012",
                 },
-                "element_genomic_start": {
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "type": "LocationDescriptor",
-                    "label": "NC_000001.11",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NC_000001.11",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 154192135},
-                            "end": {"type": "Number", "value": 154192136},
-                        },
+                "elementGenomicStart": {
+                    "id": "ga4gh:SL.Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+                    "digest": "Q8vkGp7_xR9vI0PQ7g1IvUUeQ4JlJG8l",
+                    "description": None,
+                    "xrefs": None,
+                    "alternativeLabels": None,
+                    "extensions": None,
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        "type": "SequenceReference",
                     },
+                    "end": 154192135,
                 },
-                "element_genomic_end": {
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "type": "LocationDescriptor",
-                    "label": "NC_000001.11",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NC_000001.11",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 154170399},
-                            "end": {"type": "Number", "value": 154170400},
-                        },
+                "elementGenomicEnd": {
+                    "id": "ga4gh:SL.Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+                    "digest": "Lnne0bSsgjzmNkKsNnXg98FeJSrDJuLb",
+                    "description": None,
+                    "xrefs": None,
+                    "alternativeLabels": None,
+                    "extensions": None,
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        "type": "SequenceReference",
                     },
+                    "start": 154170399,
                 },
             },
             {
                 "type": "GeneElement",
-                "gene_descriptor": {
-                    "id": "normalize.gene:ALK",
-                    "type": "GeneDescriptor",
+                "gene": {
+                    "type": "Gene",
                     "label": "ALK",
-                    "gene_id": "hgnc:427",
+                    "id": "hgnc:427",
                 },
             },
             {
                 "type": "LinkerSequenceElement",
-                "linker_sequence": {
+                "linkerSequence": {
                     "id": "fusor.sequence:ACGT",
-                    "type": "SequenceDescriptor",
+                    "type": "LiteralSequenceExpression",
                     "sequence": "ACGT",
-                    "residue_type": "SO:0000348",
                 },
             },
             {
                 "type": "TemplatedSequenceElement",
                 "region": {
-                    "id": "fusor.location_descriptor:NC_000023.11",
-                    "type": "LocationDescriptor",
-                    "location_id": "ga4gh:VSL.q0Hnb9gpYDyUuTix4Fesy5ungdnc4dWm",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "ga4gh:SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 44908820},
-                            "end": {"type": "Number", "value": 44908822},
-                        },
+                    "id": "ga4gh:SL.gb3ew2XQ-Doi1AtvlmajeZO7fS1eDPg_",
+                    "description": None,
+                    "xrefs": None,
+                    "alternativeLabels": None,
+                    "extensions": None,
+                    "type": "SequenceLocation",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000023.11",
+                        "refgetAccession": "SQ.w0WZEvgJF0zf_P4yyTzjjv9oW1z61HHP",
+                        "type": "SequenceReference",
                     },
+                    "start": 44908820,
+                    "end": 44908822,
                 },
-                "strand": "+",
+                "strand": 1,
             },
             {"type": "MultiplePossibleGenesElement"},
         ],
-        "regulatory_element": {
+        "regulatoryElement": {
             "type": "RegulatoryElement",
-            "regulatory_class": "promoter",
-            "associated_gene": {
-                "id": "gene:BRAF",
-                "type": "GeneDescriptor",
+            "regulatoryClass": "promoter",
+            "associatedGene": {
+                "type": "Gene",
                 "label": "BRAF",
-                "gene_id": "hgnc:1097",
+                "id": "hgnc:1097",
             },
         },
     }
