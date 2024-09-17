@@ -1,4 +1,5 @@
 """Module for testing FUSOR Translators"""
+
 import pandas as pd
 import pytest
 
@@ -10,67 +11,45 @@ def fusion_data_example():
     """Create example assayed fusion for TPM3::PDGFRB with exonic breakpoints"""
     params = {
         "type": "AssayedFusion",
-        "structural_elements": [
+        "structure": [
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_152263.4",
-                "exon_start": None,
-                "exon_start_offset": None,
-                "exon_end": 8,
-                "exon_end_offset": -65,
-                "gene_descriptor": {
-                    "id": "normalize.gene:TPM3",
-                    "type": "GeneDescriptor",
-                    "label": "TPM3",
-                    "gene_id": "hgnc:12012",
-                },
-                "element_genomic_start": None,
-                "element_genomic_end": {
-                    "id": "fusor.location_descriptor:NC_000001.11",
-                    "type": "LocationDescriptor",
-                    "label": "NC_000001.11",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NC_000001.11",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 154170465},
-                            "end": {"type": "Number", "value": 154170466},
-                        },
+                "exonEnd": 8,
+                "exonEndOffset": -66,
+                "gene": {"id": "hgnc:12012", "type": "Gene", "label": "TPM3"},
+                "elementGenomicEnd": {
+                    "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                    "type": "SequenceLocation",
+                    "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000001.11",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
+                    "start": 154170465,
                 },
             },
             {
                 "type": "TranscriptSegmentElement",
                 "transcript": "refseq:NM_002609.4",
-                "exon_start": 11,
-                "exon_start_offset": 2,
-                "exon_end": None,
-                "exon_end_offset": None,
-                "gene_descriptor": {
-                    "id": "normalize.gene:PDGFRB",
-                    "type": "GeneDescriptor",
-                    "label": "PDGFRB",
-                    "gene_id": "hgnc:8804",
-                },
-                "element_genomic_start": {
-                    "id": "fusor.location_descriptor:NC_000005.10",
-                    "type": "LocationDescriptor",
-                    "label": "NC_000005.10",
-                    "location": {
-                        "type": "SequenceLocation",
-                        "sequence_id": "refseq:NC_000005.10",
-                        "interval": {
-                            "type": "SequenceInterval",
-                            "start": {"type": "Number", "value": 150126611},
-                            "end": {"type": "Number", "value": 150126612},
-                        },
+                "exonStart": 11,
+                "exonStartOffset": 2,
+                "gene": {"id": "hgnc:8804", "type": "Gene", "label": "PDGFRB"},
+                "elementGenomicStart": {
+                    "id": "ga4gh:SL.Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
+                    "type": "SequenceLocation",
+                    "digest": "Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
+                    "sequenceReference": {
+                        "id": "refseq:NC_000005.10",
+                        "type": "SequenceReference",
+                        "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
                     },
+                    "end": 150126612,
                 },
-                "element_genomic_end": None,
             },
         ],
-        "causative_event": {"type": "CausativeEvent", "event_type": "rearrangement"},
+        "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
         "r_frame_preserved": True,
         "assay": None,
     }
@@ -142,7 +121,7 @@ def fusion_data_example_nonexonic():
                 "element_genomic_end": None,
             },
         ],
-        "causative_event": {"type": "CausativeEvent", "event_type": "rearrangement"},
+        "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
         "r_frame_preserved": True,
         "assay": None,
     }
@@ -264,7 +243,8 @@ async def test_jaffa(
         ],
     )
     jaffa_fusor = (await translator_instance.from_jaffa(jaffa_data.iloc[0]))[0].dict()
-    compare_fusions(jaffa_fusor, fusion_data_example.dict())
+    # compare_fusions(jaffa_fusor, fusion_data_example.dict())
+    assert jaffa_fusor == fusion_data_example.dict()
 
     # Event Description can be free-string so include seperation assertion statement
     assert jaffa_fusor["causative_event"]["event_description"] == "HighConfidence"
