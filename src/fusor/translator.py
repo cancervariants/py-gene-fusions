@@ -79,10 +79,10 @@ class Translator:
         """Infer Causative Event. Currently restricted to rearrangements
         :param chrom1: The chromosome for the 5' partner
         :param chrom2: The chromosome for the 3' partner
-        :param annots: An annotation describing the fusion event. This input is supplied to the event_description CausativeEvent attribute.
+        :param annots: An annotation describing the fusion event. This input is supplied to the eventDescription CausativeEvent attribute.
         :return: A CausativeEvent object if construction is successful
         """
-        if chrom1 != chrom2 and descr:
+        if "rearrangement" in descr:
             return CausativeEvent(
                 eventType=EventType("rearrangement"), eventDescription=descr
             )
@@ -156,14 +156,14 @@ class Translator:
         :return: An AssayedFusion object, if construction is successful
         """
         genes = jaffa_row["fusion genes"].split(":")
-        gene_5prime = self._get_gene_element(genes[0], "jaffa")
-        gene_3prime = self._get_gene_element(genes[1], "jaffa")
+        gene_5prime = self._get_gene_element(genes[0], "jaffa")[0].gene.label
+        gene_3prime = self._get_gene_element(genes[1], "jaffa")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(jaffa_row.chrom1, rb),
             seg_end_genomic=int(jaffa_row.base1),
-            gene=genes[0],
+            gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -171,7 +171,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(jaffa_row.chrom2, rb),
             seg_start_genomic=int(jaffa_row.base2),
-            gene=genes[1],
+            gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -198,8 +198,8 @@ class Translator:
         """
         gene1 = sf_row["LeftGene"].split("^")[0]
         gene2 = sf_row["RightGene"].split("^")[0]
-        gene_5prime = self._get_gene_element(gene1, "star_fusion")
-        gene_3prime = self._get_gene_element(gene2, "star_fusion")
+        gene_5prime = self._get_gene_element(gene1, "star_fusion")[0].gene.label
+        gene_3prime = self._get_gene_element(gene2, "star_fusion")[0].gene.label
 
         five_prime = sf_row["LeftBreakpoint"].split(":")
         three_prime = sf_row["RightBreakpoint"].split(":")
@@ -208,7 +208,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
             seg_end_genomic=int(five_prime[1]),
-            gene=gene1,
+            gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -216,7 +216,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
             seg_start_genomic=int(three_prime[1]),
-            gene=gene2,
+            gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -235,8 +235,8 @@ class Translator:
         """
         gene1 = fc_row["Gene_1_symbol(5end_fusion_partner)"]
         gene2 = fc_row["Gene_2_symbol(3end_fusion_partner)"]
-        gene_5prime = self._get_gene_element(gene1, "fusion_catcher")
-        gene_3prime = self._get_gene_element(gene2, "fusion_catcher")
+        gene_5prime = self._get_gene_element(gene1, "fusion_catcher")[0].gene.label
+        gene_3prime = self._get_gene_element(gene2, "fusion_catcher")[0].gene.label
 
         five_prime = fc_row["Fusion_point_for_gene_1(5end_fusion_partner)"].split(":")
         three_prime = fc_row["Fusion_point_for_gene_2(3end_fusion_partner)"].split(":")
@@ -245,7 +245,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
             seg_end_genomic=int(five_prime[1]),
-            gene=gene1,
+            gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -253,7 +253,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
             seg_start_genomic=int(three_prime[1]),
-            gene=gene2,
+            gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -272,14 +272,14 @@ class Translator:
         """
         gene1 = fmap_row["KnownGene1"]
         gene2 = fmap_row["KnownGene2"]
-        gene_5prime = self._get_gene_element(gene1, "fusion_map")
-        gene_3prime = self._get_gene_element(gene2, "fusion_map")
+        gene_5prime = self._get_gene_element(gene1, "fusion_map")[0].gene.label
+        gene_3prime = self._get_gene_element(gene2, "fusion_map")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(fmap_row["Chromosome1"], rb),
             seg_end_genomic=int(fmap_row["Position1"]),
-            gene=gene1,
+            gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -287,7 +287,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(fmap_row["Chromosome2"], rb),
             seg_start_genomic=int(fmap_row["Position2"]),
-            gene=gene2,
+            gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -320,8 +320,8 @@ class Translator:
         # Arriba reports two gene symbols if a breakpoint occurs in an intergenic
         # space. We select the gene symbol with the smallest distance from the
         # breakpoint.
-        gene_5prime = self._get_gene_element(gene1, "arriba")
-        gene_3prime = self._get_gene_element(gene2, "arriba")
+        gene_5prime = self._get_gene_element(gene1, "arriba")[0].gene.label
+        gene_3prime = self._get_gene_element(gene2, "arriba")[0].gene.label
 
         breakpoint1 = arriba_row["breakpoint1"].split(":")
         breakpoint2 = arriba_row["breakpoint2"].split(":")
@@ -330,7 +330,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(breakpoint1[0], rb),
             seg_end_genomic=int(breakpoint1[1]),
-            gene=gene1,
+            gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -338,7 +338,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(breakpoint2[0], rb),
             seg_start_genomic=int(breakpoint2[1]),
-            gene=gene2,
+            gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -368,14 +368,14 @@ class Translator:
         """
         gene1 = cicero_row["geneA"]
         gene2 = cicero_row["geneB"]
-        gene_5prime = self._get_gene_element(gene1, "cicero")
-        gene_3prime = self._get_gene_element(gene2, "cicero")
+        gene_5prime = self._get_gene_element(gene1, "cicero")[0].gene.label
+        gene_3prime = self._get_gene_element(gene2, "cicero")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(cicero_row["chrA"], rb),
             seg_end_genomic=int(cicero_row["posA"]),
-            gene=gene1,
+            gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -383,7 +383,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(cicero_row["chrB"], rb),
             seg_start_genomic=int(cicero_row["posB"]),
-            gene=gene2,
+            gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -393,11 +393,10 @@ class Translator:
                 eventDescription=cicero_row["type"],
             )
         else:
-            if cicero_row["type"] != "Internal_dup":
-                ce = CausativeEvent(
-                    eventType=EventType("rearrangement"),
-                    eventDescription=cicero_row["type"],
-                )
+            ce = CausativeEvent(
+                eventType=EventType("rearrangement"),
+                eventDescription=cicero_row["type"],
+            )
         rf = bool(int(cicero_row["frame"]) == 1)
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
@@ -413,14 +412,14 @@ class Translator:
         """
         gene1 = mapsplice_row[60].strip(",")
         gene2 = mapsplice_row[61].strip(",")
-        gene_5prime = self._get_gene_element(gene1, "mapsplice")
-        gene_3prime = self._get_gene_element(gene1, "mapsplice")
+        gene_5prime = self._get_gene_element(gene1, "mapsplice")[0].gene.label
+        gene_3prime = self._get_gene_element(gene2, "mapsplice")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(mapsplice_row[0].split("~")[0], rb),
             seg_end_genomic=int(mapsplice_row[1]),
-            gene=gene1,
+            gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -428,7 +427,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(mapsplice_row[0].split("~")[1], rb),
             seg_start_genomic=int(mapsplice_row[2]),
-            gene=gene2,
+            gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -447,14 +446,14 @@ class Translator:
         """
         gene1 = enfusion_row["Gene1"]
         gene2 = enfusion_row["Gene2"]
-        gene_5prime = self._get_gene_element(gene1, "enfusion")
-        gene_3prime = self._get_gene_element(gene2, "enfusion")
+        gene_5prime = self._get_gene_element(gene1, "enfusion")[0].gene.label
+        gene_3prime = self._get_gene_element(gene2, "enfusion")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(enfusion_row["Chr1"], rb),
             seg_end_genomic=int(enfusion_row["Break1"]),
-            gene=gene1,
+            gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -462,7 +461,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(enfusion_row["Chr2"], rb),
             seg_start_genomic=int(enfusion_row["Break2"]),
-            gene=gene2,
+            gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -479,14 +478,14 @@ class Translator:
         """
         gene1 = genie_row["Site1_Hugo_Symbol"]
         gene2 = genie_row["Site2_Hugo_Symbol"]
-        gene_5prime = self._get_gene_element(gene1, "genie")
-        gene_3prime = self._get_gene_element(gene1, "genie")
+        gene_5prime = self._get_gene_element(gene1, "genie")[0].gene.label
+        gene_3prime = self._get_gene_element(gene2, "genie")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(genie_row["Site1_Chromosome"], rb),
             seg_end_genomic=int(genie_row["Site1_Position"]),
-            gene=gene1,
+            gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -494,7 +493,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(genie_row["Site2_Chromosome"], rb),
             seg_start_genomic=int(genie_row["Site2_Position"]),
-            gene=gene2,
+            gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
@@ -503,7 +502,7 @@ class Translator:
             genie_row["Site2_Chromosome"],
             genie_row["Annotation"],
         )
-        rf = bool(genie_row["Site2_Effect_on_Frame"] == "In_frame")
+        rf = bool(genie_row["Site2_Effect_on_Frame"] == "in frame")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
