@@ -699,6 +699,18 @@ def test_fusion(
     assert CategoricalFusion(structure=[transcript_segments[1], transcript_segments[2]])
 
     # test variety of element types
+    causative_event = {
+        "type": "CausativeEvent",
+        "eventType": "rearrangement",
+        "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+    }
+    assay = {
+        "type": "Assay",
+        "methodUri": "pmid:33576979",
+        "assayId": "obi:OBI_0003094",
+        "assayName": "fluorescence in-situ hybridization assay",
+        "fusionDetection": "inferred",
+    }
     assert AssayedFusion(
         type="AssayedFusion",
         structure=[
@@ -708,18 +720,8 @@ def test_fusion(
             templated_sequence_elements[1],
             linkers[0],
         ],
-        causativeEvent={
-            "type": "CausativeEvent",
-            "eventType": "rearrangement",
-            "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
-        },
-        assay={
-            "type": "Assay",
-            "methodUri": "pmid:33576979",
-            "assayId": "obi:OBI_0003094",
-            "assayName": "fluorescence in-situ hybridization assay",
-            "fusionDetection": "inferred",
-        },
+        causativeEvent=causative_event,
+        assay=assay,
     )
     with pytest.raises(ValidationError) as exc_info:
         assert CategoricalFusion(
@@ -744,6 +746,19 @@ def test_fusion(
             ],
         )
     msg = "Value error, First structural element cannot be LinkerSequence"
+    check_validation_error(exc_info, msg)
+
+    with pytest.raises(ValidationError) as exc_info:
+        assert AssayedFusion(
+            type="AssayedFusion",
+            structure=[
+                transcript_segments[3],
+                transcript_segments[1],
+            ],
+            causativeEvent=causative_event,
+            assay=assay,
+        )
+    msg = "Value error, 5' TranscriptSegmentElement fusion partner must contain ending exon position"
     check_validation_error(exc_info, msg)
 
 
