@@ -9,6 +9,7 @@ from cool_seq_tool.resources.status import check_status as check_cst_status
 from gene.database import AbstractDatabase as GeneDatabase
 from gene.database import create_db
 from gene.schemas import CURIE
+from pydantic import ValidationError
 
 from fusor.exceptions import IDTranslationException
 
@@ -88,4 +89,15 @@ async def check_data_resources(
         _logger.error("Encountered error while creating gene DB: %s", e)
     return FusorDataResourceStatus(
         cool_seq_tool=all(cst_status), gene_normalizer=gene_status
+    )
+
+
+def get_error_message(e: ValidationError) -> str:
+    """Get the specific error message from a pydantic ValidationError
+
+    :param e: the ValidationError to get the message from
+    :return: extracted error message or the string representation of the exception if 'msg' field is not present
+    """
+    return (
+        str(e.errors()[0]["msg"]) if e.errors() and "msg" in e.errors()[0] else str(e)
     )

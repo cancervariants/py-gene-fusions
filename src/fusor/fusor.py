@@ -45,7 +45,7 @@ from fusor.models import (
     UnknownGeneElement,
 )
 from fusor.nomenclature import generate_nomenclature
-from fusor.tools import translate_identifier
+from fusor.tools import get_error_message, translate_identifier
 
 _logger = logging.getLogger(__name__)
 
@@ -178,11 +178,7 @@ class FUSOR:
                 regulatoryElement=regulatory_element,
             )
         except ValidationError as e:
-            error_message = (
-                str(e.errors()[0]["msg"])
-                if e.errors() and "msg" in e.errors()[0]
-                else str(e)
-            )
+            error_message = get_error_message(e)
             raise FUSORParametersException(error_message) from e
         return fusion
 
@@ -214,11 +210,7 @@ class FUSOR:
                 readingFramePreserved=reading_frame_preserved,
             )
         except ValidationError as e:
-            error_message = (
-                str(e.errors()[0]["msg"])
-                if e.errors() and "msg" in e.errors()[0]
-                else str(e)
-            )
+            error_message = get_error_message(e)
             raise FUSORParametersException(error_message) from e
         return fusion
 
