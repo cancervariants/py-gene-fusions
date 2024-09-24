@@ -178,7 +178,12 @@ class FUSOR:
                 regulatoryElement=regulatory_element,
             )
         except ValidationError as e:
-            raise FUSORParametersException(str(e)) from e
+            error_message = (
+                str(e.errors()[0]["msg"])
+                if e.errors() and "msg" in e.errors()[0]
+                else str(e)
+            )
+            raise FUSORParametersException(error_message) from e
         return fusion
 
     @staticmethod
@@ -209,7 +214,12 @@ class FUSOR:
                 readingFramePreserved=reading_frame_preserved,
             )
         except ValidationError as e:
-            raise FUSORParametersException(str(e)) from e
+            error_message = (
+                str(e.errors()[0]["msg"])
+                if e.errors() and "msg" in e.errors()[0]
+                else str(e)
+            )
+            raise FUSORParametersException(error_message) from e
         return fusion
 
     async def transcript_segment_element(
