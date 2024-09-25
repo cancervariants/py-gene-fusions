@@ -437,6 +437,19 @@ def test_fusion(
     msg = "3' fusion partner junction must include " "starting position"
     assert msg in str(excinfo.value)
 
+    # catch multiple errors from different validators
+    with pytest.raises(FUSORParametersException) as excinfo:
+        f = fusor_instance.fusion(
+            structure=[
+                linker_element,
+                expected,
+            ],
+            reading_frame_preserved="not a bool",
+            causative_event="other type",
+        )
+    msg = "Input should be a valid boolean\nInput should be a valid dictionary or instance of CausativeEvent"
+    assert msg in str(excinfo.value)
+
 
 @pytest.mark.asyncio()
 async def test_transcript_segment_element(
