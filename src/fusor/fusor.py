@@ -45,7 +45,7 @@ from fusor.models import (
     UnknownGeneElement,
 )
 from fusor.nomenclature import generate_nomenclature
-from fusor.tools import translate_identifier
+from fusor.tools import get_error_message, translate_identifier
 
 _logger = logging.getLogger(__name__)
 
@@ -178,7 +178,8 @@ class FUSOR:
                 regulatoryElement=regulatory_element,
             )
         except ValidationError as e:
-            raise FUSORParametersException(str(e)) from e
+            error_message = get_error_message(e)
+            raise FUSORParametersException(error_message) from e
         return fusion
 
     @staticmethod
@@ -209,7 +210,8 @@ class FUSOR:
                 readingFramePreserved=reading_frame_preserved,
             )
         except ValidationError as e:
-            raise FUSORParametersException(str(e)) from e
+            error_message = get_error_message(e)
+            raise FUSORParametersException(error_message) from e
         return fusion
 
     async def transcript_segment_element(
