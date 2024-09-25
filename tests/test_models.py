@@ -70,7 +70,6 @@ def sequence_locations():
             "start": 15565,
             "end": 15566,
         },
-        # TODO: the following 3 examples were made when intervals supported strings and need updated data chr12:p12.1-p12.2. I put in placeholders for now
         {
             "id": "ga4gh:SL.PPQ-aYd6dsSj7ulUEeqK8xZJP-yPrfdP",
             "type": "SequenceLocation",
@@ -396,7 +395,6 @@ def test_transcript_segment_element(transcript_segments):
                 "id": "hgnc:1",
                 "label": "G1",
             },
-            # TODO: get updated values for this from Jeremy
             elementGenomicStart={
                 "location": {
                     "species_id": "taxonomy:9606",
