@@ -29,7 +29,7 @@ dependencies = [
     "ga4gh.vrs ~=2.0.0a10",
     "biocommons.seqrepo",
     "gene-normalizer ==0.4.0",
-    "cool-seq-tool ~=0.7.0",
+    "cool-seq-tool ~=0.7.1",
 ]
 dynamic=["version"]
 
