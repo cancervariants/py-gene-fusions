@@ -2,9 +2,10 @@
 objects
 """
 
+import logging
 from enum import Enum
 
-import pandas as pd
+import polars as pl
 
 from fusor.fusor import FUSOR
 from fusor.models import (
@@ -15,6 +16,8 @@ from fusor.models import (
     GeneElement,
     TranscriptSegmentElement,
 )
+
+_logger = logging.getLogger(__name__)
 
 
 class ReferenceBuild(Enum):
@@ -79,10 +82,10 @@ class Translator:
         """Infer Causative Event. Currently restricted to rearrangements
         :param chrom1: The chromosome for the 5' partner
         :param chrom2: The chromosome for the 3' partner
-        :param annots: An annotation describing the fusion event. This input is supplied to the eventDescription CausativeEvent attribute.
+        :param descr: An annotation describing the fusion event. This input is supplied to the eventDescription CausativeEvent attribute.
         :return: A CausativeEvent object if construction is successful
         """
-        if "rearrangement" in descr:
+        if descr and "rearrangement" in descr:
             return CausativeEvent(
                 eventType=EventType("rearrangement"), eventDescription=descr
             )
@@ -141,68 +144,69 @@ class Translator:
         else:
             alias_list, errors = sr.translate_identifier(f"GRCh38:{chrom}")
         if errors:
-            return f"Genomic accession for {chrom} could not be retrieved"
+            _logger.error("Genomic accession for {chrom} could not be retrieved")
+            raise ValueError
         for alias in alias_list:
             if alias.startswith("refseq:"):
                 genomic_ac = alias.split(":")[1]
         return genomic_ac
 
     async def from_jaffa(
-        self, jaffa_row: pd.DataFrame, rb: ReferenceBuild
-    ) -> AssayedFusion:
+        self, jaffa_row: pl.DataFrame, rb: ReferenceBuild
+    ) -> AssayedFusion | None:
         """Parse JAFFA fusion output to create AssayedFusion object
         :param jaffa_row: A row of JAFFA output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        genes = jaffa_row["fusion genes"].split(":")
+        genes = jaffa_row.get_column("fusion genes").item().split(":")
         gene_5prime = self._get_gene_element(genes[0], "jaffa")[0].gene.label
         gene_3prime = self._get_gene_element(genes[1], "jaffa")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(jaffa_row.chrom1, rb),
-            seg_end_genomic=int(jaffa_row.base1),
+            genomic_ac=self._get_genomic_ac(jaffa_row.get_column("chrom1").item(), rb),
+            seg_end_genomic=int(jaffa_row.get_column("base1").item()),
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(jaffa_row.chrom2, rb),
-            seg_start_genomic=int(jaffa_row.base2),
+            genomic_ac=self._get_genomic_ac(jaffa_row.get_column("chrom1").item(), rb),
+            seg_start_genomic=int(jaffa_row.get_column("base2").item()),
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
-        if jaffa_row.rearrangement == "TRUE":
+        if jaffa_row.get_column("rearrangement").item() == "TRUE":
             ce = CausativeEvent(
                 eventType=EventType("rearrangement"),
-                eventDescription=jaffa_row["classification"],
+                eventDescription=jaffa_row.get_column("classification").item(),
             )
         else:
             ce = None
 
-        rf = bool(jaffa_row.inframe == "TRUE")
+        rf = bool(jaffa_row.get_column("inframe").item() == "TRUE")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
 
     async def from_star_fusion(
-        self, sf_row: pd.DataFrame, rb: ReferenceBuild
+        self, sf_row: pl.DataFrame, rb: ReferenceBuild
     ) -> AssayedFusion:
         """Parse STAR-Fusion output to create AssayedFusion object
         :param sf_row: A row of STAR-Fusion output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = sf_row["LeftGene"].split("^")[0]
-        gene2 = sf_row["RightGene"].split("^")[0]
+        gene1 = sf_row.get_column("LeftGene").item().split("^")[0]
+        gene2 = sf_row.get_column("RightGene").item().split("^")[0]
         gene_5prime = self._get_gene_element(gene1, "star_fusion")[0].gene.label
         gene_3prime = self._get_gene_element(gene2, "star_fusion")[0].gene.label
 
-        five_prime = sf_row["LeftBreakpoint"].split(":")
-        three_prime = sf_row["RightBreakpoint"].split(":")
+        five_prime = sf_row.get_column("LeftBreakpoint").item().split(":")
+        three_prime = sf_row.get_column("RightBreakpoint").item().split(":")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -221,25 +225,33 @@ class Translator:
         )
 
         ce = self._get_causative_event(
-            five_prime[0], three_prime[0], ",".join(sf_row["annots"])
+            five_prime[0], three_prime[0], ",".join(sf_row.get_column("annots").item())
         )
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_fusion_catcher(
-        self, fc_row: pd.DataFrame, rb: ReferenceBuild
+        self, fc_row: pl.DataFrame, rb: ReferenceBuild
     ) -> AssayedFusion:
         """Parse FusionCatcher output to create AssayedFusion object
         :param fc_row: A row of FusionCatcher output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = fc_row["Gene_1_symbol(5end_fusion_partner)"]
-        gene2 = fc_row["Gene_2_symbol(3end_fusion_partner)"]
+        gene1 = fc_row.get_column("Gene_1_symbol(5end_fusion_partner)").item()
+        gene2 = fc_row.get_column("Gene_2_symbol(3end_fusion_partner)").item()
         gene_5prime = self._get_gene_element(gene1, "fusion_catcher")[0].gene.label
         gene_3prime = self._get_gene_element(gene2, "fusion_catcher")[0].gene.label
 
-        five_prime = fc_row["Fusion_point_for_gene_1(5end_fusion_partner)"].split(":")
-        three_prime = fc_row["Fusion_point_for_gene_2(3end_fusion_partner)"].split(":")
+        five_prime = (
+            fc_row.get_column("Fusion_point_for_gene_1(5end_fusion_partner)")
+            .item()
+            .split(":")
+        )
+        three_prime = (
+            fc_row.get_column("Fusion_point_for_gene_2(3end_fusion_partner)")
+            .item()
+            .split(":")
+        )
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -258,64 +270,70 @@ class Translator:
         )
 
         ce = self._get_causative_event(
-            five_prime[0], three_prime[0], fc_row["Predicted_effect"]
+            five_prime[0], three_prime[0], fc_row.get_column("Predicted_effect").item()
         )
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_fusion_map(
-        self, fmap_row: pd.DataFrame, rb: ReferenceBuild
+        self, fmap_row: pl.DataFrame, rb: ReferenceBuild
     ) -> AssayedFusion:
         """Parse FusionMap output to create FUSOR AssayedFusion object
         :param fmap_row: A row of FusionMap output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = fmap_row["KnownGene1"]
-        gene2 = fmap_row["KnownGene2"]
+        gene1 = fmap_row.get_column("KnownGene1").item()
+        gene2 = fmap_row.get_column("KnownGene2").item()
         gene_5prime = self._get_gene_element(gene1, "fusion_map")[0].gene.label
         gene_3prime = self._get_gene_element(gene2, "fusion_map")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(fmap_row["Chromosome1"], rb),
-            seg_end_genomic=int(fmap_row["Position1"]),
+            genomic_ac=self._get_genomic_ac(
+                fmap_row.get_column("Chromosome1").item(), rb
+            ),
+            seg_end_genomic=int(fmap_row.get_column("Position1").item()),
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(fmap_row["Chromosome2"], rb),
-            seg_start_genomic=int(fmap_row["Position2"]),
+            genomic_ac=self._get_genomic_ac(
+                fmap_row.get_column("Chromosome2").item(), rb
+            ),
+            seg_start_genomic=int(fmap_row.get_column("Position2").item()),
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
         # Combine columns to create fusion annotation string"
         descr = (
-            fmap_row["FusionGene"]
+            fmap_row.get_column("FusionGene").item()
             + ","
-            + fmap_row["SplicePatternClass"]
+            + fmap_row.get_column("SplicePatternClass").item()
             + ","
-            + fmap_row["FrameShiftClass"]
+            + fmap_row.get_column("FrameShiftClass").item()
         )
         ce = self._get_causative_event(
-            fmap_row["Chromosome1"], fmap_row["Chromosome2"], descr
+            fmap_row.get_column("Chromosome1").item(),
+            fmap_row.get_column("Chromosome2").item(),
+            descr,
         )
-        rf = bool(fmap_row["FrameShiftClass"] == "InFrame")
+        rf = bool(fmap_row.get_column("FrameShiftClass").item() == "InFrame")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
 
     async def from_arriba(
-        self, arriba_row: pd.DataFrame, rb: ReferenceBuild
+        self, arriba_row: pl.DataFrame, rb: ReferenceBuild
     ) -> AssayedFusion:
         """Parse Arriba output to create AssayedFusion object
         :param arriba_row: A row of Arriba output
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = arriba_row["#gene1"]
-        gene2 = arriba_row["gene2"]
+        gene1 = arriba_row.get_column("#gene1").item()
+        gene2 = arriba_row.get_column("gene2").item()
 
         # Arriba reports two gene symbols if a breakpoint occurs in an intergenic
         # space. We select the gene symbol with the smallest distance from the
@@ -323,8 +341,8 @@ class Translator:
         gene_5prime = self._get_gene_element(gene1, "arriba")[0].gene.label
         gene_3prime = self._get_gene_element(gene2, "arriba")[0].gene.label
 
-        breakpoint1 = arriba_row["breakpoint1"].split(":")
-        breakpoint2 = arriba_row["breakpoint2"].split(":")
+        breakpoint1 = arriba_row.get_column("breakpoint1").item().split(":")
+        breakpoint2 = arriba_row.get_column("breakpoint2").item().split(":")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -345,65 +363,68 @@ class Translator:
         ce = (
             CausativeEvent(
                 eventType=EventType("read-through"),
-                eventDescription=arriba_row["confidence"],
+                eventDescription=arriba_row.get_column("confidence").item(),
             )
             if "read_through" in arriba_row["type"]
             else CausativeEvent(
                 eventType=EventType("rearrangement"),
-                eventDescription=arriba_row["confidence"],
+                eventDescription=arriba_row.get_column("confidence").item(),
             )
         )
-        rf = bool(arriba_row["reading_frame"] == "in-frame")
+        rf = bool(arriba_row.get_column("reading_frame").item() == "in-frame")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
 
     async def from_cicero(
-        self, cicero_row: pd.DataFrame, rb: ReferenceBuild
+        self, cicero_row: pl.DataFrame, rb: ReferenceBuild
     ) -> AssayedFusion:
         """Parse CICERO output to create AssayedFusion object
         :param cicero_row: A row of CICERO output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = cicero_row["geneA"]
-        gene2 = cicero_row["geneB"]
+        gene1 = cicero_row.get_column("geneA").item()
+        gene2 = cicero_row.get_column("geneB").item()
         gene_5prime = self._get_gene_element(gene1, "cicero")[0].gene.label
         gene_3prime = self._get_gene_element(gene2, "cicero")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(cicero_row["chrA"], rb),
-            seg_end_genomic=int(cicero_row["posA"]),
+            genomic_ac=self._get_genomic_ac(cicero_row.get_column("chrA").item(), rb),
+            seg_end_genomic=int(cicero_row.get_column("posA").item()),
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(cicero_row["chrB"], rb),
-            seg_start_genomic=int(cicero_row["posB"]),
+            genomic_ac=self._get_genomic_ac(cicero_row.get_column("chrB").item(), rb),
+            seg_start_genomic=int(cicero_row.get_column("posB").item()),
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
-        if cicero_row["type"] == "read_through":
+        if cicero_row.get_column("type").item() == "read_through":
             ce = CausativeEvent(
                 eventType=EventType("read-through"),
-                eventDescription=cicero_row["type"],
+                eventDescription=cicero_row.get_column("type").item(),
             )
         else:
             ce = CausativeEvent(
                 eventType=EventType("rearrangement"),
-                eventDescription=cicero_row["type"],
+                eventDescription=cicero_row.get_column("type").item(),
             )
-        rf = bool(int(cicero_row["frame"]) == 1)
         return self._format_fusion(
-            gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
+            gene_5prime,
+            gene_3prime,
+            tr_5prime,
+            tr_3prime,
+            ce,
         )
 
     async def from_mapsplice(
-        self, mapsplice_row: pd.DataFrame, rb: ReferenceBuild
+        self, mapsplice_row: pl.DataFrame, rb: ReferenceBuild
     ) -> AssayedFusion:
         """Parse MapSplice output to create AssayedFusion object
         :param mapsplice_row: A row of MapSplice output
@@ -437,72 +458,79 @@ class Translator:
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_enfusion(
-        self, enfusion_row: pd.DataFrame, rb: ReferenceBuild
+        self, enfusion_row: pl.DataFrame, rb: ReferenceBuild
     ) -> AssayedFusion:
         """Parse EnFusion output to create AssayedFusion object
         :param enfusion_row: A row of EnFusion output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = enfusion_row["Gene1"]
-        gene2 = enfusion_row["Gene2"]
+        gene1 = enfusion_row.get_column("Gene1").item()
+        gene2 = enfusion_row.get_column("Gene2").item()
         gene_5prime = self._get_gene_element(gene1, "enfusion")[0].gene.label
         gene_3prime = self._get_gene_element(gene2, "enfusion")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(enfusion_row["Chr1"], rb),
-            seg_end_genomic=int(enfusion_row["Break1"]),
+            genomic_ac=self._get_genomic_ac(enfusion_row.get_column("Chr1").item(), rb),
+            seg_end_genomic=int(enfusion_row.get_column("Break1").item()),
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(enfusion_row["Chr2"], rb),
-            seg_start_genomic=int(enfusion_row["Break2"]),
+            genomic_ac=self._get_genomic_ac(enfusion_row.get_column("Chr2").item(), rb),
+            seg_start_genomic=int(enfusion_row.get_column("Break2").item()),
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
-        ce = self._get_causative_event(enfusion_row["Chr1"], enfusion_row["Chr2"])
+        ce = self._get_causative_event(
+            enfusion_row.get_column("Chr1").item(),
+            enfusion_row.get_column("Chr2").item(),
+        )
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_genie(
-        self, genie_row: pd.DataFrame, rb: ReferenceBuild
+        self, genie_row: pl.DataFrame, rb: ReferenceBuild
     ) -> AssayedFusion:
         """Parse GENIE output to create AssayedFusion object
         :param genie_row: A row of EnFusion output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = genie_row["Site1_Hugo_Symbol"]
-        gene2 = genie_row["Site2_Hugo_Symbol"]
+        gene1 = genie_row.get_column("Site1_Hugo_Symbol").item()
+        gene2 = genie_row.get_column("Site2_Hugo_Symbol").item()
         gene_5prime = self._get_gene_element(gene1, "genie")[0].gene.label
         gene_3prime = self._get_gene_element(gene2, "genie")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(genie_row["Site1_Chromosome"], rb),
-            seg_end_genomic=int(genie_row["Site1_Position"]),
+            genomic_ac=self._get_genomic_ac(
+                genie_row.get_column("Site1_Chromosome").item(), rb
+            ),
+            seg_end_genomic=int(genie_row.get_column("Site1_Position").item()),
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(genie_row["Site2_Chromosome"], rb),
-            seg_start_genomic=int(genie_row["Site2_Position"]),
+            genomic_ac=self._get_genomic_ac(
+                genie_row.get_column("Site2_Chromosome").item(), rb
+            ),
+            seg_start_genomic=int(genie_row.get_column("Site2_Position").item()),
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
         ce = self._get_causative_event(
-            genie_row["Site1_Chromosome"],
-            genie_row["Site2_Chromosome"],
-            genie_row["Annotation"],
+            genie_row.get_column("Site1_Chromosome").item(),
+            genie_row.get_column("Site2_Chromosome").item(),
+            genie_row.get_column("Annotation").item(),
         )
-        rf = bool(genie_row["Site2_Effect_on_Frame"] == "in frame")
+        rf = bool(genie_row.get_column("Site2_Effect_on_Frame").item() == "in frame")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
