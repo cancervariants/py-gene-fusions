@@ -512,13 +512,14 @@ class AbstractFusion(BaseModel, ABC):
         their position.
         """
         elements = values.structure
+        error_messages = []
         if isinstance(elements[0], TranscriptSegmentElement):
             if elements[0].exonEnd is None and not values.regulatoryElement:
                 msg = "5' TranscriptSegmentElement fusion partner must contain ending exon position"
-                raise ValueError(msg)
+                error_messages.append(msg)
         elif isinstance(elements[0], LinkerElement):
             msg = "First structural element cannot be LinkerSequence"
-            raise ValueError(msg)
+            error_messages.append(msg)
 
         if len(elements) > 2:
             for element in elements[1:-1]:
@@ -526,12 +527,14 @@ class AbstractFusion(BaseModel, ABC):
                     element.exonStart is None or element.exonEnd is None
                 ):
                     msg = "Connective TranscriptSegmentElement must include both start and end positions"
-                    raise ValueError(msg)
+                    error_messages.append(msg)
         if isinstance(elements[-1], TranscriptSegmentElement) and (
             elements[-1].exonStart is None
         ):
             msg = "3' fusion partner junction must include " "starting position"
-            raise ValueError
+            error_messages.append(msg)
+        if error_messages:
+            raise ValueError("\n".join(error_messages))
         return values
 
 

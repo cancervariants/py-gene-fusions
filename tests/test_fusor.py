@@ -327,6 +327,19 @@ def test_fusion(
     functional_domain,
 ):
     """Test that fusion methods work correctly."""
+    causative_event = {
+        "type": "CausativeEvent",
+        "eventType": "rearrangement",
+        "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
+    }
+    assay = {
+        "type": "Assay",
+        "methodUri": "pmid:33576979",
+        "assayId": "obi:OBI_0003094",
+        "assayName": "fluorescence in-situ hybridization assay",
+        "fusionDetection": "inferred",
+    }
+
     # infer type from properties
     f = fusor_instance.fusion(
         structure=[
@@ -334,18 +347,8 @@ def test_fusion(
             linker_element,
             UnknownGeneElement(),
         ],
-        causative_event={
-            "type": "CausativeEvent",
-            "eventType": "rearrangement",
-            "eventDescription": "chr2:g.pter_8,247,756::chr11:g.15,825,273_cen_qter (der11) and chr11:g.pter_15,825,272::chr2:g.8,247,757_cen_qter (der2)",
-        },
-        assay={
-            "type": "Assay",
-            "methodUri": "pmid:33576979",
-            "assayId": "obi:OBI_0003094",
-            "assayName": "fluorescence in-situ hybridization assay",
-            "fusionDetection": "inferred",
-        },
+        causative_event=causative_event,
+        assay=assay,
     )
     assert isinstance(f, AssayedFusion)
     f = fusor_instance.fusion(
@@ -418,6 +421,35 @@ def test_fusion(
     msg = "Fusions must contain >= 2 structural elements, or >=1 structural element and a regulatory element"
     assert msg in str(excinfo.value)
 
+    expected = copy.deepcopy(transcript_segment_element)
+    expected.exonStart = None
+    with pytest.raises(FUSORParametersException) as excinfo:
+        f = fusor_instance.fusion(
+            structure=[
+                linker_element,
+                expected,
+            ],
+            causative_event=causative_event,
+            assay=assay,
+        )
+    msg = "First structural element cannot be LinkerSequence"
+    assert msg in str(excinfo.value)
+    msg = "3' fusion partner junction must include " "starting position"
+    assert msg in str(excinfo.value)
+
+    # catch multiple errors from different validators
+    with pytest.raises(FUSORParametersException) as excinfo:
+        f = fusor_instance.fusion(
+            structure=[
+                linker_element,
+                expected,
+            ],
+            reading_frame_preserved="not a bool",
+            causative_event="other type",
+        )
+    msg = "Input should be a valid boolean\nInput should be a valid dictionary or instance of CausativeEvent"
+    assert msg in str(excinfo.value)
+
 
 @pytest.mark.asyncio()
 async def test_transcript_segment_element(
@@ -425,7 +457,6 @@ async def test_transcript_segment_element(
 ):
     """Test that transcript_segment_element method works correctly"""
     # Transcript Input
-    # TODO: this test is now off by one after updating cool-seq-tool - need Jeremy's help in determining if the issue lies in fusor or CST
     tsg = await fusor_instance.transcript_segment_element(
         transcript="NM_152263.3", exon_start=1, exon_end=8, tx_to_genomic_coords=True
     )
