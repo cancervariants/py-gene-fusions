@@ -60,11 +60,11 @@ class Translator:
         """
         params = {}
         if not tr_5prime[0] and not tr_3prime[0]:
-            params["structure"] = [gene_5prime[0], gene_3prime[0]]
+            params["structure"] = [gene_5prime, gene_3prime]
         elif tr_5prime[0] and not tr_3prime[0]:
-            params["structure"] = [tr_5prime[0], gene_3prime[0]]
+            params["structure"] = [tr_5prime[0], gene_3prime]
         elif not tr_5prime[0] and tr_3prime[0]:
-            params["structure"] = [gene_5prime[0], tr_3prime[0]]
+            params["structure"] = [gene_5prime, tr_3prime[0]]
         else:
             params["structure"] = [tr_5prime[0], tr_3prime[0]]
 
@@ -160,8 +160,10 @@ class Translator:
         :return: An AssayedFusion object, if construction is successful
         """
         genes = jaffa_row.get_column("fusion genes").item().split(":")
-        gene_5prime = self._get_gene_element(genes[0], "jaffa")[0].gene.label
-        gene_3prime = self._get_gene_element(genes[1], "jaffa")[0].gene.label
+        gene_5prime_element = self._get_gene_element(genes[0], "jaffa")[0]
+        gene_3prime_element = self._get_gene_element(genes[1], "jaffa")[0]
+        gene_5prime = gene_5prime_element.gene.label
+        gene_3prime = gene_3prime_element.gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -173,7 +175,7 @@ class Translator:
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(jaffa_row.get_column("chrom1").item(), rb),
+            genomic_ac=self._get_genomic_ac(jaffa_row.get_column("chrom2").item(), rb),
             seg_start_genomic=int(jaffa_row.get_column("base2").item()),
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
@@ -189,7 +191,7 @@ class Translator:
 
         rf = bool(jaffa_row.get_column("inframe").item() == "TRUE")
         return self._format_fusion(
-            gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
+            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce, rf
         )
 
     async def from_star_fusion(
@@ -202,8 +204,10 @@ class Translator:
         """
         gene1 = sf_row.get_column("LeftGene").item().split("^")[0]
         gene2 = sf_row.get_column("RightGene").item().split("^")[0]
-        gene_5prime = self._get_gene_element(gene1, "star_fusion")[0].gene.label
-        gene_3prime = self._get_gene_element(gene2, "star_fusion")[0].gene.label
+        gene_5prime_element = self._get_gene_element(gene1, "star_fusion")[0]
+        gene_3prime_element = self._get_gene_element(gene2, "star_fusion")[0]
+        gene_5prime = gene_5prime_element.gene.label
+        gene_3prime = gene_3prime_element.gene.label
 
         five_prime = sf_row.get_column("LeftBreakpoint").item().split(":")
         three_prime = sf_row.get_column("RightBreakpoint").item().split(":")
@@ -227,7 +231,9 @@ class Translator:
         ce = self._get_causative_event(
             five_prime[0], three_prime[0], ",".join(sf_row.get_column("annots").item())
         )
-        return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
+        return self._format_fusion(
+            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce
+        )
 
     async def from_fusion_catcher(
         self, fc_row: pl.DataFrame, rb: ReferenceBuild
