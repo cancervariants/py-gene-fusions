@@ -2,9 +2,9 @@
 
 import polars as pl
 import pytest
+from cool_seq_tool.schemas import Assembly
 
 from fusor.models import AssayedFusion
-from fusor.translator import ReferenceBuild
 
 
 @pytest.fixture(scope="module")
@@ -134,7 +134,7 @@ async def test_jaffa(
     )
 
     jaffa_fusor = (
-        await translator_instance.from_jaffa(jaffa_data, ReferenceBuild("GRCh38"))
+        await translator_instance.from_jaffa(jaffa_data, Assembly("GRCh38"))
     )[0]
     assert jaffa_fusor.structure == fusion_data_example.structure
 
@@ -152,9 +152,7 @@ async def test_jaffa(
         }
     )
     jaffa_fusor_nonexonic = (
-        await translator_instance.from_jaffa(
-            jaffa_data_nonexonic, ReferenceBuild("GRCh38")
-        )
+        await translator_instance.from_jaffa(jaffa_data_nonexonic, Assembly("GRCh38"))
     )[0]
     assert jaffa_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
@@ -175,9 +173,7 @@ async def test_star_fusion(
         }
     )
     star_fusion_fusor = (
-        await translator_instance.from_star_fusion(
-            star_fusion_data, ReferenceBuild("GRCh38")
-        )
+        await translator_instance.from_star_fusion(star_fusion_data, Assembly("GRCh38"))
     )[0]
     assert star_fusion_fusor.structure == fusion_data_example.structure
 
@@ -193,7 +189,7 @@ async def test_star_fusion(
     )
     star_fusion_fusor_nonexonic = (
         await translator_instance.from_star_fusion(
-            star_fusion_data_nonexonic, ReferenceBuild("GRCh38")
+            star_fusion_data_nonexonic, Assembly("GRCh38")
         )
     )[0]
     assert (
@@ -218,7 +214,7 @@ async def test_fusion_catcher(
     )
     fusion_catcher_fusor = (
         await translator_instance.from_fusion_catcher(
-            fusion_catcher_data, ReferenceBuild("GRCh38")
+            fusion_catcher_data, Assembly("GRCh38")
         )
     )[0]
     assert fusion_catcher_fusor.structure == fusion_data_example.structure
@@ -235,7 +231,7 @@ async def test_fusion_catcher(
     )
     fusion_catcher_fusor_nonexonic = (
         await translator_instance.from_fusion_catcher(
-            fusion_catcher_data_nonexonic, ReferenceBuild("GRCh38")
+            fusion_catcher_data_nonexonic, Assembly("GRCh38")
         )
     )[0]
     assert (
@@ -264,9 +260,7 @@ async def test_fusion_map(
         }
     )
     fusion_map_fusor = (
-        await translator_instance.from_fusion_map(
-            fusion_map_data, ReferenceBuild("GRCh38")
-        )
+        await translator_instance.from_fusion_map(fusion_map_data, Assembly("GRCh38"))
     )[0]
     assert fusion_map_fusor.structure == fusion_data_example.structure
 
@@ -286,7 +280,7 @@ async def test_fusion_map(
     )
     fusion_map_fusor_nonexonic = (
         await translator_instance.from_fusion_map(
-            fusion_map_data_nonexonic, ReferenceBuild("GRCh38")
+            fusion_map_data_nonexonic, Assembly("GRCh38")
         )
     )[0]
     assert (
@@ -312,7 +306,7 @@ async def test_arriba(
         }
     )
     arriba_fusor = (
-        await translator_instance.from_arriba(arriba_data, ReferenceBuild("GRCh38"))
+        await translator_instance.from_arriba(arriba_data, Assembly("GRCh38"))
     )[0]
     assert arriba_fusor.structure == fusion_data_example.structure
 
@@ -329,9 +323,7 @@ async def test_arriba(
         }
     )
     arriba_fusor_nonexonic = (
-        await translator_instance.from_arriba(
-            arriba_data_nonexonic, ReferenceBuild("GRCh38")
-        )
+        await translator_instance.from_arriba(arriba_data_nonexonic, Assembly("GRCh38"))
     )[0]
     assert arriba_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
@@ -354,7 +346,7 @@ async def test_cicero(
         }
     )
     cicero_fusor = (
-        await translator_instance.from_cicero(cicero_data, ReferenceBuild("GRCh38"))
+        await translator_instance.from_cicero(cicero_data, Assembly("GRCh38"))
     )[0]
     assert cicero_fusor.structure == fusion_data_example.structure
 
@@ -371,9 +363,7 @@ async def test_cicero(
         }
     )
     cicero_fusor_nonexonic = (
-        await translator_instance.from_cicero(
-            cicero_data_nonexonic, ReferenceBuild("GRCh38")
-        )
+        await translator_instance.from_cicero(cicero_data_nonexonic, Assembly("GRCh38"))
     )[0]
     assert cicero_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
@@ -395,7 +385,7 @@ async def test_enfusion(
         }
     )
     enfusion_fusor = (
-        await translator_instance.from_enfusion(enfusion_data, ReferenceBuild("GRCh38"))
+        await translator_instance.from_enfusion(enfusion_data, Assembly("GRCh38"))
     )[0]
     assert enfusion_fusor.structure == fusion_data_example.structure
 
@@ -412,7 +402,7 @@ async def test_enfusion(
     )
     enfusion_fusor_nonexonic = (
         await translator_instance.from_enfusion(
-            enfusion_data_nonexonic, ReferenceBuild("GRCh38")
+            enfusion_data_nonexonic, Assembly("GRCh38")
         )
     )[0]
     assert enfusion_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
@@ -437,7 +427,7 @@ async def test_genie(
         }
     )
     genie_fusor = (
-        await translator_instance.from_genie(genie_data, ReferenceBuild("GRCh38"))
+        await translator_instance.from_genie(genie_data, Assembly("GRCh38"))
     )[0]
     assert genie_fusor.structure == fusion_data_example.structure
 
@@ -455,8 +445,6 @@ async def test_genie(
         }
     )
     genie_fusor_nonexonic = (
-        await translator_instance.from_genie(
-            genie_data_nonexonic, ReferenceBuild("GRCh38")
-        )
+        await translator_instance.from_genie(genie_data_nonexonic, Assembly("GRCh38"))
     )[0]
     assert genie_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure

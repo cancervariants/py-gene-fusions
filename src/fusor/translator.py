@@ -3,9 +3,9 @@ objects
 """
 
 import logging
-from enum import Enum
 
 import polars as pl
+from cool_seq_tool.schemas import Assembly
 
 from fusor.fusor import FUSOR
 from fusor.models import (
@@ -20,13 +20,6 @@ from fusor.models import (
 _logger = logging.getLogger(__name__)
 
 
-class ReferenceBuild(Enum):
-    """Define supported reference builds"""
-
-    GRCH37 = "GRCh37"
-    GRCH38 = "GRCh38"
-
-
 class Translator:
     """Class for translating outputs from different fusion detection algorithms
     to FUSOR AssayedFusion objects
@@ -34,6 +27,7 @@ class Translator:
 
     def __init__(self, fusor: FUSOR) -> None:
         """Initialize Translator class
+
         :param fusor: A FUSOR instance
         """
         self.fusor = fusor
@@ -49,6 +43,7 @@ class Translator:
         assay: Assay | None = None,
     ) -> AssayedFusion:
         """Format classes to create AssayedFusion objects
+
         :param gene_5prime: 5'prime GeneElement
         :param gene_3prime: 3'prime GeneElement
         :param Optional[tr_5prime]: 5'prime TranscriptSegmentElement
@@ -80,6 +75,7 @@ class Translator:
         self, chrom1: str, chrom2: str, descr: str | None = None
     ) -> CausativeEvent:
         """Infer Causative Event. Currently restricted to rearrangements
+
         :param chrom1: The chromosome for the 5' partner
         :param chrom2: The chromosome for the 3' partner
         :param descr: An annotation describing the fusion event. This input is supplied to the eventDescription CausativeEvent attribute.
@@ -95,6 +91,7 @@ class Translator:
 
     def _get_gene_element_unnormalized(self, symbol: str) -> GeneElement:
         """Return GeneElement when gene symbol cannot be normalized
+
         :param symbol: A gene symbol for a fusion partner
         :return: A GeneElement object
         """
@@ -113,6 +110,7 @@ class Translator:
     def _get_gene_element(self, genelist: str, caller: str) -> GeneElement:
         """Return a GeneElement given an individual/list of gene symbols and a
         fusion detection algorithm
+
         :param genelist: A gene symbol or list of gene symbols
         :param caller: The examined fusion detection algorithm
         :return A GeneElement object
@@ -132,14 +130,15 @@ class Translator:
         ge = self.fusor.gene_element(gene=gene)
         return ge if ge[0] else self._get_gene_element_unnormalized(gene)
 
-    def _get_genomic_ac(self, chrom: str, build: ReferenceBuild) -> str:
+    def _get_genomic_ac(self, chrom: str, build: Assembly) -> str:
         """Return a RefSeq genomic accession given a chromosome and a reference build
         :param chrom: A chromosome number
-        :param build: The reference build, either GRCh37 or GRCh38
+
+        :param build: The assembly, either GRCh37 or GRCh38
         :return The corresponding refseq genomic accession
         """
         sr = self.fusor.cool_seq_tool.seqrepo_access
-        if build == ReferenceBuild.GRCH37:
+        if build == Assembly.GRCH37:
             alias_list, errors = sr.translate_identifier(f"GRCh37:{chrom}")
         else:
             alias_list, errors = sr.translate_identifier(f"GRCh38:{chrom}")
@@ -152,9 +151,10 @@ class Translator:
         return genomic_ac
 
     async def from_jaffa(
-        self, jaffa_row: pl.DataFrame, rb: ReferenceBuild
+        self, jaffa_row: pl.DataFrame, rb: Assembly
     ) -> AssayedFusion | None:
         """Parse JAFFA fusion output to create AssayedFusion object
+
         :param jaffa_row: A row of JAFFA output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -195,9 +195,10 @@ class Translator:
         )
 
     async def from_star_fusion(
-        self, sf_row: pl.DataFrame, rb: ReferenceBuild
+        self, sf_row: pl.DataFrame, rb: Assembly
     ) -> AssayedFusion:
         """Parse STAR-Fusion output to create AssayedFusion object
+
         :param sf_row: A row of STAR-Fusion output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -236,9 +237,10 @@ class Translator:
         )
 
     async def from_fusion_catcher(
-        self, fc_row: pl.DataFrame, rb: ReferenceBuild
+        self, fc_row: pl.DataFrame, rb: Assembly
     ) -> AssayedFusion:
         """Parse FusionCatcher output to create AssayedFusion object
+
         :param fc_row: A row of FusionCatcher output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -281,9 +283,10 @@ class Translator:
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_fusion_map(
-        self, fmap_row: pl.DataFrame, rb: ReferenceBuild
+        self, fmap_row: pl.DataFrame, rb: Assembly
     ) -> AssayedFusion:
         """Parse FusionMap output to create FUSOR AssayedFusion object
+
         :param fmap_row: A row of FusionMap output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -332,9 +335,10 @@ class Translator:
         )
 
     async def from_arriba(
-        self, arriba_row: pl.DataFrame, rb: ReferenceBuild
+        self, arriba_row: pl.DataFrame, rb: Assembly
     ) -> AssayedFusion:
         """Parse Arriba output to create AssayedFusion object
+
         :param arriba_row: A row of Arriba output
         :return: An AssayedFusion object, if construction is successful
         """
@@ -383,9 +387,10 @@ class Translator:
         )
 
     async def from_cicero(
-        self, cicero_row: pl.DataFrame, rb: ReferenceBuild
+        self, cicero_row: pl.DataFrame, rb: Assembly
     ) -> AssayedFusion:
         """Parse CICERO output to create AssayedFusion object
+
         :param cicero_row: A row of CICERO output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -430,9 +435,10 @@ class Translator:
         )
 
     async def from_mapsplice(
-        self, mapsplice_row: pl.DataFrame, rb: ReferenceBuild
+        self, mapsplice_row: pl.DataFrame, rb: Assembly
     ) -> AssayedFusion:
         """Parse MapSplice output to create AssayedFusion object
+
         :param mapsplice_row: A row of MapSplice output
         :param rb: The reference build used to call the fusion
         :retun: An AssayedFusion object, if construction is successful
@@ -464,9 +470,10 @@ class Translator:
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_enfusion(
-        self, enfusion_row: pl.DataFrame, rb: ReferenceBuild
+        self, enfusion_row: pl.DataFrame, rb: Assembly
     ) -> AssayedFusion:
         """Parse EnFusion output to create AssayedFusion object
+
         :param enfusion_row: A row of EnFusion output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -498,10 +505,9 @@ class Translator:
         )
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
-    async def from_genie(
-        self, genie_row: pl.DataFrame, rb: ReferenceBuild
-    ) -> AssayedFusion:
+    async def from_genie(self, genie_row: pl.DataFrame, rb: Assembly) -> AssayedFusion:
         """Parse GENIE output to create AssayedFusion object
+
         :param genie_row: A row of EnFusion output
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
