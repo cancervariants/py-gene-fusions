@@ -1,5 +1,6 @@
 """Module containing methods and fixtures used throughout tests."""
 
+import asyncio
 import logging
 
 import pytest
@@ -28,6 +29,14 @@ def pytest_configure(config):
         logging.getLogger("boto3").setLevel(logging.INFO)
         logging.getLogger("urllib3").setLevel(logging.INFO)
         logging.getLogger("nose").setLevel(logging.INFO)
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope="session")
