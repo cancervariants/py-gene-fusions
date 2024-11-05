@@ -176,7 +176,6 @@ class Translator:
         classification: str,
         inframe: bool,
         rb: Assembly,
-        caller: Caller,
     ) -> AssayedFusion | None:
         """Parse JAFFA fusion output to create AssayedFusion object
 
@@ -189,12 +188,11 @@ class Translator:
         :param classification: The classification associated with the called fusion
         :param inframe: A boolean indicating if the fusion occurred in-frame
         :param rb: The reference build used to call the fusion
-        :param caller: A Caller enum
         :return: An AssayedFusion object, if construction is successful
         """
         genes = fusion_genes.split(":")
-        gene_5prime_element = self._get_gene_element(genes[0], caller.JAFFA)[0]
-        gene_3prime_element = self._get_gene_element(genes[1], caller.JAFFA)[0]
+        gene_5prime_element = self._get_gene_element(genes[0], Caller.JAFFA)[0]
+        gene_3prime_element = self._get_gene_element(genes[1], Caller.JAFFA)[0]
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
@@ -234,7 +232,6 @@ class Translator:
         right_breakpoint: str,
         annots: str,
         rb: Assembly,
-        caller: Caller,
     ) -> AssayedFusion:
         """Parse STAR-Fusion output to create AssayedFusion object
 
@@ -244,13 +241,12 @@ class Translator:
         :param right_breakpoint: The gene indicated in the RightBreakpoint column
         :param annots: The annotations associated with the fusion
         :param rb: The reference build used to call the fusion
-        :param caller: A Caller enum
         :return: An AssayedFusion object, if construction is successful
         """
         gene1 = left_gene.split("^")[0]
         gene2 = right_gene.split("^")[0]
-        gene_5prime_element = self._get_gene_element(gene1, caller.STAR_FUSION)[0]
-        gene_3prime_element = self._get_gene_element(gene2, caller.STAR_FUSION)[0]
+        gene_5prime_element = self._get_gene_element(gene1, Caller.STAR_FUSION)[0]
+        gene_3prime_element = self._get_gene_element(gene2, Caller.STAR_FUSION)[0]
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 

@@ -141,7 +141,6 @@ async def test_jaffa(
             classification,
             inframe,
             Assembly("GRCh38"),
-            Caller.JAFFA,
         )
     )[0]
     assert jaffa_fusor.structure == fusion_data_example.structure
@@ -167,7 +166,6 @@ async def test_jaffa(
             classification,
             inframe,
             Assembly("GRCh38"),
-            Caller.JAFFA,
         )
     )[0]
     assert jaffa_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
@@ -193,7 +191,6 @@ async def test_star_fusion(
             right_breakpoint,
             annots,
             Assembly("GRCh38"),
-            Caller.STAR_FUSION,
         )
     )[0]
     assert star_fusion_fusor.structure == fusion_data_example.structure
@@ -213,7 +210,6 @@ async def test_star_fusion(
             right_breakpoint,
             annots,
             Assembly("GRCh38"),
-            Caller.STAR_FUSION,
         )
     )[0]
     assert (
