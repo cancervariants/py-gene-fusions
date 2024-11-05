@@ -88,7 +88,7 @@ class Translator:
 
     def _get_causative_event(
         self, chrom1: str, chrom2: str, descr: str | None = None
-    ) -> CausativeEvent:
+    ) -> CausativeEvent | None:
         """Infer Causative Event. Currently restricted to rearrangements
 
         :param chrom1: The chromosome for the 5' partner
@@ -122,19 +122,19 @@ class Translator:
             None,
         )
 
-    def _get_gene_element(self, genelist: str, caller: Caller) -> GeneElement:
+    def _get_gene_element(self, genes: str, caller: Caller) -> GeneElement:
         """Return a GeneElement given an individual/list of gene symbols and a
         fusion detection algorithm
 
-        :param genelist: A gene symbol or list of gene symbols
+        :param genes: A gene symbol or list of gene symbols
         :param caller: The examined fusion detection algorithm
         :return A GeneElement object
         """
-        if "," not in genelist or caller != caller.ARRIBA:
-            ge = self.fusor.gene_element(gene=genelist)
-            return ge if ge[0] else self._get_gene_element_unnormalized(genelist)
+        if "," not in genes or caller != caller.ARRIBA:
+            ge = self.fusor.gene_element(gene=genes)
+            return ge if ge[0] else self._get_gene_element_unnormalized(genes)
 
-        genes = genelist.split(",")
+        genes = genes.split(",")
         dists = []
         for gene in genes:
             start, end = gene.rfind("("), gene.rfind(")")
@@ -147,8 +147,8 @@ class Translator:
 
     def _get_genomic_ac(self, chrom: str, build: Assembly) -> str:
         """Return a RefSeq genomic accession given a chromosome and a reference build
-        :param chrom: A chromosome number
 
+        :param chrom: A chromosome number
         :param build: The assembly, either GRCh37 or GRCh38
         :return The corresponding refseq genomic accession
         """
