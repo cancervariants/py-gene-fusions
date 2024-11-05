@@ -104,7 +104,7 @@ class Translator:
             return CausativeEvent(eventType=EventType("rearrangement"))
         return None
 
-    def _get_gene_element_unnormalized(self, symbol: str) -> GeneElement:
+    def _get_gene_element_unnormalized(self, symbol: str) -> tuple[GeneElement, None]:
         """Return GeneElement when gene symbol cannot be normalized
 
         :param symbol: A gene symbol for a fusion partner
@@ -126,7 +126,7 @@ class Translator:
         """Return a GeneElement given an individual/list of gene symbols and a
         fusion detection algorithm
 
-        :param genes: A gene symbol or list of gene symbols
+        :param genes: A gene symbol or list of gene symbols, separated by columns
         :param caller: The examined fusion detection algorithm
         :return A GeneElement object
         """
@@ -153,12 +153,10 @@ class Translator:
         :return The corresponding refseq genomic accession
         """
         sr = self.fusor.cool_seq_tool.seqrepo_access
-        if build == Assembly.GRCH37:
-            alias_list, errors = sr.translate_identifier(f"GRCh37:{chrom}")
-        else:
-            alias_list, errors = sr.translate_identifier(f"GRCh38:{chrom}")
+        alias_list, errors = sr.translate_identifier(f"{build}:{chrom}")
         if errors:
-            _logger.error("Genomic accession for {chrom} could not be retrieved")
+            statement = f"Genomic accession for {chrom} could not be retrieved"
+            _logger.error(statement)
             raise ValueError
         for alias in alias_list:
             if alias.startswith("refseq:"):
