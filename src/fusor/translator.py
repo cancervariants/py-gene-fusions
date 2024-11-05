@@ -3,6 +3,7 @@ objects
 """
 
 import logging
+from enum import Enum
 
 import polars as pl
 from cool_seq_tool.schemas import Assembly
@@ -18,6 +19,20 @@ from fusor.models import (
 )
 
 _logger = logging.getLogger(__name__)
+
+
+class Caller(str, Enum):
+    """Define different supported callers"""
+
+    JAFFA = "JAFFA"
+    STAR_FUSION = "STAR-Fusion"
+    FUSION_CATCHER = "FusionCatcher"
+    FUSION_MAP = "FusionMap"
+    ARRIBA = "Arriba"
+    CICERO = "CICERO"
+    MAPSPLICE = "MapSplice"
+    ENFUSION = "EnFusion"
+    GENIE = "GENIE"
 
 
 class Translator:
@@ -107,7 +122,7 @@ class Translator:
             None,
         )
 
-    def _get_gene_element(self, genelist: str, caller: str) -> GeneElement:
+    def _get_gene_element(self, genelist: str, caller: Caller) -> GeneElement:
         """Return a GeneElement given an individual/list of gene symbols and a
         fusion detection algorithm
 
@@ -115,7 +130,7 @@ class Translator:
         :param caller: The examined fusion detection algorithm
         :return A GeneElement object
         """
-        if "," not in genelist or caller != "arriba":
+        if "," not in genelist or caller != caller.ARRIBA:
             ge = self.fusor.gene_element(gene=genelist)
             return ge if ge[0] else self._get_gene_element_unnormalized(genelist)
 
@@ -151,67 +166,96 @@ class Translator:
         return genomic_ac
 
     async def from_jaffa(
-        self, jaffa_row: pl.DataFrame, rb: Assembly
+        self,
+        fusion_genes: str,
+        chrom1: str,
+        base1: int,
+        chrom2: str,
+        base2: int,
+        rearrangement: bool,
+        classification: str,
+        inframe: bool,
+        rb: Assembly,
+        caller: Caller,
     ) -> AssayedFusion | None:
         """Parse JAFFA fusion output to create AssayedFusion object
 
-        :param jaffa_row: A row of JAFFA output
+        :param fusion_genes: A string containing the two fusion partners
+        :param chrom1: The chromosome indicated in the chrom1 column
+        :param base1: The genomic position indicated in the base1 column
+        :param chrom2: The chromosome indicated in the chrom2 column
+        :param base2: The genomic position indicated in the base2 column
+        :param rearrangement: A boolean indicating if a rearrangement occured
+        :param classification: The classification associated with the called fusion
+        :param inframe: A boolean indicating if the fusion occurred in-frame
         :param rb: The reference build used to call the fusion
+        :param caller: A Caller enum
         :return: An AssayedFusion object, if construction is successful
         """
-        genes = jaffa_row.get_column("fusion genes").item().split(":")
-        gene_5prime_element = self._get_gene_element(genes[0], "jaffa")[0]
-        gene_3prime_element = self._get_gene_element(genes[1], "jaffa")[0]
+        genes = fusion_genes.split(":")
+        gene_5prime_element = self._get_gene_element(genes[0], caller.JAFFA)[0]
+        gene_3prime_element = self._get_gene_element(genes[1], caller.JAFFA)[0]
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(jaffa_row.get_column("chrom1").item(), rb),
-            seg_end_genomic=int(jaffa_row.get_column("base1").item()),
+            genomic_ac=self._get_genomic_ac(chrom1, rb),
+            seg_end_genomic=base1,
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(jaffa_row.get_column("chrom2").item(), rb),
-            seg_start_genomic=int(jaffa_row.get_column("base2").item()),
+            genomic_ac=self._get_genomic_ac(chrom2, rb),
+            seg_start_genomic=base2,
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
-        if jaffa_row.get_column("rearrangement").item() == "TRUE":
+        if rearrangement:
             ce = CausativeEvent(
                 eventType=EventType("rearrangement"),
-                eventDescription=jaffa_row.get_column("classification").item(),
+                eventDescription=classification,
             )
         else:
             ce = None
 
-        rf = bool(jaffa_row.get_column("inframe").item() == "TRUE")
         return self._format_fusion(
-            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce, rf
+            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce, inframe
         )
 
     async def from_star_fusion(
-        self, sf_row: pl.DataFrame, rb: Assembly
+        self,
+        left_gene: str,
+        right_gene: str,
+        left_breakpoint: str,
+        right_breakpoint: str,
+        annots: str,
+        rb: Assembly,
+        caller: Caller,
     ) -> AssayedFusion:
         """Parse STAR-Fusion output to create AssayedFusion object
 
-        :param sf_row: A row of STAR-Fusion output
+        :param left_gene: The gene indicated in the LeftGene column
+        :param right_gene: The gene indicated in the RightGene column
+        :param left_breakpoint: The gene indicated in the LeftBreakpoint column
+        :param right_breakpoint: The gene indicated in the RightBreakpoint column
+        :param annots: The annotations associated with the fusion
         :param rb: The reference build used to call the fusion
+        :param caller: A Caller enum
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = sf_row.get_column("LeftGene").item().split("^")[0]
-        gene2 = sf_row.get_column("RightGene").item().split("^")[0]
-        gene_5prime_element = self._get_gene_element(gene1, "star_fusion")[0]
-        gene_3prime_element = self._get_gene_element(gene2, "star_fusion")[0]
+        gene1 = left_gene.split("^")[0]
+        gene2 = right_gene.split("^")[0]
+        gene_5prime_element = self._get_gene_element(gene1, caller.STAR_FUSION)[0]
+        gene_3prime_element = self._get_gene_element(gene2, caller.STAR_FUSION)[0]
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
-        five_prime = sf_row.get_column("LeftBreakpoint").item().split(":")
-        three_prime = sf_row.get_column("RightBreakpoint").item().split(":")
+        five_prime = left_breakpoint.split(":")
+        three_prime = right_breakpoint.split(":")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -229,9 +273,7 @@ class Translator:
             get_nearest_transcript_junction=True,
         )
 
-        ce = self._get_causative_event(
-            five_prime[0], three_prime[0], ",".join(sf_row.get_column("annots").item())
-        )
+        ce = self._get_causative_event(five_prime[0], three_prime[0], ",".join(annots))
         return self._format_fusion(
             gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce
         )

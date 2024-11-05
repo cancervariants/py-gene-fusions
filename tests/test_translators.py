@@ -5,6 +5,7 @@ import pytest
 from cool_seq_tool.schemas import Assembly
 
 from fusor.models import AssayedFusion
+from fusor.translator import Caller
 
 
 @pytest.fixture(scope="module")
@@ -110,7 +111,7 @@ def fusion_data_example_nonexonic():
 def test_gene_element_arriba(translator_instance):
     """Test gene selection for Arriba"""
     genes = "RP1-222H5.1(151985),MIR3672(13973)"
-    gene = translator_instance._get_gene_element(genelist=genes, caller="arriba")
+    gene = translator_instance._get_gene_element(genelist=genes, caller=Caller.ARRIBA)
     assert gene[0].gene.label == "MIR3672"
 
 
@@ -120,39 +121,54 @@ async def test_jaffa(
 ):
     """Test JAFFA translator"""
     # Test exonic breakpoint
-    jaffa_data = pl.DataFrame(
-        {
-            "fusion genes": "TPM3:PDGFRB",
-            "chrom1": "chr1",
-            "base1": "154170465",
-            "chrom2": "chr5",
-            "base2": "150126612",
-            "rearrangement": "TRUE",
-            "classification": "HighConfidence",
-            "inframe": "TRUE",
-        }
-    )
+    fusion_genes = "TPM3:PDGFRB"
+    chrom1 = "chr1"
+    base1 = 154170465
+    chrom2 = "chr5"
+    base2 = 150126612
+    rearrangement = True
+    classification = "HighConfidence"
+    inframe = True
 
     jaffa_fusor = (
-        await translator_instance.from_jaffa(jaffa_data, Assembly("GRCh38"))
+        await translator_instance.from_jaffa(
+            fusion_genes,
+            chrom1,
+            base1,
+            chrom2,
+            base2,
+            rearrangement,
+            classification,
+            inframe,
+            Assembly("GRCh38"),
+            Caller.JAFFA,
+        )
     )[0]
     assert jaffa_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
-    jaffa_data_nonexonic = pl.DataFrame(
-        {
-            "fusion genes": "TPM3:PDGFRB",
-            "chrom1": "chr1",
-            "base1": "154173078",
-            "chrom2": "chr5",
-            "base2": "150127173",
-            "rearrangement": "TRUE",
-            "classification": "HighConfidence",
-            "inframe": "TRUE",
-        }
-    )
+    fusion_genes = "TPM3:PDGFRB"
+    chrom1 = "chr1"
+    base1 = 154173078
+    chrom2 = "chr5"
+    base2 = 150127173
+    rearrangement = True
+    classification = "HighConfidence"
+    inframe = True
+
     jaffa_fusor_nonexonic = (
-        await translator_instance.from_jaffa(jaffa_data_nonexonic, Assembly("GRCh38"))
+        await translator_instance.from_jaffa(
+            fusion_genes,
+            chrom1,
+            base1,
+            chrom2,
+            base2,
+            rearrangement,
+            classification,
+            inframe,
+            Assembly("GRCh38"),
+            Caller.JAFFA,
+        )
     )[0]
     assert jaffa_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
@@ -163,33 +179,41 @@ async def test_star_fusion(
 ):
     """Test STAR-Fusion translator"""
     # Test exonic breakpoints
-    star_fusion_data = pl.DataFrame(
-        {
-            "LeftGene": "TPM3^ENSG00000143549.19",
-            "RightGene": "PDGFRB^ENSG00000113721",
-            "LeftBreakpoint": "chr1:154170465:-",
-            "RightBreakpoint": "chr5:150126612:-",
-            "annots": '["INTRACHROMOSOMAL[chr16:0.23Mb]"]',
-        }
-    )
+    left_gene = "TPM3^ENSG00000143549.19"
+    right_gene = "PDGFRB^ENSG00000113721"
+    left_breakpoint = "chr1:154170465:-"
+    right_breakpoint = "chr5:150126612:-"
+    annots = '["INTRACHROMOSOMAL[chr16:0.23Mb]"]'
+
     star_fusion_fusor = (
-        await translator_instance.from_star_fusion(star_fusion_data, Assembly("GRCh38"))
+        await translator_instance.from_star_fusion(
+            left_gene,
+            right_gene,
+            left_breakpoint,
+            right_breakpoint,
+            annots,
+            Assembly("GRCh38"),
+            Caller.STAR_FUSION,
+        )
     )[0]
     assert star_fusion_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoints
-    star_fusion_data_nonexonic = pl.DataFrame(
-        {
-            "LeftGene": "TPM3^ENSG00000143549.19",
-            "RightGene": "PDGFRB^ENSG00000113721",
-            "LeftBreakpoint": "chr1:154173078:-",
-            "RightBreakpoint": "chr5:150127173:-",
-            "annots": '["INTRACHROMOSOMAL[chr16:0.23Mb]"]',
-        }
-    )
+    left_gene = "TPM3^ENSG00000143549.19"
+    right_gene = "PDGFRB^ENSG00000113721"
+    left_breakpoint = "chr1:154173078:-"
+    right_breakpoint = "chr5:150127173:-"
+    annots = '["INTRACHROMOSOMAL[chr16:0.23Mb]"]'
+
     star_fusion_fusor_nonexonic = (
         await translator_instance.from_star_fusion(
-            star_fusion_data_nonexonic, Assembly("GRCh38")
+            left_gene,
+            right_gene,
+            left_breakpoint,
+            right_breakpoint,
+            annots,
+            Assembly("GRCh38"),
+            Caller.STAR_FUSION,
         )
     )[0]
     assert (
