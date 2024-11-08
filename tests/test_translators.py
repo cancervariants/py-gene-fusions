@@ -111,7 +111,7 @@ def fusion_data_example_nonexonic():
 def test_gene_element_arriba(translator_instance):
     """Test gene selection for Arriba"""
     genes = "RP1-222H5.1(151985),MIR3672(13973)"
-    gene = translator_instance._get_gene_element(genelist=genes, caller=Caller.ARRIBA)
+    gene = translator_instance._get_gene_element(genes=genes, caller=Caller.ARRIBA)
     assert gene[0].gene.label == "MIR3672"
 
 

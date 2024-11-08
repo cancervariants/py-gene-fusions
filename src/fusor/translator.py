@@ -104,7 +104,7 @@ class Translator:
             return CausativeEvent(eventType=EventType("rearrangement"))
         return None
 
-    def _get_gene_element_unnormalized(self, symbol: str) -> tuple[GeneElement, None]:
+    def _get_gene_element_unnormalized(self, symbol: str) -> GeneElement:
         """Return GeneElement when gene symbol cannot be normalized
 
         :param symbol: A gene symbol for a fusion partner
@@ -119,7 +119,6 @@ class Translator:
                     "type": "Gene",
                 },
             ),
-            None,
         )
 
     def _get_gene_element(self, genes: str, caller: Caller) -> GeneElement:
@@ -153,15 +152,14 @@ class Translator:
         :return The corresponding refseq genomic accession
         """
         sr = self.fusor.cool_seq_tool.seqrepo_access
-        alias_list, errors = sr.translate_identifier(f"{build}:{chrom}")
+        alias_list, errors = sr.translate_identifier(
+            f"{build}:{chrom}", target_namespaces="refseq"
+        )
         if errors:
             statement = f"Genomic accession for {chrom} could not be retrieved"
             _logger.error(statement)
             raise ValueError
-        for alias in alias_list:
-            if alias.startswith("refseq:"):
-                genomic_ac = alias.split(":")[1]
-        return genomic_ac
+        return alias_list[0].split(":")[1]
 
     async def from_jaffa(
         self,
