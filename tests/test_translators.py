@@ -130,19 +130,17 @@ async def test_jaffa(
     classification = "HighConfidence"
     inframe = True
 
-    jaffa_fusor = (
-        await translator_instance.from_jaffa(
-            fusion_genes,
-            chrom1,
-            base1,
-            chrom2,
-            base2,
-            rearrangement,
-            classification,
-            inframe,
-            Assembly("GRCh38"),
-        )
-    )[0]
+    jaffa_fusor = await translator_instance.from_jaffa(
+        fusion_genes,
+        chrom1,
+        base1,
+        chrom2,
+        base2,
+        rearrangement,
+        classification,
+        inframe,
+        Assembly("GRCh38"),
+    )
     assert jaffa_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
@@ -155,19 +153,17 @@ async def test_jaffa(
     classification = "HighConfidence"
     inframe = True
 
-    jaffa_fusor_nonexonic = (
-        await translator_instance.from_jaffa(
-            fusion_genes,
-            chrom1,
-            base1,
-            chrom2,
-            base2,
-            rearrangement,
-            classification,
-            inframe,
-            Assembly("GRCh38"),
-        )
-    )[0]
+    jaffa_fusor_nonexonic = await translator_instance.from_jaffa(
+        fusion_genes,
+        chrom1,
+        base1,
+        chrom2,
+        base2,
+        rearrangement,
+        classification,
+        inframe,
+        Assembly("GRCh38"),
+    )
     assert jaffa_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
 
@@ -183,16 +179,14 @@ async def test_star_fusion(
     right_breakpoint = "chr5:150126612:-"
     annots = '["INTRACHROMOSOMAL[chr16:0.23Mb]"]'
 
-    star_fusion_fusor = (
-        await translator_instance.from_star_fusion(
-            left_gene,
-            right_gene,
-            left_breakpoint,
-            right_breakpoint,
-            annots,
-            Assembly("GRCh38"),
-        )
-    )[0]
+    star_fusion_fusor = await translator_instance.from_star_fusion(
+        left_gene,
+        right_gene,
+        left_breakpoint,
+        right_breakpoint,
+        annots,
+        Assembly("GRCh38"),
+    )
     assert star_fusion_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoints
@@ -202,16 +196,14 @@ async def test_star_fusion(
     right_breakpoint = "chr5:150127173:-"
     annots = '["INTRACHROMOSOMAL[chr16:0.23Mb]"]'
 
-    star_fusion_fusor_nonexonic = (
-        await translator_instance.from_star_fusion(
-            left_gene,
-            right_gene,
-            left_breakpoint,
-            right_breakpoint,
-            annots,
-            Assembly("GRCh38"),
-        )
-    )[0]
+    star_fusion_fusor_nonexonic = await translator_instance.from_star_fusion(
+        left_gene,
+        right_gene,
+        left_breakpoint,
+        right_breakpoint,
+        annots,
+        Assembly("GRCh38"),
+    )
     assert (
         star_fusion_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
     )
@@ -232,11 +224,9 @@ async def test_fusion_catcher(
             "Predicted_effect": "exonic(no-known-CDS)/exonic(no-known-CDS",
         }
     )
-    fusion_catcher_fusor = (
-        await translator_instance.from_fusion_catcher(
-            fusion_catcher_data, Assembly("GRCh38")
-        )
-    )[0]
+    fusion_catcher_fusor = await translator_instance.from_fusion_catcher(
+        fusion_catcher_data, Assembly("GRCh38")
+    )
     assert fusion_catcher_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
@@ -249,11 +239,9 @@ async def test_fusion_catcher(
             "Predicted_effect": "exonic(no-known-CDS)/exonic(no-known-CDS",
         }
     )
-    fusion_catcher_fusor_nonexonic = (
-        await translator_instance.from_fusion_catcher(
-            fusion_catcher_data_nonexonic, Assembly("GRCh38")
-        )
-    )[0]
+    fusion_catcher_fusor_nonexonic = await translator_instance.from_fusion_catcher(
+        fusion_catcher_data_nonexonic, Assembly("GRCh38")
+    )
     assert (
         fusion_catcher_fusor_nonexonic.structure
         == fusion_data_example_nonexonic.structure
@@ -279,9 +267,9 @@ async def test_fusion_map(
             "FrameShiftClass": "InFrame",
         }
     )
-    fusion_map_fusor = (
-        await translator_instance.from_fusion_map(fusion_map_data, Assembly("GRCh38"))
-    )[0]
+    fusion_map_fusor = await translator_instance.from_fusion_map(
+        fusion_map_data, Assembly("GRCh38")
+    )
     assert fusion_map_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
@@ -298,11 +286,9 @@ async def test_fusion_map(
             "FrameShiftClass": "InFrame",
         }
     )
-    fusion_map_fusor_nonexonic = (
-        await translator_instance.from_fusion_map(
-            fusion_map_data_nonexonic, Assembly("GRCh38")
-        )
-    )[0]
+    fusion_map_fusor_nonexonic = await translator_instance.from_fusion_map(
+        fusion_map_data_nonexonic, Assembly("GRCh38")
+    )
     assert (
         fusion_map_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
     )
@@ -325,9 +311,9 @@ async def test_arriba(
             "reading_frame": "in-frame",
         }
     )
-    arriba_fusor = (
-        await translator_instance.from_arriba(arriba_data, Assembly("GRCh38"))
-    )[0]
+    arriba_fusor = await translator_instance.from_arriba(
+        arriba_data, Assembly("GRCh38")
+    )
     assert arriba_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
@@ -342,9 +328,9 @@ async def test_arriba(
             "reading_frame": "in-frame",
         }
     )
-    arriba_fusor_nonexonic = (
-        await translator_instance.from_arriba(arriba_data_nonexonic, Assembly("GRCh38"))
-    )[0]
+    arriba_fusor_nonexonic = await translator_instance.from_arriba(
+        arriba_data_nonexonic, Assembly("GRCh38")
+    )
     assert arriba_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
 
@@ -365,9 +351,9 @@ async def test_cicero(
             "type": "CTX",
         }
     )
-    cicero_fusor = (
-        await translator_instance.from_cicero(cicero_data, Assembly("GRCh38"))
-    )[0]
+    cicero_fusor = await translator_instance.from_cicero(
+        cicero_data, Assembly("GRCh38")
+    )
     assert cicero_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
@@ -382,9 +368,9 @@ async def test_cicero(
             "type": "CTX",
         }
     )
-    cicero_fusor_nonexonic = (
-        await translator_instance.from_cicero(cicero_data_nonexonic, Assembly("GRCh38"))
-    )[0]
+    cicero_fusor_nonexonic = await translator_instance.from_cicero(
+        cicero_data_nonexonic, Assembly("GRCh38")
+    )
     assert cicero_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
 
@@ -404,9 +390,9 @@ async def test_enfusion(
             "Break2": "150126612",
         }
     )
-    enfusion_fusor = (
-        await translator_instance.from_enfusion(enfusion_data, Assembly("GRCh38"))
-    )[0]
+    enfusion_fusor = await translator_instance.from_enfusion(
+        enfusion_data, Assembly("GRCh38")
+    )
     assert enfusion_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
@@ -420,11 +406,9 @@ async def test_enfusion(
             "Break2": "150127173",
         }
     )
-    enfusion_fusor_nonexonic = (
-        await translator_instance.from_enfusion(
-            enfusion_data_nonexonic, Assembly("GRCh38")
-        )
-    )[0]
+    enfusion_fusor_nonexonic = await translator_instance.from_enfusion(
+        enfusion_data_nonexonic, Assembly("GRCh38")
+    )
     assert enfusion_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
 
@@ -446,9 +430,7 @@ async def test_genie(
             "Site2_Effect_on_Frame": "In_frame",
         }
     )
-    genie_fusor = (
-        await translator_instance.from_genie(genie_data, Assembly("GRCh38"))
-    )[0]
+    genie_fusor = await translator_instance.from_genie(genie_data, Assembly("GRCh38"))
     assert genie_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
@@ -464,7 +446,7 @@ async def test_genie(
             "Site2_Effect_on_Frame": "In_frame",
         }
     )
-    genie_fusor_nonexonic = (
-        await translator_instance.from_genie(genie_data_nonexonic, Assembly("GRCh38"))
-    )[0]
+    genie_fusor_nonexonic = await translator_instance.from_genie(
+        genie_data_nonexonic, Assembly("GRCh38")
+    )
     assert genie_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure

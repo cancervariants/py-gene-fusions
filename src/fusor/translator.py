@@ -61,11 +61,11 @@ class Translator:
 
         :param gene_5prime: 5'prime GeneElement
         :param gene_3prime: 3'prime GeneElement
-        :param Optional[tr_5prime]: 5'prime TranscriptSegmentElement
-        :param Optional[tr_3prime]: 3'prime TranscriptSegmentElement
-        :param Optional[ce]: CausativeEvent
-        :param Optional[rf]: A boolean indicating if the reading frame is preserved
-        :param Optional[assay]: Assay
+        :param tr_5prime: 5'prime TranscriptSegmentElement
+        :param tr_3prime: 3'prime TranscriptSegmentElement
+        :param ce: CausativeEvent
+        :param rf: A boolean indicating if the reading frame is preserved
+        :param assay: Assay
         :return AssayedFusion object
         """
         params = {}
@@ -84,7 +84,7 @@ class Translator:
             params["readingFramePreserved"] = rf
         if assay:
             params["assay"] = assay
-        return AssayedFusion(**params), None
+        return AssayedFusion(**params)
 
     def _get_causative_event(
         self, chrom1: str, chrom2: str, descr: str | None = None
@@ -111,7 +111,6 @@ class Translator:
         :return: A GeneElement object
         """
         return GeneElement(
-            type="GeneElement",
             gene={
                 "id": f"gene:{symbol}",
                 "label": symbol,
@@ -147,7 +146,8 @@ class Translator:
 
         :param chrom: A chromosome number
         :param build: The assembly, either GRCh37 or GRCh38
-        :return The corresponding refseq genomic accession
+        :return: The corresponding refseq genomic accession
+        :raise ValueError: if unable to retrieve genomic accession
         """
         sr = self.fusor.cool_seq_tool.seqrepo_access
         alias_list, errors = sr.translate_identifier(
