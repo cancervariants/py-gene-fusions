@@ -110,15 +110,13 @@ class Translator:
         :param symbol: A gene symbol for a fusion partner
         :return: A GeneElement object
         """
-        return (
-            GeneElement(
-                type="GeneElement",
-                gene={
-                    "id": f"gene:{symbol}",
-                    "label": symbol,
-                    "type": "Gene",
-                },
-            ),
+        return GeneElement(
+            type="GeneElement",
+            gene={
+                "id": f"gene:{symbol}",
+                "label": symbol,
+                "type": "Gene",
+            },
         )
 
     def _get_gene_element(self, genes: str, caller: Caller) -> GeneElement:
