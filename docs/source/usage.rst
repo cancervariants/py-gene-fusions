@@ -103,9 +103,9 @@ Example fusions
 
 Provided examples include:
 
-* ``examples.bcr_abl1``: Example BCR-ABL1 categorical fusion drawn from [COSF1780](https://cancer.sanger.ac.uk/cosmic/fusion/summary?id=1780). Demonstrates structure of junction components, a linker sequence segment, critical functional domains, and reading frame preservation. Represented in nomenclature as ``NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173``.
+* ``examples.bcr_abl1``: Example BCR-ABL1 categorical fusion drawn from `COSF1780 <https://cancer.sanger.ac.uk/cosmic/fusion/summary?id=1780>`_. Demonstrates structure of junction components, a linker sequence segment, critical functional domains, and reading frame preservation. Represented in nomenclature as ``NM_004327.3(BCR):e.2+182::ACTAAAGCG::NM_005157.5(ABL1):e.2-173``.
 * ``examples.bcr_abl1_expanded``: Equivalent fusion to the above, but with expanded descriptions of genes, locations, and sequences provided by SeqRepo and the VICC Gene Normalizer.
-* ``examples.alk``: Example of an ALK fusion, demonstrating use of a categorical "multiple possible gene" component, retrieved from a human-curated database like [CIViC](https://civicdb.org/variants/499/summary). Represented in nomenclature as ``v::ALK(hgnc:427)``.
+* ``examples.alk``: Example of an ALK fusion, demonstrating use of a categorical "multiple possible gene" component, retrieved from a human-curated database like `CIViC <https://civicdb.org/variants/499/summary>`_. Represented in nomenclature as ``v::ALK(hgnc:427)``.
 * ``examples.ewsr1``: An EWSR1 assayed fusion, demonstrating an assay description object and use of the "unknown gene" partner. Represented in nomenclature as ``EWSR1(hgnc:3508)::?``.
 * ``examples.tpm3_ntrk1``: Example TPM3-NTRK1 assayed fusion drawn from previous VICC Fusion Curation draft material. Represented in nomenclature as ``NM_152263.3(TPM3):e.1_8::NM_002529.3(NTRK1):e.10_22``.
 * ``examples.tpm3_pdgfrb``: Example TPM3-PDGFRB assayed fusion identified via RT-PCR. Represented in nomenclature as ``NM_152263.3(TPM3):e.8::NM_002609.3(PDGFRB):e.11_22``.
