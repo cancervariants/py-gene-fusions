@@ -296,8 +296,6 @@ class Translator:
         gene_3prime_element = self._get_gene_element(
             three_prime_partner, Caller.FUSION_CATCHER
         )[0]
-        gene_5prime = gene_5prime_element.gene.label
-        gene_3prime = gene_3prime_element.gene.label
 
         five_prime = five_prime_fusion_point.split(":")
         three_prime = three_prime_fusion_point.split(":")
@@ -306,7 +304,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
             seg_end_genomic=int(five_prime[1]) - 1,
-            gene=gene_5prime,
+            gene=gene_5prime_element.gene.label,
             get_nearest_transcript_junction=True,
         )
 
@@ -314,7 +312,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
             seg_start_genomic=int(three_prime[1]) - 1,
-            gene=gene_3prime,
+            gene=gene_3prime_element.gene.label,
             get_nearest_transcript_junction=True,
         )
 
