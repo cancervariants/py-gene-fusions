@@ -215,32 +215,36 @@ async def test_fusion_catcher(
 ):
     """Test Fusion Catcher translator"""
     # Test exonic breakpoint
-    fusion_catcher_data = pl.DataFrame(
-        {
-            "Gene_1_symbol(5end_fusion_partner)": "TPM3",
-            "Gene_2_symbol(3end_fusion_partner)": "PDGFRB",
-            "Fusion_point_for_gene_1(5end_fusion_partner)": "1:154170465:-",
-            "Fusion_point_for_gene_2(3end_fusion_partner)": "5:150126612:-",
-            "Predicted_effect": "exonic(no-known-CDS)/exonic(no-known-CDS",
-        }
-    )
+    five_prime_partner = "TPM3"
+    three_prime_partner = "PDGFRB"
+    five_prime_fusion_point = "1:154170466:-"
+    three_prime_fusion_point = "5:150126613:-"
+    predicted_effect = "exonic(no-known-CDS)/exonic(no-known-CDS)"
+
     fusion_catcher_fusor = await translator_instance.from_fusion_catcher(
-        fusion_catcher_data, Assembly("GRCh38")
+        five_prime_partner,
+        three_prime_partner,
+        five_prime_fusion_point,
+        three_prime_fusion_point,
+        predicted_effect,
+        Assembly("GRCh38"),
     )
     assert fusion_catcher_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
-    fusion_catcher_data_nonexonic = pl.DataFrame(
-        {
-            "Gene_1_symbol(5end_fusion_partner)": "TPM3",
-            "Gene_2_symbol(3end_fusion_partner)": "PDGFRB",
-            "Fusion_point_for_gene_1(5end_fusion_partner)": "1:154173078:-",
-            "Fusion_point_for_gene_2(3end_fusion_partner)": "5:150127173:-",
-            "Predicted_effect": "exonic(no-known-CDS)/exonic(no-known-CDS",
-        }
-    )
+    five_prime_partner = "TPM3"
+    three_prime_partner = "PDGFRB"
+    five_prime_fusion_point = "1:154173079:-"
+    three_prime_fusion_point = "5:150127174:-"
+    predicted_effect = "exonic(no-known-CDS)/exonic(no-known-CDS)"
+
     fusion_catcher_fusor_nonexonic = await translator_instance.from_fusion_catcher(
-        fusion_catcher_data_nonexonic, Assembly("GRCh38")
+        five_prime_partner,
+        three_prime_partner,
+        five_prime_fusion_point,
+        three_prime_fusion_point,
+        predicted_effect,
+        Assembly("GRCh38"),
     )
     assert (
         fusion_catcher_fusor_nonexonic.structure
