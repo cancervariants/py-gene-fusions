@@ -269,34 +269,41 @@ class Translator:
         )
 
     async def from_fusion_catcher(
-        self, fc_row: pl.DataFrame, rb: Assembly
+        self,
+        five_prime_partner: str,
+        three_prime_partner: str,
+        five_prime_fusion_point: str,
+        three_prime_fusion_point: str,
+        predicted_effect: str,
+        rb: Assembly,
     ) -> AssayedFusion:
         """Parse FusionCatcher output to create AssayedFusion object
 
-        :param fc_row: A row of FusionCatcher output
+        :param five_prime_partner: Gene symbol for the 5' fusion partner
+        :param three_prime_partner: Gene symbol for the 3' fusion partner
+        :param five_prime_fusion_point: Chromosomal position for the 5' end of the
+        fusion junction. This coordinate is 1-based
+        :param three_prime fusion_point:  Chromosomal position for the 3' end of the
+        fusion junction. This coordinate is 1-based
+        :param predicted_effect: The predicted effect of the fusion event, created
+        using annotation from the Ensembl database
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = fc_row.get_column("Gene_1_symbol(5end_fusion_partner)").item()
-        gene2 = fc_row.get_column("Gene_2_symbol(3end_fusion_partner)").item()
-        gene_5prime = self._get_gene_element(gene1, "fusion_catcher")[0].gene.label
-        gene_3prime = self._get_gene_element(gene2, "fusion_catcher")[0].gene.label
+        gene1 = five_prime_partner
+        gene2 = three_prime_partner
+        gene_5prime_element = self._get_gene_element(gene1, Caller.FUSION_CATCHER)[0]
+        gene_3prime_element = self._get_gene_element(gene2, Caller.FUSION_CATCHER)[0]
+        gene_5prime = gene_5prime_element.gene.label
+        gene_3prime = gene_3prime_element.gene.label
 
-        five_prime = (
-            fc_row.get_column("Fusion_point_for_gene_1(5end_fusion_partner)")
-            .item()
-            .split(":")
-        )
-        three_prime = (
-            fc_row.get_column("Fusion_point_for_gene_2(3end_fusion_partner)")
-            .item()
-            .split(":")
-        )
+        five_prime = five_prime_fusion_point.split(":")
+        three_prime = three_prime_fusion_point.split(":")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
-            seg_end_genomic=int(five_prime[1]),
+            seg_end_genomic=int(five_prime[1]) - 1,
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
@@ -304,15 +311,15 @@ class Translator:
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
-            seg_start_genomic=int(three_prime[1]),
+            seg_start_genomic=int(three_prime[1]) - 1,
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
-        ce = self._get_causative_event(
-            five_prime[0], three_prime[0], fc_row.get_column("Predicted_effect").item()
+        ce = self._get_causative_event(five_prime[0], three_prime[0], predicted_effect)
+        return self._format_fusion(
+            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce
         )
-        return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_fusion_map(
         self, fmap_row: pl.DataFrame, rb: Assembly
