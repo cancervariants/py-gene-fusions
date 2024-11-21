@@ -283,17 +283,19 @@ class Translator:
         :param three_prime_partner: Gene symbol for the 3' fusion partner
         :param five_prime_fusion_point: Chromosomal position for the 5' end of the
         fusion junction. This coordinate is 1-based
-        :param three_prime fusion_point:  Chromosomal position for the 3' end of the
+        :param three_prime_fusion_point:  Chromosomal position for the 3' end of the
         fusion junction. This coordinate is 1-based
         :param predicted_effect: The predicted effect of the fusion event, created
         using annotation from the Ensembl database
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = five_prime_partner
-        gene2 = three_prime_partner
-        gene_5prime_element = self._get_gene_element(gene1, Caller.FUSION_CATCHER)[0]
-        gene_3prime_element = self._get_gene_element(gene2, Caller.FUSION_CATCHER)[0]
+        gene_5prime_element = self._get_gene_element(
+            five_prime_partner, Caller.FUSION_CATCHER
+        )[0]
+        gene_3prime_element = self._get_gene_element(
+            three_prime_partner, Caller.FUSION_CATCHER
+        )[0]
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
