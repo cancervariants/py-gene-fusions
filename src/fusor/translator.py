@@ -374,29 +374,63 @@ class Translator:
         )
 
     async def from_arriba(
-        self, arriba_row: pl.DataFrame, rb: Assembly
+        self,
+        gene1: str,
+        gene2: str,
+        strand1: str,
+        strand2: str,
+        breakpoint1: str,
+        breakpoint2: str,
+        event: str,
+        confidence: str,
+        direction1: str,
+        direction2: str,
+        rf: str,
+        rb: Assembly,
     ) -> AssayedFusion:
         """Parse Arriba output to create AssayedFusion object
 
-        :param arriba_row: A row of Arriba output
+        :param gene1: The 5' gene fusion partner
+        :param gene2: The 3' gene fusion partner
+        :param strand1: The strand information for the 5' gene fusion partner
+        :param strand2: The strand information for the 3' gene fusion partner
+        :param breakpoint1: The chromosome and breakpoint for gene1
+        :param breakpoint2: The chromosome and breakpoint for gene2
+        :param event: An inference about the type of fusion event
+        :param confidence: A metric describing the confidence of the fusion prediction
+        :param direction1: A description that indicates if the transcript segment
+        starts or ends at breakpoint1
+        :param direction2: A description that indicates if the transcript segment
+        starts or ends at breakpoint2
+        :param rf: A description if the reading frame is preserved for the fusion
+        :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = arriba_row.get_column("#gene1").item()
-        gene2 = arriba_row.get_column("gene2").item()
-
         # Arriba reports two gene symbols if a breakpoint occurs in an intergenic
         # space. We select the gene symbol with the smallest distance from the
         # breakpoint.
         gene_5prime = self._get_gene_element(gene1, "arriba")[0].gene.label
         gene_3prime = self._get_gene_element(gene2, "arriba")[0].gene.label
 
-        breakpoint1 = arriba_row.get_column("breakpoint1").item().split(":")
-        breakpoint2 = arriba_row.get_column("breakpoint2").item().split(":")
+        strand1 = strand1.split("/")[1]  # Determine strand that is transcribed
+        strand2 = strand2.split("/")[1]  # Determine strand that is transcribed
+        if strand1 == "-":
+            gene1_seg_start = direction1 == "upstream"
+        else:
+            gene1_seg_start = direction1 == "downstream"
+        if strand2 == "-":
+            gene2_seg_start = direction2 == "upstream"
+        else:
+            gene2_seg_start = direction2 == "downstream"
+
+        breakpoint1 = breakpoint1.split(":")
+        breakpoint2 = breakpoint2.split(":")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(breakpoint1[0], rb),
-            seg_end_genomic=int(breakpoint1[1]),
+            seg_start_genomic=int(breakpoint1[1]) if gene1_seg_start else None,
+            seg_end_genomic=int(breakpoint1[1]) if not gene1_seg_start else None,
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
@@ -404,7 +438,8 @@ class Translator:
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(breakpoint2[0], rb),
-            seg_start_genomic=int(breakpoint2[1]),
+            seg_start_genomic=int(breakpoint2[1]) if gene2_seg_start else None,
+            seg_end_genomic=int(breakpoint2[1]) if not gene2_seg_start else None,
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
@@ -412,15 +447,15 @@ class Translator:
         ce = (
             CausativeEvent(
                 eventType=EventType("read-through"),
-                eventDescription=arriba_row.get_column("confidence").item(),
+                eventDescription=confidence,
             )
-            if "read_through" in arriba_row["type"]
+            if "read_through" in event
             else CausativeEvent(
                 eventType=EventType("rearrangement"),
-                eventDescription=arriba_row.get_column("confidence").item(),
+                eventDescription=confidence,
             )
         )
-        rf = bool(arriba_row.get_column("reading_frame").item() == "in-frame")
+        rf = bool(rf == "in-frame") if rf != "." else None
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )

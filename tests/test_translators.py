@@ -304,36 +304,60 @@ async def test_arriba(
 ):
     """Test Arriba translator"""
     # Test exonic breakpoint
-    arriba_data = pl.DataFrame(
-        {
-            "#gene1": "TPM3",
-            "gene2": "PDGFRB",
-            "breakpoint1": "1:154170465",
-            "breakpoint2": "5:150126612",
-            "type": ".",
-            "confidence": "high",
-            "reading_frame": "in-frame",
-        }
-    )
+    gene1 = "TPM3"
+    gene2 = "PDGFRB"
+    strand1 = "-/-"
+    strand2 = "-/-"
+    breakpoint1 = "1:154170465"
+    breakpoint2 = "5:150126612"
+    event = "translocation"
+    confidence = "high"
+    direction1 = "upstream"
+    direction2 = "downstream"
+    rf = "in-frame"
+
     arriba_fusor = await translator_instance.from_arriba(
-        arriba_data, Assembly.GRCH38.value
+        gene1,
+        gene2,
+        strand1,
+        strand2,
+        breakpoint1,
+        breakpoint2,
+        event,
+        confidence,
+        direction1,
+        direction2,
+        rf,
+        Assembly.GRCH38.value,
     )
     assert arriba_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
-    arriba_data_nonexonic = pl.DataFrame(
-        {
-            "#gene1": "TPM3",
-            "gene2": "PDGFRB",
-            "breakpoint1": "1:154173078",
-            "breakpoint2": "5:150127173",
-            "type": ".",
-            "confidence": "high",
-            "reading_frame": "in-frame",
-        }
-    )
+    gene1 = "TPM3"
+    gene2 = "PDGFRB"
+    strand1 = "-/-"
+    strand2 = "-/-"
+    breakpoint1 = "1:154173078"
+    breakpoint2 = "5:150127173"
+    event = "translocation"
+    confidence = "high"
+    direction1 = "upstream"
+    direction2 = "downstream"
+    rf = "in-frame"
+
     arriba_fusor_nonexonic = await translator_instance.from_arriba(
-        arriba_data_nonexonic, Assembly.GRCH38.value
+        gene1,
+        gene2,
+        strand1,
+        strand2,
+        breakpoint1,
+        breakpoint2,
+        event,
+        confidence,
+        direction1,
+        direction2,
+        rf,
+        Assembly.GRCH38.value,
     )
     assert arriba_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
