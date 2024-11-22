@@ -312,8 +312,8 @@ async def test_arriba(
     breakpoint2 = "5:150126612"
     event = "translocation"
     confidence = "high"
-    direction1 = "upstream"
-    direction2 = "downstream"
+    direction1 = "dowstream"
+    direction2 = "upstream"
     rf = "in-frame"
 
     arriba_fusor = await translator_instance.from_arriba(
@@ -341,8 +341,8 @@ async def test_arriba(
     breakpoint2 = "5:150127173"
     event = "translocation"
     confidence = "high"
-    direction1 = "upstream"
-    direction2 = "downstream"
+    direction1 = "dowstream"
+    direction2 = "upstream"
     rf = "in-frame"
 
     arriba_fusor_nonexonic = await translator_instance.from_arriba(
