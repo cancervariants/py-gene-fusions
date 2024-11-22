@@ -399,9 +399,9 @@ class Translator:
         :param event: An inference about the type of fusion event
         :param confidence: A metric describing the confidence of the fusion prediction
         :param direction1: A description that indicates if the transcript segment
-        starts or ends at breakpoint1
+            starts or ends at breakpoint1
         :param direction2: A description that indicates if the transcript segment
-        starts or ends at breakpoint2
+            starts or ends at breakpoint2
         :param rf: A description if the reading frame is preserved for the fusion
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
