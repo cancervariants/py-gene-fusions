@@ -472,34 +472,40 @@ async def test_enfusion(
 ):
     """Test EnFusion translator"""
     # Test exonic breakpoint
-    enfusion_data = pl.DataFrame(
-        {
-            "Gene1": "TPM3",
-            "Gene2": "PDGFRB",
-            "Chr1": "1",
-            "Break1": "154170465",
-            "Chr2": "5",
-            "Break2": "150126612",
-        }
-    )
+    gene_5prime = "TPM3"
+    gene_3prime = "PDGFRB"
+    chr_5prime = 1
+    chr_3prime = 5
+    break_5prime = 154170465
+    break_3prime = 150126612
+
     enfusion_fusor = await translator_instance.from_enfusion(
-        enfusion_data, Assembly.GRCH38.value
+        gene_5prime,
+        gene_3prime,
+        chr_5prime,
+        chr_3prime,
+        break_5prime,
+        break_3prime,
+        Assembly.GRCH38.value,
     )
     assert enfusion_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
-    enfusion_data_nonexonic = pl.DataFrame(
-        {
-            "Gene1": "TPM3",
-            "Gene2": "PDGFRB",
-            "Chr1": "1",
-            "Break1": "154173078",
-            "Chr2": "5",
-            "Break2": "150127173",
-        }
-    )
+    gene_5prime = "TPM3"
+    gene_3prime = "PDGFRB"
+    chr_5prime = 1
+    chr_3prime = 5
+    break_5prime = 154173078
+    break_3prime = 150127173
+
     enfusion_fusor_nonexonic = await translator_instance.from_enfusion(
-        enfusion_data_nonexonic, Assembly.GRCH38.value
+        gene_5prime,
+        gene_3prime,
+        chr_5prime,
+        chr_3prime,
+        break_5prime,
+        break_3prime,
+        Assembly.GRCH38.value,
     )
     assert enfusion_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
