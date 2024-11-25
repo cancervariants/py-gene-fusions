@@ -480,8 +480,8 @@ class Translator:
         :param chr_3prime: The chromosome for the 3' partner
         :param pos_5prime: The genomic breakpoint for the 5' partner
         :param pos_3prime: The genomic breakpoint for the 3' partner
-        :param sv_ort: Whether the mapping orientation of assembled contig has
-            confident biological meaning
+        :param sv_ort: Whether the mapping orientation of assembled contig (driven by
+            structural variation) has confident biological meaning
         :param event_type: The structural variation event that created the called fusion
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
