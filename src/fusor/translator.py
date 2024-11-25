@@ -575,38 +575,48 @@ class Translator:
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
     async def from_enfusion(
-        self, enfusion_row: pl.DataFrame, rb: Assembly
+        self,
+        gene_5prime: str,
+        gene_3prime: str,
+        chr_5prime: int,
+        chr_3prime: int,
+        break_5prime: int,
+        break_3prime: int,
+        rb: Assembly,
     ) -> AssayedFusion:
         """Parse EnFusion output to create AssayedFusion object
 
-        :param enfusion_row: A row of EnFusion output
+        :param gene_5prime: The 5' gene fusion partner
+        :param gene_3prime: The 3' gene fusion partner
+        :param chr_5prime: The 5' gene fusion partner chromosome
+        :param chr_3prime: The 3' gene fusion partner chromosome
+        :param break_5prime: The 5' gene fusion partner genomic breakpoint
+        :param break_3prime: The 3' gene fusion partner genomic breakpoint
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = enfusion_row.get_column("Gene1").item()
-        gene2 = enfusion_row.get_column("Gene2").item()
-        gene_5prime = self._get_gene_element(gene1, "enfusion")[0].gene.label
-        gene_3prime = self._get_gene_element(gene2, "enfusion")[0].gene.label
+        gene_5prime = self._get_gene_element(gene_5prime, "enfusion")[0].gene.label
+        gene_3prime = self._get_gene_element(gene_3prime, "enfusion")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(enfusion_row.get_column("Chr1").item(), rb),
-            seg_end_genomic=int(enfusion_row.get_column("Break1").item()),
+            genomic_ac=self._get_genomic_ac(chr_5prime, rb),
+            seg_end_genomic=break_5prime,
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(enfusion_row.get_column("Chr2").item(), rb),
-            seg_start_genomic=int(enfusion_row.get_column("Break2").item()),
+            genomic_ac=self._get_genomic_ac(chr_3prime, rb),
+            seg_start_genomic=break_3prime,
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
         ce = self._get_causative_event(
-            enfusion_row.get_column("Chr1").item(),
-            enfusion_row.get_column("Chr2").item(),
+            chr_5prime,
+            chr_3prime,
         )
         return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
 
