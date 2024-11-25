@@ -461,44 +461,75 @@ class Translator:
         )
 
     async def from_cicero(
-        self, cicero_row: pl.DataFrame, rb: Assembly
-    ) -> AssayedFusion:
+        self,
+        gene_a: str,
+        gene_b: str,
+        chr_a: str,
+        chr_b: str,
+        pos_a: int,
+        pos_b: int,
+        sv_ort: str,
+        event_type: str,
+        rb: Assembly,
+    ) -> AssayedFusion | str:
         """Parse CICERO output to create AssayedFusion object
 
-        :param cicero_row: A row of CICERO output
+        :param geneA: The gene symbol for the 5' partner
+        :param geneB: The gene symbol for the 3' partner
+        :param chrA: The chromosome for the 5' partner
+        :param chrB: The chromosome for the 3' partner
+        :param posA: The genomic breakpoint for the 5' partner
+        :param posB: The genomic breakpoint for the 3' partner
+        :param sv_ort: Whether the mapping orientation of assembled contig has
+            confident biological meaning
+        :param event_type: The structural variation event that created the called fusion
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = cicero_row.get_column("geneA").item()
-        gene2 = cicero_row.get_column("geneB").item()
-        gene_5prime = self._get_gene_element(gene1, "cicero")[0].gene.label
-        gene_3prime = self._get_gene_element(gene2, "cicero")[0].gene.label
+        # Check if gene symbols have valid formatting. CICERO can output two or more
+        # gene symbols for `gene_a` or `gene_b`, which are separated by a column. As
+        # there is not a precise way to resolve this ambiguity, we do not process
+        # these events
+        if "," in gene_a or "," in gene_b:
+            msg = "Ambiguous gene symbols are reported by CICERO for at least one of the fusion partners"
+            _logger.warning(msg)
+            return msg
+
+        # Check CICERO annotation regarding the confidence that the called fusion
+        # has biological meaning
+        if sv_ort != ">":
+            msg = "CICERO annotation indicates that this event does not have confident biological meaning"
+            _logger.warning(msg)
+            return msg
+
+        gene_5prime = self._get_gene_element(gene_a, "cicero")[0].gene.label
+        gene_3prime = self._get_gene_element(gene_b, "cicero")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(cicero_row.get_column("chrA").item(), rb),
-            seg_end_genomic=int(cicero_row.get_column("posA").item()),
+            genomic_ac=self._get_genomic_ac(chr_a, rb),
+            seg_end_genomic=pos_a,
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(cicero_row.get_column("chrB").item(), rb),
-            seg_start_genomic=int(cicero_row.get_column("posB").item()),
+            genomic_ac=self._get_genomic_ac(chr_b, rb),
+            seg_start_genomic=pos_b,
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
-        if cicero_row.get_column("type").item() == "read_through":
+        if event_type == "read_through":
             ce = CausativeEvent(
                 eventType=EventType("read-through"),
-                eventDescription=cicero_row.get_column("type").item(),
+                eventDescription=event_type,
             )
         else:
             ce = CausativeEvent(
                 eventType=EventType("rearrangement"),
-                eventDescription=cicero_row.get_column("type").item(),
+                eventDescription=event_type,
             )
         return self._format_fusion(
             gene_5prime,
