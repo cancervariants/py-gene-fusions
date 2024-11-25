@@ -487,7 +487,7 @@ class Translator:
         :return: An AssayedFusion object, if construction is successful
         """
         # Check if gene symbols have valid formatting. CICERO can output two or more
-        # gene symbols for `gene_a` or `gene_b`, which are separated by a column. As
+        # gene symbols for `gene_5prime` or `gene_3prime`, which are separated by a column. As
         # there is not a precise way to resolve this ambiguity, we do not process
         # these events
         if "," in gene_5prime or "," in gene_3prime:
