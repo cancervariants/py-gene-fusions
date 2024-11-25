@@ -368,22 +368,22 @@ async def test_cicero(
 ):
     """Test CICERO translator"""
     # Test exonic breakpoint
-    gene_a = "TPM3"
-    gene_b = "PDGFRB"
-    chr_a = "1"
-    chr_b = "5"
-    pos_a = 154170465
-    pos_b = 150126612
+    gene_5prime = "TPM3"
+    gene_3prime = "PDGFRB"
+    chr_5prime = "1"
+    chr_3prime = "5"
+    pos_5prime = 154170465
+    pos_3prime = 150126612
     sv_ort = ">"
     event_type = "CTX"
 
     cicero_fusor = await translator_instance.from_cicero(
-        gene_a,
-        gene_b,
-        chr_a,
-        chr_b,
-        pos_a,
-        pos_b,
+        gene_5prime,
+        gene_3prime,
+        chr_5prime,
+        chr_3prime,
+        pos_5prime,
+        pos_3prime,
         sv_ort,
         event_type,
         Assembly.GRCH38.value,
@@ -391,22 +391,22 @@ async def test_cicero(
     assert cicero_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
-    gene_a = "TPM3"
-    gene_b = "PDGFRB"
-    chr_a = "1"
-    chr_b = "5"
-    pos_a = 154173078
-    pos_b = 150127173
+    gene_5prime = "TPM3"
+    gene_3prime = "PDGFRB"
+    chr_5prime = "1"
+    chr_3prime = "5"
+    pos_5prime = 154173078
+    pos_3prime = 150127173
     sv_ort = ">"
     event_type = "CTX"
 
     cicero_fusor_nonexonic = await translator_instance.from_cicero(
-        gene_a,
-        gene_b,
-        chr_a,
-        chr_b,
-        pos_a,
-        pos_b,
+        gene_5prime,
+        gene_3prime,
+        chr_5prime,
+        chr_3prime,
+        pos_5prime,
+        pos_3prime,
         sv_ort,
         event_type,
         Assembly.GRCH38.value,
@@ -414,22 +414,22 @@ async def test_cicero(
     assert cicero_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
 
     # Test case where the called fusion does not have confident biological meaning
-    gene_a = "TPM3"
-    gene_b = "PDGFRB"
-    chr_a = "1"
-    chr_b = "5"
-    pos_a = 154173078
-    pos_b = 150127173
+    gene_5prime = "TPM3"
+    gene_3prime = "PDGFRB"
+    chr_5prime = "1"
+    chr_3prime = "5"
+    pos_5prime = 154173078
+    pos_3prime = 150127173
     sv_ort = "?"
     event_type = "CTX"
 
     non_confident_bio = await translator_instance.from_cicero(
-        gene_a,
-        gene_b,
-        chr_a,
-        chr_b,
-        pos_a,
-        pos_b,
+        gene_5prime,
+        gene_3prime,
+        chr_5prime,
+        chr_3prime,
+        pos_5prime,
+        pos_3prime,
         sv_ort,
         event_type,
         Assembly.GRCH38.value,
@@ -440,22 +440,22 @@ async def test_cicero(
     )
 
     # Test case where multiple gene symbols are reported for a fusion partner
-    gene_a = "TPM3"
-    gene_b = "PDGFRB,PDGFRB-FGFR4,FGFR4"
-    chr_a = "1"
-    chr_b = "5"
-    pos_a = 154173078
-    pos_b = 150127173
+    gene_5prime = "TPM3"
+    gene_3prime = "PDGFRB,PDGFRB-FGFR4,FGFR4"
+    chr_5prime = "1"
+    chr_3prime = "5"
+    pos_5prime = 154173078
+    pos_3prime = 150127173
     sv_ort = "?"
     event_type = "CTX"
 
     multiple_genes_fusion_partner = await translator_instance.from_cicero(
-        gene_a,
-        gene_b,
-        chr_a,
-        chr_b,
-        pos_a,
-        pos_b,
+        gene_5prime,
+        gene_3prime,
+        chr_5prime,
+        chr_3prime,
+        pos_5prime,
+        pos_3prime,
         sv_ort,
         event_type,
         Assembly.GRCH38.value,

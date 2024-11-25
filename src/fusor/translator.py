@@ -462,24 +462,24 @@ class Translator:
 
     async def from_cicero(
         self,
-        gene_a: str,
-        gene_b: str,
-        chr_a: str,
-        chr_b: str,
-        pos_a: int,
-        pos_b: int,
+        gene_5prime: str,
+        gene_3prime: str,
+        chr_5prime: str,
+        chr_3prime: str,
+        pos_5prime: int,
+        pos_3prime: int,
         sv_ort: str,
         event_type: str,
         rb: Assembly,
     ) -> AssayedFusion | str:
         """Parse CICERO output to create AssayedFusion object
 
-        :param geneA: The gene symbol for the 5' partner
-        :param geneB: The gene symbol for the 3' partner
-        :param chrA: The chromosome for the 5' partner
-        :param chrB: The chromosome for the 3' partner
-        :param posA: The genomic breakpoint for the 5' partner
-        :param posB: The genomic breakpoint for the 3' partner
+        :param gene_5prime: The gene symbol for the 5' partner
+        :param gene_3prime: The gene symbol for the 3' partner
+        :param chr_5prime: The chromosome for the 5' partner
+        :param chr_3prime: The chromosome for the 3' partner
+        :param pos_5prime: The genomic breakpoint for the 5' partner
+        :param pos_3prime: The genomic breakpoint for the 3' partner
         :param sv_ort: Whether the mapping orientation of assembled contig has
             confident biological meaning
         :param event_type: The structural variation event that created the called fusion
@@ -490,7 +490,7 @@ class Translator:
         # gene symbols for `gene_a` or `gene_b`, which are separated by a column. As
         # there is not a precise way to resolve this ambiguity, we do not process
         # these events
-        if "," in gene_a or "," in gene_b:
+        if "," in gene_5prime or "," in gene_3prime:
             msg = "Ambiguous gene symbols are reported by CICERO for at least one of the fusion partners"
             _logger.warning(msg)
             return msg
@@ -502,21 +502,21 @@ class Translator:
             _logger.warning(msg)
             return msg
 
-        gene_5prime = self._get_gene_element(gene_a, "cicero")[0].gene.label
-        gene_3prime = self._get_gene_element(gene_b, "cicero")[0].gene.label
+        gene_5prime = self._get_gene_element(gene_5prime, "cicero")[0].gene.label
+        gene_3prime = self._get_gene_element(gene_3prime, "cicero")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(chr_a, rb),
-            seg_end_genomic=pos_a,
+            genomic_ac=self._get_genomic_ac(chr_5prime, rb),
+            seg_end_genomic=pos_5prime,
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(chr_b, rb),
-            seg_start_genomic=pos_b,
+            genomic_ac=self._get_genomic_ac(chr_3prime, rb),
+            seg_start_genomic=pos_3prime,
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
