@@ -461,44 +461,75 @@ class Translator:
         )
 
     async def from_cicero(
-        self, cicero_row: pl.DataFrame, rb: Assembly
-    ) -> AssayedFusion:
+        self,
+        gene_5prime: str,
+        gene_3prime: str,
+        chr_5prime: str,
+        chr_3prime: str,
+        pos_5prime: int,
+        pos_3prime: int,
+        sv_ort: str,
+        event_type: str,
+        rb: Assembly,
+    ) -> AssayedFusion | str:
         """Parse CICERO output to create AssayedFusion object
 
-        :param cicero_row: A row of CICERO output
+        :param gene_5prime: The gene symbol for the 5' partner
+        :param gene_3prime: The gene symbol for the 3' partner
+        :param chr_5prime: The chromosome for the 5' partner
+        :param chr_3prime: The chromosome for the 3' partner
+        :param pos_5prime: The genomic breakpoint for the 5' partner
+        :param pos_3prime: The genomic breakpoint for the 3' partner
+        :param sv_ort: Whether the mapping orientation of assembled contig (driven by
+            structural variation) has confident biological meaning
+        :param event_type: The structural variation event that created the called fusion
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = cicero_row.get_column("geneA").item()
-        gene2 = cicero_row.get_column("geneB").item()
-        gene_5prime = self._get_gene_element(gene1, "cicero")[0].gene.label
-        gene_3prime = self._get_gene_element(gene2, "cicero")[0].gene.label
+        # Check if gene symbols have valid formatting. CICERO can output two or more
+        # gene symbols for `gene_5prime` or `gene_3prime`, which are separated by a comma. As
+        # there is not a precise way to resolve this ambiguity, we do not process
+        # these events
+        if "," in gene_5prime or "," in gene_3prime:
+            msg = "Ambiguous gene symbols are reported by CICERO for at least one of the fusion partners"
+            _logger.warning(msg)
+            return msg
+
+        # Check CICERO annotation regarding the confidence that the called fusion
+        # has biological meaning
+        if sv_ort != ">":
+            msg = "CICERO annotation indicates that this event does not have confident biological meaning"
+            _logger.warning(msg)
+            return msg
+
+        gene_5prime = self._get_gene_element(gene_5prime, "cicero")[0].gene.label
+        gene_3prime = self._get_gene_element(gene_3prime, "cicero")[0].gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(cicero_row.get_column("chrA").item(), rb),
-            seg_end_genomic=int(cicero_row.get_column("posA").item()),
+            genomic_ac=self._get_genomic_ac(chr_5prime, rb),
+            seg_end_genomic=pos_5prime,
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(cicero_row.get_column("chrB").item(), rb),
-            seg_start_genomic=int(cicero_row.get_column("posB").item()),
+            genomic_ac=self._get_genomic_ac(chr_3prime, rb),
+            seg_start_genomic=pos_3prime,
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
-        if cicero_row.get_column("type").item() == "read_through":
+        if event_type == "read_through":
             ce = CausativeEvent(
                 eventType=EventType("read-through"),
-                eventDescription=cicero_row.get_column("type").item(),
+                eventDescription=event_type,
             )
         else:
             ce = CausativeEvent(
                 eventType=EventType("rearrangement"),
-                eventDescription=cicero_row.get_column("type").item(),
+                eventDescription=event_type,
             )
         return self._format_fusion(
             gene_5prime,
