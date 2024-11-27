@@ -112,7 +112,7 @@ def test_gene_element_arriba(translator_instance):
     """Test gene selection for Arriba"""
     genes = "RP1-222H5.1(151985),MIR3672(13973)"
     gene = translator_instance._get_gene_element(genes=genes, caller=Caller.ARRIBA)
-    assert gene[0].gene.label == "MIR3672"
+    assert gene.gene.label == "MIR3672"
 
 
 @pytest.mark.asyncio()
@@ -177,7 +177,7 @@ async def test_star_fusion(
     right_gene = "PDGFRB^ENSG00000113721"
     left_breakpoint = "chr1:154170465:-"
     right_breakpoint = "chr5:150126612:-"
-    annots = '["INTRACHROMOSOMAL[chr16:0.23Mb]"]'
+    annots = '["INTERCHROMOSOMAL]'
 
     star_fusion_fusor = await translator_instance.from_star_fusion(
         left_gene,
@@ -194,7 +194,7 @@ async def test_star_fusion(
     right_gene = "PDGFRB^ENSG00000113721"
     left_breakpoint = "chr1:154173078:-"
     right_breakpoint = "chr5:150127173:-"
-    annots = '["INTRACHROMOSOMAL[chr16:0.23Mb]"]'
+    annots = '["INTERCHROMOSOMAL]'
 
     star_fusion_fusor_nonexonic = await translator_instance.from_star_fusion(
         left_gene,
@@ -312,8 +312,8 @@ async def test_arriba(
     breakpoint2 = "5:150126612"
     event = "translocation"
     confidence = "high"
-    direction1 = "dowstream"
-    direction2 = "upstream"
+    direction1 = "upstream"
+    direction2 = "downstream"
     rf = "in-frame"
 
     arriba_fusor = await translator_instance.from_arriba(
@@ -341,8 +341,8 @@ async def test_arriba(
     breakpoint2 = "5:150127173"
     event = "translocation"
     confidence = "high"
-    direction1 = "dowstream"
-    direction2 = "upstream"
+    direction1 = "upstream"
+    direction2 = "downstream"
     rf = "in-frame"
 
     arriba_fusor_nonexonic = await translator_instance.from_arriba(
@@ -516,37 +516,47 @@ async def test_genie(
 ):
     """Test GENIE Translator"""
     # Test exonic breakpoint
-    genie_data = pl.DataFrame(
-        {
-            "Site1_Hugo_Symbol": "TPM3",
-            "Site2_Hugo_Symbol": "PDGFRB",
-            "Site1_Chromosome": "1",
-            "Site1_Position": "154170465",
-            "Site2_Chromosome": "5",
-            "Site2_Position": "150126612",
-            "Annotation": "TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion",
-            "Site2_Effect_on_Frame": "In_frame",
-        }
-    )
+    site1_hugo = "TPM3"
+    site2_hugo = "PDGFRB"
+    site1_chrom = 1
+    site2_chrom = 5
+    site1_pos = 154170465
+    site2_pos = 150126612
+    annot = "TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion"
+    reading_frame = "In_frame"
+
     genie_fusor = await translator_instance.from_genie(
-        genie_data, Assembly.GRCH38.value
+        site1_hugo,
+        site2_hugo,
+        site1_chrom,
+        site2_chrom,
+        site1_pos,
+        site2_pos,
+        annot,
+        reading_frame,
+        Assembly.GRCH38.value,
     )
     assert genie_fusor.structure == fusion_data_example.structure
 
     # Test non-exonic breakpoint
-    genie_data_nonexonic = pl.DataFrame(
-        {
-            "Site1_Hugo_Symbol": "TPM3",
-            "Site2_Hugo_Symbol": "PDGFRB",
-            "Site1_Chromosome": "1",
-            "Site1_Position": "154173078",
-            "Site2_Chromosome": "5",
-            "Site2_Position": "150127173",
-            "Annotation": "TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion",
-            "Site2_Effect_on_Frame": "In_frame",
-        }
-    )
+    site1_hugo = "TPM3"
+    site2_hugo = "PDGFRB"
+    site1_chrom = 1
+    site2_chrom = 5
+    site1_pos = 154173078
+    site2_pos = 150127173
+    annot = "TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion"
+    reading_frame = "In_frame"
+
     genie_fusor_nonexonic = await translator_instance.from_genie(
-        genie_data_nonexonic, Assembly.GRCH38.value
+        site1_hugo,
+        site2_hugo,
+        site1_chrom,
+        site2_chrom,
+        site1_pos,
+        site2_pos,
+        annot,
+        reading_frame,
+        Assembly.GRCH38.value,
     )
     assert genie_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure

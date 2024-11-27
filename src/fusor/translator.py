@@ -128,7 +128,7 @@ class Translator:
         """
         if "," not in genes or caller != caller.ARRIBA:
             ge = self.fusor.gene_element(gene=genes)
-            return ge if ge[0] else self._get_gene_element_unnormalized(genes)
+            return ge[0] if ge[0] else self._get_gene_element_unnormalized(genes)
 
         genes = genes.split(",")
         dists = []
@@ -139,7 +139,7 @@ class Translator:
             genes[0].split("(")[0] if dists[0] <= dists[1] else genes[1].split("(")[0]
         )
         ge = self.fusor.gene_element(gene=gene)
-        return ge if ge[0] else self._get_gene_element_unnormalized(gene)
+        return ge[0] if ge[0] else self._get_gene_element_unnormalized(gene)
 
     def _get_genomic_ac(self, chrom: str, build: Assembly) -> str:
         """Return a RefSeq genomic accession given a chromosome and a reference build
@@ -185,8 +185,8 @@ class Translator:
         :return: An AssayedFusion object, if construction is successful
         """
         genes = fusion_genes.split(":")
-        gene_5prime_element = self._get_gene_element(genes[0], Caller.JAFFA)[0]
-        gene_3prime_element = self._get_gene_element(genes[1], Caller.JAFFA)[0]
+        gene_5prime_element = self._get_gene_element(genes[0], Caller.JAFFA)
+        gene_3prime_element = self._get_gene_element(genes[1], Caller.JAFFA)
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
@@ -239,8 +239,8 @@ class Translator:
         """
         gene1 = left_gene.split("^")[0]
         gene2 = right_gene.split("^")[0]
-        gene_5prime_element = self._get_gene_element(gene1, Caller.STAR_FUSION)[0]
-        gene_3prime_element = self._get_gene_element(gene2, Caller.STAR_FUSION)[0]
+        gene_5prime_element = self._get_gene_element(gene1, Caller.STAR_FUSION)
+        gene_3prime_element = self._get_gene_element(gene2, Caller.STAR_FUSION)
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
@@ -292,10 +292,10 @@ class Translator:
         """
         gene_5prime_element = self._get_gene_element(
             five_prime_partner, Caller.FUSION_CATCHER
-        )[0]
+        )
         gene_3prime_element = self._get_gene_element(
             three_prime_partner, Caller.FUSION_CATCHER
-        )[0]
+        )
 
         five_prime = five_prime_fusion_point.split(":")
         three_prime = three_prime_fusion_point.split(":")
@@ -332,8 +332,8 @@ class Translator:
         """
         gene1 = fmap_row.get_column("KnownGene1").item()
         gene2 = fmap_row.get_column("KnownGene2").item()
-        gene_5prime = self._get_gene_element(gene1, "fusion_map")[0].gene.label
-        gene_3prime = self._get_gene_element(gene2, "fusion_map")[0].gene.label
+        gene_5prime = self._get_gene_element(gene1, "fusion_map").gene.label
+        gene_3prime = self._get_gene_element(gene2, "fusion_map").gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -409,16 +409,18 @@ class Translator:
         # Arriba reports two gene symbols if a breakpoint occurs in an intergenic
         # space. We select the gene symbol with the smallest distance from the
         # breakpoint.
-        gene_5prime = self._get_gene_element(gene1, "arriba")[0].gene.label
-        gene_3prime = self._get_gene_element(gene2, "arriba")[0].gene.label
+        gene_5prime_element = self._get_gene_element(gene1, "arriba")
+        gene_3prime_element = self._get_gene_element(gene2, "arriba")
+        gene_5prime = gene_5prime_element.gene.label
+        gene_3prime = gene_3prime_element.gene.label
 
         strand1 = strand1.split("/")[1]  # Determine strand that is transcribed
         strand2 = strand2.split("/")[1]  # Determine strand that is transcribed
-        if strand1 == "-":
+        if strand1 == "+":
             gene1_seg_start = direction1 == "upstream"
         else:
             gene1_seg_start = direction1 == "downstream"
-        if strand2 == "-":
+        if strand2 == "+":
             gene2_seg_start = direction2 == "upstream"
         else:
             gene2_seg_start = direction2 == "downstream"
@@ -457,7 +459,7 @@ class Translator:
         )
         rf = bool(rf == "in-frame") if rf != "." else None
         return self._format_fusion(
-            gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
+            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce, rf
         )
 
     async def from_cicero(
@@ -502,8 +504,10 @@ class Translator:
             _logger.warning(msg)
             return msg
 
-        gene_5prime = self._get_gene_element(gene_5prime, "cicero")[0].gene.label
-        gene_3prime = self._get_gene_element(gene_3prime, "cicero")[0].gene.label
+        gene_5prime_element = self._get_gene_element(gene_5prime, "cicero")
+        gene_3prime_element = self._get_gene_element(gene_3prime, "cicero")
+        gene_5prime = gene_5prime_element.gene.label
+        gene_3prime = gene_3prime_element.gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -532,8 +536,8 @@ class Translator:
                 eventDescription=event_type,
             )
         return self._format_fusion(
-            gene_5prime,
-            gene_3prime,
+            gene_5prime_element,
+            gene_3prime_element,
             tr_5prime,
             tr_3prime,
             ce,
@@ -550,8 +554,10 @@ class Translator:
         """
         gene1 = mapsplice_row[60].strip(",")
         gene2 = mapsplice_row[61].strip(",")
-        gene_5prime = self._get_gene_element(gene1, "mapsplice")[0].gene.label
-        gene_3prime = self._get_gene_element(gene2, "mapsplice")[0].gene.label
+        gene_5prime_element = self._get_gene_element(gene1, "mapsplice")
+        gene_3prime_element = self._get_gene_element(gene2, "mapsplice")
+        gene_5prime = gene_5prime_element.gene.label
+        gene_3prime = gene_3prime_element.gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -595,8 +601,10 @@ class Translator:
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene_5prime = self._get_gene_element(gene_5prime, "enfusion")[0].gene.label
-        gene_3prime = self._get_gene_element(gene_3prime, "enfusion")[0].gene.label
+        gene_5prime_element = self._get_gene_element(gene_5prime, "enfusion")
+        gene_3prime_element = self._get_gene_element(gene_3prime, "enfusion")
+        gene_5prime = gene_5prime_element.gene.label
+        gene_3prime = gene_3prime_element.gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -618,46 +626,62 @@ class Translator:
             chr_5prime,
             chr_3prime,
         )
-        return self._format_fusion(gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce)
+        return self._format_fusion(
+            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce
+        )
 
-    async def from_genie(self, genie_row: pl.DataFrame, rb: Assembly) -> AssayedFusion:
+    async def from_genie(
+        self,
+        site1_hugo: str,
+        site2_hugo: str,
+        site1_chrom: int,
+        site2_chrom: int,
+        site1_pos: int,
+        site2_pos: int,
+        annot: str,
+        reading_frame: str,
+        rb: Assembly,
+    ) -> AssayedFusion:
         """Parse GENIE output to create AssayedFusion object
 
-        :param genie_row: A row of EnFusion output
+        :param site1_hugo: The HUGO symbol reported at site 1
+        :param site2_hugo: The HUGO symbol reported at site 2
+        :param site1_chrom: The chromosome reported at site 1
+        :param site2_chrom: The chromosome reported at site 2
+        :param site1_pos: The breakpoint reported at site 1
+        :param site2_pos: The breakpoint reported at site 2
+        :param annot: The annotation for the fusion event
+        :param reading_frame: The reading frame status of the fusion
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = genie_row.get_column("Site1_Hugo_Symbol").item()
-        gene2 = genie_row.get_column("Site2_Hugo_Symbol").item()
-        gene_5prime = self._get_gene_element(gene1, "genie")[0].gene.label
-        gene_3prime = self._get_gene_element(gene2, "genie")[0].gene.label
+        gene_5prime_element = self._get_gene_element(site1_hugo, "genie")
+        gene_3prime_element = self._get_gene_element(site2_hugo, "genie")
+        gene_5prime = gene_5prime_element.gene.label
+        gene_3prime = gene_3prime_element.gene.label
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(
-                genie_row.get_column("Site1_Chromosome").item(), rb
-            ),
-            seg_end_genomic=int(genie_row.get_column("Site1_Position").item()),
+            genomic_ac=self._get_genomic_ac(site1_chrom, rb),
+            seg_end_genomic=site1_pos,
             gene=gene_5prime,
             get_nearest_transcript_junction=True,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(
-                genie_row.get_column("Site2_Chromosome").item(), rb
-            ),
-            seg_start_genomic=int(genie_row.get_column("Site2_Position").item()),
+            genomic_ac=self._get_genomic_ac(site2_chrom, rb),
+            seg_start_genomic=site2_pos,
             gene=gene_3prime,
             get_nearest_transcript_junction=True,
         )
 
         ce = self._get_causative_event(
-            genie_row.get_column("Site1_Chromosome").item(),
-            genie_row.get_column("Site2_Chromosome").item(),
-            genie_row.get_column("Annotation").item(),
+            site1_chrom,
+            site2_chrom,
+            annot,
         )
-        rf = bool(genie_row.get_column("Site2_Effect_on_Frame").item() == "in frame")
+        rf = bool(reading_frame == "in frame")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
