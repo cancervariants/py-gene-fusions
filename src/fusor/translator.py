@@ -141,7 +141,9 @@ class Translator:
         ge = self.fusor.gene_element(gene=gene)
         return ge[0] if ge[0] else self._get_gene_element_unnormalized(gene)
 
-    def _fusion_symbol_check(self, gene_5prime: str, gene_3prime: str) -> bool:
+    def _are_fusion_partners_different(
+        self, gene_5prime: str, gene_3prime: str
+    ) -> bool:
         """Check if the normalized gene symbols for the two fusion partners
         are different. If not, this event is not a fusion
 
@@ -205,7 +207,7 @@ class Translator:
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
-        if not self._fusion_symbol_check(gene_5prime, gene_3prime):
+        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
 
         tr_5prime = await self.fusor.transcript_segment_element(
@@ -262,7 +264,7 @@ class Translator:
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
-        if not self._fusion_symbol_check(gene_5prime, gene_3prime):
+        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
 
         five_prime = left_breakpoint.split(":")
@@ -317,7 +319,7 @@ class Translator:
         gene_3prime_element = self._get_gene_element(
             three_prime_partner, Caller.FUSION_CATCHER
         )
-        if not self._fusion_symbol_check(
+        if not self._are_fusion_partners_different(
             gene_5prime_element.gene.label, gene_3prime_element.gene.label
         ):
             return None
@@ -360,7 +362,7 @@ class Translator:
         gene_5prime = self._get_gene_element(gene1, "fusion_map").gene.label
         gene_3prime = self._get_gene_element(gene2, "fusion_map").gene.label
 
-        if not self._fusion_symbol_check(gene_5prime, gene_3prime):
+        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
 
         tr_5prime = await self.fusor.transcript_segment_element(
@@ -442,7 +444,7 @@ class Translator:
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
-        if not self._fusion_symbol_check(gene_5prime, gene_3prime):
+        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
 
         strand1 = strand1.split("/")[1]  # Determine strand that is transcribed
@@ -540,7 +542,7 @@ class Translator:
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
-        if not self._fusion_symbol_check(gene_5prime, gene_3prime):
+        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
 
         tr_5prime = await self.fusor.transcript_segment_element(
@@ -593,7 +595,7 @@ class Translator:
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
-        if not self._fusion_symbol_check(gene_5prime, gene_3prime):
+        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
 
         tr_5prime = await self.fusor.transcript_segment_element(
@@ -643,7 +645,7 @@ class Translator:
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
-        if not self._fusion_symbol_check(gene_5prime, gene_3prime):
+        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
 
         tr_5prime = await self.fusor.transcript_segment_element(
@@ -700,7 +702,7 @@ class Translator:
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
-        if not self._fusion_symbol_check(gene_5prime, gene_3prime):
+        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
 
         tr_5prime = await self.fusor.transcript_segment_element(
