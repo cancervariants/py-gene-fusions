@@ -141,6 +141,21 @@ class Translator:
         ge = self.fusor.gene_element(gene=gene)
         return ge[0] if ge[0] else self._get_gene_element_unnormalized(gene)
 
+    def _fusion_symbol_check(self, gene_5prime: str, gene_3prime: str) -> bool:
+        """Check if the normalized gene symbols for the two fusion partners
+        are different. If not, this event is not a fusion
+
+        :param gene_5prime: The 5' gene partner
+        :param gene_3prime: The 3' gene partner
+        :return ``True`` if the gene symbols are different, ``False`` if not
+        """
+        if gene_5prime != gene_3prime:
+            return True
+        _logger.error(
+            "The supplied fusion is not valid as the two fusion partners are the same"
+        )
+        return False
+
     def _get_genomic_ac(self, chrom: str, build: Assembly) -> str:
         """Return a RefSeq genomic accession given a chromosome and a reference build
 
@@ -189,6 +204,9 @@ class Translator:
         gene_3prime_element = self._get_gene_element(genes[1], Caller.JAFFA)
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
+
+        if not self._fusion_symbol_check(gene_5prime, gene_3prime):
+            return None
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,

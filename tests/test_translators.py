@@ -115,6 +115,15 @@ def test_gene_element_arriba(translator_instance):
     assert gene.gene.label == "MIR3672"
 
 
+def test_valid_fusion_partners(translator_instance):
+    """Test that the fusion partners supplied to the translator are different"""
+    partners_check = translator_instance._fusion_symbol_check("BCR", "ABL1")
+    assert partners_check
+
+    partners_check = translator_instance._fusion_symbol_check("BCR", "BCR")
+    assert not partners_check
+
+
 @pytest.mark.asyncio()
 async def test_jaffa(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
