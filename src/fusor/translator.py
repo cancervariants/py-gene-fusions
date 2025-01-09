@@ -215,7 +215,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chrom1, rb),
             seg_end_genomic=base1,
             gene=gene_5prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
@@ -223,7 +223,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chrom2, rb),
             seg_start_genomic=base2,
             gene=gene_3prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         if rearrangement:
@@ -275,7 +275,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
             seg_end_genomic=int(five_prime[1]),
             gene=gene_5prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
@@ -283,7 +283,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
             seg_start_genomic=int(three_prime[1]),
             gene=gene_3prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         ce = self._get_causative_event(five_prime[0], three_prime[0], ",".join(annots))
@@ -332,7 +332,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
             seg_end_genomic=int(five_prime[1]),
             gene=gene_5prime_element.gene.label,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
@@ -340,7 +340,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
             seg_start_genomic=int(three_prime[1]),
             gene=gene_3prime_element.gene.label,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         ce = self._get_causative_event(five_prime[0], three_prime[0], predicted_effect)
@@ -372,7 +372,7 @@ class Translator:
             ),
             seg_end_genomic=int(fmap_row.get_column("Position1").item()),
             gene=gene_5prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
@@ -382,7 +382,7 @@ class Translator:
             ),
             seg_start_genomic=int(fmap_row.get_column("Position2").item()),
             gene=gene_3prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         # Combine columns to create fusion annotation string"
@@ -467,7 +467,7 @@ class Translator:
             seg_start_genomic=int(breakpoint1[1]) if gene1_seg_start else None,
             seg_end_genomic=int(breakpoint1[1]) if not gene1_seg_start else None,
             gene=gene_5prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
@@ -476,7 +476,7 @@ class Translator:
             seg_start_genomic=int(breakpoint2[1]) if gene2_seg_start else None,
             seg_end_genomic=int(breakpoint2[1]) if not gene2_seg_start else None,
             gene=gene_3prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         ce = (
@@ -550,7 +550,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chr_5prime, rb),
             seg_end_genomic=pos_5prime,
             gene=gene_5prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
@@ -558,7 +558,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chr_3prime, rb),
             seg_start_genomic=pos_3prime,
             gene=gene_3prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         if event_type == "read_through":
@@ -603,7 +603,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(mapsplice_row[0].split("~")[0], rb),
             seg_end_genomic=int(mapsplice_row[1]),
             gene=gene_5prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
@@ -611,7 +611,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(mapsplice_row[0].split("~")[1], rb),
             seg_start_genomic=int(mapsplice_row[2]),
             gene=gene_3prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         ce = self._get_causative_event(
@@ -653,7 +653,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chr_5prime, rb),
             seg_end_genomic=break_5prime,
             gene=gene_5prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
@@ -661,7 +661,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chr_3prime, rb),
             seg_start_genomic=break_3prime,
             gene=gene_3prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         ce = self._get_causative_event(
@@ -710,7 +710,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(site1_chrom, rb),
             seg_end_genomic=site1_pos,
             gene=gene_5prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
@@ -718,7 +718,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(site2_chrom, rb),
             seg_start_genomic=site2_pos,
             gene=gene_3prime,
-            get_nearest_transcript_junction=True,
+            starting_assembly=rb,
         )
 
         ce = self._get_causative_event(
