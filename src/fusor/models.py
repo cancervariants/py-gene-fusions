@@ -18,6 +18,7 @@ from pydantic import (
     StrictBool,
     StrictInt,
     StrictStr,
+    StringConstraints,
     model_validator,
 )
 
@@ -36,6 +37,10 @@ class FUSORTypes(str, Enum):
     GENE_ELEMENT = "GeneElement"
     UNKNOWN_GENE_ELEMENT = "UnknownGeneElement"
     MULTIPLE_POSSIBLE_GENES_ELEMENT = "MultiplePossibleGenesElement"
+    BREAKPOINT_COVERAGE = "BreakpointCoverage"
+    CONTIG_SEQUENCE = "ContigSequence"
+    SPLIT_READS = "SplitReads"
+    SPANNING_READS = "SpanningReads"
     REGULATORY_ELEMENT = "RegulatoryElement"
     CATEGORICAL_FUSION = "CategoricalFusion"
     ASSAYED_FUSION = "AssayedFusion"
@@ -112,6 +117,73 @@ class BaseStructuralElement(ABC, BaseModel):
     type: StructuralElementType
 
 
+class BreakpointCoverage(BaseStructuralElement):
+    """Define BreakpointCoverage class.
+
+    This class models breakpoint coverage, or the number of fragments
+    that are retained near the breakpoint for a fusion partner
+    """
+
+    type: Literal[FUSORTypes.BREAKPOINT_COVERAGE] = FUSORTypes.BREAKPOINT_COVERAGE
+    fragmentCoverage: int = Field(ge=0)
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {"type": "BreakpointCoverage", "fragmentCoverage": 180}
+        }
+    )
+
+
+class ContigSequence(BaseStructuralElement):
+    """Define ContigSequence class.
+
+    This class models the assembled contig sequence that supports the reported fusion
+    event
+    """
+
+    type: Literal[FUSORTypes.CONTIG_SEQUENCE] = FUSORTypes.CONTIG_SEQUENCE
+    contig: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, to_upper=True, pattern=r"^[ACGT]+$"),
+    ]
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {"type": "ContigSequence", "contig": "GTACTACTGATCTAGCATCTAGTA"}
+        }
+    )
+
+
+class SplitReads(BaseStructuralElement):
+    """Define SplitReads class.
+
+    This class models the number of reads that cover the junction bewteen the
+    detected partners in the fusion
+    """
+
+    type: Literal[FUSORTypes.SPLIT_READS] = FUSORTypes.SPLIT_READS
+    splitReads: int = Field(ge=0)
+
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"type": "SplitReads", "splitReads": 100}}
+    )
+
+
+class SpanningReads(BaseStructuralElement):
+    """Define Spanning Reads class.
+
+    This class models the number of pairs of reads that support the reported fusion
+    event
+    """
+
+    type: Literal[FUSORTypes.SPANNING_READS] = FUSORTypes.SPANNING_READS
+    spanningReads: int = Field(ge=0)
+
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"type": "SpanningReads", "spanningReads": 100}}
+    )
+
+
 class TranscriptSegmentElement(BaseStructuralElement):
     """Define TranscriptSegment class"""
 
@@ -126,6 +198,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
     gene: Gene
     elementGenomicStart: SequenceLocation | None = None
     elementGenomicEnd: SequenceLocation | None = None
+    coverage: BreakpointCoverage | None = None
 
     @model_validator(mode="before")
     def check_exons(cls, values):
@@ -571,7 +644,8 @@ AssayedFusionElement = Annotated[
     | GeneElement
     | TemplatedSequenceElement
     | LinkerElement
-    | UnknownGeneElement,
+    | UnknownGeneElement
+    | ContigSequence,
     Field(discriminator="type"),
 ]
 
@@ -620,6 +694,7 @@ class AssayedFusion(AbstractFusion):
     structure: list[AssayedFusionElement]
     causativeEvent: CausativeEvent | None = None
     assay: Assay | None = None
+    contig: ContigSequence | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
