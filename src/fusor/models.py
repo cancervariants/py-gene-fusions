@@ -18,6 +18,7 @@ from pydantic import (
     StrictBool,
     StrictInt,
     StrictStr,
+    StringConstraints,
     model_validator,
 )
 
@@ -124,7 +125,7 @@ class BreakpointCoverage(BaseStructuralElement):
     """
 
     type: Literal[FUSORTypes.BREAKPOINT_COVERAGE] = FUSORTypes.BREAKPOINT_COVERAGE
-    fragmentCoverage: int
+    fragmentCoverage: int = Field(ge=0)
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -141,7 +142,10 @@ class ContigSequence(BaseStructuralElement):
     """
 
     type: Literal[FUSORTypes.CONTIG_SEQUENCE] = FUSORTypes.CONTIG_SEQUENCE
-    contig: str
+    contig: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, to_upper=True, pattern=r"^[ACGT]+$"),
+    ]
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -158,7 +162,7 @@ class SplitReads(BaseStructuralElement):
     """
 
     type: Literal[FUSORTypes.SPLIT_READS] = FUSORTypes.SPLIT_READS
-    splitReads: int
+    splitReads: int = Field(ge=0)
 
     model_config = ConfigDict(
         json_schema_extra={"example": {"type": "SplitReads", "splitReads": 100}}
@@ -173,7 +177,7 @@ class SpanningReads(BaseStructuralElement):
     """
 
     type: Literal[FUSORTypes.SPANNING_READS] = FUSORTypes.SPANNING_READS
-    spanningReads: int
+    spanningReads: int = Field(ge=0)
 
     model_config = ConfigDict(
         json_schema_extra={"example": {"type": "SpanningReads", "spanningReads": 100}}
