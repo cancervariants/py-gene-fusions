@@ -8,14 +8,18 @@ from fusor.models import (
     AbstractFusion,
     Assay,
     AssayedFusion,
+    BreakpointCoverage,
     CategoricalFusion,
     CausativeEvent,
+    ContigSequence,
     EventType,
     FunctionalDomain,
     GeneElement,
     LinkerElement,
     MultiplePossibleGenesElement,
     RegulatoryElement,
+    SpanningReads,
+    SplitReads,
     TemplatedSequenceElement,
     TranscriptSegmentElement,
     UnknownGeneElement,
@@ -609,6 +613,54 @@ def test_mult_gene_element():
     with pytest.raises(ValidationError) as exc_info:
         assert MultiplePossibleGenesElement(type="unknown_gene")
     msg = "Input should be <FUSORTypes.MULTIPLE_POSSIBLE_GENES_ELEMENT: 'MultiplePossibleGenesElement'>"
+    check_validation_error(exc_info, msg)
+
+
+def test_coverage():
+    """Test that BreakpointCoverage class initializes correctly"""
+    test_coverage = BreakpointCoverage(fragmentCoverage=100)
+    assert test_coverage.fragmentCoverage == 100
+
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert BreakpointCoverage(type="coverage")
+    msg = "Input should be <FUSORTypes.BREAKPOINT_COVERAGE: 'BreakpointCoverage'>"
+    check_validation_error(exc_info, msg)
+
+
+def test_contig():
+    """Test that Contig class initializes correctly"""
+    test_contig = ContigSequence(contig="GTATACTATGATCAGT")
+    assert test_contig.contig == "GTATACTATGATCAGT"
+
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert ContigSequence(type="contig")
+    msg = "Input should be <FUSORTypes.CONTIG_SEQUENCE: 'ContigSequence'>"
+    check_validation_error(exc_info, msg)
+
+
+def test_split_reads():
+    """Test that SplitReads class initializes correctly"""
+    test_split_reads = SplitReads(splitReads=97)
+    assert test_split_reads.splitReads == 97
+
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert SplitReads(type="splitreads")
+    msg = "Input should be <FUSORTypes.SPLIT_READS: 'SplitReads'>"
+    check_validation_error(exc_info, msg)
+
+
+def test_spanning_reads():
+    """Test that SpanningReads class initializes correctly"""
+    test_spanning_reads = SpanningReads(spanningReads=97)
+    assert test_spanning_reads.spanningReads == 97
+
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert SpanningReads(type="spanningreads")
+    msg = "Input should be <FUSORTypes.SPANNING_READS: 'SpanningReads'>"
     check_validation_error(exc_info, msg)
 
 
