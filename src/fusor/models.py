@@ -39,8 +39,10 @@ class FUSORTypes(str, Enum):
     MULTIPLE_POSSIBLE_GENES_ELEMENT = "MultiplePossibleGenesElement"
     BREAKPOINT_COVERAGE = "BreakpointCoverage"
     CONTIG_SEQUENCE = "ContigSequence"
+    ANCHORED_READS = "AnchoredReads"
     SPLIT_READS = "SplitReads"
     SPANNING_READS = "SpanningReads"
+    READ_DATA = "ReadData"
     REGULATORY_ELEMENT = "RegulatoryElement"
     CATEGORICAL_FUSION = "CategoricalFusion"
     ASSAYED_FUSION = "AssayedFusion"
@@ -154,6 +156,18 @@ class ContigSequence(BaseStructuralElement):
     )
 
 
+class AnchoredReads(BaseStructuralElement):
+    """Define AnchoredReads class
+
+    This class can be used to report the number of reads that span the
+    fusion junction. This is used at the TranscriptSegment level, as it
+    indicates the transcript where the longer segment of the read is found
+    """
+
+    type: Literal[FUSORTypes.ANCHORED_READS] = FUSORTypes.ANCHORED_READS
+    reads: int = Field(ge=0)
+
+
 class SplitReads(BaseStructuralElement):
     """Define SplitReads class.
 
@@ -184,6 +198,28 @@ class SpanningReads(BaseStructuralElement):
     )
 
 
+class ReadData(BaseStructuralElement):
+    """Define ReadData class.
+
+    This class is used at the AssayedFusion level when a fusion caller reports
+    metadata describing sequencing reads for the fusion event
+    """
+
+    type: Literal[FUSORTypes.READ_DATA] = FUSORTypes.READ_DATA
+    split: SplitReads | None = None
+    spanning: SpanningReads | None = None
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "type": "ReadData",
+                "split": {"type": "SplitReads", "splitReads": 100},
+                "spanning": {"type": "SpanningReads", "spanningReads": 80},
+            }
+        }
+    )
+
+
 class TranscriptSegmentElement(BaseStructuralElement):
     """Define TranscriptSegment class"""
 
@@ -199,6 +235,7 @@ class TranscriptSegmentElement(BaseStructuralElement):
     elementGenomicStart: SequenceLocation | None = None
     elementGenomicEnd: SequenceLocation | None = None
     coverage: BreakpointCoverage | None = None
+    anchoredReads: AnchoredReads | None = None
 
     @model_validator(mode="before")
     def check_exons(cls, values):
@@ -263,6 +300,14 @@ class TranscriptSegmentElement(BaseStructuralElement):
                         "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
                     },
                     "start": 154170399,
+                },
+                "coverage": {
+                    "type": "BreakpointCoverage",
+                    "fragmentCoverage": 185,
+                },
+                "anchoredReads": {
+                    "type": "AnchoredReads",
+                    "reads": 100,
                 },
             }
         },
@@ -645,7 +690,8 @@ AssayedFusionElement = Annotated[
     | TemplatedSequenceElement
     | LinkerElement
     | UnknownGeneElement
-    | ContigSequence,
+    | ContigSequence
+    | ReadData,
     Field(discriminator="type"),
 ]
 
@@ -695,6 +741,7 @@ class AssayedFusion(AbstractFusion):
     causativeEvent: CausativeEvent | None = None
     assay: Assay | None = None
     contig: ContigSequence | None = None
+    readData: ReadData | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -711,6 +758,21 @@ class AssayedFusion(AbstractFusion):
                     "assayId": "obi:OBI_0003094",
                     "assayName": "fluorescence in-situ hybridization assay",
                     "fusionDetection": "inferred",
+                },
+                "contig": {
+                    "type": "ContigSequence",
+                    "contig": "GTACTACTGATCTAGCATCTAGTA",
+                },
+                "readData": {
+                    "type": "ReadData",
+                    "split": {
+                        "type": "SplitReads",
+                        "splitReads": 100,
+                    },
+                    "spanning": {
+                        "type": "SpanningReads",
+                        "spanningReads": 80,
+                    },
                 },
                 "structure": [
                     {
