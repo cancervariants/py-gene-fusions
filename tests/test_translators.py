@@ -2,7 +2,7 @@
 
 import polars as pl
 import pytest
-from cool_seq_tool.schemas import Assembly
+from cool_seq_tool.schemas import Assembly, CoordinateType
 
 from fusor.models import AssayedFusion
 from fusor.translator import Caller
@@ -148,6 +148,7 @@ async def test_jaffa(
         rearrangement,
         classification,
         inframe,
+        CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert jaffa_fusor.structure == fusion_data_example.structure
@@ -155,7 +156,7 @@ async def test_jaffa(
     # Test non-exonic breakpoint
     fusion_genes = "TPM3:PDGFRB"
     chrom1 = "chr1"
-    base1 = 154173078
+    base1 = 154173079
     chrom2 = "chr5"
     base2 = 150127173
     rearrangement = True
@@ -171,6 +172,7 @@ async def test_jaffa(
         rearrangement,
         classification,
         inframe,
+        CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert jaffa_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
@@ -194,6 +196,7 @@ async def test_star_fusion(
         left_breakpoint,
         right_breakpoint,
         annots,
+        CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert star_fusion_fusor.structure == fusion_data_example.structure
@@ -201,7 +204,7 @@ async def test_star_fusion(
     # Test non-exonic breakpoints
     left_gene = "TPM3^ENSG00000143549.19"
     right_gene = "PDGFRB^ENSG00000113721"
-    left_breakpoint = "chr1:154173078:-"
+    left_breakpoint = "chr1:154173079:-"
     right_breakpoint = "chr5:150127173:-"
     annots = '["INTERCHROMOSOMAL]'
 
@@ -211,6 +214,7 @@ async def test_star_fusion(
         left_breakpoint,
         right_breakpoint,
         annots,
+        CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert (
@@ -236,6 +240,7 @@ async def test_fusion_catcher(
         five_prime_fusion_point,
         three_prime_fusion_point,
         predicted_effect,
+        CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert fusion_catcher_fusor.structure == fusion_data_example.structure
@@ -243,7 +248,7 @@ async def test_fusion_catcher(
     # Test non-exonic breakpoint
     five_prime_partner = "TPM3"
     three_prime_partner = "PDGFRB"
-    five_prime_fusion_point = "1:154173078:-"
+    five_prime_fusion_point = "1:154173079:-"
     three_prime_fusion_point = "5:150127173:-"
     predicted_effect = "exonic(no-known-CDS)/exonic(no-known-CDS)"
 
@@ -253,6 +258,7 @@ async def test_fusion_catcher(
         five_prime_fusion_point,
         three_prime_fusion_point,
         predicted_effect,
+        CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert (
@@ -281,7 +287,7 @@ async def test_fusion_map(
         }
     )
     fusion_map_fusor = await translator_instance.from_fusion_map(
-        fusion_map_data, Assembly.GRCH38.value
+        fusion_map_data, CoordinateType.INTER_RESIDUE.value, Assembly.GRCH38.value
     )
     assert fusion_map_fusor.structure == fusion_data_example.structure
 
@@ -291,7 +297,7 @@ async def test_fusion_map(
             "KnownGene1": "TPM3",
             "KnownGene2": "PDGFRB",
             "Chromosome1": "1",
-            "Position1": "154173078",
+            "Position1": "154173079",
             "Chromosome2": "5",
             "Position2": "150127173",
             "FusionGene": "TPM3->PDGFRB",
@@ -300,7 +306,7 @@ async def test_fusion_map(
         }
     )
     fusion_map_fusor_nonexonic = await translator_instance.from_fusion_map(
-        fusion_map_data_nonexonic, Assembly.GRCH38.value
+        fusion_map_data_nonexonic, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert (
         fusion_map_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
@@ -337,6 +343,7 @@ async def test_arriba(
         direction1,
         direction2,
         rf,
+        CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert arriba_fusor.structure == fusion_data_example.structure
@@ -346,7 +353,7 @@ async def test_arriba(
     gene2 = "PDGFRB"
     strand1 = "-/-"
     strand2 = "-/-"
-    breakpoint1 = "1:154173078"
+    breakpoint1 = "1:154173079"
     breakpoint2 = "5:150127173"
     event = "translocation"
     confidence = "high"
@@ -366,6 +373,7 @@ async def test_arriba(
         direction1,
         direction2,
         rf,
+        CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert arriba_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
@@ -395,6 +403,7 @@ async def test_cicero(
         pos_3prime,
         sv_ort,
         event_type,
+        CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert cicero_fusor.structure == fusion_data_example.structure
@@ -404,7 +413,7 @@ async def test_cicero(
     gene_3prime = "PDGFRB"
     chr_5prime = "1"
     chr_3prime = "5"
-    pos_5prime = 154173078
+    pos_5prime = 154173079
     pos_3prime = 150127173
     sv_ort = ">"
     event_type = "CTX"
@@ -418,6 +427,7 @@ async def test_cicero(
         pos_3prime,
         sv_ort,
         event_type,
+        CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert cicero_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
@@ -427,7 +437,7 @@ async def test_cicero(
     gene_3prime = "PDGFRB"
     chr_5prime = "1"
     chr_3prime = "5"
-    pos_5prime = 154173078
+    pos_5prime = 154173079
     pos_3prime = 150127173
     sv_ort = "?"
     event_type = "CTX"
@@ -441,6 +451,7 @@ async def test_cicero(
         pos_3prime,
         sv_ort,
         event_type,
+        CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert (
@@ -453,7 +464,7 @@ async def test_cicero(
     gene_3prime = "PDGFRB,PDGFRB-FGFR4,FGFR4"
     chr_5prime = "1"
     chr_3prime = "5"
-    pos_5prime = 154173078
+    pos_5prime = 154173079
     pos_3prime = 150127173
     sv_ort = "?"
     event_type = "CTX"
@@ -467,6 +478,7 @@ async def test_cicero(
         pos_3prime,
         sv_ort,
         event_type,
+        CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert (
@@ -495,6 +507,7 @@ async def test_enfusion(
         chr_3prime,
         break_5prime,
         break_3prime,
+        CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert enfusion_fusor.structure == fusion_data_example.structure
@@ -504,7 +517,7 @@ async def test_enfusion(
     gene_3prime = "PDGFRB"
     chr_5prime = 1
     chr_3prime = 5
-    break_5prime = 154173078
+    break_5prime = 154173079
     break_3prime = 150127173
 
     enfusion_fusor_nonexonic = await translator_instance.from_enfusion(
@@ -514,6 +527,7 @@ async def test_enfusion(
         chr_3prime,
         break_5prime,
         break_3prime,
+        CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert enfusion_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
@@ -543,6 +557,7 @@ async def test_genie(
         site2_pos,
         annot,
         reading_frame,
+        CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert genie_fusor.structure == fusion_data_example.structure
@@ -552,7 +567,7 @@ async def test_genie(
     site2_hugo = "PDGFRB"
     site1_chrom = 1
     site2_chrom = 5
-    site1_pos = 154173078
+    site1_pos = 154173079
     site2_pos = 150127173
     annot = "TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion"
     reading_frame = "In_frame"
@@ -566,6 +581,7 @@ async def test_genie(
         site2_pos,
         annot,
         reading_frame,
+        CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert genie_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure

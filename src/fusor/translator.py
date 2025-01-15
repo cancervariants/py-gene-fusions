@@ -6,7 +6,7 @@ import logging
 from enum import Enum
 
 import polars as pl
-from cool_seq_tool.schemas import Assembly
+from cool_seq_tool.schemas import Assembly, CoordinateType
 
 from fusor.fusor import FUSOR
 from fusor.models import (
@@ -186,6 +186,7 @@ class Translator:
         rearrangement: bool,
         classification: str,
         inframe: bool,
+        coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion | None:
         """Parse JAFFA fusion output to create AssayedFusion object
@@ -198,6 +199,7 @@ class Translator:
         :param rearrangement: A boolean indicating if a rearrangement occured
         :param classification: The classification associated with the called fusion
         :param inframe: A boolean indicating if the fusion occurred in-frame
+        :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
@@ -215,6 +217,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chrom1, rb),
             seg_end_genomic=base1,
             gene=gene_5prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -223,6 +226,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chrom2, rb),
             seg_start_genomic=base2,
             gene=gene_3prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -245,6 +249,7 @@ class Translator:
         left_breakpoint: str,
         right_breakpoint: str,
         annots: str,
+        coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
         """Parse STAR-Fusion output to create AssayedFusion object
@@ -254,6 +259,7 @@ class Translator:
         :param left_breakpoint: The gene indicated in the LeftBreakpoint column
         :param right_breakpoint: The gene indicated in the RightBreakpoint column
         :param annots: The annotations associated with the fusion
+        :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
@@ -275,6 +281,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
             seg_end_genomic=int(five_prime[1]),
             gene=gene_5prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -283,6 +290,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
             seg_start_genomic=int(three_prime[1]),
             gene=gene_3prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -298,6 +306,7 @@ class Translator:
         five_prime_fusion_point: str,
         three_prime_fusion_point: str,
         predicted_effect: str,
+        coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
         """Parse FusionCatcher output to create AssayedFusion object
@@ -310,6 +319,7 @@ class Translator:
         fusion junction. This coordinate is 1-based
         :param predicted_effect: The predicted effect of the fusion event, created
         using annotation from the Ensembl database
+        :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
@@ -332,6 +342,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
             seg_end_genomic=int(five_prime[1]),
             gene=gene_5prime_element.gene.label,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -340,6 +351,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
             seg_start_genomic=int(three_prime[1]),
             gene=gene_3prime_element.gene.label,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -349,12 +361,13 @@ class Translator:
         )
 
     async def from_fusion_map(
-        self, fmap_row: pl.DataFrame, rb: Assembly
+        self, fmap_row: pl.DataFrame, coordinate_type: CoordinateType, rb: Assembly
     ) -> AssayedFusion:
         """Parse FusionMap output to create FUSOR AssayedFusion object
 
         :param fmap_row: A row of FusionMap output
         :param rb: The reference build used to call the fusion
+        :param coordinate_type: If the coordinate is inter-residue or residue
         :return: An AssayedFusion object, if construction is successful
         """
         gene1 = fmap_row.get_column("KnownGene1").item()
@@ -372,6 +385,7 @@ class Translator:
             ),
             seg_end_genomic=int(fmap_row.get_column("Position1").item()),
             gene=gene_5prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -382,6 +396,7 @@ class Translator:
             ),
             seg_start_genomic=int(fmap_row.get_column("Position2").item()),
             gene=gene_3prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -416,6 +431,7 @@ class Translator:
         direction1: str,
         direction2: str,
         rf: str,
+        coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
         """Parse Arriba output to create AssayedFusion object
@@ -433,6 +449,7 @@ class Translator:
         :param direction2: A description that indicates if the transcript segment
             starts or ends at breakpoint2
         :param rf: A description if the reading frame is preserved for the fusion
+        :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
@@ -467,6 +484,7 @@ class Translator:
             seg_start_genomic=int(breakpoint1[1]) if gene1_seg_start else None,
             seg_end_genomic=int(breakpoint1[1]) if not gene1_seg_start else None,
             gene=gene_5prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -476,6 +494,7 @@ class Translator:
             seg_start_genomic=int(breakpoint2[1]) if gene2_seg_start else None,
             seg_end_genomic=int(breakpoint2[1]) if not gene2_seg_start else None,
             gene=gene_3prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -505,6 +524,7 @@ class Translator:
         pos_3prime: int,
         sv_ort: str,
         event_type: str,
+        coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion | str:
         """Parse CICERO output to create AssayedFusion object
@@ -518,6 +538,7 @@ class Translator:
         :param sv_ort: Whether the mapping orientation of assembled contig (driven by
             structural variation) has confident biological meaning
         :param event_type: The structural variation event that created the called fusion
+        :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
@@ -550,6 +571,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chr_5prime, rb),
             seg_end_genomic=pos_5prime,
             gene=gene_5prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -558,6 +580,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chr_3prime, rb),
             seg_start_genomic=pos_3prime,
             gene=gene_3prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -580,12 +603,13 @@ class Translator:
         )
 
     async def from_mapsplice(
-        self, mapsplice_row: pl.DataFrame, rb: Assembly
+        self, mapsplice_row: pl.DataFrame, coordinate_type: CoordinateType, rb: Assembly
     ) -> AssayedFusion:
         """Parse MapSplice output to create AssayedFusion object
 
         :param mapsplice_row: A row of MapSplice output
         :param rb: The reference build used to call the fusion
+        :param coordinate_type: If the coordinate is inter-residue or residue
         :retun: An AssayedFusion object, if construction is successful
         """
         gene1 = mapsplice_row[60].strip(",")
@@ -603,6 +627,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(mapsplice_row[0].split("~")[0], rb),
             seg_end_genomic=int(mapsplice_row[1]),
             gene=gene_5prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -611,6 +636,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(mapsplice_row[0].split("~")[1], rb),
             seg_start_genomic=int(mapsplice_row[2]),
             gene=gene_3prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -627,6 +653,7 @@ class Translator:
         chr_3prime: int,
         break_5prime: int,
         break_3prime: int,
+        coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
         """Parse EnFusion output to create AssayedFusion object
@@ -638,6 +665,7 @@ class Translator:
         :param break_5prime: The 5' gene fusion partner genomic breakpoint
         :param break_3prime: The 3' gene fusion partner genomic breakpoint
         :param rb: The reference build used to call the fusion
+        :param coordinate_type: If the coordinate is inter-residue or residue
         :return: An AssayedFusion object, if construction is successful
         """
         gene_5prime_element = self._get_gene_element(gene_5prime, "enfusion")
@@ -653,6 +681,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chr_5prime, rb),
             seg_end_genomic=break_5prime,
             gene=gene_5prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -661,6 +690,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chr_3prime, rb),
             seg_start_genomic=break_3prime,
             gene=gene_3prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -682,6 +712,7 @@ class Translator:
         site2_pos: int,
         annot: str,
         reading_frame: str,
+        coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
         """Parse GENIE output to create AssayedFusion object
@@ -694,6 +725,7 @@ class Translator:
         :param site2_pos: The breakpoint reported at site 2
         :param annot: The annotation for the fusion event
         :param reading_frame: The reading frame status of the fusion
+        :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
@@ -710,6 +742,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(site1_chrom, rb),
             seg_end_genomic=site1_pos,
             gene=gene_5prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
@@ -718,6 +751,7 @@ class Translator:
             genomic_ac=self._get_genomic_ac(site2_chrom, rb),
             seg_start_genomic=site2_pos,
             gene=gene_3prime,
+            coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
