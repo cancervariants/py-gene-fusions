@@ -10,11 +10,17 @@ from cool_seq_tool.schemas import Assembly, CoordinateType
 
 from fusor.fusor import FUSOR
 from fusor.models import (
+    AnchoredReads,
     Assay,
     AssayedFusion,
+    BreakpointCoverage,
     CausativeEvent,
+    ContigSequence,
     EventType,
     GeneElement,
+    ReadData,
+    SpanningReads,
+    SplitReads,
     TranscriptSegmentElement,
 )
 
@@ -56,6 +62,8 @@ class Translator:
         ce: CausativeEvent | None = None,
         rf: bool | None = None,
         assay: Assay | None = None,
+        contig: ContigSequence | None = None,
+        reads: ReadData | None = None,
     ) -> AssayedFusion:
         """Format classes to create AssayedFusion objects
 
@@ -66,6 +74,8 @@ class Translator:
         :param ce: CausativeEvent
         :param rf: A boolean indicating if the reading frame is preserved
         :param assay: Assay
+        :param contig: The contig sequence
+        :param reads: The read data
         :return AssayedFusion object
         """
         params = {}
@@ -84,6 +94,10 @@ class Translator:
             params["readingFramePreserved"] = rf
         if assay:
             params["assay"] = assay
+        if contig:
+            params["contig"] = contig
+        if reads:
+            params["readData"] = reads
         return AssayedFusion(**params)
 
     def _get_causative_event(
@@ -186,6 +200,8 @@ class Translator:
         rearrangement: bool,
         classification: str,
         inframe: bool,
+        spanning_reads: int,
+        spanning_pairs: int,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion | None:
@@ -199,6 +215,12 @@ class Translator:
         :param rearrangement: A boolean indicating if a rearrangement occured
         :param classification: The classification associated with the called fusion
         :param inframe: A boolean indicating if the fusion occurred in-frame
+        :param spanning_reads: The number of deteced reads that span the junction
+            bewtween the two transcript. Although described as spanning reads, this
+            aligns with our defintion of split reads (i.e. reads that have sequence
+            belonging to the fusion partners)
+        :param spanning_pairs: The number of detected reads that align entirely on
+            either side of the breakpoint
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -238,8 +260,19 @@ class Translator:
         else:
             ce = None
 
+        read_data = ReadData(
+            split=SplitReads(splitReads=spanning_reads),
+            spanning=SpanningReads(spanningReads=spanning_pairs),
+        )
+
         return self._format_fusion(
-            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce, inframe
+            gene_5prime_element,
+            gene_3prime_element,
+            tr_5prime,
+            tr_3prime,
+            ce,
+            inframe,
+            reads=read_data,
         )
 
     async def from_star_fusion(
@@ -249,6 +282,8 @@ class Translator:
         left_breakpoint: str,
         right_breakpoint: str,
         annots: str,
+        junction_read_count: int,
+        spanning_frag_count: int,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
@@ -259,6 +294,11 @@ class Translator:
         :param left_breakpoint: The gene indicated in the LeftBreakpoint column
         :param right_breakpoint: The gene indicated in the RightBreakpoint column
         :param annots: The annotations associated with the fusion
+        :param junction_read_count: The number of RNA-seq fragments that split the
+            junction between the two transcript segments (from STAR-Fusion documentation)
+        :param spanning_frag_count: The number of RNA-seq fragments that encompass the
+            fusion junction such that one read of the pair aligns to a different gene
+            than the other paired-end read of that fragment (from STAR-Fusion documentation)
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -295,8 +335,18 @@ class Translator:
         )
 
         ce = self._get_causative_event(five_prime[0], three_prime[0], ",".join(annots))
+        read_data = ReadData(
+            split=SplitReads(splitReads=junction_read_count),
+            spanning=SpanningReads(spanningReads=spanning_frag_count),
+        )
+
         return self._format_fusion(
-            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce
+            gene_5prime_element,
+            gene_3prime_element,
+            tr_5prime,
+            tr_3prime,
+            ce,
+            reads=read_data,
         )
 
     async def from_fusion_catcher(
@@ -306,6 +356,9 @@ class Translator:
         five_prime_fusion_point: str,
         three_prime_fusion_point: str,
         predicted_effect: str,
+        spanning_unique_reads: int,
+        spanning_reads: int,
+        fusion_sequence: str,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
@@ -319,6 +372,10 @@ class Translator:
         fusion junction. This coordinate is 1-based
         :param predicted_effect: The predicted effect of the fusion event, created
         using annotation from the Ensembl database
+        :param spanning_unique_reads: The number of unique reads that map on the fusion
+            junction
+        :param spanning_reads: The number of paired reads that support the fusion
+        :param fusion_sequence: The inferred sequence around the fusion junction
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -356,8 +413,20 @@ class Translator:
         )
 
         ce = self._get_causative_event(five_prime[0], three_prime[0], predicted_effect)
+        read_data = ReadData(
+            split=SplitReads(splitReads=spanning_unique_reads),
+            spanning=SpanningReads(spanningReads=spanning_reads),
+        )
+        contig = ContigSequence(contig=fusion_sequence)
+
         return self._format_fusion(
-            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce
+            gene_5prime_element,
+            gene_3prime_element,
+            tr_5prime,
+            tr_3prime,
+            ce,
+            contig=contig,
+            reads=read_data,
         )
 
     async def from_fusion_map(
@@ -431,6 +500,12 @@ class Translator:
         direction1: str,
         direction2: str,
         rf: str,
+        split_reads1: int,
+        split_reads2: int,
+        discordant_mates: int,
+        coverage1: int,
+        coverage2: int,
+        fusion_transcript: str,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
@@ -449,6 +524,12 @@ class Translator:
         :param direction2: A description that indicates if the transcript segment
             starts or ends at breakpoint2
         :param rf: A description if the reading frame is preserved for the fusion
+        :param split_reads1: Number of supporting split fragments with anchor in gene1
+        :param split_reads2: Number of supporting split fragments with anchor in gene2
+        :param discordant_mates: Number of discordant mates supporting the fusion
+        :param coverage1: Number of fragments retained near breakpoint1
+        :param coverage2: Number of fragments retained near breakpoint2
+        :param fusion_transcript: The assembled fusion transcript
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -484,6 +565,8 @@ class Translator:
             seg_start_genomic=int(breakpoint1[1]) if gene1_seg_start else None,
             seg_end_genomic=int(breakpoint1[1]) if not gene1_seg_start else None,
             gene=gene_5prime,
+            coverage=BreakpointCoverage(fragmentCoverage=coverage1),
+            reads=AnchoredReads(reads=split_reads1),
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
@@ -494,6 +577,8 @@ class Translator:
             seg_start_genomic=int(breakpoint2[1]) if gene2_seg_start else None,
             seg_end_genomic=int(breakpoint2[1]) if not gene2_seg_start else None,
             gene=gene_3prime,
+            coverage=BreakpointCoverage(fragmentCoverage=coverage2),
+            reads=AnchoredReads(reads=split_reads2),
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
@@ -510,8 +595,18 @@ class Translator:
             )
         )
         rf = bool(rf == "in-frame") if rf != "." else None
+        read_data = ReadData(spanning=SpanningReads(spanningReads=discordant_mates))
+        contig = ContigSequence(contig=fusion_transcript)
+
         return self._format_fusion(
-            gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce, rf
+            gene_5prime_element,
+            gene_3prime_element,
+            tr_5prime,
+            tr_3prime,
+            ce,
+            rf,
+            contig=contig,
+            reads=read_data,
         )
 
     async def from_cicero(
@@ -524,6 +619,11 @@ class Translator:
         pos_3prime: int,
         sv_ort: str,
         event_type: str,
+        reads_a: int,
+        reads_b: int,
+        coverage_a: int,
+        coverage_b: int,
+        contig: str,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion | str:
@@ -538,6 +638,11 @@ class Translator:
         :param sv_ort: Whether the mapping orientation of assembled contig (driven by
             structural variation) has confident biological meaning
         :param event_type: The structural variation event that created the called fusion
+        :param readsA: The number of reads that support the breakpoint for the 5' partner
+        :param readsB: The number of reads that support the breakpoint for the 3' partner
+        :param coverageA: The fragment coverage at the 5' breakpoint
+        :param coverageB: The fragment coverage at the 3' breakpoint
+        :param contig: The assembled contig sequence for the fusion
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -571,6 +676,8 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chr_5prime, rb),
             seg_end_genomic=pos_5prime,
             gene=gene_5prime,
+            coverage=BreakpointCoverage(fragmentCoverage=coverage_a),
+            reads=AnchoredReads(reads=reads_a),
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
@@ -580,6 +687,8 @@ class Translator:
             genomic_ac=self._get_genomic_ac(chr_3prime, rb),
             seg_start_genomic=pos_3prime,
             gene=gene_3prime,
+            coverage=BreakpointCoverage(fragmentCoverage=coverage_b),
+            reads=AnchoredReads(reads=reads_b),
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
@@ -594,12 +703,15 @@ class Translator:
                 eventType=EventType("rearrangement"),
                 eventDescription=event_type,
             )
+        contig = ContigSequence(contig=contig)
+
         return self._format_fusion(
             gene_5prime_element,
             gene_3prime_element,
             tr_5prime,
             tr_3prime,
             ce,
+            contig=contig,
         )
 
     async def from_mapsplice(

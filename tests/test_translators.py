@@ -4,108 +4,126 @@ import polars as pl
 import pytest
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
-from fusor.models import AssayedFusion
+from fusor.models import (
+    AnchoredReads,
+    AssayedFusion,
+    BreakpointCoverage,
+    ContigSequence,
+    ReadData,
+    SpanningReads,
+    SplitReads,
+)
 from fusor.translator import Caller
 
 
 @pytest.fixture(scope="module")
 def fusion_data_example():
     """Create example assayed fusion for TPM3::PDGFRB with exonic breakpoints"""
-    params = {
-        "type": "AssayedFusion",
-        "structure": [
-            {
-                "type": "TranscriptSegmentElement",
-                "transcript": "refseq:NM_152263.4",
-                "exonEnd": 8,
-                "exonEndOffset": -66,
-                "gene": {"id": "hgnc:12012", "type": "Gene", "label": "TPM3"},
-                "elementGenomicEnd": {
-                    "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
-                    "type": "SequenceLocation",
-                    "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
-                    "sequenceReference": {
-                        "id": "refseq:NC_000001.11",
-                        "type": "SequenceReference",
-                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+
+    def _create_base_fixture(**kwargs):
+        params = {
+            "type": "AssayedFusion",
+            "structure": [
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_152263.4",
+                    "exonEnd": 8,
+                    "exonEndOffset": -66,
+                    "gene": {"id": "hgnc:12012", "type": "Gene", "label": "TPM3"},
+                    "elementGenomicEnd": {
+                        "id": "ga4gh:SL.6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                        "type": "SequenceLocation",
+                        "digest": "6lXn5i3zqcZUfmtBSieTiVL4Nt2gPGKY",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000001.11",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        },
+                        "start": 154170465,
                     },
-                    "start": 154170465,
                 },
-            },
-            {
-                "type": "TranscriptSegmentElement",
-                "transcript": "refseq:NM_002609.4",
-                "exonStart": 11,
-                "exonStartOffset": 2,
-                "gene": {"id": "hgnc:8804", "type": "Gene", "label": "PDGFRB"},
-                "elementGenomicStart": {
-                    "id": "ga4gh:SL.Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
-                    "type": "SequenceLocation",
-                    "digest": "Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
-                    "sequenceReference": {
-                        "id": "refseq:NC_000005.10",
-                        "type": "SequenceReference",
-                        "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_002609.4",
+                    "exonStart": 11,
+                    "exonStartOffset": 2,
+                    "gene": {"id": "hgnc:8804", "type": "Gene", "label": "PDGFRB"},
+                    "elementGenomicStart": {
+                        "id": "ga4gh:SL.Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
+                        "type": "SequenceLocation",
+                        "digest": "Sp1lwuHbRCkWIoe4zzwVKPsS8zK8i0ck",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000005.10",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
+                        },
+                        "end": 150126612,
                     },
-                    "end": 150126612,
                 },
-            },
-        ],
-        "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
-        "r_frame_preserved": True,
-        "assay": None,
-    }
-    return AssayedFusion(**params)
+            ],
+            "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
+            "r_frame_preserved": True,
+            "assay": None,
+        }
+        assayed_fusion = AssayedFusion(**params)
+        return assayed_fusion.model_copy(update=kwargs)
+
+    return _create_base_fixture
 
 
 @pytest.fixture(scope="module")
 def fusion_data_example_nonexonic():
     """Create example assayed fusion for TPM3::PDGFRB with non-exonic breakpoints"""
-    params = {
-        "type": "AssayedFusion",
-        "structure": [
-            {
-                "type": "TranscriptSegmentElement",
-                "transcript": "refseq:NM_152263.4",
-                "exonEnd": 4,
-                "exonEndOffset": 5,
-                "gene": {"id": "hgnc:12012", "type": "Gene", "label": "TPM3"},
-                "elementGenomicEnd": {
-                    "id": "ga4gh:SL.O1rVKQA2FTdy_FFWg3qJVSTG_TF_Mkex",
-                    "type": "SequenceLocation",
-                    "digest": "O1rVKQA2FTdy_FFWg3qJVSTG_TF_Mkex",
-                    "sequenceReference": {
-                        "id": "refseq:NC_000001.11",
-                        "type": "SequenceReference",
-                        "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+
+    def _create_base_fixture(**kwargs):
+        params = {
+            "type": "AssayedFusion",
+            "structure": [
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_152263.4",
+                    "exonEnd": 4,
+                    "exonEndOffset": 5,
+                    "gene": {"id": "hgnc:12012", "type": "Gene", "label": "TPM3"},
+                    "elementGenomicEnd": {
+                        "id": "ga4gh:SL.O1rVKQA2FTdy_FFWg3qJVSTG_TF_Mkex",
+                        "type": "SequenceLocation",
+                        "digest": "O1rVKQA2FTdy_FFWg3qJVSTG_TF_Mkex",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000001.11",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.Ya6Rs7DHhDeg7YaOSg1EoNi3U_nQ9SvO",
+                        },
+                        "start": 154173078,
                     },
-                    "start": 154173078,
                 },
-            },
-            {
-                "type": "TranscriptSegmentElement",
-                "transcript": "refseq:NM_002609.4",
-                "exonStart": 11,
-                "exonStartOffset": -559,
-                "gene": {"id": "hgnc:8804", "type": "Gene", "label": "PDGFRB"},
-                "elementGenomicStart": {
-                    "id": "ga4gh:SL.GtoWMuox4tOyX2I5L9Baobnpgc1pDIVJ",
-                    "type": "SequenceLocation",
-                    "digest": "GtoWMuox4tOyX2I5L9Baobnpgc1pDIVJ",
-                    "sequenceReference": {
-                        "id": "refseq:NC_000005.10",
-                        "type": "SequenceReference",
-                        "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
+                {
+                    "type": "TranscriptSegmentElement",
+                    "transcript": "refseq:NM_002609.4",
+                    "exonStart": 11,
+                    "exonStartOffset": -559,
+                    "gene": {"id": "hgnc:8804", "type": "Gene", "label": "PDGFRB"},
+                    "elementGenomicStart": {
+                        "id": "ga4gh:SL.GtoWMuox4tOyX2I5L9Baobnpgc1pDIVJ",
+                        "type": "SequenceLocation",
+                        "digest": "GtoWMuox4tOyX2I5L9Baobnpgc1pDIVJ",
+                        "sequenceReference": {
+                            "id": "refseq:NC_000005.10",
+                            "type": "SequenceReference",
+                            "refgetAccession": "SQ.aUiQCzCPZ2d0csHbMSbh2NzInhonSXwI",
+                        },
+                        "end": 150127173,
                     },
-                    "end": 150127173,
                 },
-            },
-        ],
-        "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
-        "r_frame_preserved": True,
-        "assay": None,
-    }
-    return AssayedFusion(**params)
+            ],
+            "causativeEvent": {"type": "CausativeEvent", "eventType": "rearrangement"},
+            "r_frame_preserved": True,
+            "assay": None,
+        }
+        assayed_fusion = AssayedFusion(**params)
+        return assayed_fusion.model_copy(update=kwargs)
+
+    return _create_base_fixture
 
 
 def test_gene_element_arriba(translator_instance):
@@ -138,6 +156,8 @@ async def test_jaffa(
     rearrangement = True
     classification = "HighConfidence"
     inframe = True
+    spanning_reads = 100
+    spanning_pairs = 80
 
     jaffa_fusor = await translator_instance.from_jaffa(
         fusion_genes,
@@ -148,10 +168,18 @@ async def test_jaffa(
         rearrangement,
         classification,
         inframe,
+        spanning_reads,
+        spanning_pairs,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
+    fusion_data_example = fusion_data_example(
+        readData=ReadData(
+            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
+        )
+    )
     assert jaffa_fusor.structure == fusion_data_example.structure
+    assert jaffa_fusor.readData == fusion_data_example.readData
 
     # Test non-exonic breakpoint
     fusion_genes = "TPM3:PDGFRB"
@@ -162,6 +190,8 @@ async def test_jaffa(
     rearrangement = True
     classification = "HighConfidence"
     inframe = True
+    spanning_reads = 100
+    spanning_pairs = 80
 
     jaffa_fusor_nonexonic = await translator_instance.from_jaffa(
         fusion_genes,
@@ -172,10 +202,18 @@ async def test_jaffa(
         rearrangement,
         classification,
         inframe,
+        spanning_reads,
+        spanning_pairs,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
+    fusion_data_example_nonexonic = fusion_data_example_nonexonic(
+        readData=ReadData(
+            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
+        )
+    )
     assert jaffa_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
+    assert jaffa_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
 
 
 @pytest.mark.asyncio()
@@ -189,6 +227,8 @@ async def test_star_fusion(
     left_breakpoint = "chr1:154170465:-"
     right_breakpoint = "chr5:150126612:-"
     annots = '["INTERCHROMOSOMAL]'
+    junction_read_count = 100
+    spanning_frag_count = 80
 
     star_fusion_fusor = await translator_instance.from_star_fusion(
         left_gene,
@@ -196,10 +236,18 @@ async def test_star_fusion(
         left_breakpoint,
         right_breakpoint,
         annots,
+        junction_read_count,
+        spanning_frag_count,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
+    fusion_data_example = fusion_data_example(
+        readData=ReadData(
+            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
+        )
+    )
     assert star_fusion_fusor.structure == fusion_data_example.structure
+    assert star_fusion_fusor.readData == fusion_data_example.readData
 
     # Test non-exonic breakpoints
     left_gene = "TPM3^ENSG00000143549.19"
@@ -207,6 +255,8 @@ async def test_star_fusion(
     left_breakpoint = "chr1:154173079:-"
     right_breakpoint = "chr5:150127173:-"
     annots = '["INTERCHROMOSOMAL]'
+    junction_read_count = 100
+    spanning_frag_count = 80
 
     star_fusion_fusor_nonexonic = await translator_instance.from_star_fusion(
         left_gene,
@@ -214,11 +264,21 @@ async def test_star_fusion(
         left_breakpoint,
         right_breakpoint,
         annots,
+        junction_read_count,
+        spanning_frag_count,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
+    fusion_data_example_nonexonic = fusion_data_example_nonexonic(
+        readData=ReadData(
+            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
+        )
+    )
     assert (
         star_fusion_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
+    )
+    assert (
+        star_fusion_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
     )
 
 
@@ -233,6 +293,9 @@ async def test_fusion_catcher(
     five_prime_fusion_point = "1:154170465:-"
     three_prime_fusion_point = "5:150126612:-"
     predicted_effect = "exonic(no-known-CDS)/exonic(no-known-CDS)"
+    spanning_unique_reads = 100
+    spanning_reads = 80
+    fusion_sequence = "CTAGATGAC*TACTACTA"
 
     fusion_catcher_fusor = await translator_instance.from_fusion_catcher(
         five_prime_partner,
@@ -240,10 +303,21 @@ async def test_fusion_catcher(
         five_prime_fusion_point,
         three_prime_fusion_point,
         predicted_effect,
+        spanning_unique_reads,
+        spanning_reads,
+        fusion_sequence,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
+    fusion_data_example = fusion_data_example(
+        readData=ReadData(
+            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
+        ),
+        contig=ContigSequence(contig="CTAGATGAC*TACTACTA"),
+    )
     assert fusion_catcher_fusor.structure == fusion_data_example.structure
+    assert fusion_catcher_fusor.readData == fusion_data_example.readData
+    assert fusion_catcher_fusor.contig == fusion_catcher_fusor.contig
 
     # Test non-exonic breakpoint
     five_prime_partner = "TPM3"
@@ -251,6 +325,9 @@ async def test_fusion_catcher(
     five_prime_fusion_point = "1:154173079:-"
     three_prime_fusion_point = "5:150127173:-"
     predicted_effect = "exonic(no-known-CDS)/exonic(no-known-CDS)"
+    spanning_unique_reads = 100
+    spanning_reads = 80
+    fusion_sequence = "CTAGATGAC*TACTACTA"
 
     fusion_catcher_fusor_nonexonic = await translator_instance.from_fusion_catcher(
         five_prime_partner,
@@ -258,13 +335,27 @@ async def test_fusion_catcher(
         five_prime_fusion_point,
         three_prime_fusion_point,
         predicted_effect,
+        spanning_unique_reads,
+        spanning_reads,
+        fusion_sequence,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
+    )
+    fusion_data_example_nonexonic = fusion_data_example_nonexonic(
+        readData=ReadData(
+            split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=80)
+        ),
+        contig=ContigSequence(contig="CTAGATGAC*TACTACTA"),
     )
     assert (
         fusion_catcher_fusor_nonexonic.structure
         == fusion_data_example_nonexonic.structure
     )
+    assert (
+        fusion_catcher_fusor_nonexonic.readData
+        == fusion_data_example_nonexonic.readData
+    )
+    assert fusion_catcher_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
 
 
 @pytest.mark.asyncio()
@@ -289,7 +380,7 @@ async def test_fusion_map(
     fusion_map_fusor = await translator_instance.from_fusion_map(
         fusion_map_data, CoordinateType.INTER_RESIDUE.value, Assembly.GRCH38.value
     )
-    assert fusion_map_fusor.structure == fusion_data_example.structure
+    assert fusion_map_fusor.structure == fusion_data_example().structure
 
     # Test non-exonic breakpoint
     fusion_map_data_nonexonic = pl.DataFrame(
@@ -309,7 +400,8 @@ async def test_fusion_map(
         fusion_map_data_nonexonic, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
     )
     assert (
-        fusion_map_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
+        fusion_map_fusor_nonexonic.structure
+        == fusion_data_example_nonexonic().structure
     )
 
 
@@ -330,6 +422,12 @@ async def test_arriba(
     direction1 = "upstream"
     direction2 = "downstream"
     rf = "in-frame"
+    split_reads1 = 100
+    split_reads2 = 95
+    discordant_mates = 30
+    coverage1 = 200
+    coverage2 = 190
+    fusion_transcript = "CTAGATGAC_TACTACTA|GTACTACT"
 
     arriba_fusor = await translator_instance.from_arriba(
         gene1,
@@ -343,10 +441,26 @@ async def test_arriba(
         direction1,
         direction2,
         rf,
+        split_reads1,
+        split_reads2,
+        discordant_mates,
+        coverage1,
+        coverage2,
+        fusion_transcript,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
+    fusion_data_example = fusion_data_example(
+        readData=ReadData(spanning=SpanningReads(spanningReads=30)),
+        contig=ContigSequence(contig=fusion_transcript),
+    )
+    fusion_data_example.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+    fusion_data_example.structure[0].anchoredReads = AnchoredReads(reads=100)
+    fusion_data_example.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+    fusion_data_example.structure[1].anchoredReads = AnchoredReads(reads=95)
     assert arriba_fusor.structure == fusion_data_example.structure
+    assert arriba_fusor.readData == fusion_data_example.readData
+    assert arriba_fusor.contig == fusion_data_example.contig
 
     # Test non-exonic breakpoint
     gene1 = "TPM3"
@@ -360,6 +474,11 @@ async def test_arriba(
     direction1 = "upstream"
     direction2 = "downstream"
     rf = "in-frame"
+    split_reads1 = 100
+    split_reads2 = 95
+    discordant_mates = 30
+    coverage1 = 200
+    coverage2 = 190
 
     arriba_fusor_nonexonic = await translator_instance.from_arriba(
         gene1,
@@ -373,10 +492,30 @@ async def test_arriba(
         direction1,
         direction2,
         rf,
+        split_reads1,
+        split_reads2,
+        discordant_mates,
+        coverage1,
+        coverage2,
+        fusion_transcript,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
+    fusion_data_example_nonexonic = fusion_data_example_nonexonic(
+        readData=ReadData(spanning=SpanningReads(spanningReads=30)),
+        contig=ContigSequence(contig=fusion_transcript),
+    )
+    fusion_data_example_nonexonic.structure[0].coverage = BreakpointCoverage(
+        fragmentCoverage=200
+    )
+    fusion_data_example_nonexonic.structure[0].anchoredReads = AnchoredReads(reads=100)
+    fusion_data_example_nonexonic.structure[1].coverage = BreakpointCoverage(
+        fragmentCoverage=190
+    )
+    fusion_data_example_nonexonic.structure[1].anchoredReads = AnchoredReads(reads=95)
     assert arriba_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
+    assert arriba_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
+    assert arriba_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
 
 
 @pytest.mark.asyncio()
@@ -393,6 +532,11 @@ async def test_cicero(
     pos_3prime = 150126612
     sv_ort = ">"
     event_type = "CTX"
+    reads_a = 100
+    reads_b = 90
+    coverage_a = 200
+    coverage_b = 190
+    contig = "ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT"
 
     cicero_fusor = await translator_instance.from_cicero(
         gene_5prime,
@@ -403,10 +547,22 @@ async def test_cicero(
         pos_3prime,
         sv_ort,
         event_type,
+        reads_a,
+        reads_b,
+        coverage_a,
+        coverage_b,
+        contig,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
+    fusion_data_example = fusion_data_example(contig=ContigSequence(contig=contig))
+    fusion_data_example.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
+    fusion_data_example.structure[0].anchoredReads = AnchoredReads(reads=100)
+    fusion_data_example.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
+    fusion_data_example.structure[1].anchoredReads = AnchoredReads(reads=90)
     assert cicero_fusor.structure == fusion_data_example.structure
+    assert cicero_fusor.readData == fusion_data_example.readData
+    assert cicero_fusor.contig == fusion_data_example.contig
 
     # Test non-exonic breakpoint
     gene_5prime = "TPM3"
@@ -417,6 +573,11 @@ async def test_cicero(
     pos_3prime = 150127173
     sv_ort = ">"
     event_type = "CTX"
+    reads_a = 100
+    reads_b = 90
+    coverage_a = 200
+    coverage_b = 190
+    contig = "ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT"
 
     cicero_fusor_nonexonic = await translator_instance.from_cicero(
         gene_5prime,
@@ -427,10 +588,28 @@ async def test_cicero(
         pos_3prime,
         sv_ort,
         event_type,
+        reads_a,
+        reads_b,
+        coverage_a,
+        coverage_b,
+        contig,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
+    fusion_data_example_nonexonic = fusion_data_example_nonexonic(
+        contig=ContigSequence(contig=contig)
+    )
+    fusion_data_example_nonexonic.structure[0].coverage = BreakpointCoverage(
+        fragmentCoverage=200
+    )
+    fusion_data_example_nonexonic.structure[0].anchoredReads = AnchoredReads(reads=100)
+    fusion_data_example_nonexonic.structure[1].coverage = BreakpointCoverage(
+        fragmentCoverage=190
+    )
+    fusion_data_example_nonexonic.structure[1].anchoredReads = AnchoredReads(reads=90)
     assert cicero_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
+    assert cicero_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
+    assert cicero_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
 
     # Test case where the called fusion does not have confident biological meaning
     gene_5prime = "TPM3"
@@ -441,6 +620,11 @@ async def test_cicero(
     pos_3prime = 150127173
     sv_ort = "?"
     event_type = "CTX"
+    reads_a = 100
+    reads_b = 90
+    coverage_a = 200
+    coverage_b = 190
+    contig = "ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT"
 
     non_confident_bio = await translator_instance.from_cicero(
         gene_5prime,
@@ -451,6 +635,11 @@ async def test_cicero(
         pos_3prime,
         sv_ort,
         event_type,
+        reads_a,
+        reads_b,
+        coverage_a,
+        coverage_b,
+        contig,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -468,6 +657,11 @@ async def test_cicero(
     pos_3prime = 150127173
     sv_ort = "?"
     event_type = "CTX"
+    reads_a = 100
+    reads_b = 90
+    coverage_a = 200
+    coverage_b = 190
+    contig = "ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT"
 
     multiple_genes_fusion_partner = await translator_instance.from_cicero(
         gene_5prime,
@@ -478,6 +672,11 @@ async def test_cicero(
         pos_3prime,
         sv_ort,
         event_type,
+        reads_a,
+        reads_b,
+        coverage_a,
+        coverage_b,
+        contig,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -510,7 +709,7 @@ async def test_enfusion(
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
-    assert enfusion_fusor.structure == fusion_data_example.structure
+    assert enfusion_fusor.structure == fusion_data_example().structure
 
     # Test non-exonic breakpoint
     gene_5prime = "TPM3"
@@ -530,7 +729,9 @@ async def test_enfusion(
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
-    assert enfusion_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
+    assert (
+        enfusion_fusor_nonexonic.structure == fusion_data_example_nonexonic().structure
+    )
 
 
 @pytest.mark.asyncio()
@@ -560,7 +761,7 @@ async def test_genie(
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
-    assert genie_fusor.structure == fusion_data_example.structure
+    assert genie_fusor.structure == fusion_data_example().structure
 
     # Test non-exonic breakpoint
     site1_hugo = "TPM3"
@@ -584,4 +785,4 @@ async def test_genie(
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
-    assert genie_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
+    assert genie_fusor_nonexonic.structure == fusion_data_example_nonexonic().structure
