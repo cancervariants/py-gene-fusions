@@ -6,6 +6,7 @@ from pydantic import ValidationError
 
 from fusor.models import (
     AbstractFusion,
+    AnchoredReads,
     Assay,
     AssayedFusion,
     BreakpointCoverage,
@@ -17,6 +18,7 @@ from fusor.models import (
     GeneElement,
     LinkerElement,
     MultiplePossibleGenesElement,
+    ReadData,
     RegulatoryElement,
     SpanningReads,
     SplitReads,
@@ -178,6 +180,8 @@ def transcript_segments(sequence_locations, gene_examples):
             "gene": gene_examples[0],
             "elementGenomicStart": sequence_locations[2],
             "elementGenomicEnd": sequence_locations[3],
+            "coverage": BreakpointCoverage(fragmentCoverage=100),
+            "anchoredReads": AnchoredReads(reads=85),
         },
         {
             "type": "TranscriptSegmentElement",
@@ -379,6 +383,8 @@ def test_transcript_segment_element(transcript_segments):
     assert test_region_start.type == "SequenceLocation"
     test_region_end = test_element.elementGenomicEnd
     assert test_region_end.type == "SequenceLocation"
+    assert test_element.coverage.fragmentCoverage == 100
+    assert test_element.anchoredReads.reads == 85
 
     test_element = TranscriptSegmentElement(**transcript_segments[3])
     assert test_element.transcript == "refseq:NM_938439.4"
@@ -386,6 +392,8 @@ def test_transcript_segment_element(transcript_segments):
     assert test_element.exonStartOffset == 0
     assert test_element.exonEnd is None
     assert test_element.exonEndOffset is None
+    assert test_element.coverage is None
+    assert test_element.anchoredReads is None
 
     # check CURIE requirement
     with pytest.raises(ValidationError) as exc_info:
@@ -640,6 +648,18 @@ def test_contig():
     check_validation_error(exc_info, msg)
 
 
+def test_anchored_reads():
+    """Test that AnchoredReads class initializes correctly"""
+    test_anchored_reads = AnchoredReads(reads=100)
+    assert test_anchored_reads.reads == 100
+
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert AnchoredReads(type="anchoredreads")
+    msg = "Input should be <FUSORTypes.ANCHORED_READS: 'AnchoredReads'>"
+    check_validation_error(exc_info, msg)
+
+
 def test_split_reads():
     """Test that SplitReads class initializes correctly"""
     test_split_reads = SplitReads(splitReads=97)
@@ -661,6 +681,21 @@ def test_spanning_reads():
     with pytest.raises(ValidationError) as exc_info:
         assert SpanningReads(type="spanningreads")
     msg = "Input should be <FUSORTypes.SPANNING_READS: 'SpanningReads'>"
+    check_validation_error(exc_info, msg)
+
+
+def test_read_data():
+    """Test that ReadData class initializes correctly"""
+    test_read_data = ReadData(
+        split=SplitReads(splitReads=100), spanning=SpanningReads(spanningReads=90)
+    )
+    assert test_read_data.split.splitReads == 100
+    assert test_read_data.spanning.spanningReads == 90
+
+    # test enum validation
+    with pytest.raises(ValidationError) as exc_info:
+        assert ReadData(type="readata")
+    msg = "Input should be <FUSORTypes.READ_DATA: 'ReadData'>"
     check_validation_error(exc_info, msg)
 
 
