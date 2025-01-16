@@ -4,6 +4,7 @@ import polars as pl
 import pytest
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
+from fusor.fusion_caller_models import JAFFA
 from fusor.models import (
     AnchoredReads,
     AssayedFusion,
@@ -148,28 +149,21 @@ async def test_jaffa(
 ):
     """Test JAFFA translator"""
     # Test exonic breakpoint
-    fusion_genes = "TPM3:PDGFRB"
-    chrom1 = "chr1"
-    base1 = 154170465
-    chrom2 = "chr5"
-    base2 = 150126612
-    rearrangement = True
-    classification = "HighConfidence"
-    inframe = True
-    spanning_reads = 100
-    spanning_pairs = 80
+    jaffa = JAFFA(
+        fusion_genes="TPM3:PDGFRB",
+        chrom1="chr1",
+        base1=154170465,
+        chrom2="chr5",
+        base2=150126612,
+        rearrangement=True,
+        classification="HighConfidence",
+        inframe=True,
+        spanning_reads=100,
+        spanning_pairs=80,
+    )
 
     jaffa_fusor = await translator_instance.from_jaffa(
-        fusion_genes,
-        chrom1,
-        base1,
-        chrom2,
-        base2,
-        rearrangement,
-        classification,
-        inframe,
-        spanning_reads,
-        spanning_pairs,
+        jaffa,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -182,28 +176,21 @@ async def test_jaffa(
     assert jaffa_fusor.readData == fusion_data_example.readData
 
     # Test non-exonic breakpoint
-    fusion_genes = "TPM3:PDGFRB"
-    chrom1 = "chr1"
-    base1 = 154173079
-    chrom2 = "chr5"
-    base2 = 150127173
-    rearrangement = True
-    classification = "HighConfidence"
-    inframe = True
-    spanning_reads = 100
-    spanning_pairs = 80
+    jaffa = JAFFA(
+        fusion_genes="TPM3:PDGFRB",
+        chrom1="chr1",
+        base1=154173079,
+        chrom2="chr5",
+        base2=150127173,
+        rearrangement=True,
+        classification="HighConfidence",
+        inframe=True,
+        spanning_reads=100,
+        spanning_pairs=80,
+    )
 
     jaffa_fusor_nonexonic = await translator_instance.from_jaffa(
-        fusion_genes,
-        chrom1,
-        base1,
-        chrom2,
-        base2,
-        rearrangement,
-        classification,
-        inframe,
-        spanning_reads,
-        spanning_pairs,
+        jaffa,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )

@@ -8,6 +8,7 @@ from enum import Enum
 import polars as pl
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
+from fusor.fusion_caller_models import JAFFA
 from fusor.fusor import FUSOR
 from fusor.models import (
     AnchoredReads,
@@ -192,40 +193,18 @@ class Translator:
 
     async def from_jaffa(
         self,
-        fusion_genes: str,
-        chrom1: str,
-        base1: int,
-        chrom2: str,
-        base2: int,
-        rearrangement: bool,
-        classification: str,
-        inframe: bool,
-        spanning_reads: int,
-        spanning_pairs: int,
+        jaffa: JAFFA,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion | None:
         """Parse JAFFA fusion output to create AssayedFusion object
 
-        :param fusion_genes: A string containing the two fusion partners
-        :param chrom1: The chromosome indicated in the chrom1 column
-        :param base1: The genomic position indicated in the base1 column
-        :param chrom2: The chromosome indicated in the chrom2 column
-        :param base2: The genomic position indicated in the base2 column
-        :param rearrangement: A boolean indicating if a rearrangement occured
-        :param classification: The classification associated with the called fusion
-        :param inframe: A boolean indicating if the fusion occurred in-frame
-        :param spanning_reads: The number of deteced reads that span the junction
-            bewtween the two transcript. Although described as spanning reads, this
-            aligns with our defintion of split reads (i.e. reads that have sequence
-            belonging to the fusion partners)
-        :param spanning_pairs: The number of detected reads that align entirely on
-            either side of the breakpoint
+        :param JAFFA: A JAFFA object
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        genes = fusion_genes.split(":")
+        genes = jaffa.fusion_genes.split(":")
         gene_5prime_element = self._get_gene_element(genes[0], Caller.JAFFA)
         gene_3prime_element = self._get_gene_element(genes[1], Caller.JAFFA)
         gene_5prime = gene_5prime_element.gene.label
@@ -236,8 +215,8 @@ class Translator:
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(chrom1, rb),
-            seg_end_genomic=base1,
+            genomic_ac=self._get_genomic_ac(jaffa.chrom1, rb),
+            seg_end_genomic=jaffa.base1,
             gene=gene_5prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
@@ -245,24 +224,24 @@ class Translator:
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(chrom2, rb),
-            seg_start_genomic=base2,
+            genomic_ac=self._get_genomic_ac(jaffa.chrom2, rb),
+            seg_start_genomic=jaffa.base2,
             gene=gene_3prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
-        if rearrangement:
+        if jaffa.rearrangement:
             ce = CausativeEvent(
                 eventType=EventType("rearrangement"),
-                eventDescription=classification,
+                eventDescription=jaffa.classification,
             )
         else:
             ce = None
 
         read_data = ReadData(
-            split=SplitReads(splitReads=spanning_reads),
-            spanning=SpanningReads(spanningReads=spanning_pairs),
+            split=SplitReads(splitReads=jaffa.spanning_reads),
+            spanning=SpanningReads(spanningReads=jaffa.spanning_pairs),
         )
 
         return self._format_fusion(
@@ -271,7 +250,7 @@ class Translator:
             tr_5prime,
             tr_3prime,
             ce,
-            inframe,
+            jaffa.inframe,
             reads=read_data,
         )
 
