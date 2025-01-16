@@ -49,8 +49,9 @@ class JAFFA(BaseModel):
     classification: str = Field(
         ..., description="The classification associated with the called fusion"
     )
-    inframe: bool = Field(
-        ..., description="A boolean indicating if the fusion occurred in-frame"
+    inframe: bool | str = Field(
+        ...,
+        description="A boolean or string indicating if the fusion occurred in-frame",
     )
     spanning_reads: int = Field(
         ...,

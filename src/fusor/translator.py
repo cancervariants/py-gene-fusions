@@ -244,7 +244,7 @@ class Translator:
             tr_5prime,
             tr_3prime,
             ce,
-            jaffa.inframe,
+            jaffa.inframe if isinstance(jaffa.inframe, bool) else None,
             reads=read_data,
         )
 
