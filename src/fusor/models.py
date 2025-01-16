@@ -147,7 +147,9 @@ class ContigSequence(BaseStructuralElement):
     contig: Annotated[
         str,
         StringConstraints(
-            strip_whitespace=True, to_upper=True, pattern=r"^(?:[^A-Za-z]|[ACTGactg])*$"
+            strip_whitespace=True,
+            to_upper=True,
+            pattern=r"^(?:[^A-Za-z0-9]|[ACTGactg])*$",
         ),
     ]
 
