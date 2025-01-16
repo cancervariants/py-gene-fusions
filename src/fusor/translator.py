@@ -7,7 +7,16 @@ import logging
 import polars as pl
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
-from fusor.fusion_caller_models import JAFFA, Caller, STARFusion
+from fusor.fusion_caller_models import (
+    JAFFA,
+    Arriba,
+    Caller,
+    Cicero,
+    EnFusion,
+    FusionCatcher,
+    Genie,
+    STARFusion,
+)
 from fusor.fusor import FUSOR
 from fusor.models import (
     AnchoredReads,
@@ -302,48 +311,30 @@ class Translator:
 
     async def from_fusion_catcher(
         self,
-        five_prime_partner: str,
-        three_prime_partner: str,
-        five_prime_fusion_point: str,
-        three_prime_fusion_point: str,
-        predicted_effect: str,
-        spanning_unique_reads: int,
-        spanning_reads: int,
-        fusion_sequence: str,
+        fusion_catcher: FusionCatcher,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
         """Parse FusionCatcher output to create AssayedFusion object
 
-        :param five_prime_partner: Gene symbol for the 5' fusion partner
-        :param three_prime_partner: Gene symbol for the 3' fusion partner
-        :param five_prime_fusion_point: Chromosomal position for the 5' end of the
-        fusion junction. This coordinate is 1-based
-        :param three_prime_fusion_point:  Chromosomal position for the 3' end of the
-        fusion junction. This coordinate is 1-based
-        :param predicted_effect: The predicted effect of the fusion event, created
-        using annotation from the Ensembl database
-        :param spanning_unique_reads: The number of unique reads that map on the fusion
-            junction
-        :param spanning_reads: The number of paired reads that support the fusion
-        :param fusion_sequence: The inferred sequence around the fusion junction
+        :param fusion_catcher: A FusionCatcher object
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
         gene_5prime_element = self._get_gene_element(
-            five_prime_partner, Caller.FUSION_CATCHER
+            fusion_catcher.five_prime_partner, Caller.FUSION_CATCHER
         )
         gene_3prime_element = self._get_gene_element(
-            three_prime_partner, Caller.FUSION_CATCHER
+            fusion_catcher.three_prime_partner, Caller.FUSION_CATCHER
         )
         if not self._are_fusion_partners_different(
             gene_5prime_element.gene.label, gene_3prime_element.gene.label
         ):
             return None
 
-        five_prime = five_prime_fusion_point.split(":")
-        three_prime = three_prime_fusion_point.split(":")
+        five_prime = fusion_catcher.five_prime_fusion_point.split(":")
+        three_prime = fusion_catcher.three_prime_fusion_point.split(":")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -363,12 +354,14 @@ class Translator:
             starting_assembly=rb,
         )
 
-        ce = self._get_causative_event(five_prime[0], three_prime[0], predicted_effect)
-        read_data = ReadData(
-            split=SplitReads(splitReads=spanning_unique_reads),
-            spanning=SpanningReads(spanningReads=spanning_reads),
+        ce = self._get_causative_event(
+            five_prime[0], three_prime[0], fusion_catcher.predicted_effect
         )
-        contig = ContigSequence(contig=fusion_sequence)
+        read_data = ReadData(
+            split=SplitReads(splitReads=fusion_catcher.spanning_unique_reads),
+            spanning=SpanningReads(spanningReads=fusion_catcher.spanning_reads),
+        )
+        contig = ContigSequence(contig=fusion_catcher.fusion_sequence)
 
         return self._format_fusion(
             gene_5prime_element,
@@ -440,47 +433,13 @@ class Translator:
 
     async def from_arriba(
         self,
-        gene1: str,
-        gene2: str,
-        strand1: str,
-        strand2: str,
-        breakpoint1: str,
-        breakpoint2: str,
-        event: str,
-        confidence: str,
-        direction1: str,
-        direction2: str,
-        rf: str,
-        split_reads1: int,
-        split_reads2: int,
-        discordant_mates: int,
-        coverage1: int,
-        coverage2: int,
-        fusion_transcript: str,
+        arriba: Arriba,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
         """Parse Arriba output to create AssayedFusion object
 
-        :param gene1: The 5' gene fusion partner
-        :param gene2: The 3' gene fusion partner
-        :param strand1: The strand information for the 5' gene fusion partner
-        :param strand2: The strand information for the 3' gene fusion partner
-        :param breakpoint1: The chromosome and breakpoint for gene1
-        :param breakpoint2: The chromosome and breakpoint for gene2
-        :param event: An inference about the type of fusion event
-        :param confidence: A metric describing the confidence of the fusion prediction
-        :param direction1: A description that indicates if the transcript segment
-            starts or ends at breakpoint1
-        :param direction2: A description that indicates if the transcript segment
-            starts or ends at breakpoint2
-        :param rf: A description if the reading frame is preserved for the fusion
-        :param split_reads1: Number of supporting split fragments with anchor in gene1
-        :param split_reads2: Number of supporting split fragments with anchor in gene2
-        :param discordant_mates: Number of discordant mates supporting the fusion
-        :param coverage1: Number of fragments retained near breakpoint1
-        :param coverage2: Number of fragments retained near breakpoint2
-        :param fusion_transcript: The assembled fusion transcript
+        :param arriba: An Arriba class instance
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -488,27 +447,27 @@ class Translator:
         # Arriba reports two gene symbols if a breakpoint occurs in an intergenic
         # space. We select the gene symbol with the smallest distance from the
         # breakpoint.
-        gene_5prime_element = self._get_gene_element(gene1, "arriba")
-        gene_3prime_element = self._get_gene_element(gene2, "arriba")
+        gene_5prime_element = self._get_gene_element(arriba.gene1, "arriba")
+        gene_3prime_element = self._get_gene_element(arriba.gene2, "arriba")
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
         if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
 
-        strand1 = strand1.split("/")[1]  # Determine strand that is transcribed
-        strand2 = strand2.split("/")[1]  # Determine strand that is transcribed
+        strand1 = arriba.strand1.split("/")[1]  # Determine strand that is transcribed
+        strand2 = arriba.strand2.split("/")[1]  # Determine strand that is transcribed
         if strand1 == "+":
-            gene1_seg_start = direction1 == "upstream"
+            gene1_seg_start = arriba.direction1 == "upstream"
         else:
-            gene1_seg_start = direction1 == "downstream"
+            gene1_seg_start = arriba.direction1 == "downstream"
         if strand2 == "+":
-            gene2_seg_start = direction2 == "upstream"
+            gene2_seg_start = arriba.direction2 == "upstream"
         else:
-            gene2_seg_start = direction2 == "downstream"
+            gene2_seg_start = arriba.direction2 == "downstream"
 
-        breakpoint1 = breakpoint1.split(":")
-        breakpoint2 = breakpoint2.split(":")
+        breakpoint1 = arriba.breakpoint1.split(":")
+        breakpoint2 = arriba.breakpoint2.split(":")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -516,8 +475,8 @@ class Translator:
             seg_start_genomic=int(breakpoint1[1]) if gene1_seg_start else None,
             seg_end_genomic=int(breakpoint1[1]) if not gene1_seg_start else None,
             gene=gene_5prime,
-            coverage=BreakpointCoverage(fragmentCoverage=coverage1),
-            reads=AnchoredReads(reads=split_reads1),
+            coverage=BreakpointCoverage(fragmentCoverage=arriba.coverage1),
+            reads=AnchoredReads(reads=arriba.split_reads1),
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
@@ -528,8 +487,8 @@ class Translator:
             seg_start_genomic=int(breakpoint2[1]) if gene2_seg_start else None,
             seg_end_genomic=int(breakpoint2[1]) if not gene2_seg_start else None,
             gene=gene_3prime,
-            coverage=BreakpointCoverage(fragmentCoverage=coverage2),
-            reads=AnchoredReads(reads=split_reads2),
+            coverage=BreakpointCoverage(fragmentCoverage=arriba.coverage2),
+            reads=AnchoredReads(reads=arriba.split_reads2),
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
@@ -537,17 +496,19 @@ class Translator:
         ce = (
             CausativeEvent(
                 eventType=EventType("read-through"),
-                eventDescription=confidence,
+                eventDescription=arriba.confidence,
             )
-            if "read_through" in event
+            if "read_through" in arriba.event
             else CausativeEvent(
                 eventType=EventType("rearrangement"),
-                eventDescription=confidence,
+                eventDescription=arriba.confidence,
             )
         )
-        rf = bool(rf == "in-frame") if rf != "." else None
-        read_data = ReadData(spanning=SpanningReads(spanningReads=discordant_mates))
-        contig = ContigSequence(contig=fusion_transcript)
+        rf = bool(arriba.rf == "in-frame") if arriba.rf != "." else None
+        read_data = ReadData(
+            spanning=SpanningReads(spanningReads=arriba.discordant_mates)
+        )
+        contig = ContigSequence(contig=arriba.fusion_transcript)
 
         return self._format_fusion(
             gene_5prime_element,
@@ -562,38 +523,13 @@ class Translator:
 
     async def from_cicero(
         self,
-        gene_5prime: str,
-        gene_3prime: str,
-        chr_5prime: str,
-        chr_3prime: str,
-        pos_5prime: int,
-        pos_3prime: int,
-        sv_ort: str,
-        event_type: str,
-        reads_a: int,
-        reads_b: int,
-        coverage_a: int,
-        coverage_b: int,
-        contig: str,
+        cicero: Cicero,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion | str:
         """Parse CICERO output to create AssayedFusion object
 
-        :param gene_5prime: The gene symbol for the 5' partner
-        :param gene_3prime: The gene symbol for the 3' partner
-        :param chr_5prime: The chromosome for the 5' partner
-        :param chr_3prime: The chromosome for the 3' partner
-        :param pos_5prime: The genomic breakpoint for the 5' partner
-        :param pos_3prime: The genomic breakpoint for the 3' partner
-        :param sv_ort: Whether the mapping orientation of assembled contig (driven by
-            structural variation) has confident biological meaning
-        :param event_type: The structural variation event that created the called fusion
-        :param readsA: The number of reads that support the breakpoint for the 5' partner
-        :param readsB: The number of reads that support the breakpoint for the 3' partner
-        :param coverageA: The fragment coverage at the 5' breakpoint
-        :param coverageB: The fragment coverage at the 3' breakpoint
-        :param contig: The assembled contig sequence for the fusion
+        :param cicero: A Cicero class instance
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -602,20 +538,20 @@ class Translator:
         # gene symbols for `gene_5prime` or `gene_3prime`, which are separated by a comma. As
         # there is not a precise way to resolve this ambiguity, we do not process
         # these events
-        if "," in gene_5prime or "," in gene_3prime:
+        if "," in cicero.gene_5prime or "," in cicero.gene_3prime:
             msg = "Ambiguous gene symbols are reported by CICERO for at least one of the fusion partners"
             _logger.warning(msg)
             return msg
 
         # Check CICERO annotation regarding the confidence that the called fusion
         # has biological meaning
-        if sv_ort != ">":
+        if cicero.sv_ort != ">":
             msg = "CICERO annotation indicates that this event does not have confident biological meaning"
             _logger.warning(msg)
             return msg
 
-        gene_5prime_element = self._get_gene_element(gene_5prime, "cicero")
-        gene_3prime_element = self._get_gene_element(gene_3prime, "cicero")
+        gene_5prime_element = self._get_gene_element(cicero.gene_5prime, "cicero")
+        gene_3prime_element = self._get_gene_element(cicero.gene_3prime, "cicero")
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
@@ -624,37 +560,37 @@ class Translator:
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(chr_5prime, rb),
-            seg_end_genomic=pos_5prime,
+            genomic_ac=self._get_genomic_ac(cicero.chr_5prime, rb),
+            seg_end_genomic=cicero.pos_5prime,
             gene=gene_5prime,
-            coverage=BreakpointCoverage(fragmentCoverage=coverage_a),
-            reads=AnchoredReads(reads=reads_a),
+            coverage=BreakpointCoverage(fragmentCoverage=cicero.coverage_5prime),
+            reads=AnchoredReads(reads=cicero.reads_5prime),
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(chr_3prime, rb),
-            seg_start_genomic=pos_3prime,
+            genomic_ac=self._get_genomic_ac(cicero.chr_3prime, rb),
+            seg_start_genomic=cicero.pos_3prime,
             gene=gene_3prime,
-            coverage=BreakpointCoverage(fragmentCoverage=coverage_b),
-            reads=AnchoredReads(reads=reads_b),
+            coverage=BreakpointCoverage(fragmentCoverage=cicero.coverage_3prime),
+            reads=AnchoredReads(reads=cicero.reads_3prime),
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
-        if event_type == "read_through":
+        if cicero.event_type == "read_through":
             ce = CausativeEvent(
                 eventType=EventType("read-through"),
-                eventDescription=event_type,
+                eventDescription=cicero.event_type,
             )
         else:
             ce = CausativeEvent(
                 eventType=EventType("rearrangement"),
-                eventDescription=event_type,
+                eventDescription=cicero.event_type,
             )
-        contig = ContigSequence(contig=contig)
+        contig = ContigSequence(contig=cicero.contig)
 
         return self._format_fusion(
             gene_5prime_element,
@@ -710,29 +646,19 @@ class Translator:
 
     async def from_enfusion(
         self,
-        gene_5prime: str,
-        gene_3prime: str,
-        chr_5prime: int,
-        chr_3prime: int,
-        break_5prime: int,
-        break_3prime: int,
+        enfusion: EnFusion,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
         """Parse EnFusion output to create AssayedFusion object
 
-        :param gene_5prime: The 5' gene fusion partner
-        :param gene_3prime: The 3' gene fusion partner
-        :param chr_5prime: The 5' gene fusion partner chromosome
-        :param chr_3prime: The 3' gene fusion partner chromosome
-        :param break_5prime: The 5' gene fusion partner genomic breakpoint
-        :param break_3prime: The 3' gene fusion partner genomic breakpoint
-        :param rb: The reference build used to call the fusion
+        :param enfusion: An Enfusion class instance
         :param coordinate_type: If the coordinate is inter-residue or residue
+        :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene_5prime_element = self._get_gene_element(gene_5prime, "enfusion")
-        gene_3prime_element = self._get_gene_element(gene_3prime, "enfusion")
+        gene_5prime_element = self._get_gene_element(enfusion.gene_5prime, "enfusion")
+        gene_3prime_element = self._get_gene_element(enfusion.gene_3prime, "enfusion")
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
@@ -741,8 +667,8 @@ class Translator:
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(chr_5prime, rb),
-            seg_end_genomic=break_5prime,
+            genomic_ac=self._get_genomic_ac(enfusion.chr_5prime, rb),
+            seg_end_genomic=enfusion.break_5prime,
             gene=gene_5prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
@@ -750,16 +676,16 @@ class Translator:
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(chr_3prime, rb),
-            seg_start_genomic=break_3prime,
+            genomic_ac=self._get_genomic_ac(enfusion.chr_3prime, rb),
+            seg_start_genomic=enfusion.break_3prime,
             gene=gene_3prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
         ce = self._get_causative_event(
-            chr_5prime,
-            chr_3prime,
+            enfusion.chr_5prime,
+            enfusion.chr_3prime,
         )
         return self._format_fusion(
             gene_5prime_element, gene_3prime_element, tr_5prime, tr_3prime, ce
@@ -767,33 +693,19 @@ class Translator:
 
     async def from_genie(
         self,
-        site1_hugo: str,
-        site2_hugo: str,
-        site1_chrom: int,
-        site2_chrom: int,
-        site1_pos: int,
-        site2_pos: int,
-        annot: str,
-        reading_frame: str,
+        genie: Genie,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
         """Parse GENIE output to create AssayedFusion object
 
-        :param site1_hugo: The HUGO symbol reported at site 1
-        :param site2_hugo: The HUGO symbol reported at site 2
-        :param site1_chrom: The chromosome reported at site 1
-        :param site2_chrom: The chromosome reported at site 2
-        :param site1_pos: The breakpoint reported at site 1
-        :param site2_pos: The breakpoint reported at site 2
-        :param annot: The annotation for the fusion event
-        :param reading_frame: The reading frame status of the fusion
+        :param genie: A Genie class instance
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene_5prime_element = self._get_gene_element(site1_hugo, "genie")
-        gene_3prime_element = self._get_gene_element(site2_hugo, "genie")
+        gene_5prime_element = self._get_gene_element(genie.site1_hugo, "genie")
+        gene_3prime_element = self._get_gene_element(genie.site2_hugo, "genie")
         gene_5prime = gene_5prime_element.gene.label
         gene_3prime = gene_3prime_element.gene.label
 
@@ -802,8 +714,8 @@ class Translator:
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(site1_chrom, rb),
-            seg_end_genomic=site1_pos,
+            genomic_ac=self._get_genomic_ac(genie.site1_chrom, rb),
+            seg_end_genomic=genie.site1_pos,
             gene=gene_5prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
@@ -811,19 +723,19 @@ class Translator:
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(site2_chrom, rb),
-            seg_start_genomic=site2_pos,
+            genomic_ac=self._get_genomic_ac(genie.site2_chrom, rb),
+            seg_start_genomic=genie.site2_pos,
             gene=gene_3prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
 
         ce = self._get_causative_event(
-            site1_chrom,
-            site2_chrom,
-            annot,
+            genie.site1_chrom,
+            genie.site2_chrom,
+            genie.annot,
         )
-        rf = bool(reading_frame == "in frame")
+        rf = bool(genie.reading_frame == "in frame")
         return self._format_fusion(
             gene_5prime, gene_3prime, tr_5prime, tr_3prime, ce, rf
         )
