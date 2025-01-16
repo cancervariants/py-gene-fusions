@@ -650,6 +650,12 @@ def test_contig():
     msg = "Input should be <FUSORTypes.CONTIG_SEQUENCE: 'ContigSequence'>"
     check_validation_error(exc_info, msg)
 
+    # test invalid input
+    with pytest.raises(ValidationError) as exc_info:
+        ContigSequence(contig="1212341|ATGATCATGAT")
+    msg = "String should match pattern '^(?:[^A-Za-z0-9]|[ACTGactg])*$'"
+    check_validation_error(exc_info, msg)
+
 
 def test_anchored_reads():
     """Test that AnchoredReads class initializes correctly"""
