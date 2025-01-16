@@ -641,6 +641,9 @@ def test_contig():
     test_contig = ContigSequence(contig="GTATACTATGATCAGT")
     assert test_contig.contig == "GTATACTATGATCAGT"
 
+    test_contig = ContigSequence(contig="GTATACTATGATCAGT|ATGATCATGAT")
+    assert test_contig.contig == "GTATACTATGATCAGT|ATGATCATGAT"
+
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert ContigSequence(type="contig")
