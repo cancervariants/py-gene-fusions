@@ -85,3 +85,24 @@ class STARFusion(BaseModel):
         ...,
         description="The number of RNA-seq fragments that encompass the fusion junction such that one read of the pair aligns to a different gene than the other paired-end read of that fragment (from STAR-Fusion documentation)",
     )
+
+
+class FusionCatcher(BaseModel):
+    """Define parameters for FusionCatcher model"""
+
+    type: Literal[Caller.FUSION_CATCHER] = Caller.FUSION_CATCHER
+    five_prime_partner: str = Field(
+        ..., description="Gene symbol for the 5' fusion partner"
+    )
+    three_prime_partner: str = Field(
+        ..., description="Gene symbol for the 3' fusion partner"
+    )
+    five_prime_fusion_point: str = Field(
+        ...,
+        description="Chromosomal position for the 5' end of the fusion junction. This coordinate is 1-based",
+    )
+    three_prime_fusion_point: str
+    predicted_effect: str
+    spanning_unique_reads: int
+    spanning_reads: int
+    fusion_sequence: str
