@@ -3,12 +3,11 @@ objects
 """
 
 import logging
-from enum import Enum
 
 import polars as pl
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
-from fusor.fusion_caller_models import JAFFA
+from fusor.fusion_caller_models import JAFFA, Caller, STARFusion
 from fusor.fusor import FUSOR
 from fusor.models import (
     AnchoredReads,
@@ -26,20 +25,6 @@ from fusor.models import (
 )
 
 _logger = logging.getLogger(__name__)
-
-
-class Caller(str, Enum):
-    """Define different supported callers"""
-
-    JAFFA = "JAFFA"
-    STAR_FUSION = "STAR-Fusion"
-    FUSION_CATCHER = "FusionCatcher"
-    FUSION_MAP = "FusionMap"
-    ARRIBA = "Arriba"
-    CICERO = "CICERO"
-    MAPSPLICE = "MapSplice"
-    ENFUSION = "EnFusion"
-    GENIE = "GENIE"
 
 
 class Translator:
@@ -256,34 +241,19 @@ class Translator:
 
     async def from_star_fusion(
         self,
-        left_gene: str,
-        right_gene: str,
-        left_breakpoint: str,
-        right_breakpoint: str,
-        annots: str,
-        junction_read_count: int,
-        spanning_frag_count: int,
+        star_fusion: STARFusion,
         coordinate_type: CoordinateType,
         rb: Assembly,
     ) -> AssayedFusion:
         """Parse STAR-Fusion output to create AssayedFusion object
 
-        :param left_gene: The gene indicated in the LeftGene column
-        :param right_gene: The gene indicated in the RightGene column
-        :param left_breakpoint: The gene indicated in the LeftBreakpoint column
-        :param right_breakpoint: The gene indicated in the RightBreakpoint column
-        :param annots: The annotations associated with the fusion
-        :param junction_read_count: The number of RNA-seq fragments that split the
-            junction between the two transcript segments (from STAR-Fusion documentation)
-        :param spanning_frag_count: The number of RNA-seq fragments that encompass the
-            fusion junction such that one read of the pair aligns to a different gene
-            than the other paired-end read of that fragment (from STAR-Fusion documentation)
+        :param star_fusion: A STARFusion caller object
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
         """
-        gene1 = left_gene.split("^")[0]
-        gene2 = right_gene.split("^")[0]
+        gene1 = star_fusion.left_gene.split("^")[0]
+        gene2 = star_fusion.right_gene.split("^")[0]
         gene_5prime_element = self._get_gene_element(gene1, Caller.STAR_FUSION)
         gene_3prime_element = self._get_gene_element(gene2, Caller.STAR_FUSION)
         gene_5prime = gene_5prime_element.gene.label
@@ -292,8 +262,8 @@ class Translator:
         if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
             return None
 
-        five_prime = left_breakpoint.split(":")
-        three_prime = right_breakpoint.split(":")
+        five_prime = star_fusion.left_breakpoint.split(":")
+        three_prime = star_fusion.right_breakpoint.split(":")
 
         tr_5prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -313,10 +283,12 @@ class Translator:
             starting_assembly=rb,
         )
 
-        ce = self._get_causative_event(five_prime[0], three_prime[0], ",".join(annots))
+        ce = self._get_causative_event(
+            five_prime[0], three_prime[0], ",".join(star_fusion.annots)
+        )
         read_data = ReadData(
-            split=SplitReads(splitReads=junction_read_count),
-            spanning=SpanningReads(spanningReads=spanning_frag_count),
+            split=SplitReads(splitReads=star_fusion.junction_read_count),
+            spanning=SpanningReads(spanningReads=star_fusion.spanning_frag_count),
         )
 
         return self._format_fusion(

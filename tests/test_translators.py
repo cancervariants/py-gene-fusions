@@ -4,7 +4,7 @@ import polars as pl
 import pytest
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
-from fusor.fusion_caller_models import JAFFA
+from fusor.fusion_caller_models import JAFFA, Caller, STARFusion
 from fusor.models import (
     AnchoredReads,
     AssayedFusion,
@@ -14,7 +14,6 @@ from fusor.models import (
     SpanningReads,
     SplitReads,
 )
-from fusor.translator import Caller
 
 
 @pytest.fixture(scope="module")
@@ -209,22 +208,18 @@ async def test_star_fusion(
 ):
     """Test STAR-Fusion translator"""
     # Test exonic breakpoints
-    left_gene = "TPM3^ENSG00000143549.19"
-    right_gene = "PDGFRB^ENSG00000113721"
-    left_breakpoint = "chr1:154170465:-"
-    right_breakpoint = "chr5:150126612:-"
-    annots = '["INTERCHROMOSOMAL]'
-    junction_read_count = 100
-    spanning_frag_count = 80
+    star_fusion = STARFusion(
+        left_gene="TPM3^ENSG00000143549.19",
+        right_gene="PDGFRB^ENSG00000113721",
+        left_breakpoint="chr1:154170465:-",
+        right_breakpoint="chr5:150126612:-",
+        annots='["INTERCHROMOSOMAL]',
+        junction_read_count=100,
+        spanning_frag_count=80,
+    )
 
     star_fusion_fusor = await translator_instance.from_star_fusion(
-        left_gene,
-        right_gene,
-        left_breakpoint,
-        right_breakpoint,
-        annots,
-        junction_read_count,
-        spanning_frag_count,
+        star_fusion,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -237,22 +232,18 @@ async def test_star_fusion(
     assert star_fusion_fusor.readData == fusion_data_example.readData
 
     # Test non-exonic breakpoints
-    left_gene = "TPM3^ENSG00000143549.19"
-    right_gene = "PDGFRB^ENSG00000113721"
-    left_breakpoint = "chr1:154173079:-"
-    right_breakpoint = "chr5:150127173:-"
-    annots = '["INTERCHROMOSOMAL]'
-    junction_read_count = 100
-    spanning_frag_count = 80
+    star_fusion = STARFusion(
+        left_gene="TPM3^ENSG00000143549.19",
+        right_gene="PDGFRB^ENSG00000113721",
+        left_breakpoint="chr1:154173079:-",
+        right_breakpoint="chr5:150127173:-",
+        annots='["INTERCHROMOSOMAL]',
+        junction_read_count=100,
+        spanning_frag_count=80,
+    )
 
     star_fusion_fusor_nonexonic = await translator_instance.from_star_fusion(
-        left_gene,
-        right_gene,
-        left_breakpoint,
-        right_breakpoint,
-        annots,
-        junction_read_count,
-        spanning_frag_count,
+        star_fusion,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )

@@ -10,16 +10,24 @@ class BaseModelForbidExtra(BaseModel, extra="forbid"):
     """Base Pydantic model class with extra values forbidden."""
 
 
-class FusionCallerTypes(str, Enum):
-    """Define FusionCaller type values"""
+class Caller(str, Enum):
+    """Define different supported callers"""
 
     JAFFA = "JAFFA"
+    STAR_FUSION = "STAR-Fusion"
+    FUSION_CATCHER = "FusionCatcher"
+    FUSION_MAP = "FusionMap"
+    ARRIBA = "Arriba"
+    CICERO = "CICERO"
+    MAPSPLICE = "MapSplice"
+    ENFUSION = "EnFusion"
+    GENIE = "GENIE"
 
 
 class JAFFA(BaseModel):
     """Define parameters for JAFFA model"""
 
-    type: Literal[FusionCallerTypes.JAFFA] = FusionCallerTypes.JAFFA
+    type: Literal[Caller.JAFFA] = Caller.JAFFA
     fusion_genes: str = Field(
         ..., description="A string containing the two fusion partners"
     )
@@ -51,4 +59,29 @@ class JAFFA(BaseModel):
     spanning_pairs: int = Field(
         ...,
         description="The number of detected reads that align entirely on either side of the breakpoint",
+    )
+
+
+class STARFusion(BaseModel):
+    """Define parameters for STAR-Fusion model"""
+
+    type: Literal[Caller.STAR_FUSION] = Caller.STAR_FUSION
+    left_gene: str = Field(..., description="The gene indicated in the LeftGene column")
+    right_gene: str = Field(
+        ..., description="The gene indicated in the RightGene column"
+    )
+    left_breakpoint: str = Field(
+        ..., description="The gene indicated in the LeftBreakpoint column"
+    )
+    right_breakpoint: str = Field(
+        ..., description="The gene indicated in the RightBreakpoint column"
+    )
+    annots: str = Field(..., description="The annotations associated with the fusion")
+    junction_read_count: int = Field(
+        ...,
+        description="The number of RNA-seq fragments that split the junction between the two transcript segments (from STAR-Fusion documentation)",
+    )
+    spanning_frag_count: int = Field(
+        ...,
+        description="The number of RNA-seq fragments that encompass the fusion junction such that one read of the pair aligns to a different gene than the other paired-end read of that fragment (from STAR-Fusion documentation)",
     )
