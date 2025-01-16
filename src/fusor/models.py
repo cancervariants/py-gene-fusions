@@ -146,7 +146,11 @@ class ContigSequence(BaseStructuralElement):
     type: Literal[FUSORTypes.CONTIG_SEQUENCE] = FUSORTypes.CONTIG_SEQUENCE
     contig: Annotated[
         str,
-        StringConstraints(strip_whitespace=True, to_upper=True, pattern=r"^[ACGT]+$"),
+        StringConstraints(
+            strip_whitespace=True,
+            to_upper=True,
+            pattern=r"^(?:[^A-Za-z0-9]|[ACTGactg])*$",
+        ),
     ]
 
     model_config = ConfigDict(

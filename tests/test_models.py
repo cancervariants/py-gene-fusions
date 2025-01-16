@@ -641,10 +641,19 @@ def test_contig():
     test_contig = ContigSequence(contig="GTATACTATGATCAGT")
     assert test_contig.contig == "GTATACTATGATCAGT"
 
+    test_contig = ContigSequence(contig="GTATACTATGATCAGT|ATGATCATGAT")
+    assert test_contig.contig == "GTATACTATGATCAGT|ATGATCATGAT"
+
     # test enum validation
     with pytest.raises(ValidationError) as exc_info:
         assert ContigSequence(type="contig")
     msg = "Input should be <FUSORTypes.CONTIG_SEQUENCE: 'ContigSequence'>"
+    check_validation_error(exc_info, msg)
+
+    # test invalid input
+    with pytest.raises(ValidationError) as exc_info:
+        ContigSequence(contig="1212341|ATGATCATGAT")
+    msg = "String should match pattern '^(?:[^A-Za-z0-9]|[ACTGactg])*$'"
     check_validation_error(exc_info, msg)
 
 
