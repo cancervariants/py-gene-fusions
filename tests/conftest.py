@@ -2,12 +2,15 @@
 
 import asyncio
 import logging
+from pathlib import Path
 
 import pytest
 from cool_seq_tool.app import CoolSeqTool
 
 from fusor.fusor import FUSOR
 from fusor.translator import Translator
+
+FIXTURE_DATA_DIR = Path(__file__).parents[0].resolve() / "fixtures"
 
 
 def pytest_addoption(parser):
@@ -37,6 +40,12 @@ def event_loop():
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
+
+@pytest.fixture(scope="session")
+def fixture_data_dir():
+    """Provide test data directory."""
+    return FIXTURE_DATA_DIR
 
 
 @pytest.fixture(scope="session")

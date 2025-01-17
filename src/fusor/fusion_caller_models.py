@@ -135,7 +135,9 @@ class Arriba(BaseModel):
     )
     breakpoint1: str = Field(..., description="The chromosome and breakpoint for gene1")
     breakpoint2: str = Field(..., description="The chromosome and breakpoint for gene2")
-    event: str = Field(..., description=" An inference about the type of fusion event")
+    event_type: str = Field(
+        ..., description=" An inference about the type of fusion event"
+    )
     confidence: str = Field(
         ..., description="A metric describing the confidence of the fusion prediction"
     )
