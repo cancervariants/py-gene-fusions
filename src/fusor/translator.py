@@ -498,7 +498,7 @@ class Translator:
                 eventType=EventType("read-through"),
                 eventDescription=arriba.confidence,
             )
-            if "read_through" in arriba.event
+            if "read_through" in arriba.event_type
             else CausativeEvent(
                 eventType=EventType("rearrangement"),
                 eventDescription=arriba.confidence,

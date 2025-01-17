@@ -223,6 +223,9 @@ class EnFusion(BaseModel):
     break_3prime: int = Field(
         ..., description="The 3' gene fusion partner genomic breakpoint"
     )
+    fusion_junction_sequence: str | None = Field(
+        None, description="The sequence near the fusion junction"
+    )
 
 
 class Genie(BaseModel):

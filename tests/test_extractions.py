@@ -5,7 +5,9 @@ from pathlib import Path
 from fusor.extract import (
     get_arriba_records,
     get_cicero_records,
+    get_enfusion_records,
     get_fusion_catcher_records,
+    get_genie_records,
     get_jaffa_records,
     get_star_fusion_records,
 )
@@ -63,4 +65,26 @@ def test_get_cicero_records(fixture_data_dir):
 
     path = fixture_data_dir / "annnotated.fusion.txt"
     fusions_list = get_cicero_records(Path(path))
+    assert fusions_list is None
+
+
+def test_get_enfusion_records(fixture_data_dir):
+    """Test that get_enfusion_records works correctly"""
+    path = fixture_data_dir / "enfusion_test.csv"
+    fusions_list = get_enfusion_records(Path(path))
+    assert len(fusions_list) == 1
+
+    path = fixture_data_dir / "enfusions_test.csv"
+    fusions_list = get_enfusion_records(Path(path))
+    assert fusions_list is None
+
+
+def test_get_genie_records(fixture_data_dir):
+    """Test that get_genie_records works correctly"""
+    path = fixture_data_dir / "genie_test.txt"
+    fusions_list = get_genie_records(Path(path))
+    assert len(fusions_list) == 1
+
+    path = fixture_data_dir / "genie_tests.txt"
+    fusions_list = get_genie_records(Path(path))
     assert fusions_list is None
