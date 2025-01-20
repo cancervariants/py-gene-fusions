@@ -638,10 +638,10 @@ class Translator:
         :param sv_ort: Whether the mapping orientation of assembled contig (driven by
             structural variation) has confident biological meaning
         :param event_type: The structural variation event that created the called fusion
-        :param readsA: The number of reads that support the breakpoint for the 5' partner
-        :param readsB: The number of reads that support the breakpoint for the 3' partner
-        :param coverageA: The fragment coverage at the 5' breakpoint
-        :param coverageB: The fragment coverage at the 3' breakpoint
+        :param reads_a: The number of reads that support the breakpoint for the 5' partner
+        :param reads_b: The number of reads that support the breakpoint for the 3' partner
+        :param coverage_a: The fragment coverage at the 5' breakpoint
+        :param coverage_b: The fragment coverage at the 3' breakpoint
         :param contig: The assembled contig sequence for the fusion
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
