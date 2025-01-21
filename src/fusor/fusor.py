@@ -23,10 +23,12 @@ from pydantic import ValidationError
 
 from fusor.exceptions import FUSORParametersException, IDTranslationException
 from fusor.models import (
+    AnchoredReads,
     Assay,
     AssayedFusion,
     AssayedFusionElement,
     BaseStructuralElement,
+    BreakpointCoverage,
     CategoricalFusion,
     CategoricalFusionElement,
     CausativeEvent,
@@ -219,6 +221,8 @@ class FUSOR:
         tx_to_genomic_coords: bool = True,
         use_minimal_gene: bool = True,
         seq_id_target_namespace: str | None = None,
+        coverage: BreakpointCoverage | None = None,
+        reads: AnchoredReads | None = None,
         **kwargs,
     ) -> tuple[TranscriptSegmentElement | None, list[str] | None]:
         """Create transcript segment element.
@@ -230,6 +234,8 @@ class FUSOR:
             gene-normalizer's entire gene object will be used
         :param seq_id_target_namespace: If want to use digest for ``sequence_id``, set
             this to the namespace you want the digest for. Otherwise, leave as ``None``.
+        :param coverage: The read coverage located near the specified breakpoint
+        :param reads: The read data for the specified breakpoint
         :param kwargs:
             If ``tx_to_genomic_coords``, possible key word arguments:
 
@@ -307,6 +313,8 @@ class FUSOR:
                 gene=normalized_gene_response[0],
                 elementGenomicStart=genomic_start_location,
                 elementGenomicEnd=genomic_end_location,
+                coverage=coverage if coverage else None,
+                anchoredReads=reads if reads else None,
             ),
             None,
         )
