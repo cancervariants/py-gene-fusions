@@ -78,7 +78,13 @@ class Translator:
         :param reads: The read data
         :return AssayedFusion object
         """
-        params = {}
+        params = {
+            "causativeEvent": ce,
+            "readingFramePreserved": rf,
+            "assay": assay,
+            "contig": contig,
+            "readData": reads,
+        }
         if not tr_5prime[0] and not tr_3prime[0]:
             params["structure"] = [gene_5prime, gene_3prime]
         elif tr_5prime[0] and not tr_3prime[0]:
@@ -87,17 +93,6 @@ class Translator:
             params["structure"] = [gene_5prime, tr_3prime[0]]
         else:
             params["structure"] = [tr_5prime[0], tr_3prime[0]]
-
-        if ce:
-            params["causativeEvent"] = ce
-        if rf:
-            params["readingFramePreserved"] = rf
-        if assay:
-            params["assay"] = assay
-        if contig:
-            params["contig"] = contig
-        if reads:
-            params["readData"] = reads
         return AssayedFusion(**params)
 
     def _get_causative_event(
