@@ -1,13 +1,9 @@
-"""Schemas for fusion callers used in translator.py"""
+"""Schemas for outputs provided by different fusion callers"""
 
+from abc import ABC
 from enum import Enum
-from typing import Literal
 
 from pydantic import BaseModel, Field
-
-
-class BaseModelForbidExtra(BaseModel, extra="forbid"):
-    """Base Pydantic model class with extra values forbidden."""
 
 
 class Caller(str, Enum):
@@ -24,10 +20,16 @@ class Caller(str, Enum):
     GENIE = "GENIE"
 
 
-class JAFFA(BaseModel):
+class FusionCaller(ABC, BaseModel, extra="forbid"):
+    """ABC for fusion callers"""
+
+    type: Caller
+
+
+class JAFFA(FusionCaller):
     """Define parameters for JAFFA model"""
 
-    type: Literal[Caller.JAFFA] = Caller.JAFFA
+    type: Caller = Caller.JAFFA
     fusion_genes: str = Field(
         ..., description="A string containing the two fusion partners"
     )
@@ -44,7 +46,7 @@ class JAFFA(BaseModel):
         ..., description="The genomic position indicated in the base2 column"
     )
     rearrangement: bool = Field(
-        ..., description=" A boolean indicating if a rearrangement occured"
+        ..., description=" A boolean indicating if a rearrangement occurred"
     )
     classification: str = Field(
         ..., description="The classification associated with the called fusion"
@@ -55,7 +57,7 @@ class JAFFA(BaseModel):
     )
     spanning_reads: int = Field(
         ...,
-        description="The number of deteced reads that span the junction bewtween the two transcript. Although described as spanning reads, this aligns with our defintion of split reads i.e. reads that have sequence belonging to the fusion partners",
+        description="The number of detected reads that span the junction between the two transcript. Although described as spanning reads, this aligns with our definition of split reads i.e. reads that have sequence belonging to the two fusion partners",
     )
     spanning_pairs: int = Field(
         ...,
@@ -66,7 +68,7 @@ class JAFFA(BaseModel):
 class STARFusion(BaseModel):
     """Define parameters for STAR-Fusion model"""
 
-    type: Literal[Caller.STAR_FUSION] = Caller.STAR_FUSION
+    type: Caller = Caller.STAR_FUSION
     left_gene: str = Field(..., description="The gene indicated in the LeftGene column")
     right_gene: str = Field(
         ..., description="The gene indicated in the RightGene column"
@@ -91,7 +93,7 @@ class STARFusion(BaseModel):
 class FusionCatcher(BaseModel):
     """Define parameters for FusionCatcher model"""
 
-    type: Literal[Caller.FUSION_CATCHER] = Caller.FUSION_CATCHER
+    type: Caller = Caller.FUSION_CATCHER
     five_prime_partner: str = Field(
         ..., description="Gene symbol for the 5' fusion partner"
     )
@@ -124,7 +126,7 @@ class FusionCatcher(BaseModel):
 class Arriba(BaseModel):
     """Define parameters for Arriba model"""
 
-    type: Literal[Caller.ARRIBA] = Caller.ARRIBA
+    type: Caller = Caller.ARRIBA
     gene1: str = Field(..., description="The 5' gene fusion partner")
     gene2: str = Field(..., description="The 3' gene fusion partner")
     strand1: str = Field(
@@ -172,7 +174,7 @@ class Arriba(BaseModel):
 class Cicero(BaseModel):
     """Define parameters for CICERO model"""
 
-    type: Literal[Caller.CICERO] = Caller.CICERO
+    type: Caller = Caller.CICERO
     gene_5prime: str = Field(..., description="The gene symbol for the 5' partner")
     gene_3prime: str = Field(..., description="The gene symbol for the 3' partner")
     chr_5prime: str = Field(..., description="The chromosome for the 5' partner")
@@ -210,7 +212,7 @@ class Cicero(BaseModel):
 class EnFusion(BaseModel):
     """Define parameters for EnFusion model"""
 
-    type: Literal[Caller.ENFUSION] = Caller.ENFUSION
+    type: Caller = Caller.ENFUSION
     gene_5prime: str = Field(..., description="The 5' gene fusion partner")
     gene_3prime: str = Field(..., description="The 3' gene fusion partner")
     chr_5prime: int = Field(..., description="The 5' gene fusion partner chromosome")
@@ -226,7 +228,7 @@ class EnFusion(BaseModel):
 class Genie(BaseModel):
     """Define parameters for Genie model"""
 
-    type: Literal[Caller.GENIE] = Caller.GENIE
+    type: Caller = Caller.GENIE
     site1_hugo: str = Field(..., description="The HUGO symbol reported at site 1")
     site2_hugo: str = Field(..., description="The HUGO symbol reported at site 2")
     site1_chrom: int = Field(..., description="The chromosome reported at site 1")
