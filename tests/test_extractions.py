@@ -13,17 +13,27 @@ from fusor.extract import (
     get_jaffa_records,
     get_star_fusion_records,
 )
+from fusor.fusion_caller_models import JAFFA
 
 
 def test_get_jaffa_records(fixture_data_dir):
     """Test that get_jaffa_records works correctly"""
-    path = fixture_data_dir / "jaffa_results.csv"
-    fusions_list = get_jaffa_records(Path(path))
-    assert len(fusions_list) == 491
+    path = Path(fixture_data_dir / "jaffa_results.csv")
+    jaffa_instance = JAFFA()
+    records = jaffa_instance.load_records(path)
+    assert len(records) == 491
 
-    path = fixture_data_dir / "jaffa_resultss.csv"
+    path = Path(fixture_data_dir / "jaffa_resultss.csv")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
-        assert get_jaffa_records(path)
+        assert jaffa_instance.load_records(path)
+
+    # path = fixture_data_dir / "jaffa_results.csv"
+    # fusions_list = get_jaffa_records(Path(path))
+    # assert len(fusions_list) == 491
+
+    # path = fixture_data_dir / "jaffa_resultss.csv"
+    # with pytest.raises(ValueError, match=f"{path} does not exist"):
+    #   assert get_jaffa_records(path)
 
 
 def test_get_star_fusion_records(fixture_data_dir):

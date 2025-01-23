@@ -21,7 +21,8 @@ def _does_file_exist(path: Path) -> None:
     """Check if fusions file exists
 
     :param path: The path to the file
-    :return ``True`` if the file exists, ``False`` if not
+    :return None
+    :raise ValueError if the file does not exist at the specified path
     """
     if not path.exists():
         statement = f"{path!s} does not exist"
@@ -39,6 +40,7 @@ def _process_fusion_caller_rows(
     :param column_rename: A dictionary of column mappings
     :return: A list of fusions, represented as Pydantic objects
     """
+    _does_file_exist(path)
     fusions_list = []
     with path.open() as csvfile:
         reader = csv.DictReader(csvfile, delimiter="," if caller == JAFFA else "\t")
@@ -54,7 +56,6 @@ def get_jaffa_records(path: Path) -> list[JAFFA]:
     :param path: The path to the file of JAFFA fusions
     :return A list of JAFFA objects, or None if the specified file does not exist
     """
-    _does_file_exist(path)
     column_rename = {
         "fusion genes": "fusion_genes",
         "spanning reads": "spanning_reads",
@@ -69,7 +70,6 @@ def get_star_fusion_records(path: Path) -> list[STARFusion] | None:
     :param path: The path to the file of STAR-Fusion fusions
     :return A list of STAR-Fusion objects, or None if the specified file does not exist
     """
-    _does_file_exist(path)
     column_rename = {
         "LeftGene": "left_gene",
         "RightGene": "right_gene",
@@ -87,7 +87,6 @@ def get_fusion_catcher_records(path: Path) -> list[FusionCatcher] | None:
     :param path: The path to the file of FusionCatcher fusions
     :return A list of FusionCatcher objects, or None if the specified file does not exist
     """
-    _does_file_exist(path)
     column_rename = {
         "Gene_1_symbol(5end_fusion_partner)": "five_prime_partner",
         "Gene_2_symbol(3end_fusion_partner)": "three_prime_partner",
@@ -107,7 +106,6 @@ def get_arriba_records(path: Path) -> list[Arriba] | None:
     :param path: The path to the file of Arriba fusions
     :return A list of Arriba objects, or None if the specified file does not exist
     """
-    _does_file_exist(path)
     column_rename = {
         "#gene1": "gene1",
         "strand1(gene/fusion)": "strand1",
@@ -124,7 +122,6 @@ def get_cicero_records(path: Path) -> list[Cicero] | None:
     :param path: The path to the file of Cicero fusions
     :return A list of Cicero objects, or None if the specified file does not exist
     """
-    _does_file_exist(path)
     column_rename = {
         "geneA": "gene_5prime",
         "geneB": "gene_3prime",
@@ -147,7 +144,6 @@ def get_enfusion_records(path: Path) -> list[EnFusion] | None:
     :param path: The path to the file of Enfusion fusions
     :return A list of Enfusion objects, or None if the specified file does not exist
     """
-    _does_file_exist(path)
     column_rename = {
         "Gene1": "gene_5prime",
         "Gene2": "gene_3prime",
@@ -166,7 +162,6 @@ def get_genie_records(path: Path) -> list[Genie] | None:
     :param path: The path to the file of Genie structural variants
     :return A list of Genie objects, or None if the specified file does not exist
     """
-    _does_file_exist(path)
     column_rename = {
         "Site1_Hugo_Symbol": "site1_hugo",
         "Site2_Hugo_Symbol": "site2_hugo",
