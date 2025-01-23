@@ -73,7 +73,13 @@ class Translator:
         :param reads: The read data
         :return AssayedFusion object
         """
-        params = {}
+        params = {
+            "causativeEvent": ce,
+            "readingFramePreserved": rf,
+            "assay": assay,
+            "contig": contig,
+            "readData": reads,
+        }
         if not tr_5prime[0] and not tr_3prime[0]:
             params["structure"] = [gene_5prime, gene_3prime]
         elif tr_5prime[0] and not tr_3prime[0]:
@@ -82,17 +88,6 @@ class Translator:
             params["structure"] = [gene_5prime, tr_3prime[0]]
         else:
             params["structure"] = [tr_5prime[0], tr_3prime[0]]
-
-        if ce:
-            params["causativeEvent"] = ce
-        if rf:
-            params["readingFramePreserved"] = rf
-        if assay:
-            params["assay"] = assay
-        if contig:
-            params["contig"] = contig
-        if reads:
-            params["readData"] = reads
         return AssayedFusion(**params)
 
     def _get_causative_event(
@@ -193,7 +188,7 @@ class Translator:
     ) -> AssayedFusion | None:
         """Parse JAFFA fusion output to create AssayedFusion object
 
-        :param JAFFA: A JAFFA object
+        :param JAFFA: Output from JAFFA caller
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -256,7 +251,7 @@ class Translator:
     ) -> AssayedFusion:
         """Parse STAR-Fusion output to create AssayedFusion object
 
-        :param star_fusion: A STARFusion caller object
+        :param star_fusion: Output from STAR-Fusion caller
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -317,7 +312,7 @@ class Translator:
     ) -> AssayedFusion:
         """Parse FusionCatcher output to create AssayedFusion object
 
-        :param fusion_catcher: A FusionCatcher object
+        :param fusion_catcher: Output from FusionCatcher caller
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -439,7 +434,7 @@ class Translator:
     ) -> AssayedFusion:
         """Parse Arriba output to create AssayedFusion object
 
-        :param arriba: An Arriba class instance
+        :param arriba: Output from Arriba caller
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -529,7 +524,7 @@ class Translator:
     ) -> AssayedFusion | str:
         """Parse CICERO output to create AssayedFusion object
 
-        :param cicero: A Cicero class instance
+        :param cicero: Output from CICERO caller
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -652,7 +647,7 @@ class Translator:
     ) -> AssayedFusion:
         """Parse EnFusion output to create AssayedFusion object
 
-        :param enfusion: An Enfusion class instance
+        :param enfusion: Output from EnFusion caller
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful
@@ -699,7 +694,7 @@ class Translator:
     ) -> AssayedFusion:
         """Parse GENIE output to create AssayedFusion object
 
-        :param genie: A Genie class instance
+        :param genie: Output from GENIE dataset
         :param coordinate_type: If the coordinate is inter-residue or residue
         :param rb: The reference build used to call the fusion
         :return: An AssayedFusion object, if construction is successful

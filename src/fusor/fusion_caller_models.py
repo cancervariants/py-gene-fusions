@@ -1,13 +1,10 @@
-"""Schemas for fusion callers used in translator.py"""
+"""Schemas for outputs provided by different fusion callers"""
 
+from abc import ABC
 from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
-
-
-class BaseModelForbidExtra(BaseModel, extra="forbid"):
-    """Base Pydantic model class with extra values forbidden."""
 
 
 class Caller(str, Enum):
@@ -24,7 +21,13 @@ class Caller(str, Enum):
     GENIE = "GENIE"
 
 
-class JAFFA(BaseModel):
+class FusionCaller(ABC, BaseModel, extra="forbid"):
+    """ABC for fusion callers"""
+
+    type: Caller
+
+
+class JAFFA(FusionCaller):
     """Define parameters for JAFFA model"""
 
     type: Literal[Caller.JAFFA] = Caller.JAFFA
@@ -44,7 +47,7 @@ class JAFFA(BaseModel):
         ..., description="The genomic position indicated in the base2 column"
     )
     rearrangement: bool = Field(
-        ..., description=" A boolean indicating if a rearrangement occured"
+        ..., description=" A boolean indicating if a rearrangement occurred"
     )
     classification: str = Field(
         ..., description="The classification associated with the called fusion"
@@ -55,7 +58,7 @@ class JAFFA(BaseModel):
     )
     spanning_reads: int = Field(
         ...,
-        description="The number of deteced reads that span the junction bewtween the two transcript. Although described as spanning reads, this aligns with our defintion of split reads i.e. reads that have sequence belonging to the fusion partners",
+        description="The number of detected reads that span the junction between the two transcript. Although described as spanning reads, this aligns with our definition of split reads i.e. reads that have sequence belonging to the two fusion partners",
     )
     spanning_pairs: int = Field(
         ...,
