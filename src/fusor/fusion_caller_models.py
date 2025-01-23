@@ -123,11 +123,13 @@ class JAFFA(FusionCaller):
         return self._process_fusion_caller_rows(path, JAFFA, column_rename)
 
 
-class STARFusion(BaseModel):
+class STARFusion(FusionCaller):
     """Define parameters for STAR-Fusion model"""
 
     type: Literal[Caller.STAR_FUSION] = Caller.STAR_FUSION
-    left_gene: str = Field(..., description="The gene indicated in the LeftGene column")
+    left_gene: str = Field(
+        None, description="The gene indicated in the LeftGene column"
+    )
     right_gene: str = Field(
         None, description="The gene indicated in the RightGene column"
     )
@@ -164,7 +166,7 @@ class STARFusion(BaseModel):
         return self._process_fusion_caller_rows(path, STARFusion, column_rename)
 
 
-class FusionCatcher(BaseModel):
+class FusionCatcher(FusionCaller):
     """Define parameters for FusionCatcher model"""
 
     type: Literal[Caller.FUSION_CATCHER] = Caller.FUSION_CATCHER
@@ -215,12 +217,12 @@ class FusionCatcher(BaseModel):
         return self._process_fusion_caller_rows(path, FusionCatcher, column_rename)
 
 
-class Arriba(BaseModel):
+class Arriba(FusionCaller):
     """Define parameters for Arriba model"""
 
     type: Literal[Caller.ARRIBA] = Caller.ARRIBA
-    gene1: str = Field(..., description="The 5' gene fusion partner")
-    gene2: str = Field(..., description="The 3' gene fusion partner")
+    gene1: str = Field(None, description="The 5' gene fusion partner")
+    gene2: str = Field(None, description="The 3' gene fusion partner")
     strand1: str = Field(
         None, description="The strand information for the 5' gene fusion partner"
     )
@@ -284,7 +286,7 @@ class Arriba(BaseModel):
         return self._process_fusion_caller_rows(path, Arriba, column_rename)
 
 
-class Cicero(BaseModel):
+class Cicero(FusionCaller):
     """Define parameters for CICERO model"""
 
     type: Literal[Caller.CICERO] = Caller.CICERO
@@ -320,7 +322,9 @@ class Cicero(BaseModel):
     coverage_3prime: int = Field(
         None, description="The fragment coverage at the 3' breakpoint"
     )
-    contig: str = Field(..., description="The assembled contig sequence for the fusion")
+    contig: str = Field(
+        None, description="The assembled contig sequence for the fusion"
+    )
 
     def load_records(self, path: Path) -> list["Cicero"]:
         """Load fusions from Cicero txt file
@@ -344,7 +348,7 @@ class Cicero(BaseModel):
         return self._process_fusion_caller_rows(path, Cicero, column_rename)
 
 
-class EnFusion(BaseModel):
+class EnFusion(FusionCaller):
     """Define parameters for EnFusion model"""
 
     type: Literal[Caller.ENFUSION] = Caller.ENFUSION
@@ -380,7 +384,7 @@ class EnFusion(BaseModel):
         return self._process_fusion_caller_rows(path, EnFusion, column_rename)
 
 
-class Genie(BaseModel):
+class Genie(FusionCaller):
     """Define parameters for Genie model"""
 
     type: Literal[Caller.GENIE] = Caller.GENIE
