@@ -21,7 +21,7 @@ class Caller(str, Enum):
     GENIE = "GENIE"
 
 
-class FusionCaller(ABC, BaseModel, extra="forbid"):
+class FusionCaller(ABC, BaseModel):
     """ABC for fusion callers"""
 
     type: Caller
