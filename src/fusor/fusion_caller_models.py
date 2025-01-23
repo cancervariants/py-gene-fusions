@@ -2,6 +2,7 @@
 
 from abc import ABC
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -29,7 +30,7 @@ class FusionCaller(ABC, BaseModel, extra="forbid"):
 class JAFFA(FusionCaller):
     """Define parameters for JAFFA model"""
 
-    type: Caller = Caller.JAFFA
+    type: Literal[Caller.JAFFA] = Caller.JAFFA
     fusion_genes: str = Field(
         ..., description="A string containing the two fusion partners"
     )
@@ -68,7 +69,7 @@ class JAFFA(FusionCaller):
 class STARFusion(BaseModel):
     """Define parameters for STAR-Fusion model"""
 
-    type: Caller = Caller.STAR_FUSION
+    type: Literal[Caller.STAR_FUSION] = Caller.STAR_FUSION
     left_gene: str = Field(..., description="The gene indicated in the LeftGene column")
     right_gene: str = Field(
         ..., description="The gene indicated in the RightGene column"
@@ -93,7 +94,7 @@ class STARFusion(BaseModel):
 class FusionCatcher(BaseModel):
     """Define parameters for FusionCatcher model"""
 
-    type: Caller = Caller.FUSION_CATCHER
+    type: Literal[Caller.FUSION_CATCHER] = Caller.FUSION_CATCHER
     five_prime_partner: str = Field(
         ..., description="Gene symbol for the 5' fusion partner"
     )
@@ -126,7 +127,7 @@ class FusionCatcher(BaseModel):
 class Arriba(BaseModel):
     """Define parameters for Arriba model"""
 
-    type: Caller = Caller.ARRIBA
+    type: Literal[Caller.ARRIBA] = Caller.ARRIBA
     gene1: str = Field(..., description="The 5' gene fusion partner")
     gene2: str = Field(..., description="The 3' gene fusion partner")
     strand1: str = Field(
@@ -174,7 +175,7 @@ class Arriba(BaseModel):
 class Cicero(BaseModel):
     """Define parameters for CICERO model"""
 
-    type: Caller = Caller.CICERO
+    type: Literal[Caller.CICERO] = Caller.CICERO
     gene_5prime: str = Field(..., description="The gene symbol for the 5' partner")
     gene_3prime: str = Field(..., description="The gene symbol for the 3' partner")
     chr_5prime: str = Field(..., description="The chromosome for the 5' partner")
@@ -212,7 +213,7 @@ class Cicero(BaseModel):
 class EnFusion(BaseModel):
     """Define parameters for EnFusion model"""
 
-    type: Caller = Caller.ENFUSION
+    type: Literal[Caller.ENFUSION] = Caller.ENFUSION
     gene_5prime: str = Field(..., description="The 5' gene fusion partner")
     gene_3prime: str = Field(..., description="The 3' gene fusion partner")
     chr_5prime: int = Field(..., description="The 5' gene fusion partner chromosome")
@@ -228,7 +229,7 @@ class EnFusion(BaseModel):
 class Genie(BaseModel):
     """Define parameters for Genie model"""
 
-    type: Caller = Caller.GENIE
+    type: Literal[Caller.GENIE] = Caller.GENIE
     site1_hugo: str = Field(..., description="The HUGO symbol reported at site 1")
     site2_hugo: str = Field(..., description="The HUGO symbol reported at site 2")
     site1_chrom: int = Field(..., description="The chromosome reported at site 1")
