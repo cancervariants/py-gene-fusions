@@ -1,4 +1,4 @@
-"""Module for testing extraction methods"""
+"""Module for testing fusion caller classes"""
 
 from pathlib import Path
 
@@ -37,14 +37,6 @@ def test_get_star_fusion_records(fixture_data_dir):
     path = Path(fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsvs")
     with pytest.raises(ValueError, match=f"{path} does not exist"):
         assert sf_instance.load_records(path)
-
-    # path = fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsv"
-    # fusions_list = get_star_fusion_records(Path(path))
-    # assert len(fusions_list) == 37
-
-    # path = fixture_data_dir / "star-fusion.fusion_predictions.abridged.tsvs"
-    # with pytest.raises(ValueError, match=f"{path} does not exist"):
-    #   assert get_jaffa_records(path)
 
 
 def test_get_fusion_catcher_records(fixture_data_dir):
