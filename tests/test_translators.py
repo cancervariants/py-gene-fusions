@@ -4,6 +4,16 @@ import polars as pl
 import pytest
 from cool_seq_tool.schemas import Assembly, CoordinateType
 
+from fusor.fusion_caller_models import (
+    JAFFA,
+    Arriba,
+    Caller,
+    Cicero,
+    EnFusion,
+    FusionCatcher,
+    Genie,
+    STARFusion,
+)
 from fusor.models import (
     AnchoredReads,
     AssayedFusion,
@@ -13,7 +23,6 @@ from fusor.models import (
     SpanningReads,
     SplitReads,
 )
-from fusor.translator import Caller
 
 
 @pytest.fixture(scope="module")
@@ -148,28 +157,21 @@ async def test_jaffa(
 ):
     """Test JAFFA translator"""
     # Test exonic breakpoint
-    fusion_genes = "TPM3:PDGFRB"
-    chrom1 = "chr1"
-    base1 = 154170465
-    chrom2 = "chr5"
-    base2 = 150126612
-    rearrangement = True
-    classification = "HighConfidence"
-    inframe = True
-    spanning_reads = 100
-    spanning_pairs = 80
+    jaffa = JAFFA(
+        fusion_genes="TPM3:PDGFRB",
+        chrom1="chr1",
+        base1=154170465,
+        chrom2="chr5",
+        base2=150126612,
+        rearrangement=True,
+        classification="HighConfidence",
+        inframe=True,
+        spanning_reads=100,
+        spanning_pairs=80,
+    )
 
     jaffa_fusor = await translator_instance.from_jaffa(
-        fusion_genes,
-        chrom1,
-        base1,
-        chrom2,
-        base2,
-        rearrangement,
-        classification,
-        inframe,
-        spanning_reads,
-        spanning_pairs,
+        jaffa,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -182,28 +184,11 @@ async def test_jaffa(
     assert jaffa_fusor.readData == fusion_data_example.readData
 
     # Test non-exonic breakpoint
-    fusion_genes = "TPM3:PDGFRB"
-    chrom1 = "chr1"
-    base1 = 154173079
-    chrom2 = "chr5"
-    base2 = 150127173
-    rearrangement = True
-    classification = "HighConfidence"
-    inframe = True
-    spanning_reads = 100
-    spanning_pairs = 80
+    jaffa.base1 = 154173079
+    jaffa.base2 = 150127173
 
     jaffa_fusor_nonexonic = await translator_instance.from_jaffa(
-        fusion_genes,
-        chrom1,
-        base1,
-        chrom2,
-        base2,
-        rearrangement,
-        classification,
-        inframe,
-        spanning_reads,
-        spanning_pairs,
+        jaffa,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -222,22 +207,18 @@ async def test_star_fusion(
 ):
     """Test STAR-Fusion translator"""
     # Test exonic breakpoints
-    left_gene = "TPM3^ENSG00000143549.19"
-    right_gene = "PDGFRB^ENSG00000113721"
-    left_breakpoint = "chr1:154170465:-"
-    right_breakpoint = "chr5:150126612:-"
-    annots = '["INTERCHROMOSOMAL]'
-    junction_read_count = 100
-    spanning_frag_count = 80
+    star_fusion = STARFusion(
+        left_gene="TPM3^ENSG00000143549.19",
+        right_gene="PDGFRB^ENSG00000113721",
+        left_breakpoint="chr1:154170465:-",
+        right_breakpoint="chr5:150126612:-",
+        annots='["INTERCHROMOSOMAL]',
+        junction_read_count=100,
+        spanning_frag_count=80,
+    )
 
     star_fusion_fusor = await translator_instance.from_star_fusion(
-        left_gene,
-        right_gene,
-        left_breakpoint,
-        right_breakpoint,
-        annots,
-        junction_read_count,
-        spanning_frag_count,
+        star_fusion,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -250,22 +231,11 @@ async def test_star_fusion(
     assert star_fusion_fusor.readData == fusion_data_example.readData
 
     # Test non-exonic breakpoints
-    left_gene = "TPM3^ENSG00000143549.19"
-    right_gene = "PDGFRB^ENSG00000113721"
-    left_breakpoint = "chr1:154173079:-"
-    right_breakpoint = "chr5:150127173:-"
-    annots = '["INTERCHROMOSOMAL]'
-    junction_read_count = 100
-    spanning_frag_count = 80
+    star_fusion.left_breakpoint = "chr1:154173079:-"
+    star_fusion.right_breakpoint = "chr5:150127173:-"
 
     star_fusion_fusor_nonexonic = await translator_instance.from_star_fusion(
-        left_gene,
-        right_gene,
-        left_breakpoint,
-        right_breakpoint,
-        annots,
-        junction_read_count,
-        spanning_frag_count,
+        star_fusion,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -288,24 +258,19 @@ async def test_fusion_catcher(
 ):
     """Test Fusion Catcher translator"""
     # Test exonic breakpoint
-    five_prime_partner = "TPM3"
-    three_prime_partner = "PDGFRB"
-    five_prime_fusion_point = "1:154170465:-"
-    three_prime_fusion_point = "5:150126612:-"
-    predicted_effect = "exonic(no-known-CDS)/exonic(no-known-CDS)"
-    spanning_unique_reads = 100
-    spanning_reads = 80
-    fusion_sequence = "CTAGATGAC*TACTACTA"
+    fusion_catcher = FusionCatcher(
+        five_prime_partner="TPM3",
+        three_prime_partner="PDGFRB",
+        five_prime_fusion_point="1:154170465:-",
+        three_prime_fusion_point="5:150126612:-",
+        predicted_effect="exonic(no-known-CDS)/exonic(no-known-CDS)",
+        spanning_unique_reads=100,
+        spanning_reads=80,
+        fusion_sequence="CTAGATGAC*TACTACTA",
+    )
 
     fusion_catcher_fusor = await translator_instance.from_fusion_catcher(
-        five_prime_partner,
-        three_prime_partner,
-        five_prime_fusion_point,
-        three_prime_fusion_point,
-        predicted_effect,
-        spanning_unique_reads,
-        spanning_reads,
-        fusion_sequence,
+        fusion_catcher,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -319,25 +284,11 @@ async def test_fusion_catcher(
     assert fusion_catcher_fusor.readData == fusion_data_example.readData
     assert fusion_catcher_fusor.contig == fusion_catcher_fusor.contig
 
-    # Test non-exonic breakpoint
-    five_prime_partner = "TPM3"
-    three_prime_partner = "PDGFRB"
-    five_prime_fusion_point = "1:154173079:-"
-    three_prime_fusion_point = "5:150127173:-"
-    predicted_effect = "exonic(no-known-CDS)/exonic(no-known-CDS)"
-    spanning_unique_reads = 100
-    spanning_reads = 80
-    fusion_sequence = "CTAGATGAC*TACTACTA"
+    fusion_catcher.five_prime_fusion_point = "1:154173079:-"
+    fusion_catcher.three_prime_fusion_point = "5:150127173:-"
 
     fusion_catcher_fusor_nonexonic = await translator_instance.from_fusion_catcher(
-        five_prime_partner,
-        three_prime_partner,
-        five_prime_fusion_point,
-        three_prime_fusion_point,
-        predicted_effect,
-        spanning_unique_reads,
-        spanning_reads,
-        fusion_sequence,
+        fusion_catcher,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -411,48 +362,34 @@ async def test_arriba(
 ):
     """Test Arriba translator"""
     # Test exonic breakpoint
-    gene1 = "TPM3"
-    gene2 = "PDGFRB"
-    strand1 = "-/-"
-    strand2 = "-/-"
-    breakpoint1 = "1:154170465"
-    breakpoint2 = "5:150126612"
-    event = "translocation"
-    confidence = "high"
-    direction1 = "upstream"
-    direction2 = "downstream"
-    rf = "in-frame"
-    split_reads1 = 100
-    split_reads2 = 95
-    discordant_mates = 30
-    coverage1 = 200
-    coverage2 = 190
-    fusion_transcript = "CTAGATGAC_TACTACTA|GTACTACT"
+    arriba = Arriba(
+        gene1="TPM3",
+        gene2="PDGFRB",
+        strand1="-/-",
+        strand2="-/-",
+        breakpoint1="1:154170465",
+        breakpoint2="5:150126612",
+        event="translocation",
+        confidence="high",
+        direction1="upstream",
+        direction2="downstream",
+        rf="in-frame",
+        split_reads1=100,
+        split_reads2=95,
+        discordant_mates=30,
+        coverage1=200,
+        coverage2=190,
+        fusion_transcript="CTAGATGAC_TACTACTA|GTACTACT",
+    )
 
     arriba_fusor = await translator_instance.from_arriba(
-        gene1,
-        gene2,
-        strand1,
-        strand2,
-        breakpoint1,
-        breakpoint2,
-        event,
-        confidence,
-        direction1,
-        direction2,
-        rf,
-        split_reads1,
-        split_reads2,
-        discordant_mates,
-        coverage1,
-        coverage2,
-        fusion_transcript,
+        arriba,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
     fusion_data_example = fusion_data_example(
         readData=ReadData(spanning=SpanningReads(spanningReads=30)),
-        contig=ContigSequence(contig=fusion_transcript),
+        contig=ContigSequence(contig=arriba.fusion_transcript),
     )
     fusion_data_example.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
     fusion_data_example.structure[0].anchoredReads = AnchoredReads(reads=100)
@@ -463,47 +400,17 @@ async def test_arriba(
     assert arriba_fusor.contig == fusion_data_example.contig
 
     # Test non-exonic breakpoint
-    gene1 = "TPM3"
-    gene2 = "PDGFRB"
-    strand1 = "-/-"
-    strand2 = "-/-"
-    breakpoint1 = "1:154173079"
-    breakpoint2 = "5:150127173"
-    event = "translocation"
-    confidence = "high"
-    direction1 = "upstream"
-    direction2 = "downstream"
-    rf = "in-frame"
-    split_reads1 = 100
-    split_reads2 = 95
-    discordant_mates = 30
-    coverage1 = 200
-    coverage2 = 190
+    arriba.breakpoint1 = "1:154173079"
+    arriba.breakpoint2 = "5:150127173"
 
     arriba_fusor_nonexonic = await translator_instance.from_arriba(
-        gene1,
-        gene2,
-        strand1,
-        strand2,
-        breakpoint1,
-        breakpoint2,
-        event,
-        confidence,
-        direction1,
-        direction2,
-        rf,
-        split_reads1,
-        split_reads2,
-        discordant_mates,
-        coverage1,
-        coverage2,
-        fusion_transcript,
+        arriba,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
         readData=ReadData(spanning=SpanningReads(spanningReads=30)),
-        contig=ContigSequence(contig=fusion_transcript),
+        contig=ContigSequence(contig=arriba.fusion_transcript),
     )
     fusion_data_example_nonexonic.structure[0].coverage = BreakpointCoverage(
         fragmentCoverage=200
@@ -524,38 +431,30 @@ async def test_cicero(
 ):
     """Test CICERO translator"""
     # Test exonic breakpoint
-    gene_5prime = "TPM3"
-    gene_3prime = "PDGFRB"
-    chr_5prime = "1"
-    chr_3prime = "5"
-    pos_5prime = 154170465
-    pos_3prime = 150126612
-    sv_ort = ">"
-    event_type = "CTX"
-    reads_a = 100
-    reads_b = 90
-    coverage_a = 200
-    coverage_b = 190
-    contig = "ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT"
+    cicero = Cicero(
+        gene_5prime="TPM3",
+        gene_3prime="PDGFRB",
+        chr_5prime="1",
+        chr_3prime="5",
+        pos_5prime=154170465,
+        pos_3prime=150126612,
+        sv_ort=">",
+        event_type="CTX",
+        reads_5prime=100,
+        reads_3prime=90,
+        coverage_5prime=200,
+        coverage_3prime=190,
+        contig="ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT",
+    )
 
     cicero_fusor = await translator_instance.from_cicero(
-        gene_5prime,
-        gene_3prime,
-        chr_5prime,
-        chr_3prime,
-        pos_5prime,
-        pos_3prime,
-        sv_ort,
-        event_type,
-        reads_a,
-        reads_b,
-        coverage_a,
-        coverage_b,
-        contig,
+        cicero,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
-    fusion_data_example = fusion_data_example(contig=ContigSequence(contig=contig))
+    fusion_data_example = fusion_data_example(
+        contig=ContigSequence(contig=cicero.contig)
+    )
     fusion_data_example.structure[0].coverage = BreakpointCoverage(fragmentCoverage=200)
     fusion_data_example.structure[0].anchoredReads = AnchoredReads(reads=100)
     fusion_data_example.structure[1].coverage = BreakpointCoverage(fragmentCoverage=190)
@@ -565,39 +464,16 @@ async def test_cicero(
     assert cicero_fusor.contig == fusion_data_example.contig
 
     # Test non-exonic breakpoint
-    gene_5prime = "TPM3"
-    gene_3prime = "PDGFRB"
-    chr_5prime = "1"
-    chr_3prime = "5"
-    pos_5prime = 154173079
-    pos_3prime = 150127173
-    sv_ort = ">"
-    event_type = "CTX"
-    reads_a = 100
-    reads_b = 90
-    coverage_a = 200
-    coverage_b = 190
-    contig = "ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT"
+    cicero.pos_5prime = 154173079
+    cicero.pos_3prime = 150127173
 
     cicero_fusor_nonexonic = await translator_instance.from_cicero(
-        gene_5prime,
-        gene_3prime,
-        chr_5prime,
-        chr_3prime,
-        pos_5prime,
-        pos_3prime,
-        sv_ort,
-        event_type,
-        reads_a,
-        reads_b,
-        coverage_a,
-        coverage_b,
-        contig,
+        cicero,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
     fusion_data_example_nonexonic = fusion_data_example_nonexonic(
-        contig=ContigSequence(contig=contig)
+        contig=ContigSequence(contig=cicero.contig)
     )
     fusion_data_example_nonexonic.structure[0].coverage = BreakpointCoverage(
         fragmentCoverage=200
@@ -612,34 +488,10 @@ async def test_cicero(
     assert cicero_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
 
     # Test case where the called fusion does not have confident biological meaning
-    gene_5prime = "TPM3"
-    gene_3prime = "PDGFRB"
-    chr_5prime = "1"
-    chr_3prime = "5"
-    pos_5prime = 154173079
-    pos_3prime = 150127173
-    sv_ort = "?"
-    event_type = "CTX"
-    reads_a = 100
-    reads_b = 90
-    coverage_a = 200
-    coverage_b = 190
-    contig = "ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT"
+    cicero.sv_ort = "?"
 
     non_confident_bio = await translator_instance.from_cicero(
-        gene_5prime,
-        gene_3prime,
-        chr_5prime,
-        chr_3prime,
-        pos_5prime,
-        pos_3prime,
-        sv_ort,
-        event_type,
-        reads_a,
-        reads_b,
-        coverage_a,
-        coverage_b,
-        contig,
+        cicero,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -649,34 +501,10 @@ async def test_cicero(
     )
 
     # Test case where multiple gene symbols are reported for a fusion partner
-    gene_5prime = "TPM3"
-    gene_3prime = "PDGFRB,PDGFRB-FGFR4,FGFR4"
-    chr_5prime = "1"
-    chr_3prime = "5"
-    pos_5prime = 154173079
-    pos_3prime = 150127173
-    sv_ort = "?"
-    event_type = "CTX"
-    reads_a = 100
-    reads_b = 90
-    coverage_a = 200
-    coverage_b = 190
-    contig = "ATCATACTAGATACTACTACGATGAGAGAGTACATAGAT"
+    cicero.gene_3prime = "PDGFRB,PDGFRB-FGFR4,FGFR4"
 
     multiple_genes_fusion_partner = await translator_instance.from_cicero(
-        gene_5prime,
-        gene_3prime,
-        chr_5prime,
-        chr_3prime,
-        pos_5prime,
-        pos_3prime,
-        sv_ort,
-        event_type,
-        reads_a,
-        reads_b,
-        coverage_a,
-        coverage_b,
-        contig,
+        cicero,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -692,40 +520,28 @@ async def test_enfusion(
 ):
     """Test EnFusion translator"""
     # Test exonic breakpoint
-    gene_5prime = "TPM3"
-    gene_3prime = "PDGFRB"
-    chr_5prime = 1
-    chr_3prime = 5
-    break_5prime = 154170465
-    break_3prime = 150126612
+    enfusion = EnFusion(
+        gene_5prime="TPM3",
+        gene_3prime="PDGFRB",
+        chr_5prime=1,
+        chr_3prime=5,
+        break_5prime=154170465,
+        break_3prime=150126612,
+    )
 
     enfusion_fusor = await translator_instance.from_enfusion(
-        gene_5prime,
-        gene_3prime,
-        chr_5prime,
-        chr_3prime,
-        break_5prime,
-        break_3prime,
+        enfusion,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert enfusion_fusor.structure == fusion_data_example().structure
 
     # Test non-exonic breakpoint
-    gene_5prime = "TPM3"
-    gene_3prime = "PDGFRB"
-    chr_5prime = 1
-    chr_3prime = 5
-    break_5prime = 154173079
-    break_3prime = 150127173
+    enfusion.break_5prime = 154173079
+    enfusion.break_3prime = 150127173
 
     enfusion_fusor_nonexonic = await translator_instance.from_enfusion(
-        gene_5prime,
-        gene_3prime,
-        chr_5prime,
-        chr_3prime,
-        break_5prime,
-        break_3prime,
+        enfusion,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
@@ -740,48 +556,30 @@ async def test_genie(
 ):
     """Test GENIE Translator"""
     # Test exonic breakpoint
-    site1_hugo = "TPM3"
-    site2_hugo = "PDGFRB"
-    site1_chrom = 1
-    site2_chrom = 5
-    site1_pos = 154170465
-    site2_pos = 150126612
-    annot = "TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion"
-    reading_frame = "In_frame"
+    genie = Genie(
+        site1_hugo="TPM3",
+        site2_hugo="PDGFRB",
+        site1_chrom=1,
+        site2_chrom=5,
+        site1_pos=154170465,
+        site2_pos=150126612,
+        annot="TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion",
+        reading_frame="In_frame",
+    )
 
     genie_fusor = await translator_instance.from_genie(
-        site1_hugo,
-        site2_hugo,
-        site1_chrom,
-        site2_chrom,
-        site1_pos,
-        site2_pos,
-        annot,
-        reading_frame,
+        genie,
         CoordinateType.INTER_RESIDUE.value,
         Assembly.GRCH38.value,
     )
     assert genie_fusor.structure == fusion_data_example().structure
 
     # Test non-exonic breakpoint
-    site1_hugo = "TPM3"
-    site2_hugo = "PDGFRB"
-    site1_chrom = 1
-    site2_chrom = 5
-    site1_pos = 154173079
-    site2_pos = 150127173
-    annot = "TMP3 (NM_152263.4) - PDGFRB (NM_002609.4) fusion"
-    reading_frame = "In_frame"
+    genie.site1_pos = 154173079
+    genie.site2_pos = 150127173
 
     genie_fusor_nonexonic = await translator_instance.from_genie(
-        site1_hugo,
-        site2_hugo,
-        site1_chrom,
-        site2_chrom,
-        site1_pos,
-        site2_pos,
-        annot,
-        reading_frame,
+        genie,
         CoordinateType.RESIDUE.value,
         Assembly.GRCH38.value,
     )
