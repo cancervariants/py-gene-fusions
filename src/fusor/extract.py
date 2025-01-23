@@ -3,7 +3,6 @@ objects
 """
 
 import csv
-import logging
 from pathlib import Path
 
 from fusor.fusion_caller_models import (
@@ -11,15 +10,14 @@ from fusor.fusion_caller_models import (
     Arriba,
     Cicero,
     EnFusion,
+    FusionCaller,
     FusionCatcher,
     Genie,
     STARFusion,
 )
 
-_logger = logging.getLogger(__name__)
 
-
-def _check_if_file_exists(path: Path) -> bool:
+def _does_file_exist(path: Path) -> None:
     """Check if fusions file exists
 
     :param path: The path to the file
@@ -27,31 +25,42 @@ def _check_if_file_exists(path: Path) -> bool:
     """
     if not path.exists():
         statement = f"{path!s} does not exist"
-        _logger.error(statement)
-        return False
-    return True
+        raise ValueError(statement)
+    return
 
 
-def get_jaffa_records(path: Path) -> list[JAFFA] | None:
+def _process_fusion_caller_rows(
+    path: Path, caller: FusionCaller, column_rename: dict
+) -> list[FusionCaller]:
+    """Convert rows of fusion caller output to Pydantic classes
+
+    :param path: The path to the fusions file
+    :param caller: The name of the fusion caller
+    :param column_rename: A dictionary of column mappings
+    :return: A list of fusions, represented as Pydantic objects
+    """
+    fusions_list = []
+    with path.open() as csvfile:
+        reader = csv.DictReader(csvfile, delimiter="," if caller == JAFFA else "\t")
+        for row in reader:
+            row = {column_rename.get(key, key): value for key, value in row.items()}
+            fusions_list.append(caller(**row))
+    return fusions_list
+
+
+def get_jaffa_records(path: Path) -> list[JAFFA]:
     """Load fusions from JAFFA csv file
 
     :param path: The path to the file of JAFFA fusions
     :return A list of JAFFA objects, or None if the specified file does not exist
     """
-    if not _check_if_file_exists(path):
-        return None
-    fusions_list: list[JAFFA] = []
+    _does_file_exist(path)
     column_rename = {
         "fusion genes": "fusion_genes",
         "spanning reads": "spanning_reads",
         "spanning pairs": "spanning_pairs",
     }
-    with path.open() as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            row = {column_rename.get(key, key): value for key, value in row.items()}
-            fusions_list.append(JAFFA(**row))
-    return fusions_list
+    return _process_fusion_caller_rows(path, JAFFA, column_rename)
 
 
 def get_star_fusion_records(path: Path) -> list[STARFusion] | None:
@@ -60,9 +69,7 @@ def get_star_fusion_records(path: Path) -> list[STARFusion] | None:
     :param path: The path to the file of STAR-Fusion fusions
     :return A list of STAR-Fusion objects, or None if the specified file does not exist
     """
-    if not _check_if_file_exists(path):
-        return None
-    fusions_list: list[STARFusion] = []
+    _does_file_exist(path)
     column_rename = {
         "LeftGene": "left_gene",
         "RightGene": "right_gene",
@@ -71,12 +78,7 @@ def get_star_fusion_records(path: Path) -> list[STARFusion] | None:
         "JunctionReadCount": "junction_read_count",
         "SpanningFragCount": "spanning_frag_count",
     }
-    with path.open() as csvfile:
-        reader = csv.DictReader(csvfile, delimiter="\t")
-        for row in reader:
-            row = {column_rename.get(key, key): value for key, value in row.items()}
-            fusions_list.append(STARFusion(**row))
-    return fusions_list
+    return _process_fusion_caller_rows(path, STARFusion, column_rename)
 
 
 def get_fusion_catcher_records(path: Path) -> list[FusionCatcher] | None:
@@ -85,9 +87,7 @@ def get_fusion_catcher_records(path: Path) -> list[FusionCatcher] | None:
     :param path: The path to the file of FusionCatcher fusions
     :return A list of FusionCatcher objects, or None if the specified file does not exist
     """
-    if not _check_if_file_exists(path):
-        return None
-    fusions_list: list[FusionCatcher] = []
+    _does_file_exist(path)
     column_rename = {
         "Gene_1_symbol(5end_fusion_partner)": "five_prime_partner",
         "Gene_2_symbol(3end_fusion_partner)": "three_prime_partner",
@@ -98,12 +98,7 @@ def get_fusion_catcher_records(path: Path) -> list[FusionCatcher] | None:
         "Spanning_pairs": "spanning_reads",
         "Fusion_sequence": "fusion_sequence",
     }
-    with path.open() as csvfile:
-        reader = csv.DictReader(csvfile, delimiter="\t")
-        for row in reader:
-            row = {column_rename.get(key, key): value for key, value in row.items()}
-            fusions_list.append(FusionCatcher(**row))
-    return fusions_list
+    return _process_fusion_caller_rows(path, FusionCatcher, column_rename)
 
 
 def get_arriba_records(path: Path) -> list[Arriba] | None:
@@ -112,9 +107,7 @@ def get_arriba_records(path: Path) -> list[Arriba] | None:
     :param path: The path to the file of Arriba fusions
     :return A list of Arriba objects, or None if the specified file does not exist
     """
-    if not _check_if_file_exists(path):
-        return None
-    fusions_list: list[Arriba] = []
+    _does_file_exist(path)
     column_rename = {
         "#gene1": "gene1",
         "strand1(gene/fusion)": "strand1",
@@ -122,12 +115,7 @@ def get_arriba_records(path: Path) -> list[Arriba] | None:
         "type": "event_type",
         "reading_frame": "rf",
     }
-    with path.open() as csvfile:
-        reader = csv.DictReader(csvfile, delimiter="\t")
-        for row in reader:
-            row = {column_rename.get(key, key): value for key, value in row.items()}
-            fusions_list.append(Arriba(**row))
-    return fusions_list
+    return _process_fusion_caller_rows(path, Arriba, column_rename)
 
 
 def get_cicero_records(path: Path) -> list[Cicero] | None:
@@ -136,9 +124,7 @@ def get_cicero_records(path: Path) -> list[Cicero] | None:
     :param path: The path to the file of Cicero fusions
     :return A list of Cicero objects, or None if the specified file does not exist
     """
-    if not _check_if_file_exists(path):
-        return None
-    fusions_list: list[Cicero] = []
+    _does_file_exist(path)
     column_rename = {
         "geneA": "gene_5prime",
         "geneB": "gene_3prime",
@@ -152,12 +138,7 @@ def get_cicero_records(path: Path) -> list[Cicero] | None:
         "coverageA": "coverage_5prime",
         "coverageB": "coverage_3prime",
     }
-    with path.open() as csvfile:
-        reader = csv.DictReader(csvfile, delimiter="\t")
-        for row in reader:
-            row = {column_rename.get(key, key): value for key, value in row.items()}
-            fusions_list.append(Cicero(**row))
-    return fusions_list
+    return _process_fusion_caller_rows(path, Cicero, column_rename)
 
 
 def get_enfusion_records(path: Path) -> list[EnFusion] | None:
@@ -166,9 +147,7 @@ def get_enfusion_records(path: Path) -> list[EnFusion] | None:
     :param path: The path to the file of Enfusion fusions
     :return A list of Enfusion objects, or None if the specified file does not exist
     """
-    if not _check_if_file_exists(path):
-        return None
-    fusions_list: list[EnFusion] = []
+    _does_file_exist(path)
     column_rename = {
         "Gene1": "gene_5prime",
         "Gene2": "gene_3prime",
@@ -178,12 +157,7 @@ def get_enfusion_records(path: Path) -> list[EnFusion] | None:
         "Break2": "break_3prime",
         "FusionJunctionSequence": "fusion_junction_sequence",
     }
-    with path.open() as csvfile:
-        reader = csv.DictReader(csvfile, delimiter="\t")
-        for row in reader:
-            row = {column_rename.get(key, key): value for key, value in row.items()}
-            fusions_list.append(EnFusion(**row))
-    return fusions_list
+    return _process_fusion_caller_rows(path, EnFusion, column_rename)
 
 
 def get_genie_records(path: Path) -> list[Genie] | None:
@@ -192,9 +166,7 @@ def get_genie_records(path: Path) -> list[Genie] | None:
     :param path: The path to the file of Genie structural variants
     :return A list of Genie objects, or None if the specified file does not exist
     """
-    if not _check_if_file_exists(path):
-        return None
-    fusions_list: list[Genie] = []
+    _does_file_exist(path)
     column_rename = {
         "Site1_Hugo_Symbol": "site1_hugo",
         "Site2_Hugo_Symbol": "site2_hugo",
@@ -205,9 +177,4 @@ def get_genie_records(path: Path) -> list[Genie] | None:
         "Site2_Effect_On_Frame": "reading_frame",
         "Annotation": "annot",
     }
-    with path.open() as csvfile:
-        reader = csv.DictReader(csvfile, delimiter="\t")
-        for row in reader:
-            row = {column_rename.get(key, key): value for key, value in row.items()}
-            fusions_list.append(Genie(**row))
-    return fusions_list
+    return _process_fusion_caller_rows(path, Genie, column_rename)
