@@ -6,7 +6,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Caller(str, Enum):
@@ -27,13 +27,10 @@ class FusionCaller(ABC, BaseModel):
     """ABC for fusion callers"""
 
     type: Caller
+    model_config = ConfigDict(extra="allow")
 
-    class Config:
-        """Allow extra fields from fusion callers to be provided"""
-
-        extra = "allow"
-
-    def _does_file_exist(self, path: Path) -> None:
+    @staticmethod
+    def _does_file_exist(path: Path) -> None:
         """Check if fusions file exists
 
         :param path: The path to the file
@@ -45,25 +42,27 @@ class FusionCaller(ABC, BaseModel):
             raise ValueError(statement)
         return
 
+    @classmethod
     def _process_fusion_caller_rows(
-        self, path: Path, caller: Caller, column_rename: dict
-    ) -> list[Caller]:
+        cls,
+        path: Path,
+        column_rename: dict,
+        delimeter: str,
+    ) -> list["FusionCaller"]:
         """Convert rows of fusion caller output to Pydantic classes
 
         :param path: The path to the fusions file
-        :param caller: The name of the fusion caller
         :param column_rename: A dictionary of column mappings
+        :param delimeter: The delimeter for the fusions file
         :return: A list of fusions, represented as Pydantic objects
         """
-        self._does_file_exist(path)
+        cls._does_file_exist(path)
         fusions_list = []
         with path.open() as csvfile:
-            reader = csv.DictReader(
-                csvfile, delimiter="," if caller == Caller.JAFFA else "\t"
-            )
+            reader = csv.DictReader(csvfile, delimiter=delimeter)
             for row in reader:
                 row = {column_rename.get(key, key): value for key, value in row.items()}
-                fusions_list.append(caller(**row))
+                fusions_list.append(cls(**row))
         return fusions_list
 
     @abstractmethod
@@ -76,40 +75,41 @@ class JAFFA(FusionCaller):
 
     type: Literal[Caller.JAFFA] = Caller.JAFFA
     fusion_genes: str = Field(
-        None, description="A string containing the two fusion partners"
+        ..., description="A string containing the two fusion partners"
     )
     chrom1: str = Field(
-        None, description="The chromosome indicated in the chrom1 column"
+        ..., description="The chromosome indicated in the chrom1 column"
     )
     base1: int = Field(
-        None, description="The genomic position indicated in the base1 column"
+        ..., description="The genomic position indicated in the base1 column"
     )
     chrom2: str = Field(
-        None, description="The chromosome indicated in the chrom2 column"
+        ..., description="The chromosome indicated in the chrom2 column"
     )
     base2: int = Field(
-        None, description="The genomic position indicated in the base2 column"
+        ..., description="The genomic position indicated in the base2 column"
     )
     rearrangement: bool = Field(
-        None, description=" A boolean indicating if a rearrangement occurred"
+        ..., description=" A boolean indicating if a rearrangement occurred"
     )
     classification: str = Field(
-        None, description="The classification associated with the called fusion"
+        ..., description="The classification associated with the called fusion"
     )
     inframe: bool | str = Field(
-        None,
+        ...,
         description="A boolean or string indicating if the fusion occurred in-frame",
     )
     spanning_reads: int = Field(
-        None,
+        ...,
         description="The number of detected reads that span the junction between the two transcript. Although described as spanning reads, this aligns with our definition of split reads i.e. reads that have sequence belonging to the two fusion partners",
     )
     spanning_pairs: int = Field(
-        None,
+        ...,
         description="The number of detected reads that align entirely on either side of the breakpoint",
     )
 
-    def load_records(self, path: Path) -> list["JAFFA"]:
+    @classmethod
+    def load_records(cls, path: Path) -> list["JAFFA"]:
         """Load fusions from JAFFA csv file
 
         :param path: The path to the file of JAFFA fusions
@@ -120,36 +120,35 @@ class JAFFA(FusionCaller):
             "spanning reads": "spanning_reads",
             "spanning pairs": "spanning_pairs",
         }
-        return self._process_fusion_caller_rows(path, JAFFA, column_rename)
+        return cls._process_fusion_caller_rows(path, column_rename, ",")
 
 
 class STARFusion(FusionCaller):
     """Define parameters for STAR-Fusion model"""
 
     type: Literal[Caller.STAR_FUSION] = Caller.STAR_FUSION
-    left_gene: str = Field(
-        None, description="The gene indicated in the LeftGene column"
-    )
+    left_gene: str = Field(..., description="The gene indicated in the LeftGene column")
     right_gene: str = Field(
-        None, description="The gene indicated in the RightGene column"
+        ..., description="The gene indicated in the RightGene column"
     )
     left_breakpoint: str = Field(
-        None, description="The gene indicated in the LeftBreakpoint column"
+        ..., description="The gene indicated in the LeftBreakpoint column"
     )
     right_breakpoint: str = Field(
-        None, description="The gene indicated in the RightBreakpoint column"
+        ..., description="The gene indicated in the RightBreakpoint column"
     )
-    annots: str = Field(None, description="The annotations associated with the fusion")
+    annots: str = Field(..., description="The annotations associated with the fusion")
     junction_read_count: int = Field(
-        None,
+        ...,
         description="The number of RNA-seq fragments that split the junction between the two transcript segments (from STAR-Fusion documentation)",
     )
     spanning_frag_count: int = Field(
-        None,
+        ...,
         description="The number of RNA-seq fragments that encompass the fusion junction such that one read of the pair aligns to a different gene than the other paired-end read of that fragment (from STAR-Fusion documentation)",
     )
 
-    def load_records(self, path: Path) -> list["STARFusion"]:
+    @classmethod
+    def load_records(cls, path: Path) -> list["STARFusion"]:
         """Load fusions from STAR-Fusion tsv file
 
         :param path: The path to the file of STAR-Fusion fusions
@@ -163,7 +162,7 @@ class STARFusion(FusionCaller):
             "JunctionReadCount": "junction_read_count",
             "SpanningFragCount": "spanning_frag_count",
         }
-        return self._process_fusion_caller_rows(path, STARFusion, column_rename)
+        return cls._process_fusion_caller_rows(path, column_rename, "\t")
 
 
 class FusionCatcher(FusionCaller):
@@ -171,34 +170,35 @@ class FusionCatcher(FusionCaller):
 
     type: Literal[Caller.FUSION_CATCHER] = Caller.FUSION_CATCHER
     five_prime_partner: str = Field(
-        None, description="Gene symbol for the 5' fusion partner"
+        ..., description="Gene symbol for the 5' fusion partner"
     )
     three_prime_partner: str = Field(
-        None, description="Gene symbol for the 3' fusion partner"
+        ..., description="Gene symbol for the 3' fusion partner"
     )
     five_prime_fusion_point: str = Field(
-        None,
+        ...,
         description="Chromosomal position for the 5' end of the fusion junction. This coordinate is 1-based",
     )
     three_prime_fusion_point: str = Field(
-        None,
+        ...,
         description="Chromosomal position for the 3' end of the fusion junction. This coordinate is 1-based",
     )
     predicted_effect: str = Field(
-        None,
+        ...,
         description="The predicted effect of the fusion event, created using annotation from the Ensembl database",
     )
     spanning_unique_reads: int = Field(
-        None, description="The number of unique reads that map on the fusion junction"
+        ..., description="The number of unique reads that map on the fusion junction"
     )
     spanning_reads: int = Field(
-        None, description="The number of paired reads that support the fusion"
+        ..., description="The number of paired reads that support the fusion"
     )
     fusion_sequence: str = Field(
-        None, description="The inferred sequence around the fusion junction"
+        ..., description="The inferred sequence around the fusion junction"
     )
 
-    def load_records(self, path: Path) -> list["FusionCatcher"]:
+    @classmethod
+    def load_records(cls, path: Path) -> list["FusionCatcher"]:
         """Load fusions from FusionCatcher txt file
 
         :param path: The path to the file of FusionCatcher fusions
@@ -214,63 +214,60 @@ class FusionCatcher(FusionCaller):
             "Spanning_pairs": "spanning_reads",
             "Fusion_sequence": "fusion_sequence",
         }
-        return self._process_fusion_caller_rows(path, FusionCatcher, column_rename)
+        return cls._process_fusion_caller_rows(path, column_rename, "\t")
 
 
 class Arriba(FusionCaller):
     """Define parameters for Arriba model"""
 
     type: Literal[Caller.ARRIBA] = Caller.ARRIBA
-    gene1: str = Field(None, description="The 5' gene fusion partner")
-    gene2: str = Field(None, description="The 3' gene fusion partner")
+    gene1: str = Field(..., description="The 5' gene fusion partner")
+    gene2: str = Field(..., description="The 3' gene fusion partner")
     strand1: str = Field(
-        None, description="The strand information for the 5' gene fusion partner"
+        ..., description="The strand information for the 5' gene fusion partner"
     )
     strand2: str = Field(
-        None, description="The strand information for the 3' gene fusion partner"
+        ..., description="The strand information for the 3' gene fusion partner"
     )
-    breakpoint1: str = Field(
-        None, description="The chromosome and breakpoint for gene1"
-    )
-    breakpoint2: str = Field(
-        None, description="The chromosome and breakpoint for gene2"
-    )
+    breakpoint1: str = Field(..., description="The chromosome and breakpoint for gene1")
+    breakpoint2: str = Field(..., description="The chromosome and breakpoint for gene2")
     event_type: str = Field(
-        None, description=" An inference about the type of fusion event"
+        ..., description=" An inference about the type of fusion event"
     )
     confidence: str = Field(
-        None, description="A metric describing the confidence of the fusion prediction"
+        ..., description="A metric describing the confidence of the fusion prediction"
     )
     direction1: str = Field(
-        None,
+        ...,
         description="A description that indicates if the transcript segment starts or ends at breakpoint1",
     )
     direction2: str = Field(
-        None,
+        ...,
         description="A description that indicates if the transcript segment starts or ends at breakpoint2",
     )
     rf: str = Field(
-        None,
+        ...,
         description="A description if the reading frame is preserved for the fusion",
     )
     split_reads1: int = Field(
-        None, description="Number of supporting split fragments with anchor in gene1"
+        ..., description="Number of supporting split fragments with anchor in gene1"
     )
     split_reads2: int = Field(
-        None, description="Number of supporting split fragments with anchor in gene2"
+        ..., description="Number of supporting split fragments with anchor in gene2"
     )
     discordant_mates: int = Field(
-        None, description="Number of discordant mates supporting the fusion"
+        ..., description="Number of discordant mates supporting the fusion"
     )
     coverage1: int = Field(
-        None, description="Number of fragments retained near breakpoint1"
+        ..., description="Number of fragments retained near breakpoint1"
     )
     coverage2: int = Field(
-        None, description="Number of fragments retained near breakpoint2"
+        ..., description="Number of fragments retained near breakpoint2"
     )
-    fusion_transcript: str = Field(None, description="The assembled fusion transcript")
+    fusion_transcript: str = Field(..., description="The assembled fusion transcript")
 
-    def load_records(self, path: Path) -> list["Arriba"]:
+    @classmethod
+    def load_records(cls, path: Path) -> list["Arriba"]:
         """Load fusions from Arriba tsv file
 
         :param path: The path to the file of Arriba fusions
@@ -283,50 +280,49 @@ class Arriba(FusionCaller):
             "type": "event_type",
             "reading_frame": "rf",
         }
-        return self._process_fusion_caller_rows(path, Arriba, column_rename)
+        return cls._process_fusion_caller_rows(path, column_rename, "\t")
 
 
 class Cicero(FusionCaller):
     """Define parameters for CICERO model"""
 
     type: Literal[Caller.CICERO] = Caller.CICERO
-    gene_5prime: str = Field(None, description="The gene symbol for the 5' partner")
-    gene_3prime: str = Field(None, description="The gene symbol for the 3' partner")
-    chr_5prime: str = Field(None, description="The chromosome for the 5' partner")
-    chr_3prime: str = Field(None, description="The chromosome for the 3' partner")
+    gene_5prime: str = Field(..., description="The gene symbol for the 5' partner")
+    gene_3prime: str = Field(..., description="The gene symbol for the 3' partner")
+    chr_5prime: str = Field(..., description="The chromosome for the 5' partner")
+    chr_3prime: str = Field(..., description="The chromosome for the 3' partner")
     pos_5prime: int = Field(
-        None, description="The genomic breakpoint for the 5' partner"
+        ..., description="The genomic breakpoint for the 5' partner"
     )
     pos_3prime: int = Field(
-        None, description="The genomic breakpoint for the 3' partner"
+        ..., description="The genomic breakpoint for the 3' partner"
     )
     sv_ort: str = Field(
-        None,
+        ...,
         description="Whether the mapping orientation of assembled contig (driven by structural variation) has confident biological meaning",
     )
     event_type: str = Field(
-        None,
+        ...,
         description="The structural variation event that created the called fusion",
     )
     reads_5prime: int = Field(
-        None,
+        ...,
         description="The number of reads that support the breakpoint for the 5' partner",
     )
     reads_3prime: int = Field(
-        None,
+        ...,
         description="The number of reads that support the breakpoint for the 3' partner",
     )
     coverage_5prime: int = Field(
-        None, description="The fragment coverage at the 5' breakpoint"
+        ..., description="The fragment coverage at the 5' breakpoint"
     )
     coverage_3prime: int = Field(
-        None, description="The fragment coverage at the 3' breakpoint"
+        ..., description="The fragment coverage at the 3' breakpoint"
     )
-    contig: str = Field(
-        None, description="The assembled contig sequence for the fusion"
-    )
+    contig: str = Field(..., description="The assembled contig sequence for the fusion")
 
-    def load_records(self, path: Path) -> list["Cicero"]:
+    @classmethod
+    def load_records(cls, path: Path) -> list["Cicero"]:
         """Load fusions from Cicero txt file
 
         :param path: The path to the file of Cicero fusions
@@ -345,28 +341,29 @@ class Cicero(FusionCaller):
             "coverageA": "coverage_5prime",
             "coverageB": "coverage_3prime",
         }
-        return self._process_fusion_caller_rows(path, Cicero, column_rename)
+        return cls._process_fusion_caller_rows(path, column_rename, "\t")
 
 
 class EnFusion(FusionCaller):
     """Define parameters for EnFusion model"""
 
     type: Literal[Caller.ENFUSION] = Caller.ENFUSION
-    gene_5prime: str = Field(None, description="The 5' gene fusion partner")
-    gene_3prime: str = Field(None, description="The 3' gene fusion partner")
-    chr_5prime: int = Field(None, description="The 5' gene fusion partner chromosome")
-    chr_3prime: int = Field(None, description="The 3' gene fusion partner chromosome")
+    gene_5prime: str = Field(..., description="The 5' gene fusion partner")
+    gene_3prime: str = Field(..., description="The 3' gene fusion partner")
+    chr_5prime: int = Field(..., description="The 5' gene fusion partner chromosome")
+    chr_3prime: int = Field(..., description="The 3' gene fusion partner chromosome")
     break_5prime: int = Field(
-        None, description="The 5' gene fusion partner genomic breakpoint"
+        ..., description="The 5' gene fusion partner genomic breakpoint"
     )
     break_3prime: int = Field(
-        None, description="The 3' gene fusion partner genomic breakpoint"
+        ..., description="The 3' gene fusion partner genomic breakpoint"
     )
     fusion_junction_sequence: str | None = Field(
         None, description="The sequence near the fusion junction"
     )
 
-    def load_records(self, path: Path) -> list["EnFusion"]:
+    @classmethod
+    def load_records(cls, path: Path) -> list["EnFusion"]:
         """Load fusions from EnFusion tsv file
 
         :param path: The path to the file of Enfusion fusions
@@ -381,25 +378,26 @@ class EnFusion(FusionCaller):
             "Break2": "break_3prime",
             "FusionJunctionSequence": "fusion_junction_sequence",
         }
-        return self._process_fusion_caller_rows(path, EnFusion, column_rename)
+        return cls._process_fusion_caller_rows(path, column_rename, "\t")
 
 
 class Genie(FusionCaller):
     """Define parameters for Genie model"""
 
     type: Literal[Caller.GENIE] = Caller.GENIE
-    site1_hugo: str = Field(None, description="The HUGO symbol reported at site 1")
-    site2_hugo: str = Field(None, description="The HUGO symbol reported at site 2")
-    site1_chrom: int = Field(None, description="The chromosome reported at site 1")
-    site2_chrom: int = Field(None, description="The chromosome reported at site 2")
-    site1_pos: int = Field(None, description="The breakpoint reported at site 1")
-    site2_pos: int = Field(None, description="The breakpoint reported at site 2")
-    annot: str = Field(None, description="The annotation for the fusion event")
+    site1_hugo: str = Field(..., description="The HUGO symbol reported at site 1")
+    site2_hugo: str = Field(..., description="The HUGO symbol reported at site 2")
+    site1_chrom: int = Field(..., description="The chromosome reported at site 1")
+    site2_chrom: int = Field(..., description="The chromosome reported at site 2")
+    site1_pos: int = Field(..., description="The breakpoint reported at site 1")
+    site2_pos: int = Field(..., description="The breakpoint reported at site 2")
+    annot: str = Field(..., description="The annotation for the fusion event")
     reading_frame: str = Field(
-        None, description="The reading frame status of the fusion"
+        ..., description="The reading frame status of the fusion"
     )
 
-    def load_records(self, path: Path) -> list["Genie"]:
+    @classmethod
+    def load_records(cls, path: Path) -> list["Genie"]:
         """Load fusions from Genie txt file
 
         :param path: The path to the file of Genie structural variants
@@ -415,4 +413,4 @@ class Genie(FusionCaller):
             "Site2_Effect_On_Frame": "reading_frame",
             "Annotation": "annot",
         }
-        return self._process_fusion_caller_rows(path, Genie, column_rename)
+        return cls._process_fusion_caller_rows(path, column_rename, "\t")
