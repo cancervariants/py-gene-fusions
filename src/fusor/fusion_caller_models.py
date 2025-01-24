@@ -66,7 +66,7 @@ class FusionCaller(ABC, BaseModel):
         return fusions_list
 
     @abstractmethod
-    def load_records(self, path: Path) -> list[Caller]:
+    def load_records(self, path: Path) -> list["FusionCaller"]:
         """Abstract method to load records from a fusion caller file."""
 
 
