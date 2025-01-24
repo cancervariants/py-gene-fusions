@@ -151,7 +151,7 @@ def test_valid_fusion_partners(translator_instance):
     assert not partners_check
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_jaffa(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -201,7 +201,7 @@ async def test_jaffa(
     assert jaffa_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_star_fusion(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -252,7 +252,7 @@ async def test_star_fusion(
     )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_fusion_catcher(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -309,7 +309,7 @@ async def test_fusion_catcher(
     assert fusion_catcher_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_fusion_map(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -356,7 +356,7 @@ async def test_fusion_map(
     )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_arriba(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -425,7 +425,7 @@ async def test_arriba(
     assert arriba_fusor_nonexonic.contig == fusion_data_example_nonexonic.contig
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_cicero(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -514,7 +514,7 @@ async def test_cicero(
     )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_enfusion(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
@@ -550,7 +550,7 @@ async def test_enfusion(
     )
 
 
-@pytest.mark.asyncio()
+@pytest.mark.asyncio
 async def test_genie(
     fusion_data_example, fusion_data_example_nonexonic, translator_instance
 ):
