@@ -6,6 +6,7 @@ import logging
 
 import polars as pl
 from cool_seq_tool.schemas import Assembly, CoordinateType
+from pydantic import BaseModel
 
 from fusor.fusion_caller_models import (
     JAFFA,
@@ -31,9 +32,19 @@ from fusor.models import (
     SpanningReads,
     SplitReads,
     TranscriptSegmentElement,
+    UnknownGeneElement,
 )
 
 _logger = logging.getLogger(__name__)
+
+
+class GeneFusionPartners(BaseModel):
+    """Class for defining gene fusion partners"""
+
+    gene_5prime_element: GeneElement | UnknownGeneElement
+    gene_5prime: str | None = None
+    gene_3prime_element: GeneElement | UnknownGeneElement
+    gene_3prime: str | None = None
 
 
 class Translator:
@@ -50,8 +61,8 @@ class Translator:
 
     def _format_fusion(
         self,
-        gene_5prime: GeneElement,
-        gene_3prime: GeneElement,
+        gene_5prime: GeneElement | UnknownGeneElement,
+        gene_3prime: GeneElement | UnknownGeneElement,
         tr_5prime: TranscriptSegmentElement | None = None,
         tr_3prime: TranscriptSegmentElement | None = None,
         ce: CausativeEvent | None = None,
@@ -146,7 +157,9 @@ class Translator:
         return ge[0] if ge[0] else self._get_gene_element_unnormalized(gene)
 
     def _are_fusion_partners_different(
-        self, gene_5prime: str, gene_3prime: str
+        self,
+        gene_5prime: str | UnknownGeneElement,
+        gene_3prime: str | UnknownGeneElement,
     ) -> bool:
         """Check if the normalized gene symbols for the two fusion partners
         are different. If not, this event is not a fusion
@@ -180,6 +193,37 @@ class Translator:
             raise ValueError
         return alias_list[0].split(":")[1]
 
+    def _process_gene_symbols(
+        self, gene_5prime: str, gene_3prime: str, caller: Caller
+    ) -> dict[GeneElement | UnknownGeneElement]:
+        """Process gene symbols to create GeneElements or UnknownGeneElements
+
+        :param gene_5prime: The 5' gene symbol
+        :param gene_3prime: The 3' gene symbol
+        :param caller: The gene fusion caller
+        :return A dictionary of GeneElements or UnknownGeneElements
+        """
+        gene_5prime_element = gene_3prime_element = None
+        if gene_5prime == "NA":
+            gene_5prime_element = gene_5prime = UnknownGeneElement()
+            gene_5prime = None
+        if gene_3prime == "NA":
+            gene_3prime_element = gene_3prime = UnknownGeneElement()
+            gene_3prime = None
+        if not gene_5prime_element:
+            gene_5prime_element = self._get_gene_element(gene_5prime, caller)
+            gene_5prime = gene_5prime_element.gene.label
+        if not gene_3prime_element:
+            gene_3prime_element = self._get_gene_element(gene_3prime, caller)
+            gene_3prime = gene_3prime_element.gene.label
+        params = {
+            "gene_5prime_element": gene_5prime_element,
+            "gene_5prime": gene_5prime,
+            "gene_3prime_element": gene_3prime_element,
+            "gene_3prime": gene_3prime,
+        }
+        return GeneFusionPartners(**params)
+
     async def from_jaffa(
         self,
         jaffa: JAFFA,
@@ -194,31 +238,32 @@ class Translator:
         :return: An AssayedFusion object, if construction is successful
         """
         genes = jaffa.fusion_genes.split(":")
-        gene_5prime_element = self._get_gene_element(genes[0], Caller.JAFFA)
-        gene_3prime_element = self._get_gene_element(genes[1], Caller.JAFFA)
-        gene_5prime = gene_5prime_element.gene.label
-        gene_3prime = gene_3prime_element.gene.label
+        fusion_partners = self._process_gene_symbols(genes[0], genes[1], Caller.JAFFA)
 
-        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
+        if not self._are_fusion_partners_different(
+            fusion_partners.gene_5prime, fusion_partners.gene_3prime
+        ):
             return None
 
-        tr_5prime = await self.fusor.transcript_segment_element(
-            tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(jaffa.chrom1, rb),
-            seg_end_genomic=jaffa.base1,
-            gene=gene_5prime,
-            coordinate_type=coordinate_type,
-            starting_assembly=rb,
-        )
+        if not isinstance(fusion_partners.gene_5prime_element, UnknownGeneElement):
+            tr_5prime = await self.fusor.transcript_segment_element(
+                tx_to_genomic_coords=False,
+                genomic_ac=self._get_genomic_ac(jaffa.chrom1, rb),
+                seg_end_genomic=jaffa.base1,
+                gene=fusion_partners.gene_5prime,
+                coordinate_type=coordinate_type,
+                starting_assembly=rb,
+            )
 
-        tr_3prime = await self.fusor.transcript_segment_element(
-            tx_to_genomic_coords=False,
-            genomic_ac=self._get_genomic_ac(jaffa.chrom2, rb),
-            seg_start_genomic=jaffa.base2,
-            gene=gene_3prime,
-            coordinate_type=coordinate_type,
-            starting_assembly=rb,
-        )
+        if not isinstance(fusion_partners.gene_3prime_element, UnknownGeneElement):
+            tr_3prime = await self.fusor.transcript_segment_element(
+                tx_to_genomic_coords=False,
+                genomic_ac=self._get_genomic_ac(jaffa.chrom2, rb),
+                seg_start_genomic=jaffa.base2,
+                gene=fusion_partners.gene_3prime,
+                coordinate_type=coordinate_type,
+                starting_assembly=rb,
+            )
 
         if jaffa.rearrangement:
             ce = CausativeEvent(
@@ -234,10 +279,14 @@ class Translator:
         )
 
         return self._format_fusion(
-            gene_5prime_element,
-            gene_3prime_element,
-            tr_5prime,
-            tr_3prime,
+            fusion_partners.gene_5prime_element,
+            fusion_partners.gene_3prime_element,
+            tr_5prime
+            if isinstance(fusion_partners.gene_5prime_element, GeneElement)
+            else [None],
+            tr_3prime
+            if isinstance(fusion_partners.gene_3prime_element, GeneElement)
+            else [None],
             ce,
             jaffa.inframe if isinstance(jaffa.inframe, bool) else None,
             reads=read_data,
@@ -258,12 +307,11 @@ class Translator:
         """
         gene1 = star_fusion.left_gene.split("^")[0]
         gene2 = star_fusion.right_gene.split("^")[0]
-        gene_5prime_element = self._get_gene_element(gene1, Caller.STAR_FUSION)
-        gene_3prime_element = self._get_gene_element(gene2, Caller.STAR_FUSION)
-        gene_5prime = gene_5prime_element.gene.label
-        gene_3prime = gene_3prime_element.gene.label
 
-        if not self._are_fusion_partners_different(gene_5prime, gene_3prime):
+        fusion_partners = self._process_gene_symbols(gene1, gene2, Caller.STAR_FUSION)
+        if not self._are_fusion_partners_different(
+            fusion_partners.gene_5prime, fusion_partners.gene_3prime
+        ):
             return None
 
         five_prime = star_fusion.left_breakpoint.split(":")
@@ -273,7 +321,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(five_prime[0], rb),
             seg_end_genomic=int(five_prime[1]),
-            gene=gene_5prime,
+            gene=fusion_partners.gene_5prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
@@ -282,7 +330,7 @@ class Translator:
             tx_to_genomic_coords=False,
             genomic_ac=self._get_genomic_ac(three_prime[0], rb),
             seg_start_genomic=int(three_prime[1]),
-            gene=gene_3prime,
+            gene=fusion_partners.gene_3prime,
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
@@ -296,10 +344,14 @@ class Translator:
         )
 
         return self._format_fusion(
-            gene_5prime_element,
-            gene_3prime_element,
-            tr_5prime,
-            tr_3prime,
+            fusion_partners.gene_5prime_element,
+            fusion_partners.gene_3prime_element,
+            tr_5prime
+            if isinstance(fusion_partners.gene_5prime_element, GeneElement)
+            else [None],
+            tr_3prime
+            if isinstance(fusion_partners.gene_3prime_element, GeneElement)
+            else [None],
             ce,
             reads=read_data,
         )

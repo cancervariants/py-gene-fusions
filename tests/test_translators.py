@@ -22,6 +22,7 @@ from fusor.models import (
     ReadData,
     SpanningReads,
     SplitReads,
+    UnknownGeneElement,
 )
 
 
@@ -200,6 +201,13 @@ async def test_jaffa(
     assert jaffa_fusor_nonexonic.structure == fusion_data_example_nonexonic.structure
     assert jaffa_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
 
+    # Test unknown partner
+    jaffa.fusion_genes = "NA:PDGFRB"
+    jaffa_fusor_unknown = await translator_instance.from_jaffa(
+        jaffa, CoordinateType.RESIDUE.value, Assembly.GRCH38.value
+    )
+    assert jaffa_fusor_unknown.structure[0] == UnknownGeneElement()
+
 
 @pytest.mark.asyncio()
 async def test_star_fusion(
@@ -250,6 +258,15 @@ async def test_star_fusion(
     assert (
         star_fusion_fusor_nonexonic.readData == fusion_data_example_nonexonic.readData
     )
+
+    # Test unknown partners
+    star_fusion.left_gene = "NA"
+    star_fusion_fusor_unknown = await translator_instance.from_star_fusion(
+        star_fusion,
+        CoordinateType.INTER_RESIDUE.value,
+        Assembly.GRCH38.value,
+    )
+    assert star_fusion_fusor_unknown.structure[0] == UnknownGeneElement()
 
 
 @pytest.mark.asyncio()
