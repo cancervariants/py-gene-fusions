@@ -4,7 +4,7 @@ from abc import ABC
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Caller(str, Enum):
@@ -21,10 +21,11 @@ class Caller(str, Enum):
     GENIE = "GENIE"
 
 
-class FusionCaller(ABC, BaseModel, extra="forbid"):
+class FusionCaller(ABC, BaseModel):
     """ABC for fusion callers"""
 
     type: Caller
+    model_config = ConfigDict(extra="allow")
 
 
 class JAFFA(FusionCaller):
@@ -66,7 +67,7 @@ class JAFFA(FusionCaller):
     )
 
 
-class STARFusion(BaseModel):
+class STARFusion(FusionCaller):
     """Define parameters for STAR-Fusion model"""
 
     type: Literal[Caller.STAR_FUSION] = Caller.STAR_FUSION
@@ -91,7 +92,7 @@ class STARFusion(BaseModel):
     )
 
 
-class FusionCatcher(BaseModel):
+class FusionCatcher(FusionCaller):
     """Define parameters for FusionCatcher model"""
 
     type: Literal[Caller.FUSION_CATCHER] = Caller.FUSION_CATCHER
@@ -124,7 +125,7 @@ class FusionCatcher(BaseModel):
     )
 
 
-class Arriba(BaseModel):
+class Arriba(FusionCaller):
     """Define parameters for Arriba model"""
 
     type: Literal[Caller.ARRIBA] = Caller.ARRIBA
@@ -138,7 +139,9 @@ class Arriba(BaseModel):
     )
     breakpoint1: str = Field(..., description="The chromosome and breakpoint for gene1")
     breakpoint2: str = Field(..., description="The chromosome and breakpoint for gene2")
-    event: str = Field(..., description=" An inference about the type of fusion event")
+    event_type: str = Field(
+        ..., description=" An inference about the type of fusion event"
+    )
     confidence: str = Field(
         ..., description="A metric describing the confidence of the fusion prediction"
     )
@@ -172,7 +175,7 @@ class Arriba(BaseModel):
     fusion_transcript: str = Field(..., description="The assembled fusion transcript")
 
 
-class Cicero(BaseModel):
+class Cicero(FusionCaller):
     """Define parameters for CICERO model"""
 
     type: Literal[Caller.CICERO] = Caller.CICERO
@@ -191,7 +194,8 @@ class Cicero(BaseModel):
         description="Whether the mapping orientation of assembled contig (driven by structural variation) has confident biological meaning",
     )
     event_type: str = Field(
-        ..., description="The structural variation event that created the called fusion"
+        ...,
+        description="The structural variation event that created the called fusion",
     )
     reads_5prime: int = Field(
         ...,
@@ -210,7 +214,7 @@ class Cicero(BaseModel):
     contig: str = Field(..., description="The assembled contig sequence for the fusion")
 
 
-class EnFusion(BaseModel):
+class EnFusion(FusionCaller):
     """Define parameters for EnFusion model"""
 
     type: Literal[Caller.ENFUSION] = Caller.ENFUSION
@@ -224,9 +228,12 @@ class EnFusion(BaseModel):
     break_3prime: int = Field(
         ..., description="The 3' gene fusion partner genomic breakpoint"
     )
+    fusion_junction_sequence: str | None = Field(
+        None, description="The sequence near the fusion junction"
+    )
 
 
-class Genie(BaseModel):
+class Genie(FusionCaller):
     """Define parameters for Genie model"""
 
     type: Literal[Caller.GENIE] = Caller.GENIE

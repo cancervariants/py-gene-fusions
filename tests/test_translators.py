@@ -369,7 +369,7 @@ async def test_arriba(
         strand2="-/-",
         breakpoint1="1:154170465",
         breakpoint2="5:150126612",
-        event="translocation",
+        event_type="translocation",
         confidence="high",
         direction1="upstream",
         direction2="downstream",
