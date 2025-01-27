@@ -30,7 +30,7 @@ class FusionCallerHarvester(ABC):
     ) -> list[FusionCaller]:
         """Convert rows of fusion caller output to Pydantic classes
 
-        :param path: The path to the fusions file
+        :param fusion_path: The path to the fusions file
         :param column_rename: A dictionary of column mappings
         :param delimeter: The delimeter for the fusions file
         :raise ValueError: if the file does not exist at the specified path
@@ -40,25 +40,23 @@ class FusionCallerHarvester(ABC):
             statement = f"{fusion_path!s} does not exist"
             raise ValueError(statement)
         fusions_list = []
-        fields_to_keep = self.fusion_caller.__annotations__.keys()
+        fields_to_keep = self.fusion_caller.__annotations__
         with fusion_path.open() as csvfile:
             reader = csv.DictReader(csvfile, delimiter=self.delimeter)
             for row in reader:
-                row = {
-                    self.column_rename.get(key, key): value
-                    for key, value in row.items()
-                }
-                filered_row = {
-                    key: value for key, value in row.items() if key in fields_to_keep
-                }
-                fusions_list.append(self.fusion_caller(**filered_row))
+                filtered_row = {}
+                for key, value in row.items():
+                    renamed_key = self.column_rename.get(key, key)
+                    if renamed_key in fields_to_keep:
+                        filtered_row[renamed_key] = value
+                fusions_list.append(self.fusion_caller(**filtered_row))
         return fusions_list
 
 
 class JAFFAHarvester(FusionCallerHarvester):
     """Class for harvesting JAFFA data"""
 
-    column_rename: ClassVar[dict] = {
+    column_rename: ClassVar[dict[str, str]] = {
         "fusion genes": "fusion_genes",
         "spanning reads": "spanning_reads",
         "spanning pairs": "spanning_pairs",
@@ -70,7 +68,7 @@ class JAFFAHarvester(FusionCallerHarvester):
 class StarFusionHarvester(FusionCallerHarvester):
     """Class for harvesting STAR-Fusion data"""
 
-    column_rename: ClassVar[dict] = {
+    column_rename: ClassVar[dict[str, str]] = {
         "LeftGene": "left_gene",
         "RightGene": "right_gene",
         "LeftBreakpoint": "left_breakpoint",
@@ -85,7 +83,7 @@ class StarFusionHarvester(FusionCallerHarvester):
 class FusionCatcherHarvester(FusionCallerHarvester):
     """Class for harvesting FusionCatcher data"""
 
-    column_rename: ClassVar[dict] = {
+    column_rename: ClassVar[dict[str, str]] = {
         "Gene_1_symbol(5end_fusion_partner)": "five_prime_partner",
         "Gene_2_symbol(3end_fusion_partner)": "three_prime_partner",
         "Fusion_point_for_gene_1(5end_fusion_partner)": "five_prime_fusion_point",
@@ -102,7 +100,7 @@ class FusionCatcherHarvester(FusionCallerHarvester):
 class ArribaHarvester(FusionCallerHarvester):
     """Class for harvesting Arriba data"""
 
-    column_rename: ClassVar[dict] = {
+    column_rename: ClassVar[dict[str, str]] = {
         "#gene1": "gene1",
         "strand1(gene/fusion)": "strand1",
         "strand2(gene/fusion)": "strand2",
@@ -116,7 +114,7 @@ class ArribaHarvester(FusionCallerHarvester):
 class CiceroHarvester(FusionCallerHarvester):
     """Class for harvesting Cicero data"""
 
-    column_rename: ClassVar[dict] = {
+    column_rename: ClassVar[dict[str, str]] = {
         "geneA": "gene_5prime",
         "geneB": "gene_3prime",
         "chrA": "chr_5prime",
@@ -136,7 +134,7 @@ class CiceroHarvester(FusionCallerHarvester):
 class EnFusionHarvester(FusionCallerHarvester):
     """Class for harvesting EnFusion data"""
 
-    column_rename: ClassVar[dict] = {
+    column_rename: ClassVar[dict[str, str]] = {
         "Gene1": "gene_5prime",
         "Gene2": "gene_3prime",
         "Chr1": "chr_5prime",
@@ -152,7 +150,7 @@ class EnFusionHarvester(FusionCallerHarvester):
 class GenieHarvester(FusionCallerHarvester):
     """Class for harvesting Genie data"""
 
-    column_rename: ClassVar[dict] = {
+    column_rename: ClassVar[dict[str, str]] = {
         "Site1_Hugo_Symbol": "site1_hugo",
         "Site2_Hugo_Symbol": "site2_hugo",
         "Site1_Chromosome": "site1_chrom",
