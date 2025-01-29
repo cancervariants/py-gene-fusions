@@ -73,8 +73,8 @@ class Translator:
     ) -> AssayedFusion:
         """Format classes to create AssayedFusion objects
 
-        :param gene_5prime: 5'prime GeneElement
-        :param gene_3prime: 3'prime GeneElement
+        :param gene_5prime: 5'prime GeneElement or UnknownGeneElement
+        :param gene_3prime: 3'prime GeneElement or UnknownGeneElement
         :param tr_5prime: 5'prime TranscriptSegmentElement
         :param tr_3prime: 3'prime TranscriptSegmentElement
         :param ce: CausativeEvent
@@ -164,8 +164,8 @@ class Translator:
         """Check if the normalized gene symbols for the two fusion partners
         are different. If not, this event is not a fusion
 
-        :param gene_5prime: The 5' gene partner
-        :param gene_3prime: The 3' gene partner
+        :param gene_5prime: The 5' gene partner or UnknownGeneElement
+        :param gene_3prime: The 3' gene partner or UnknownGeneElement
         :return ``True`` if the gene symbols are different, ``False`` if not
         """
         if gene_5prime != gene_3prime:
@@ -205,10 +205,10 @@ class Translator:
         """
         gene_5prime_element = gene_3prime_element = None
         if gene_5prime == "NA":
-            gene_5prime_element = gene_5prime = UnknownGeneElement()
+            gene_5prime_element = UnknownGeneElement()
             gene_5prime = None
         if gene_3prime == "NA":
-            gene_3prime_element = gene_3prime = UnknownGeneElement()
+            gene_3prime_element = UnknownGeneElement()
             gene_3prime = None
         if not gene_5prime_element:
             gene_5prime_element = self._get_gene_element(gene_5prime, caller)
