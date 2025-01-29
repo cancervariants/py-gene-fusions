@@ -63,8 +63,8 @@ class Translator:
         self,
         gene_5prime: GeneElement | UnknownGeneElement,
         gene_3prime: GeneElement | UnknownGeneElement,
-        tr_5prime: TranscriptSegmentElement | list[None] = None,
-        tr_3prime: TranscriptSegmentElement | list[None] = None,
+        tr_5prime: TranscriptSegmentElement | None = None,
+        tr_3prime: TranscriptSegmentElement | None = None,
         ce: CausativeEvent | None = None,
         rf: bool | None = None,
         assay: Assay | None = None,
@@ -91,14 +91,14 @@ class Translator:
             "contig": contig,
             "readData": reads,
         }
-        if not tr_5prime[0] and not tr_3prime[0]:
+        if not tr_5prime and not tr_3prime:
             params["structure"] = [gene_5prime, gene_3prime]
-        elif tr_5prime[0] and not tr_3prime[0]:
-            params["structure"] = [tr_5prime[0], gene_3prime]
-        elif not tr_5prime[0] and tr_3prime[0]:
-            params["structure"] = [gene_5prime, tr_3prime[0]]
+        elif tr_5prime and not tr_3prime:
+            params["structure"] = [tr_5prime, gene_3prime]
+        elif not tr_5prime and tr_3prime:
+            params["structure"] = [gene_5prime, tr_3prime]
         else:
-            params["structure"] = [tr_5prime[0], tr_3prime[0]]
+            params["structure"] = [tr_5prime, tr_3prime]
         return AssayedFusion(**params)
 
     def _get_causative_event(
@@ -259,6 +259,7 @@ class Translator:
                 coordinate_type=coordinate_type,
                 starting_assembly=rb,
             )
+            tr_5prime = tr_5prime[0]
 
         if not isinstance(fusion_partners.gene_3prime_element, UnknownGeneElement):
             tr_3prime = await self.fusor.transcript_segment_element(
@@ -269,6 +270,7 @@ class Translator:
                 coordinate_type=coordinate_type,
                 starting_assembly=rb,
             )
+            tr_3prime = tr_3prime[0]
 
         if jaffa.rearrangement:
             ce = CausativeEvent(
@@ -288,10 +290,10 @@ class Translator:
             fusion_partners.gene_3prime_element,
             tr_5prime
             if isinstance(fusion_partners.gene_5prime_element, GeneElement)
-            else [None],
+            else None,
             tr_3prime
             if isinstance(fusion_partners.gene_3prime_element, GeneElement)
-            else [None],
+            else None,
             ce,
             jaffa.inframe if isinstance(jaffa.inframe, bool) else None,
             reads=read_data,
@@ -330,6 +332,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_5prime = tr_5prime[0]
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -339,6 +342,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_3prime = tr_3prime[0]
 
         ce = self._get_causative_event(
             five_prime[0], three_prime[0], ",".join(star_fusion.annots)
@@ -353,10 +357,10 @@ class Translator:
             fusion_partners.gene_3prime_element,
             tr_5prime
             if isinstance(fusion_partners.gene_5prime_element, GeneElement)
-            else [None],
+            else None,
             tr_3prime
             if isinstance(fusion_partners.gene_3prime_element, GeneElement)
-            else [None],
+            else None,
             ce,
             reads=read_data,
         )
@@ -395,6 +399,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_5prime = tr_5prime[0]
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -404,6 +409,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_3prime = tr_3prime[0]
 
         ce = self._get_causative_event(
             five_prime[0], three_prime[0], fusion_catcher.predicted_effect
@@ -419,10 +425,10 @@ class Translator:
             fusion_partners.gene_3prime_element,
             tr_5prime
             if isinstance(fusion_partners.gene_5prime_element, GeneElement)
-            else [None],
+            else None,
             tr_3prime
             if isinstance(fusion_partners.gene_3prime_element, GeneElement)
-            else [None],
+            else None,
             ce,
             contig=contig,
             reads=read_data,
@@ -456,6 +462,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_5prime = tr_5prime[0]
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -467,6 +474,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_3prime = tr_3prime[0]
 
         # Combine columns to create fusion annotation string"
         descr = (
@@ -536,6 +544,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_5prime = tr_5prime[0]
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -548,6 +557,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_3prime = tr_3prime[0]
 
         ce = (
             CausativeEvent(
@@ -571,10 +581,10 @@ class Translator:
             fusion_partners.gene_3prime_element,
             tr_5prime
             if isinstance(fusion_partners.gene_5prime_element, GeneElement)
-            else [None],
+            else None,
             tr_3prime
             if isinstance(fusion_partners.gene_3prime_element, GeneElement)
-            else [None],
+            else None,
             ce,
             rf,
             contig=contig,
@@ -629,6 +639,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_5prime = tr_5prime[0]
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -640,6 +651,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_3prime = tr_3prime[0]
 
         if cicero.event_type == "read_through":
             ce = CausativeEvent(
@@ -658,10 +670,10 @@ class Translator:
             fusion_partners.gene_3prime_element,
             tr_5prime
             if isinstance(fusion_partners.gene_5prime_element, GeneElement)
-            else [None],
+            else None,
             tr_3prime
             if isinstance(fusion_partners.gene_3prime_element, GeneElement)
-            else [None],
+            else None,
             ce,
             contig=contig,
         )
@@ -694,6 +706,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_5prime = tr_5prime[0]
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -703,6 +716,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_3prime = tr_3prime[0]
 
         ce = self._get_causative_event(
             mapsplice_row[0].split("~")[0], mapsplice_row[0].split("~")[1]
@@ -739,6 +753,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_5prime = tr_5prime[0]
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -748,6 +763,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_3prime = tr_3prime[0]
 
         ce = self._get_causative_event(
             enfusion.chr_5prime,
@@ -758,10 +774,10 @@ class Translator:
             fusion_partners.gene_3prime_element,
             tr_5prime
             if isinstance(fusion_partners.gene_5prime_element, GeneElement)
-            else [None],
+            else None,
             tr_3prime
             if isinstance(fusion_partners.gene_3prime_element, GeneElement)
-            else [None],
+            else None,
             ce,
         )
 
@@ -795,6 +811,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_5prime = tr_5prime[0]
 
         tr_3prime = await self.fusor.transcript_segment_element(
             tx_to_genomic_coords=False,
@@ -804,6 +821,7 @@ class Translator:
             coordinate_type=coordinate_type,
             starting_assembly=rb,
         )
+        tr_3prime = tr_3prime[0]
 
         ce = self._get_causative_event(
             genie.site1_chrom,
@@ -816,10 +834,10 @@ class Translator:
             fusion_partners.gene_3prime_element,
             tr_5prime
             if isinstance(fusion_partners.gene_5prime_element, GeneElement)
-            else [None],
+            else None,
             tr_3prime
             if isinstance(fusion_partners.gene_3prime_element, GeneElement)
-            else [None],
+            else None,
             ce,
             rf,
         )
