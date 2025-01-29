@@ -63,8 +63,8 @@ class Translator:
         self,
         gene_5prime: GeneElement | UnknownGeneElement,
         gene_3prime: GeneElement | UnknownGeneElement,
-        tr_5prime: TranscriptSegmentElement | None = None,
-        tr_3prime: TranscriptSegmentElement | None = None,
+        tr_5prime: TranscriptSegmentElement | list[None] = None,
+        tr_3prime: TranscriptSegmentElement | list[None] = None,
         ce: CausativeEvent | None = None,
         rf: bool | None = None,
         assay: Assay | None = None,
@@ -193,6 +193,22 @@ class Translator:
             raise ValueError
         return alias_list[0].split(":")[1]
 
+    def _assess_gene_symbol(
+        self, gene: str, caller: Caller
+    ) -> list[GeneElement | UnknownGeneElement, str]:
+        """Determine if a gene symbol exists and return the corresponding
+        GeneElement
+
+        :param gene: The gene symbol
+        :param caller: The gene fusion caller
+        :return A list containing a GeneElement or UnknownGeneElement and a string
+        """
+        if gene == "NA":
+            return UnknownGeneElement(), "NA"
+        return self._get_gene_element(gene, caller), self._get_gene_element(
+            gene, caller
+        ).gene.label
+
     def _process_gene_symbols(
         self, gene_5prime: str, gene_3prime: str, caller: Caller
     ) -> dict[GeneElement | UnknownGeneElement]:
@@ -203,19 +219,8 @@ class Translator:
         :param caller: The gene fusion caller
         :return A dictionary of GeneElements or UnknownGeneElements
         """
-        gene_5prime_element = gene_3prime_element = None
-        if gene_5prime == "NA":
-            gene_5prime_element = UnknownGeneElement()
-            gene_5prime = None
-        if gene_3prime == "NA":
-            gene_3prime_element = UnknownGeneElement()
-            gene_3prime = None
-        if not gene_5prime_element:
-            gene_5prime_element = self._get_gene_element(gene_5prime, caller)
-            gene_5prime = gene_5prime_element.gene.label
-        if not gene_3prime_element:
-            gene_3prime_element = self._get_gene_element(gene_3prime, caller)
-            gene_3prime = gene_3prime_element.gene.label
+        gene_5prime_element, gene_5prime = self._assess_gene_symbol(gene_5prime, caller)
+        gene_3prime_element, gene_3prime = self._assess_gene_symbol(gene_3prime, caller)
         params = {
             "gene_5prime_element": gene_5prime_element,
             "gene_5prime": gene_5prime,
